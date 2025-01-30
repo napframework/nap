@@ -178,6 +178,8 @@ namespace nap
 
 		// Load path mapping (relative to the app.json file)
 		auto path_mapping_file_name = utility::forceSeparator(utility::joinPath({ mProjectDir, mPathMappingFile }));
+		nap::Logger::debug("Using path mapping file: %s", path_mapping_file_name.c_str());
+
 		mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(path_mapping_file_name,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
 			getFactory(),
@@ -189,26 +191,35 @@ namespace nap
 			return false;
 
 		// Resolve the NAP root
-		auto nap_root = utility::joinPath(
+		auto nap_root = utility::forceSeparator(utility::joinPath(
 			{
 				utility::getExecutableDir(), context == ProjectInfo::EContext::Editor ?
 					mPathMapping->mNapkinExeToRoot :
 					mPathMapping->mProjectExeToRoot
-			});
-		mRoot = utility::getAbsolutePath(nap_root);
+			}));
 
 		// Ensure root is valid
+		nap::Logger::debug("Unresolved NAP root: %s", nap_root.c_str());
+		mRoot = utility::getAbsolutePath(nap_root);
 		if (!error.check(!mRoot.empty(), "Unable to resolve NAP root directory"))
 			return false;
 
-		// Resolve module paths
+		// With the root in place we can resolve path to modules
+		nap::Logger::debug("Resolved NAP root : % s", mRoot.c_str());
 		patchPaths(mPathMapping->mModulePaths);
+
+		// Debug print
+		for (const auto& path : mPathMapping->mModulePaths)
+			nap::Logger::debug("Adding module search path: %s", path.c_str());
 
 		// Resolve build output
 		patchPath(mPathMapping->mBuildPath);
+		nap::Logger::debug("Build path: %s", mPathMapping->mBuildPath.c_str());
 
 		// Resolve service config
 		patchPath(mServiceConfigFilename);
+		nap::Logger::debug("Config path: %s",
+			mServiceConfigFilename.empty() ? "None" : mServiceConfigFilename.c_str());
 
 		return true;
 	}

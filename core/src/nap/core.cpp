@@ -438,6 +438,7 @@ namespace nap
 			return false;
 
 		// Initialize it
+		nap::Logger::debug("Initializing project '%s'", mProjectInfo->mTitle.c_str());
 		if (!mProjectInfo->init(projectFilename, context, err))
 		{
 			err.fail("Failed to initialize project");

@@ -61,7 +61,8 @@ void MainWindow::showEvent(QShowEvent* event)
 	{
 		qt::AutoSettings::get().restore(*this);
 		QSettings settings;
-		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
+		nap::Logger::debug("Using settings file: %s",
+			utility::forceSeparator(settings.fileName().toStdString()).c_str());
 		getContext().restoreUI();
 		rebuildRecentMenu();
 		rebuildDockMenu();
@@ -106,7 +107,7 @@ void MainWindow::addDocks()
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
-	addDock(QString::fromStdString(mRenderPreviewPanel.getDisplayName()), &mRenderPreviewPanel);
+	//addDock(QString::fromStdString(mRenderPreviewPanel.getDisplayName()), &mRenderPreviewPanel);
 	addDock(QString::fromStdString(mTexturePreviewPanel.getDisplayName()), &mTexturePreviewPanel);
 
 	// Add logger -> raise when it receives an important message
@@ -119,7 +120,7 @@ void MainWindow::addDocks()
 	// Register resource load options ->
 	// Tells the resource panel which widgets (preview, etc.) are available to handle specific types.
 	mResourcePanel.registerStageOption(mTexturePreviewPanel.toOption());
-	mResourcePanel.registerStageOption(mRenderPreviewPanel.toOption());
+	//mResourcePanel.registerStageOption(mRenderPreviewPanel.toOption());
 
 	// Add menu
 	menuBar()->addMenu(&mPanelsMenu);

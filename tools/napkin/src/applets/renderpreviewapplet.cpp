@@ -164,6 +164,7 @@ namespace napkin
 		return 0;
 	}
 
+
 	void RenderPreviewApplet::onTextChanged(const nap::APIEvent& apiEvent)
 	{
 		std::string new_text = apiEvent.getArgument(0)->asString();

@@ -26,11 +26,10 @@ QVariant napkin::ModuleItem::data(int role) const
 	{
 		std::string desc = nap::utility::stringFormat("%s, version %d", mModule.getName().c_str(), mModule.getDescriptor().mAPIVersion);
 		desc.append(nap::utility::stringFormat("\n%s", mModule.getInformation().getFilename().c_str()));
-		if (mModule.getServiceType().is_valid())
-		{
-			std::string stn = mModule.getServiceType().get_name().data();
-			desc.append(nap::utility::stringFormat("\n%s", stn.c_str()));
-		}
+		desc.append(mModule.getServiceType().is_valid() ?
+			nap::utility::stringFormat("\n%s", mModule.getServiceType().get_name().data()).c_str() :
+			"\nNo service");
+
 		return QString::fromStdString(desc);
 	}
 	default:

@@ -103,6 +103,10 @@ namespace nap
 				{"MODULE_DIR",  module_dir}
 			});
 
+		// Debug print data search paths
+		for (const auto& data_path : module_info->mDataSearchPaths)
+			nap::Logger::debug("Adding data search path: %s", data_path.c_str());
+
 		// Recursively load module dependencies first
 		std::vector<const nap::Module*> module_deps;
 		for (const auto& name : module_info->mRequiredModules)

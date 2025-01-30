@@ -49,15 +49,13 @@ namespace nap
 		for (const auto& path : paths)
 		{
 			auto abspath = utility::getAbsolutePath(path);
-			auto abspathw = toWStr(abspath);
-
+			nap::Logger::debug("Adding library search path: %s", abspath.c_str());
 			if (!utility::fileExists(abspath))
 			{
 				nap::Logger::fine("Path does not exist: %s (resolved from: %s)", abspath.c_str(), path.c_str());
 				continue;
 			}
-
-			auto cookie = AddDllDirectory(abspathw.c_str());
+			auto cookie = AddDllDirectory(toWStr(abspath).c_str());
 			if (!cookie)
 			{
 				nap::Logger::error("Failed to add dll path: %s (%s)", abspath.c_str(), getLastErrorStr().c_str());
@@ -75,7 +73,7 @@ namespace nap
 		for (const auto& path : paths)
 		{
 			if (!RemoveDllDirectory(path))
-				nap::Logger::error("Failed to remove path: %s", path);
+				nap::Logger::error("Failed to remove library search path");
 		}
 	}
 
@@ -91,7 +89,7 @@ namespace nap
 	{
 		// Add library search paths to resolve library location when using napkin
 		std::vector<DLL_DIRECTORY_COOKIE> search_cookies;
-		if(modInfo.getProjectInfo().isEditorMode())
+		if (modInfo.getProjectInfo().isEditorMode())
 			search_cookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
 
 		// Load our module -> note that we search on file name instead of full path.

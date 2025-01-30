@@ -5,7 +5,6 @@
         "naprender"
     ],
     "DataSearchPaths": [
-        "{ROOT}/system_modules/naprenderadvanced/data",
-        "{ROOT}/system_modules/{MODULE_NAME}/data"
+        "{ROOT}/system_modules/naprenderadvanced/data"
     ]
 }

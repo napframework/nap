@@ -310,7 +310,7 @@ namespace nap
 	class ConsoleLogHandler : public LogHandler
 	{
 	public:
-		ConsoleLogHandler() = default;
+		ConsoleLogHandler() { setLogLevel(Logger::infoLevel()); }
 
 		/**
 		 * Write the contents to the outputstream

@@ -83,7 +83,7 @@ namespace napkin
 	bool napkin::AppletRunner::initEngine(const std::string& projectInfo, nap::utility::ErrorState& error)
 	{
 		// Initialize engine
-		if (!error.check(mCore.initializeEngine(projectInfo, nap::ProjectInfo::EContext::Editor, error),
+		if (!error.check(mCore.initializeEngine(projectInfo, nap::ProjectInfo::EContext::Application, error),
 			"Unable to initialize engine"))
 			return false;
 
@@ -349,4 +349,3 @@ namespace napkin
 		mProcessCondition.notify_one();
 	}
 }
-
