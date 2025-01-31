@@ -27,7 +27,8 @@ if(WIN32)
     # Copy napkin directory -> exclude path mapping
     install(DIRECTORY ${NAP_ROOT}/tools/napkin/
         DESTINATION napkin
-        PATTERN */path_mapping.json EXCLUDE)
+        PATTERN "*/path_mapping.json" EXCLUDE
+        PATTERN "*/napkin.ini" EXCLUDE)
 
     # Napkin has dependencies the application might not have -> we must include the (shared) data for those.
     # For example: renderadvanced is required by Napkin but not by most demos -> it requires those shaders to run

@@ -169,6 +169,7 @@ if(MSVC)
             DESTINATION tools/
             CONFIGURATIONS Release 
             PATTERN "*.pdb" EXCLUDE
+            PATTERN "*/napkin.ini" EXCLUDE
             )
 
     if(PACKAGE_PDBS)
