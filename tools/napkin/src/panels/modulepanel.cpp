@@ -24,7 +24,7 @@ QVariant napkin::ModuleItem::data(int role) const
 		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MODULE);
 	case Qt::ToolTipRole:
 	{
-		std::string desc = nap::utility::stringFormat("%s, version %d", mModule.getName().c_str(), mModule.getDescriptor().mAPIVersion);
+		std::string desc = nap::utility::stringFormat("%s, version %s", mModule.getName().c_str(), mModule.getDescriptor().mVersion);
 		desc.append(nap::utility::stringFormat("\n%s", mModule.getInformation().getFilename().c_str()));
 		desc.append(mModule.getServiceType().is_valid() ?
 			nap::utility::stringFormat("\n%s", mModule.getServiceType().get_name().data()).c_str() :
