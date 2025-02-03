@@ -104,7 +104,9 @@ namespace nap
 		mItems.reserve(items.size());
 		for (const auto& item : items)
 		{
-			mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
+			auto item_clone = rtti::cloneObject(*item, mCore.getResourceManager()->getFactory());
+			item_clone->changed.connect([this](const CalendarItem& changedItem) { itemChanged.trigger(changedItem); });
+			mItems.emplace_back(std::move(item_clone));
 		}
 		return true;
 	}
@@ -129,6 +131,7 @@ namespace nap
 
 	void CalendarInstance::addItem(std::unique_ptr<CalendarItem> item)
 	{
+		item->changed.connect([this](const CalendarItem& changedItem) { itemChanged.trigger(changedItem); });
 		mItems.emplace_back(std::move(item));
 		itemAdded.trigger(*mItems.back());
 	}
@@ -182,6 +185,7 @@ namespace nap
 				assert(false);
 				continue;
 			}
+			calendar_item->changed.connect([this](const CalendarItem& changedItem) { itemChanged.trigger(changedItem); });
 			mItems.emplace_back(std::move(calendar_item));
 		}
 		return true;

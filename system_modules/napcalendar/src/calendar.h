@@ -248,6 +248,7 @@ namespace nap
 
 		Signal<const CalendarItem&> itemRemoved;	///< Called when an item is about to be removed
 		Signal<const CalendarItem&> itemAdded;		///< Called when an item is added
+		Signal<const CalendarItem&> itemChanged;	///< Called when an item is changed
 
 		OwnedCalendarItemList mItems;		///< List of unique calendar items
 		std::string mName;					///< Calendar name

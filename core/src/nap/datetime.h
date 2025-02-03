@@ -345,6 +345,19 @@ namespace nap
 		 */
 		bool valid() const;
 
+		// Comparison operators
+		bool operator == (const Date &c) const
+		{
+			if (mDay == c.mDay && mMonth == c.mMonth && mYear == c.mYear)
+				return true;
+			return false;
+		}
+
+		bool operator != (const Date &c) const
+		{
+			return !(*this == c);
+		}
+
 		EMonth mMonth = EMonth::Unknown;			///< Property: 'Month' the month of the year
 		int mDay = 1;								///< Property: 'Day' the day of the month (1-31)
 		int mYear = 1970;							///< Property: 'Year' the year
