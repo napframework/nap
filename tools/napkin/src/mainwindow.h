@@ -205,7 +205,6 @@ namespace napkin
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;
 		ScenePanel mScenePanel;
-		RenderPreviewPanel mRenderPreviewPanel;
 		TexturePreviewPanel mTexturePreviewPanel;
 		ServiceConfigPanel mServiceConfigPanel;
 

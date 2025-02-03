@@ -3,8 +3,8 @@
     "mID": "ModuleInfo", 
     "RequiredModules": [
         "naprenderadvanced",
-        "napscene",
-        "napfft"
+        "napfft",
+        "napparameter"
     ], 
     "WindowsDllSearchPaths": []
 }

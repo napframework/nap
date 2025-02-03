@@ -83,14 +83,14 @@ namespace nap
 
 		if (!err.check(module_info != nullptr, "Failed to read %s from %s",
 			RTTI_OF(nap::ModuleInfo).get_name().data(),  module_json.c_str()))
-			return false;
+			return nullptr;
 
 		// Store useful references so we can backtrack if necessary
 		module_info->mProjectInfo = &project;
 
 		// Add project directory default search path for modules, used by Windows packaged apps
 		module_info->mLibSearchPaths.insert(module_info->mLibSearchPaths.begin(),
-			{ project.getProjectDir(), utility::getFileDir(module_json)});
+			{ utility::getFileDir(module_json), project.getProjectDir() });
 
 		// Patch library search paths
 		std::string module_dir = utility::getFileDir(module_json);

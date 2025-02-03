@@ -1719,7 +1719,7 @@ namespace nap
 
 		// Warn when not all requested layers could be found
 		if (found_layers.size() != requested_layers.size())
-			nap::Logger::warn("Not all requested layers were found");
+			nap::Logger::warn("Not all requested Vulkan layers were found");
 
 		// Print the ones we're enabling
 		for (const auto& layer : found_layers)
@@ -1855,7 +1855,7 @@ namespace nap
 
 		// Warn when not all requested layers could be found
 		if (found_layers.size() != requested_layers.size())
-			nap::Logger::warn("Not all requested layers were found");
+			nap::Logger::warn("Not all requested Vulkan layers were found");
 
 		// Print the ones we're enabling
 		for (const auto& layer : found_layers)

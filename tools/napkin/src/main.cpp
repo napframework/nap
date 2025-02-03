@@ -142,9 +142,6 @@ int main(int argc, char* argv[])
 	// Start logging to file next to console
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
 
-	// Only log debug messages and higher
-	nap::Logger::setLevel(nap::Logger::debugLevel());
-
     // Construct the app context singleton
     auto& ctx = napkin::AppContext::create();
 
