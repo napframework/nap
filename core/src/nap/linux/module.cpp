@@ -18,10 +18,9 @@ namespace nap
 
  	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& library, std::string& outLocation, std::string& errorString)
 	{
-		// Attempt to load the library using default system mapping
-		void* handle = dlopen(library.c_str(), RTLD_LAZY);
-
+		// Attempt to load the library using default OS system mapping
 		// If that fails attempt to locate it using library search paths
+		void* handle = dlopen(library.c_str(), RTLD_LAZY);
 		if (handle == nullptr)
 		{
 			for (const auto& path : modInfo.mLibSearchPaths)
