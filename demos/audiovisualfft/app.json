@@ -5,7 +5,6 @@
     "Version": "0.1.0",
     "RequiredModules": [
         "napapp",
-        "napcameracontrol",
         "napparametergui",
         "napaudiovisualfft"
     ],
