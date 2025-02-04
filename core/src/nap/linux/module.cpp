@@ -32,7 +32,7 @@ namespace nap
 					continue;
 
 				// Load it
-				Logger::info("Explicitly loading library: %s", full_path.c_str());
+				Logger::debug("Explicitly loading library: %s", full_path.c_str());
 				handle = dlopen(full_path.c_str(), RTLD_LAZY);
 				if (handle != nullptr)
 					break;
