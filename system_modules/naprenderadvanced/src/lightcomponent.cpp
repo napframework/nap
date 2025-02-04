@@ -39,6 +39,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
 	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Default, "The color of the light source")
 	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default, "The intensity of the light source")
 	RTTI_PROPERTY("ShadowStrength",		&nap::LightComponent::mShadowStrength,		nap::rtti::EPropertyMetaData::Default, "The amount of light the shadow consumes")
+	RTTI_PROPERTY("ShadowSpread",		&nap::LightComponent::mShadowSpread,		nap::rtti::EPropertyMetaData::Default, "The spread radius of the shadow samples")
 	RTTI_PROPERTY("Locator",			&nap::LightComponent::mLocator,				nap::rtti::EPropertyMetaData::Default, "Locator options")
 RTTI_END_CLASS
 
@@ -72,6 +73,7 @@ namespace nap
 		mIsEnabled = mResource->mEnabled;
 		mIsShadowEnabled = mResource->mCastShadows;
 		mShadowStrength = mResource->mShadowStrength;
+		mShadowSpread = mResource->mShadowSpread;
 		mColor = mResource->mColor;
 		mIntensity = mResource->mIntensity;
 

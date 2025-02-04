@@ -144,9 +144,17 @@ namespace nap
 		void renderLocators(IRenderTarget& renderTarget, CameraComponentInstance& camera, bool drawFrustrum);
 
 		/**
-		 * Push light data In order for shaders to be compatible with the light system they must include an uniform struct with 
-		 * the name `light`, and additionally `shadow` when shadows are supported.
+		 * Push light data to the shader programs of the given render components.
+		 * This function must be called exactly once before rendering when shadows are **not** used, ie: 'renderShadows' is not invoked.
+		 *
+		 * This call searches for a method called 'getOrCreateMaterial' to locate and extract the program from the component.
+		 * If the shader program cannot be found, no action is taken, as the method is not exposed via RTTI.
+		 * Refer to 'RenderableMeshComponentInstance::getOrCreateMaterial' for an example.
+		 * 
 		 * Additional data related to the material surface is excluded from the system and must be set by the user.
+		 * 
+		 * In order for shaders to be compatible with the light system they must include an uniform struct with 
+		 * the name 'light', and additionally 'shadow' when shadows are supported.
 		 *
 		 * ~~~~~{.cpp}
 		 *	if (mRenderService->beginHeadlessRecording())
