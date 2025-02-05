@@ -52,7 +52,6 @@ namespace nap
 			return false;
 
 		// Initialize texture on GPU
-		mUsage = EUsage::Static;
 		return Texture2D::init(bitmap->getDescriptor(),
 			mGenerateLods, bitmap->getData(), 0, errorState);
 	}
