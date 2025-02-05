@@ -271,10 +271,9 @@ std::vector<rttr::type> napkin::getComponentTypes()
 
 std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 {
-	std::vector<rttr::type> ret;
 	nap::Core& core = AppContext::get().getCore();
 	if (!core.isInitialized())
-		return ret;
+		return std::vector<rttr::type>();
 
 	nap::rtti::Factory& factory = core.getResourceManager()->getFactory();
 	std::vector<rttr::type> derived_classes;
@@ -289,6 +288,7 @@ std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 
 	auto root_type = RTTI_OF(nap::rtti::Object);
 	nap::rtti::getDerivedTypesRecursive(root_type, derived_classes);
+	std::vector<rttr::type> ret; ret.reserve(derived_classes.size());
 	for (const rttr::type& derived : derived_classes)
 	{
 		// Ensure the object can be created
@@ -297,7 +297,6 @@ std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 
 		// Filter out objects that are not included in the project ->
 		// This includes items from libraries linked in napkin (render, camera etc..) but not the user project.
-		//
 		// Note that we do allow unknown module descriptions when 'NAP_DEV' is defined.
 		// Which enables us to create and author Napkin Applet resources in Napkin itself ...
 		// I know, very meta, but then in a good way (thanks for ruining that word FOREVER zak mark)
