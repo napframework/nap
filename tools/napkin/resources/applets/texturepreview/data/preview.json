@@ -966,13 +966,6 @@
                     "mID": "Textures",
                     "Members": [
                         {
-                            "Type": "nap::ImageFromFile",
-                            "mID": "Fallback2DTexture",
-                            "Usage": "Static",
-                            "ImagePath": "fallback_2d_texture.jpg",
-                            "GenerateLods": false
-                        },
-                        {
                             "Type": "nap::CubeMapFromFile",
                             "mID": "FallbackCubeTexture",
                             "Width": 512,
@@ -990,6 +983,12 @@
                             "ImagePath": "fallback_cube_texture.jpg",
                             "SampleShading": false,
                             "GenerateLODs": false
+                        },
+                        {
+                            "Type": "nap::UVTestTexture",
+                            "mID": "Fallback2DTexture",
+                            "Usage": "Static",
+                            "GenerateLods": false
                         }
                     ],
                     "Children": []

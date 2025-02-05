@@ -93,5 +93,3 @@ namespace napkin
 		Loader findLoader(const PropertyPath& path);
 	};
 }
-
-

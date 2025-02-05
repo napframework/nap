@@ -92,15 +92,15 @@
                     "Type": "nap::OrbitController",
                     "mID": "OrbitController",
                     "MovementSpeed": 0.004999999888241291,
-                    "RotateSpeed": 0.0010000001639127732,
+                    "RotateSpeed": 0.0010000001639127731,
                     "PerspCameraComponent": "./PerspCamera",
+                    "LimitZoomDistance": true,
+                    "MinimumZoomDistance": 1.5,
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    },
-                    "MinimumZoomDistance": 1.5,
-                    "LimitZoomDistance": true
+                    }
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -198,13 +198,13 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "RenderLayer_Default",
-                    "Mesh": "TorusMesh",
+                    "Mesh": "ReflectionMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "TorusMaterial",
+                        "Material": "ReflectionMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
                     },
@@ -312,7 +312,7 @@
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.16078431904315949,
+                    0.16078431904315948,
                     0.3450980484485626,
                     1.0,
                     1.0
@@ -325,18 +325,18 @@
         },
         {
             "Type": "nap::ResourceGroup",
-            "mID": "Torus",
+            "mID": "Reflection",
             "Members": [
                 {
                     "Type": "nap::ShaderFromFile",
-                    "mID": "TorusShader",
-                    "VertShader": "shaders/environment.vert",
-                    "FragShader": "shaders/environment.frag",
+                    "mID": "ReflectionShader",
+                    "VertShader": "shaders/reflection.vert",
+                    "FragShader": "shaders/reflection.frag",
                     "RestrictModuleIncludes": false
                 },
                 {
                     "Type": "nap::TorusMesh",
-                    "mID": "TorusMesh",
+                    "mID": "ReflectionMesh",
                     "Radius": 0.75,
                     "TubeRadius": 0.25,
                     "Segments": 64,
@@ -356,7 +356,7 @@
                 },
                 {
                     "Type": "nap::Material",
-                    "mID": "TorusMaterial",
+                    "mID": "ReflectionMaterial",
                     "Uniforms": [
                         {
                             "Type": "nap::UniformStruct",
@@ -407,7 +407,7 @@
                     ],
                     "Buffers": [],
                     "Constants": [],
-                    "Shader": "TorusShader",
+                    "Shader": "ReflectionShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "InheritFromBlendMode"
