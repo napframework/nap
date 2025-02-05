@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
-#include "uvgridtexture.h"
+#include "uvtesttexture.h"
 #include "bitmap.h"
 
 // External includes
@@ -11,9 +11,10 @@
 #include <nap/core.h>
 #include <renderservice.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UVGridTexture)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UVTestTexture, "Checkerboard test texture to inspect uv coordinates")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("GenerateLods", &nap::UVGridTexture::mGenerateLods, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GenerateLods", &nap::UVTestTexture::mGenerateLods, nap::rtti::EPropertyMetaData::Default,
+		"If lower levels of detail (LODs) are auto-generated for the image")
 RTTI_END_CLASS
 
 namespace nap
@@ -40,11 +41,11 @@ namespace nap
 	}
 
 
-	UVGridTexture::UVGridTexture(Core& core) : Texture2D(core)
+	UVTestTexture::UVTestTexture(Core& core) : Texture2D(core)
 	{ }
 
 
-	bool UVGridTexture::init(utility::ErrorState& errorState)
+	bool UVTestTexture::init(utility::ErrorState& errorState)
 	{
 		// Get bitmap instance
 		auto* bitmap = getBitmap(mRenderService.getModule(), errorState);

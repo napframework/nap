@@ -13,21 +13,21 @@
 namespace nap
 {
 	/**
-	 * A UV grid pattern test texture, to inspect UV coordinates.
+	 * Checkerboard test texture to inspect UV coordinates.
 	 */
-	class NAPAPI UVGridTexture : public Texture2D
+	class NAPAPI UVTestTexture : public Texture2D
 	{
 		RTTI_ENABLE(Texture2D)
 	public:
 		/**
 		 * @param core the core instance.
 		 */
-		UVGridTexture(Core& core);
+		UVTestTexture(Core& core);
 
 		/**
-		* Loads the uv grid texture from disk and schedules the upload to the GPU on success.
-		* @param errorState contains the error when initialization fails
-		*/
+		 * Loads the uv grid texture from disk and schedules the upload to the GPU on success.
+		 * @param errorState contains the error when initialization fails
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 	public:
