@@ -68,6 +68,7 @@ namespace napkin
 				connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &TexturePreviewPanel::propertyValueChanged);
 				connect(&AppContext::get(), &AppContext::objectRemoved, this, &TexturePreviewPanel::objectRemoved);
 				connect(&AppContext::get(), &AppContext::documentClosing, this, &TexturePreviewPanel::documentClosing);
+				connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &TexturePreviewPanel::themeChanged);
 			});
 	}
 
@@ -170,6 +171,14 @@ namespace napkin
 	void TexturePreviewPanel::documentClosing(const QString& doc)
 	{
 		clear();
+	}
+
+
+	void TexturePreviewPanel::themeChanged(const Theme& theme)
+	{
+		APIEventPtr change_theme_cmd = std::make_unique<nap::APIEvent>(LoadTextureComponent::changeThemeCmd);
+		change_theme_cmd->addArgument<nap::APIString>(LoadTextureComponent::changeThemeArg1, theme.getName().toStdString());
+		mRunner.sendEvent(std::move(change_theme_cmd));
 	}
 
 

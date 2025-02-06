@@ -309,7 +309,7 @@ namespace nap
 	}
 
 
-	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette, const gui::Style& style)
+	static void applyPalette(const gui::ColorPalette& palette, ImGuiStyle& style)
 	{
 		// Get ImGUI colors
 		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
@@ -324,58 +324,62 @@ namespace nap
 		ImVec4 IMGUI_NAPHIG2(palette.mHighlightColor2, 1.0f);
 		ImVec4 IMGUI_NAPHIG3(palette.mHighlightColor3, 1.0f);
 
-		// Create style
-		std::unique_ptr<ImGuiStyle> gui_style = std::make_unique<ImGuiStyle>();
-
 		// Apply colors
-		gui_style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
-		gui_style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
-		gui_style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
-		gui_style->Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
-		gui_style->Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPMENU;
-		gui_style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPMENU;
-		gui_style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
-		gui_style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
-		gui_style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPMENU;
-		gui_style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
-		gui_style->Colors[ImGuiCol_Separator] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
-		gui_style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
+		style.Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
+		style.Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_TitleBg] = IMGUI_NAPMENU;
+		style.Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPMENU;
+		style.Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
+		style.Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
+		style.Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPMENU;
+		style.Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
+		style.Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
+		style.Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
+		style.Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
+		style.Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
+		style.Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
+		style.Colors[ImGuiCol_Separator] = IMGUI_NAPDARK;
+		style.Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
+		style.Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
+		style.Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
+		style.Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
+		style.Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
+		style.Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
+	}
+
+
+	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette, const gui::Style& style)
+	{
+		// Create imgui style
+		std::unique_ptr<ImGuiStyle> gui_style = std::make_unique<ImGuiStyle>();
 
 		// Apply style settings
 		gui_style->AntiAliasedFill = style.mAntiAliasedFill;
@@ -399,6 +403,8 @@ namespace nap
 		gui_style->TabRounding = style.mTabRounding;
 		gui_style->TouchExtraPadding = { style.mTouchExtraPadding.x, style.mTouchExtraPadding.y };
 
+		// Apply color palette
+		applyPalette(palette, *gui_style);
 		return gui_style;
 	}
 
@@ -1240,6 +1246,23 @@ namespace nap
 			context.mPointerID[0] = gui::pointerInvalidID;
 			context.mMousePosition.x = touchEvent.mXCoordinate;
 			context.mMousePosition.y = touchEvent.mYCoordinate;
+		}
+	}
+
+
+	void IMGuiService::setPalette(gui::EColorScheme palette)
+	{
+		// Get and apply palette
+		const auto& clr_palette = getColorPalette(palette, mConfiguration->mCustomColors);
+		applyPalette(clr_palette, *mStyle);
+		auto* cur_ctx = ImGui::GetCurrentContext();
+		for (auto& iter : mContexts)
+		{
+			// Push palette for context
+			auto& ctx = *iter.second;
+			ctx.activate();
+			ImGui::GetStyle() = *ctx.mStyle;
+			ctx.deactivate();
 		}
 	}
 

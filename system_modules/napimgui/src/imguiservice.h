@@ -257,6 +257,12 @@ namespace nap
 		const gui::ColorPalette& getPalette() const;
 
 		/**
+		 * Sets the GUI color palette
+		 * @param palette the color palette to apply 
+		 */
+		void setPalette(gui::EColorScheme palette);
+
+		/**
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
 		 * @return context that belongs to the event, nullptr if the event is not related to a window.
 		 */

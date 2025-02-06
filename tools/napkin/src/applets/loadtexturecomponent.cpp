@@ -12,6 +12,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderglobals.h>
+#include <imguiservice.h>
 
 // nap::loadtexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::LoadTextureComponent)
@@ -37,6 +38,10 @@ namespace napkin
 
 	bool LoadTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Gui service
+		mGUIService = getEntityInstance()->getCore()->getService<nap::IMGuiService>();
+		assert(mGUIService != nullptr);
+
 		mAPIComponent = getEntityInstance()->findComponent<APIComponentInstance>();
 		if (!errorState.check(mAPIComponent != nullptr, "Missing API component"))
 			return false;
@@ -53,10 +58,15 @@ namespace napkin
 		if (!errorState.check(load_mesh_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::loadMeshCmd))
 			return false;
 
+		const auto* change_theme_sig = mAPIComponent->findSignature(LoadTextureComponent::changeThemeCmd);
+		if (!errorState.check(change_theme_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::changeThemeCmd))
+			return false;
+
 		// Register api cmd listeners
 		mAPIComponent->registerCallback(*load_texture_sig, mTextureLoadRequested);
 		mAPIComponent->registerCallback(*load_mesh_sig, mMeshLoadRequested);
 		mAPIComponent->registerCallback(*clear_sig, mClearRequestedSlot);
+		mAPIComponent->registerCallback(*change_theme_sig, mChangeThemeSlot);
 
 		return true;
 	}
@@ -415,5 +425,24 @@ namespace napkin
 	void LoadTextureComponentInstance::clear(const nap::APIEvent& apiEvent)
 	{
 		mSelectedType = EType::None;
+	}
+
+
+	void LoadTextureComponentInstance::changeTheme(const nap::APIEvent& apiEvent)
+	{
+		auto theme_arg = apiEvent.getArgumentByName(LoadTextureComponent::changeThemeArg1);
+		assert(theme_arg != nullptr);
+		auto theme_name = theme_arg->asString();
+		utility::removeChars(" ", theme_name);
+		
+		auto pal_type = RTTI_OF(gui::EColorScheme); assert(pal_type.is_enumeration());
+		auto var = pal_type.get_enumeration().name_to_value(theme_name.data());
+		if (!var.is_valid())
+		{
+			Logger::error("Unable to bind color palette to theme with name: %s",
+				theme_name.c_str());
+			return;
+		}
+		mGUIService->setPalette(var.get_value<gui::EColorScheme>());
 	}
 }

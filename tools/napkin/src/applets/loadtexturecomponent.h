@@ -15,6 +15,11 @@
 #include <renderskyboxcomponent.h>
 #include <orbitcontroller.h>
 
+namespace nap
+{
+	class IMGuiService;
+}
+
 namespace napkin
 {
 	using namespace nap;
@@ -39,6 +44,10 @@ namespace napkin
 		static constexpr const char* loadMeshCmd = "LoadMesh";
 		static constexpr const char* loadMeshArg1 = "data";
 		static constexpr const char* loadMeshArg2 = "frame";
+
+		// Change theme cmd
+		static constexpr const char* changeThemeCmd = "ChangeTheme";
+		static constexpr const char* changeThemeArg1 = "theme";
 
 		// Clear selection args
 		static constexpr const char* clearCmd = "ClearTexture";
@@ -70,8 +79,9 @@ namespace napkin
 		};
 
 		// Constructor
+
 		LoadTextureComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)					{ }
+			ComponentInstance(entity, resource) { }
 
 		// Init
 		virtual bool init(utility::ErrorState& errorState) override;
@@ -152,10 +162,16 @@ namespace napkin
 		void clear(const nap::APIEvent& apiEvent);								//< Clears texture
 		nap::Slot<const nap::APIEvent&> mClearRequestedSlot =					{ this, &LoadTextureComponentInstance::clear };
 
+		void changeTheme(const nap::APIEvent& apiEvent);						//< Changes theme
+		nap::Slot<const nap::APIEvent&> mChangeThemeSlot =						{ this, &LoadTextureComponentInstance::changeTheme };
+
 		nap::APIComponentInstance* mAPIComponent = nullptr;						//< Pointer to the api component
 		std::string mProjectDataDirectory;										//< Data directory to resolve texture load cmds against
 
 		// Current selected type
 		EType mSelectedType = EType::None;
+
+		// GUI service
+		nap::IMGuiService* mGUIService;
 	};
 }

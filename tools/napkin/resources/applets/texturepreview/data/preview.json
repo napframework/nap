@@ -381,7 +381,8 @@
                     "Signatures": [
                         "LoadTexture",
                         "ClearTexture",
-                        "LoadMesh"
+                        "LoadMesh",
+                        "ChangeTheme"
                     ]
                 },
                 {
@@ -1037,6 +1038,18 @@
                             "mID": "meshFrameArg",
                             "Name": "frame",
                             "Value": false
+                        }
+                    ]
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "ChangeTheme",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "themeArg",
+                            "Name": "theme",
+                            "Value": ""
                         }
                     ]
                 }

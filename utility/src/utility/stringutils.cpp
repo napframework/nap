@@ -9,6 +9,7 @@
 #include <regex>
 #include <cctype>
 #include <string.h>
+#include <algorithm>
 
 namespace nap
 {
@@ -119,6 +120,13 @@ namespace nap
 			std::regex_iterator<std::string::const_iterator> rit(str.begin(), str.end(), re);
 			std::regex_iterator<std::string::const_iterator> rend;
 			return rit != rend ? rit->str() : str;
+		}
+
+
+		void removeChars(const char* chars, std::string& str)
+		{
+			for (auto i = 0; i < strlen(chars); i++)
+				str.erase(remove(str.begin(), str.end(), chars[i]), str.end());
 		}
 
 

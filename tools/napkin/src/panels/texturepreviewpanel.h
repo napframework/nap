@@ -10,6 +10,7 @@
 #include "../applets/texturepreviewapplet.h"
 #include "../appletrunner.h"
 #include "../stagewidget.h"
+#include "../thememanager.h"
 
 // External includes
 #include <rendertexture2d.h>
@@ -87,6 +88,9 @@ namespace napkin
 
 		// When document is closing
 		void documentClosing(const QString& doc);
+
+		// When theme changes
+		void themeChanged(const Theme& theme);
 
 		// Returns the load function for the given object
 		using Loader = std::function<bool(const PropertyPath&, bool, nap::utility::ErrorState&)>;
