@@ -7,9 +7,9 @@
 #include "bitmap.h"
 
 // External includes
-#include <threads.h>
 #include <nap/core.h>
 #include <renderservice.h>
+#include <mutex>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UVTestTexture, "Checkerboard test texture to inspect uv coordinates")
 	RTTI_CONSTRUCTOR(nap::Core&)
