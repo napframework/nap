@@ -6,8 +6,6 @@
 #include <nap/core.h>
 #include <nap/numeric.h>
 #include <cameracomponent.h>
-#include <orthocameracomponent.h>
-#include <perspcameracomponent.h>
 #include <renderglobals.h>
 #include <renderservice.h>
 
@@ -66,7 +64,18 @@ namespace nap
 
 	bool BoxFrameMesh::init(utility::ErrorState& errorState)
 	{
-		if (!mIsSetup)
+		// Create mesh instance
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
+
+		// Persistent configuration
+		mMeshInstance->setNumVertices(unitLineBox.size());
+		mMeshInstance->setUsage(mUsage);
+		mMeshInstance->setPolygonMode(EPolygonMode::Line);
+		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
+		mMeshInstance->setCullMode(ECullMode::None);
+
+		if (!mIsSetupManually)
 			setup();
 
 		return mMeshInstance->init(errorState);
@@ -75,14 +84,6 @@ namespace nap
 
 	bool BoxFrameMesh::setup(const math::Box& box, utility::ErrorState& errorState)
 	{
-		// Ensure the mesh is not set up a second time
-		if (!errorState.check(!mIsSetup, "The current mesh cannot be setup more than once"))
-			return false;
-
-		// Create mesh instance
-		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
-
 		// Generate the indices
 		std::vector<uint32> indices(quadCount * quadVertCount + 2 + lineCount * lineVertCount + primitiveCount);
 		uint32* index_ptr = indices.data();
@@ -105,22 +106,14 @@ namespace nap
 		}
 
 		// Create attributes
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-
-		// Set numer of vertices this mesh contains
-		mMeshInstance->setNumVertices(unitLineBox.size());
-		mMeshInstance->setUsage(mUsage);
-		mMeshInstance->setPolygonMode(EPolygonMode::Line);
-		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
-		mMeshInstance->setCullMode(ECullMode::None);
-
+		auto& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
 		position_attribute.setData(getBoxFrameMeshVertices(box));
 
 		// Create the shape
-		MeshShape& shape = mMeshInstance->createShape();
+		auto& shape = mMeshInstance->createShape();
 		shape.setIndices(indices.data(), indices.size());
 
-		mIsSetup = true;
+		mIsSetupManually = true;
 
 		return true;
 	}
@@ -128,13 +121,6 @@ namespace nap
 
 	void BoxFrameMesh::setup()
 	{
-		// Ensure the mesh is not set up a second time
-		assert(!mIsSetup);
-
-		// Create mesh instance
-		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
-
 		// Generate the indices
 		std::vector<uint32> indices(quadCount * quadVertCount + 2 + lineCount * lineVertCount + primitiveCount);
 		uint32* index_ptr = indices.data();
@@ -157,23 +143,12 @@ namespace nap
 		}
 
 		// Create attributes
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-
-		// Set numer of vertices this mesh contains
-		mMeshInstance->setNumVertices(unitLineBox.size());
-		mMeshInstance->setUsage(mUsage);
-		mMeshInstance->setPolygonMode(EPolygonMode::Line);
-		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
-		mMeshInstance->setCullMode(ECullMode::None);
-
-		// Set data
+		auto& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
 		position_attribute.setData(unitLineBox);
 
 		// Create the shape
-		MeshShape& shape = mMeshInstance->createShape();
+		auto& shape = mMeshInstance->createShape();
 		shape.setIndices(indices.data(), indices.size());
-
-		mIsSetup = true;
 	}
 
 
