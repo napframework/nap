@@ -22,52 +22,6 @@
 #include <sdlhelpers.h>
 #include <nap/modulemanager.h>
 
-RTTI_BEGIN_ENUM(nap::gui::EColorScheme)
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Light,		"Light"),
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Dark,		"Dark"),
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::HyperDark,	"HyperDark"),
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Classic,	"Classic"),
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Custom,		"Custom")
-RTTI_END_ENUM
-
-RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
-	RTTI_PROPERTY("BackgroundColor",	&nap::gui::ColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DarkColor",			&nap::gui::ColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MenuColor",			&nap::gui::ColorPalette::mMenuColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor1",		&nap::gui::ColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor2",		&nap::gui::ColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor3",		&nap::gui::ColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor4",		&nap::gui::ColorPalette::mFront4Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor1",	&nap::gui::ColorPalette::mHighlightColor1,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor2",	&nap::gui::ColorPalette::mHighlightColor2,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor3",	&nap::gui::ColorPalette::mHighlightColor3,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor4",	&nap::gui::ColorPalette::mHighlightColor4,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InvertIcons",		&nap::gui::ColorPalette::mInvertIcon,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
-RTTI_BEGIN_STRUCT(nap::gui::Style)
-	RTTI_PROPERTY("AntiAliasedLines",	&nap::gui::Style::mAntiAliasedLines,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AntiAliasedFill",	&nap::gui::Style::mAntiAliasedFill,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WindowPadding",		&nap::gui::Style::mWindowPadding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WindowRounding",		&nap::gui::Style::mWindowRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FramePadding",		&nap::gui::Style::mFramePadding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrameRounding",		&nap::gui::Style::mFrameRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ItemSpacing",		&nap::gui::Style::mItemSpacing,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ItemInnerSpacing",	&nap::gui::Style::mItemInnerSpacing,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("IndentSpacing",		&nap::gui::Style::mIndentSpacing,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ScrollbarSize",		&nap::gui::Style::mScrollbarSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ScrollbarRounding",	&nap::gui::Style::mScrollbarRounding,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GrabMinSize",		&nap::gui::Style::mGrabMinSize,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GrabRounding",		&nap::gui::Style::mGrabRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WindowBorderSize",	&nap::gui::Style::mWindowBorderSize,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PopupRounding",		&nap::gui::Style::mPopupRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ChildRounding",		&nap::gui::Style::mChildRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WindowTitleAlign",	&nap::gui::Style::mWindowTitleAlign,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PopupBorderSize",	&nap::gui::Style::mPopupBorderSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TabRounding",		&nap::gui::Style::mTabRounding,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TouchExtraPadding",	&nap::gui::Style::mTouchExtraPadding,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("ColorScheme",		&nap::IMGuiServiceConfiguration::mColorScheme,		nap::rtti::EPropertyMetaData::Default,	"Global GUI color scheme to use")
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default,	"Global GUI font size")
@@ -129,52 +83,10 @@ namespace nap
 		}
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// GUI
-	//////////////////////////////////////////////////////////////////////////
-
-	namespace gui
-	{
-		static const ColorPalette& getColorPalette(EColorScheme colorScheme, const gui::ColorPalette& customPalette)
-		{
-			static std::unordered_map<EColorScheme, ColorPalette> scheme_map =
-			{
-				{EColorScheme::Light, {
-					{ 0xCD, 0xCD, 0xC3 }, { 0xF5, 0xF5, 0xF3 }, { 0xa4, 0xa3, 0x9b },
-					{ 0xEC, 0xFF, 0xD3 }, { 0x8D, 0x8B, 0x84 }, { 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
-					{ 0x29, 0x58, 0xff }, { 0x8D, 0x8B, 0x84 }, { 0xFF, 0xA8, 0x00 }, { 0xFF, 0x50, 0x50 }, true}
-				},
-				{EColorScheme::Dark, {
-					{ 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 }, { 0x4F, 0x4E, 0x4C },
-					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
-					{ 0x29, 0x58, 0xff }, { 0xD6, 0xFF, 0xA3 }, { 0xFF, 0xEA, 0x30 }, { 0xFF, 0x50, 0x50 }, false}
-				},
-				{EColorScheme::HyperDark, {
-					{ 0x00, 0x00, 0x00 }, { 0x2D, 0x2D, 0x2D }, { 0x8D, 0x8B, 0x84 },
-					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
-					{ 0x29, 0x58, 0xff }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }, { 0xFF, 0x34, 0x7D }, false}
-				},
-				{EColorScheme::Classic, {
-					{ 0x2D, 0x2E, 0x42 }, { 0x11, 0x14, 0x26 }, { 0x52, 0x54, 0x6A },
-					{ 0x52, 0x54, 0x6A }, { 0x5D, 0x5E, 0x73 }, { 0x8B, 0x8C, 0xA0 }, { 0xFF, 0xFF, 0xFF },
-					{ 0x8B, 0x8C, 0xA0 }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }, { 0xC8, 0x69, 0x69 }, false}
-				},
-			};
-
-			// Add custom scheme if not present
-			scheme_map.emplace(std::make_pair(EColorScheme::Custom, customPalette));
-
-			// Return color palette
-			assert(scheme_map.find(colorScheme) != scheme_map.end());
-			return scheme_map[colorScheme];
-		}
-	}
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// Static / Local methods
 	//////////////////////////////////////////////////////////////////////////
-
 
 	static void checkVKResult(VkResult err)
 	{
@@ -306,106 +218,6 @@ namespace nap
 	static void setClipboardText(void*, const char* text)
 	{
 		SDL_SetClipboardText(text);
-	}
-
-
-	static void applyPalette(const gui::ColorPalette& palette, ImGuiStyle& style)
-	{
-		// Get ImGUI colors
-		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
-		ImVec4 IMGUI_NAPDARK(palette.mDarkColor, 0.66f);
-		ImVec4 IMGUI_NAPMODA(palette.mDarkColor, 0.85f);
-		ImVec4 IMGUI_NAPMENU(palette.mMenuColor, 0.66f);
-		ImVec4 IMGUI_NAPFRO1(palette.mFront1Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO2(palette.mFront2Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO3(palette.mFront3Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO4(palette.mFront4Color, 1.0f);
-		ImVec4 IMGUI_NAPHIG1(palette.mHighlightColor1, 1.0f);
-		ImVec4 IMGUI_NAPHIG2(palette.mHighlightColor2, 1.0f);
-		ImVec4 IMGUI_NAPHIG3(palette.mHighlightColor3, 1.0f);
-
-		// Apply colors
-		style.Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
-		style.Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_TitleBg] = IMGUI_NAPMENU;
-		style.Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPMENU;
-		style.Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
-		style.Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPMENU;
-		style.Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
-		style.Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
-		style.Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
-		style.Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
-		style.Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
-		style.Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
-		style.Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
-		style.Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
-		style.Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPHIG1;
-		style.Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
-		style.Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
-		style.Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
-		style.Colors[ImGuiCol_Separator] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
-		style.Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
-		style.Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
-		style.Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
-		style.Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
-		style.Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
-	}
-
-
-	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette, const gui::Style& style)
-	{
-		// Create imgui style
-		std::unique_ptr<ImGuiStyle> gui_style = std::make_unique<ImGuiStyle>();
-
-		// Apply style settings
-		gui_style->AntiAliasedFill = style.mAntiAliasedFill;
-		gui_style->AntiAliasedLines = style.mAntiAliasedLines;
-		gui_style->WindowPadding = { style.mWindowPadding.x, style.mWindowPadding.y };
-		gui_style->WindowRounding = style.mWindowRounding;
-		gui_style->FramePadding = { style.mFramePadding.x, style.mFramePadding.y };
-		gui_style->FrameRounding = style.mFrameRounding;
-		gui_style->ItemSpacing = { style.mItemSpacing.x, style.mItemSpacing.y };
-		gui_style->ItemInnerSpacing = { style.mItemInnerSpacing.x, style.mItemInnerSpacing.y };
-		gui_style->IndentSpacing = style.mIndentSpacing;
-		gui_style->ScrollbarSize = style.mScrollbarSize;
-		gui_style->ScrollbarRounding = style.mScrollbarRounding;
-		gui_style->GrabMinSize = style.mGrabMinSize;
-		gui_style->GrabRounding = style.mGrabRounding;
-		gui_style->WindowBorderSize = style.mWindowBorderSize;
-		gui_style->PopupRounding = style.mPopupRounding;
-		gui_style->ChildRounding = style.mChildRounding;
-		gui_style->WindowTitleAlign = { style.mWindowTitleAlign.x, style.mWindowTitleAlign.y };
-		gui_style->PopupBorderSize = style.mPopupBorderSize;
-		gui_style->TabRounding = style.mTabRounding;
-		gui_style->TouchExtraPadding = { style.mTouchExtraPadding.x, style.mTouchExtraPadding.y };
-
-		// Apply color palette
-		applyPalette(palette, *gui_style);
-		return gui_style;
 	}
 
 
@@ -740,7 +552,6 @@ namespace nap
 		if (!new_icon->init(error))
 			return false;
 
-		// Add icon, issue warning if the icon is not unique
 		auto ret = mIcons.emplace(std::make_pair(name, std::move(new_icon)));
 		if (!error.check(ret.second, "Icon duplication, %s already found in: %s",
 			name.c_str(), utility::forceSeparator(ret.first->second->getPath()).c_str()))
@@ -774,10 +585,11 @@ namespace nap
 		mGuiScale = math::max<float>(mConfiguration->mScale, 0.05f);
 
 		// Get palette associated with scheme
-		mColorPalette = &getColorPalette(mConfiguration->mColorScheme, mConfiguration->mCustomColors);
+		nap::gui::registerCustomPalette(mConfiguration->mCustomColors);
+		mColorPalette = gui::getPalette(mConfiguration->mColorScheme);
+		assert(mColorPalette != nullptr);
 
 		// Load all the default icons, bail if any of them fails to load
-		bool icons_loaded = true;
 		const auto& default_icons = icon::getDefaults();
 		for (const auto& icon_name : default_icons)
 		{
@@ -889,7 +701,8 @@ namespace nap
 
 			// Create style
 			assert(mConfiguration != nullptr);
-			mStyle = createStyle(getPalette(), mConfiguration->mStyle);
+			assert(mColorPalette  != nullptr);
+			mStyle = gui::createStyle(*mColorPalette, mConfiguration->mStyle);
 
 			// Create context using font & style
 			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
@@ -1252,9 +1065,14 @@ namespace nap
 
 	void IMGuiService::setPalette(gui::EColorScheme palette)
 	{
-		// Get and apply palette
-		const auto& clr_palette = getColorPalette(palette, mConfiguration->mCustomColors);
-		applyPalette(clr_palette, *mStyle);
+		// Fetch palette and check if it's different
+		const auto* other_palette = gui::getPalette(palette);
+		assert(other_palette != nullptr);
+		if (other_palette == mColorPalette)
+			return;
+
+		// If so apply
+		gui::applyPalette(*other_palette, *mStyle);
 		auto* cur_ctx = ImGui::GetCurrentContext();
 		for (auto& iter : mContexts)
 		{
@@ -1264,6 +1082,27 @@ namespace nap
 			ImGui::GetStyle() = *ctx.mStyle;
 			ctx.deactivate();
 		}
+
+		// Update icons if palette requires it
+		utility::ErrorState error;
+		if (mColorPalette->mInvertIcon != other_palette->mInvertIcon)
+		{
+			for (auto& icon : mIcons)
+			{
+				// Create
+				auto new_icon = std::make_unique<Icon>(*this, icon.second->getPath());
+				new_icon->mInvert = other_palette->mInvertIcon;
+				if (!new_icon->init(error))
+				{
+					nap::Logger::error("Icon '%s' update failed", icon.first.c_str());
+					continue;
+				}
+
+				// Replace
+				icon.second = std::move(new_icon);
+			}
+		}
+		mColorPalette = other_palette;
 	}
 
 
