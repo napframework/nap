@@ -17,6 +17,7 @@ namespace nap
 
 	/**
 	 * Predefined 3D spherical mesh.
+	 * The mesh has position, color, uv and normal vertex attributes.
 	 */
 	class NAPAPI SphereMesh : public IMesh
 	{

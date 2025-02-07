@@ -938,23 +938,15 @@
                             "FlipNormals": false
                         },
                         {
-                            "Type": "nap::GeometryFromFile",
-                            "mID": "Lucy",
-                            "Path": "lucy.fbx",
-                            "GenerateNormals": false,
-                            "CalculateTangents": false,
-                            "NormalSmoothingAngle": 60.0,
+                            "Type": "nap::ToyMesh",
+                            "mID": "Toy",
                             "Usage": "Static",
                             "CullMode": "Back",
                             "PolygonMode": "Fill"
                         },
                         {
-                            "Type": "nap::GeometryFromFile",
-                            "mID": "Toy",
-                            "Path": "toy.fbx",
-                            "GenerateNormals": false,
-                            "CalculateTangents": false,
-                            "NormalSmoothingAngle": 60.0,
+                            "Type": "nap::LucyMesh",
+                            "mID": "Lucy",
                             "Usage": "Static",
                             "CullMode": "Back",
                             "PolygonMode": "Fill"

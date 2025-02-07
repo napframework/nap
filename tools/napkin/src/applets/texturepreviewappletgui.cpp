@@ -247,4 +247,3 @@ namespace napkin
 			controller.setRotate(rotate_speed);
 	}
 }
-

@@ -118,6 +118,12 @@ namespace nap
 		void addData(const ELEMENTTYPE& element)						{ mData.emplace_back(element); }
 
 		/**
+		 * Adds a single element to the end of the buffer. Data is moved.
+		 * @param element to add.
+		 */
+		void addData(const ELEMENTTYPE&& element) noexcept				{ mData.emplace_back(std::move(element)); }
+
+		/**
 		 * Adds data to the existing data in the buffer. Data is copied.
 		 * @param elements pointer to the elements to add.
 		 * @param numElements number of elements in buffer to add.
