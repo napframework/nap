@@ -51,6 +51,7 @@ namespace nap
 			R32				///< 32 bit float, 1 component
 		};
 
+		// Constructor
 		RenderTextureCube(Core& core);
 
 		/**
@@ -67,7 +68,7 @@ namespace nap
 		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
 
 	protected:
-		bool				mGenerateLODs = false;
+		bool				mGenerateLods = false;							///< If mip-maps should be generated when cubemap is rendered
 	};
 
 
