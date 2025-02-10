@@ -9,11 +9,11 @@
 #include <nap/core.h>
 #include <bitmap.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TestCubeMap)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TestCubeMap, "A basic face labeled cubemap for testing purposes")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SunsetCubeMap)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SunsetCubeMap, "A basic sunset cubemap for testing purposes")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
