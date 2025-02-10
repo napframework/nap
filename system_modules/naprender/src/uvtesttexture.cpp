@@ -19,6 +19,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	/**
+	 * Attempts to load and return the uv test bitmap.
+	 * @param module the module to load the asset from
+	 * @param error contains the error if loading fails
+	 * @return uv test bitmap
+	 */
 	static nap::Bitmap* getBitmap(const nap::Module& module, nap::utility::ErrorState& error)
 	{
 		static constexpr const char* uvGrid = "textures/uv_grid_texture.jpg";

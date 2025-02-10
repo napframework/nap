@@ -19,7 +19,6 @@
 #include "lightflags.h"
 #include "rendertag.h"
 #include "emptymesh.h"
-#include "equirectangularcubemap.h"
 
 namespace nap
 {
@@ -27,6 +26,7 @@ namespace nap
 	class RenderService;
 	class RenderableComponentInstance;
 	class Material;
+	class EquiRectangularCubeMap;
 
 	// Light scene identifier
 	namespace scene

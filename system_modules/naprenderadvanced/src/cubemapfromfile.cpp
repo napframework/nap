@@ -14,9 +14,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeMapFromFile, "Creates a cube ma
 	RTTI_PROPERTY_FILELINK("ImagePath", &nap::CubeMapFromFile::mImagePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image, "Path to the equirectangular image on disk")
 RTTI_END_CLASS
 
-//////////////////////////////////////////////////////////////////////////
-
-
 namespace nap
 {
 	CubeMapFromFile::CubeMapFromFile(Core& core) :
@@ -35,10 +32,6 @@ namespace nap
 			return false;
 
 		// Schedule conversion
-		if (!EquiRectangularCubeMap::init(mEquiRectangularImage, errorState))
-			return false;
-
-		// Done
-		return true;
+		return EquiRectangularCubeMap::init(mEquiRectangularImage, errorState);
 	}
 }

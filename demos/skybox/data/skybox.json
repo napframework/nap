@@ -5,8 +5,8 @@
             "mID": "CubeMaps",
             "Members": [
                 {
-                    "Type": "nap::CubeMapFromFile",
-                    "mID": "UffiziCubeMap",
+                    "Type": "nap::SunsetCubeMap",
+                    "mID": "Sunset Cubemap",
                     "Width": 1024,
                     "Height": 1024,
                     "Format": "RGBA8",
@@ -19,15 +19,14 @@
                             0.0
                         ]
                     },
-                    "ImagePath": "equi_uffizi.png",
                     "SampleShading": false,
                     "GenerateLODs": true
                 },
                 {
                     "Type": "nap::CubeMapFromFile",
-                    "mID": "TestCubeMap",
-                    "Width": 256,
-                    "Height": 256,
+                    "mID": "Outdoor Cubemap",
+                    "Width": 1024,
+                    "Height": 1024,
                     "Format": "RGBA8",
                     "ColorSpace": "Linear",
                     "ClearColor": {
@@ -38,7 +37,63 @@
                             0.0
                         ]
                     },
-                    "ImagePath": "equi_test.jpg",
+                    "SampleShading": false,
+                    "GenerateLODs": true,
+                    "ImagePath": "cube_equirectangular_outdoor.jpg"
+                },
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "Indoor Cubemap",
+                    "Width": 1024,
+                    "Height": 1024,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "SampleShading": false,
+                    "GenerateLODs": true,
+                    "ImagePath": "cube_equirectangular_indoor.jpg"
+                },
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "Uffizi Cubemap",
+                    "Width": 1024,
+                    "Height": 1024,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "SampleShading": false,
+                    "GenerateLODs": true,
+                    "ImagePath": "cube_equirectangular_uffizi.jpg"
+                },
+                {
+                    "Type": "nap::TestCubeMap",
+                    "mID": "Test Cubemap",
+                    "Width": 512,
+                    "Height": 512,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
                     "SampleShading": false,
                     "GenerateLODs": true
                 }
@@ -153,7 +208,7 @@
                     "Tags": [],
                     "Layer": "RenderLayer_SkyBox",
                     "BlendMode": "AlphaBlend",
-                    "CubeTexture": "UffiziCubeMap",
+                    "CubeTexture": "Sunset Cubemap",
                     "Color": {
                         "Values": [
                             1.0,
@@ -402,7 +457,7 @@
                             "BorderColor": "IntOpaqueBlack",
                             "CompareMode": "LessOrEqual",
                             "EnableCompare": false,
-                            "Texture": "UffiziCubeMap"
+                            "Texture": "Sunset Cubemap"
                         }
                     ],
                     "Buffers": [],

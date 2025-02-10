@@ -1,6 +1,9 @@
 #pragma once
 
-// External Includes
+// Local includes
+#include "renderadvancedservice.h"
+
+// External includes
 #include <nap/resource.h>
 #include <rendertexturecube.h>
 #include <texture.h>
@@ -9,7 +12,7 @@ namespace nap
 {
 	/**
 	 * Base class for all cube maps generated from equirectangular images.
-	 * Creeates a 6 face cube map from an equirectangular 2D texture
+	 * Creates a 6 face cube map from an equirectangular 2D texture
 	 * 
 	 * If `GenerateLODs` is enabled, GPU memory for mip-maps (LODs) are
 	 * allocated and will be updated using blit operations after the cube face render passes.
@@ -63,11 +66,14 @@ namespace nap
 		 */
 		virtual void onDestroy();
 
-		bool mSampleShading = true;							///< Property: 'SampleShading' Reduces texture aliasing when cubemap is generated, at higher computational cost
+		bool mSampleShading = false;						///< Property: 'SampleShading' Reduces texture aliasing when cubemap is generated, at higher computational cost
 		using RenderTextureCube::mGenerateLods;				///< Property: 'GenerateLODs' whether to create mip-maps when the cubemap is generated
 
-	private:
+	protected:
 		RenderAdvancedService* mRenderAdvancedService = nullptr;
+
+	private:
 		Texture2D* mEquiRectangularTexture = nullptr;
 	};
 }
+

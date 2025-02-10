@@ -5,6 +5,7 @@
 // Local Includes
 #include "renderadvancedservice.h"
 #include "cubemapshader.h"
+#include "equirectangularcubemap.h"
 
 // External Includes
 #include <renderservice.h>
@@ -18,7 +19,6 @@
 #include <material.h>
 #include <renderglobals.h>
 #include <sceneservice.h>
-#include <cubemapfromfile.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
 	RTTI_PROPERTY("ShadowDepthFormat",		&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default, "Shadow texture depth format")
