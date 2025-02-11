@@ -214,6 +214,12 @@ namespace nap
 		bool NAPAPI initVideo(utility::ErrorState& error);
 
 		/**
+		 * Returns if the video subsystem has been initialized 
+		 * @return if the SDL video subsystem has been initialized
+		 */
+		bool NAPAPI videoInitialized();
+
+		/**
 	 	 * Controls if the window has any borders.
 		 * @param window the window to set
 		 * @param hasBorders if the window should have borders

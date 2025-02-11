@@ -4,23 +4,17 @@
 
 #pragma once
 
+// Local Includes
+#include "equirectangularcubemap.h"
+
 // External Includes
-#include <nap/resource.h>
-#include <nap/resourceptr.h>
-#include <rendertexturecube.h>
-#include <image.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
-	// Forward Declares
-	class Core;
-	class RenderAdvancedService;
-
 	/**
-	 * Loads equirectangular image from disk, uploads it to the GPU, and schedules a rendering operation to generate a cube
-	 * map from it in the `nap::RenderAdvancedService`. If `GenerateLODs` is enabled, GPU memory for mip-maps (LODs) are
-	 * allocated and will be updated using blit operations after the cube face render passes.
-	 *
+	 * Creates a 6 face cubemap from an equirectangular image loaded from disk.
+	 * 
 	 * This object must be pre-rendered at least once in a headless render pass in the first frame. The RenderAdvanced
 	 * service queues a headless `RenderService::RenderCommand` for each `nap::CubeMapFromFile` in the scene after resource
 	 * initialization, and will be handled when headless render commands are recorded. The code below only begins a
@@ -35,45 +29,23 @@ namespace nap
 	 *	}
 	 * ~~~~~
 	 */
-	class NAPAPI CubeMapFromFile : public RenderTextureCube
+	class NAPAPI CubeMapFromFile : public EquiRectangularCubeMap
 	{
-		RTTI_ENABLE(RenderTextureCube)
+		RTTI_ENABLE(EquiRectangularCubeMap)
 	public:
-		friend class RenderAdvancedService;
-
-		// Destructor
-		virtual ~CubeMapFromFile() {}
-
-		/**
-		 * @param core the core instance
-		 */
+		// Constructor
 		CubeMapFromFile(Core& core);
 
 		/**
-		 * Loads the image from disk and schedules the upload to the GPU on success.
+		 * Loads the equirectangular image from disk and schedules the conversion to a 6 face cubemap on the GPU.
 		 * @param errorState contains the error when initialization fails
 		 * @return true when successful, otherwise false.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * Deregisters this CubeMapFromFile
-		 */
-		virtual void onDestroy() override;
-
-		/**
-		 * @return the source texture
-		 */
-		Texture2D& getSourceTexture() const				{ return *mSourceImage; }
-
-	public:
-		std::string					mImagePath;								///< Property: 'ImagePath' Path to the image on disk to load
-		bool						mSampleShading = false;					///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
-
-		using RenderTextureCube::mGenerateLODs;								///< Property: 'GenerateLODs' whether to use and update mip-maps each time the cube texture is updated
+		std::string mImagePath;				///< Property: 'ImagePath' Path to the image on disk to load
 
 	private:
-		RenderAdvancedService*				mRenderAdvancedService = nullptr;
-		std::unique_ptr<Image>				mSourceImage;
+		ImageFromFile mEquiRectangularImage;
 	};
 }

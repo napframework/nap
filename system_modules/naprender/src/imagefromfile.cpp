@@ -36,6 +36,7 @@ namespace nap
 			return false;
 
 		// Create 2D texture
-		return Texture2D::init(getBitmap().mSurfaceDescriptor, mGenerateLods, getBitmap().getData(), 0, errorState);
+		return Texture2D::init(getBitmap().mSurfaceDescriptor,
+			mGenerateLods, getBitmap().getData(), 0, errorState);
 	}
 }

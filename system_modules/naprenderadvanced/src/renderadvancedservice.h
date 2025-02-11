@@ -19,7 +19,6 @@
 #include "lightflags.h"
 #include "rendertag.h"
 #include "emptymesh.h"
-#include "cubemapfromfile.h"
 
 namespace nap
 {
@@ -27,6 +26,7 @@ namespace nap
 	class RenderService;
 	class RenderableComponentInstance;
 	class Material;
+	class EquiRectangularCubeMap;
 
 	// Light scene identifier
 	namespace scene
@@ -99,7 +99,7 @@ namespace nap
 	class NAPAPI RenderAdvancedService : public Service
 	{
 		friend class LightComponentInstance;
-		friend class CubeMapFromFile;
+		friend class EquiRectangularCubeMap;
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
@@ -240,8 +240,8 @@ namespace nap
 		void pushLightsInternal(const std::vector<MaterialInstance*>& materials);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
-		void registerCubeMap(CubeMapFromFile& cubemap);
-		void removeCubeMap(CubeMapFromFile& cubemap);
+		void registerEquiRectangularCubeMap(EquiRectangularCubeMap& cubemap);
+		void removeEquiRectangularCubeMap(EquiRectangularCubeMap& cubemap);
 		bool initServiceResources(utility::ErrorState& errorState);
 
 		/**
@@ -294,7 +294,7 @@ namespace nap
 		bool mShadowResourcesCreated = false;											///< Whether shadow resources are created, enabled after `initServiceResources` completed successfully
 
 		// Cube maps from file
-		std::unordered_map<CubeMapFromFile*, std::unique_ptr<CubeRenderTarget>> mCubeMapTargets;		///< List of all registered cube map from file resources
+		std::unordered_map<EquiRectangularCubeMap*, std::unique_ptr<CubeRenderTarget>> mCubeMapTargets;		///< List of all registered cube map from file resources
 
 		std::unique_ptr<EmptyMesh>					mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;		///< Run-time cube map material instance resource

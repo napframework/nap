@@ -14,11 +14,11 @@ RTTI_DEFINE_BASE(nap::PointerClickEvent)
 RTTI_DEFINE_BASE(nap::TouchEvent)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyPressEvent)
-	RTTI_CONSTRUCTOR(nap::EKeyCode, int)
+	RTTI_CONSTRUCTOR(nap::EKeyCode, nap::uint8, int)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyReleaseEvent)
-	RTTI_CONSTRUCTOR(nap::EKeyCode, int)
+	RTTI_CONSTRUCTOR(nap::EKeyCode, nap::uint8, int)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerPressEvent)

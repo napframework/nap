@@ -87,7 +87,7 @@ namespace nap
 		/**
 		 * Resets rotation to be 0
 		 */
-		void reset();
+		void reset()												{ mElapsedTime = 0.0; rotate(); }
 
 		/**
 		 * Enable or disable the rotation
@@ -125,6 +125,9 @@ namespace nap
 		RotateProperties mProperties;
 
 	private:
+		// Computes and sets the rotation based on elapsed time
+		void rotate();
+
 		// Store pointer to transform, set during init
 		nap::TransformComponentInstance* mTransform = nullptr;
 

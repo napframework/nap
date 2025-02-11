@@ -21,6 +21,7 @@
 #include <mathutils.h>
 #include <renderservice.h>
 #include <constantshader.h>
+#include <sdlhelpers.h>
 
 // local
 #include <naputils.h>
@@ -46,6 +47,9 @@ AppContext::~AppContext()
 
 	// Close service configuration
 	closeServiceConfiguration();
+
+	// Stop applet event loop
+	mAppletEventLoop.reset(nullptr);
 
 	// Clear project info
 	mProjectInfo.reset(nullptr);
@@ -145,6 +149,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	mRenderService = mCore.getService<nap::RenderService>();
 	if (mRenderService != nullptr)
 	{
+		// Init GLSL shader compilation
 		nap::Logger::info("Initializing %s", mRenderService->getTypeName().data());
 		if (!mRenderService->initShaderCompilation(err))
 		{
@@ -153,6 +158,10 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 			return nullptr;
 		}
 	}
+
+	// Create and start SDL app event handler for NAP applets
+	// Also initializes the video subsystem
+	mAppletEventLoop = std::make_unique<AppletSDLEventSink>(1);
 
 	// Load document (data file)
 	addRecentlyOpenedProject(project_file_name);
@@ -348,9 +357,7 @@ void AppContext::restoreUI()
 
 	// Let the ui come up before loading all the recent file and initializing core
 	if (getProjectInfo() == nullptr && mOpenRecentProjectAtStartup)
-	{
 		openRecentProject();
-	}
 }
 
 
@@ -512,6 +519,12 @@ napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
 nap::RenderService* napkin::AppContext::getRenderService() const
 {
 	return mRenderService;
+}
+
+
+napkin::AppletSDLEventSink* napkin::AppContext::getEventLoop() const
+{
+	return mAppletEventLoop.get();
 }
 
 

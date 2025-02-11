@@ -4,12 +4,14 @@
 
 #pragma once
 
+// Local includes
+#include "renderfrustumcomponent.h"
+
 // External includes
 #include <component.h>
 #include <componentptr.h>
 #include <cameracomponent.h>
 #include <transformcomponent.h>
-#include <renderfrustumcomponent.h>
 #include <rendergnomoncomponent.h>
 #include <entity.h>
 

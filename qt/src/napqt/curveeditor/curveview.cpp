@@ -1656,10 +1656,9 @@ void CurveEditor::setModel(AbstractCurveModel* model)
 }
 
 
-void CurveEditor::onSelectionChanged(QMap<AbstractCurve*, QList<int>> points)
+void CurveEditor::onSelectionChanged(const QMap<AbstractCurve*, QList<int>>& points)
 {
 	bool hasPointSelection = !points.isEmpty();
-
 	mTimeSpinbox.setEnabled(hasPointSelection);
 	mValueSpinbox.setEnabled(hasPointSelection);
 	for (const auto action : mCurveView.interpActions())
