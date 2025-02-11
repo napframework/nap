@@ -386,8 +386,8 @@
                     ]
                 },
                 {
-                    "Type": "napkin::LoadTextureComponent",
-                    "mID": "LoadTextureComponent",
+                    "Type": "napkin::TexturePreviewAPIComponent",
+                    "mID": "TexturePreviewAPIComponent",
                     "Frame2DTextureComponent": "../2DEntity/Frame2DTextureComponent",
                     "FrameCubemapComponent": "../CubeEntity/CubeFrameComponent"
                 }

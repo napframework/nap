@@ -4,7 +4,7 @@
 
 // Local includes
 #include "texturepreviewappletgui.h"
-#include "loadtexturecomponent.h"
+#include "texturepreviewapicomponent.h"
 
 // External includes
 #include <vulkan/vk_enum_string_helper.h>
@@ -19,7 +19,7 @@ namespace napkin
 		mApplet.mGuiService->selectWindow(mApplet.mRenderWindow);
 
 		// Fetch loaded texture
-		auto& tex_controller = mApplet.mAPIEntity->getComponent<LoadTextureComponentInstance>();
+		auto& tex_controller = mApplet.mAPIEntity->getComponent<TexturePreviewAPIComponentInstance>();
 		auto* loaded_tex = tex_controller.getTexture();
 
 		// Setup GUI for window
@@ -103,12 +103,12 @@ namespace napkin
 		{
 			switch (tex_controller.getType())
 			{
-				case LoadTextureComponentInstance::EType::Cubemap:
+				case TexturePreviewAPIComponentInstance::EType::Cubemap:
 				{
 					updateTextureCube(tex_controller);
 					break;
 				}
-				case LoadTextureComponentInstance::EType::Texture2D:
+				case TexturePreviewAPIComponentInstance::EType::Texture2D:
 				{
 					updateTexture2D(tex_controller);
 					break;
@@ -164,7 +164,7 @@ namespace napkin
 	}
 
 
-	void TexturePreviewAppletGUI::updateTexture2D(LoadTextureComponentInstance& controller)
+	void TexturePreviewAppletGUI::updateTexture2D(TexturePreviewAPIComponentInstance& controller)
 	{
 		// Show and set display mode
 		static const std::array<const char*, 2> mode_labels = { "Zoom & Pan", "3D Mesh" };
@@ -215,7 +215,7 @@ namespace napkin
 	}
 
 
-	void TexturePreviewAppletGUI::updateTextureCube(LoadTextureComponentInstance& controller)
+	void TexturePreviewAppletGUI::updateTextureCube(TexturePreviewAPIComponentInstance& controller)
 	{
 		// Mesh visibility
 		auto& render_mesh_comp = *controller.mFrameCubeComponent->mMeshRenderer;

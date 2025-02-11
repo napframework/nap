@@ -4,7 +4,7 @@
 
 // Local Includes
 #include "texturepreviewapplet.h"
-#include "loadtexturecomponent.h"
+#include "texturepreviewapicomponent.h"
 #include "texturepreviewappletgui.h"
 
 // External Includes
@@ -67,7 +67,7 @@ namespace napkin
 	void TexturePreviewApplet::update(double deltaTime)
 	{
 		// Forward all input events to the current controlling texture component
-		auto& tex_controller = mAPIEntity->getComponent<LoadTextureComponentInstance>();
+		auto& tex_controller = mAPIEntity->getComponent<TexturePreviewAPIComponentInstance>();
 		tex_controller.processWindowEvents(*mInputService, *mRenderWindow);
 
 		// update (create) gui
@@ -101,8 +101,8 @@ namespace napkin
 			render_window.beginRendering();
 
 			// Draw 2D texture or cubemap based on loaded type
-			auto& tex_controller = mAPIEntity->getComponent<LoadTextureComponentInstance>();
-			if (tex_controller.getType() != LoadTextureComponentInstance::EType::None)
+			auto& tex_controller = mAPIEntity->getComponent<TexturePreviewAPIComponentInstance>();
+			if (tex_controller.getType() != TexturePreviewAPIComponentInstance::EType::None)
 				tex_controller.draw(*mRenderService, *mRenderWindow);
 			else
 			{

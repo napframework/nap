@@ -6,7 +6,7 @@
 
 // Local includes
 #include "texturepreviewapplet.h"
-#include "loadtexturecomponent.h"
+#include "texturepreviewapicomponent.h"
 
 // External includes
 #include <utility/errorstate.h>
@@ -42,8 +42,8 @@ namespace napkin
 	private:
 		void texDetail(std::string&& label, const std::string& value, std::string&& appendix = "");
 		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
-		void updateTexture2D(LoadTextureComponentInstance& controller);
-		void updateTextureCube(LoadTextureComponentInstance& controller);
+		void updateTexture2D(TexturePreviewAPIComponentInstance& controller);
+		void updateTextureCube(TexturePreviewAPIComponentInstance& controller);
 
 		TexturePreviewApplet& mApplet;
 	};

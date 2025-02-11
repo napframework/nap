@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "loadtexturecomponent.h"
+#include "texturepreviewapicomponent.h"
 #include "../appletextension.h"
 #include "../naputils.h"
 
@@ -16,13 +16,13 @@
 #include <imguiservice.h>
 
 // nap::loadtexturecomponent run time class definition 
-RTTI_BEGIN_CLASS(napkin::LoadTextureComponent)
-	RTTI_PROPERTY("Frame2DTextureComponent",	&napkin::LoadTextureComponent::mFrame2DTextureComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FrameCubemapComponent",		&napkin::LoadTextureComponent::mFrameCubemapComponent,		nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(napkin::TexturePreviewAPIComponent)
+	RTTI_PROPERTY("Frame2DTextureComponent",	&napkin::TexturePreviewAPIComponent::mFrame2DTextureComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FrameCubemapComponent",		&napkin::TexturePreviewAPIComponent::mFrameCubemapComponent,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::loadtexturecomponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::LoadTextureComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::TexturePreviewAPIComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -31,13 +31,13 @@ RTTI_END_CLASS
 
 namespace napkin
 {
-	void LoadTextureComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	void TexturePreviewAPIComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(APIComponent));
 	}
 
 
-	bool LoadTextureComponentInstance::init(utility::ErrorState& errorState)
+	bool TexturePreviewAPIComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Gui service
 		mGUIService = getEntityInstance()->getCore()->getService<nap::IMGuiService>();
@@ -47,20 +47,20 @@ namespace napkin
 		if (!errorState.check(mAPIComponent != nullptr, "Missing API component"))
 			return false;
 
-		const auto* load_texture_sig = mAPIComponent->findSignature(LoadTextureComponent::loadTextureCmd);
-		if (!errorState.check(load_texture_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::loadTextureCmd))
+		const auto* load_texture_sig = mAPIComponent->findSignature(TexturePreviewAPIComponent::loadTextureCmd);
+		if (!errorState.check(load_texture_sig != nullptr, "Missing '%s' cmd signature", TexturePreviewAPIComponent::loadTextureCmd))
 			return false;
 
-		const auto* clear_sig = mAPIComponent->findSignature(LoadTextureComponent::clearCmd);
-		if (!errorState.check(clear_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::clearCmd))
+		const auto* clear_sig = mAPIComponent->findSignature(TexturePreviewAPIComponent::clearCmd);
+		if (!errorState.check(clear_sig != nullptr, "Missing '%s' cmd signature", TexturePreviewAPIComponent::clearCmd))
 			return false;
 
-		const auto* load_mesh_sig = mAPIComponent->findSignature(LoadTextureComponent::loadMeshCmd);
-		if (!errorState.check(load_mesh_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::loadMeshCmd))
+		const auto* load_mesh_sig = mAPIComponent->findSignature(TexturePreviewAPIComponent::loadMeshCmd);
+		if (!errorState.check(load_mesh_sig != nullptr, "Missing '%s' cmd signature", TexturePreviewAPIComponent::loadMeshCmd))
 			return false;
 
-		const auto* change_theme_sig = mAPIComponent->findSignature(LoadTextureComponent::changeThemeCmd);
-		if (!errorState.check(change_theme_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::changeThemeCmd))
+		const auto* change_theme_sig = mAPIComponent->findSignature(TexturePreviewAPIComponent::changeThemeCmd);
+		if (!errorState.check(change_theme_sig != nullptr, "Missing '%s' cmd signature", TexturePreviewAPIComponent::changeThemeCmd))
 			return false;
 
 		mExtension = &getEntityInstance()->getCore()->getExtension<napkin::AppletExtension>();
@@ -78,9 +78,9 @@ namespace napkin
 	}
 
 
-	void LoadTextureComponentInstance::loadTexture(const nap::APIEvent& apiEvent)
+	void TexturePreviewAPIComponentInstance::loadTexture(const nap::APIEvent& apiEvent)
 	{
-		auto* data_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadTextureArg1);
+		auto* data_arg = apiEvent.getArgumentByName(TexturePreviewAPIComponent::loadTextureArg1);
 		assert(data_arg != nullptr);
 
 		// De-serialize JSON
@@ -89,7 +89,7 @@ namespace napkin
 		if (!rtti::deserializeJSON(data_arg->asString(), rtti::EPropertyValidationMode::DisallowMissingProperties,
 			rtti::EPointerPropertyMode::OnlyRawPointers, core.getResourceManager()->getFactory(), result, error))
 		{
-			error.fail("%s cmd failed", LoadTextureComponent::loadTextureCmd);
+			error.fail("%s cmd failed", TexturePreviewAPIComponent::loadTextureCmd);
 			nap::Logger::error(error.toString());
 			return;
 		}
@@ -97,7 +97,7 @@ namespace napkin
 		// Ensure there's at least 1 object and it's of type texture
 		if (result.mReadObjects.size() == 0)
 		{
-			nap::Logger::error("%s cmd failed: invalid payload", LoadTextureComponent::loadTextureCmd);
+			nap::Logger::error("%s cmd failed: invalid payload", TexturePreviewAPIComponent::loadTextureCmd);
 			return;
 		}
 
@@ -105,13 +105,13 @@ namespace napkin
 		if (!result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture2D)) &&
 			!result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::TextureCube)))
 		{
-			nap::Logger::error("%s cmd failed: unsupported texture type", LoadTextureComponent::loadTextureCmd);
+			nap::Logger::error("%s cmd failed: unsupported texture type", TexturePreviewAPIComponent::loadTextureCmd);
 			return;
 		}
 
 		// Warn if there's more than 1 object and store
 		if (result.mReadObjects.size() > 1)
-			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", LoadTextureComponent::loadTextureCmd);
+			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", TexturePreviewAPIComponent::loadTextureCmd);
 
 		// Init texture relative to project data directory (thread-safe)
 		{
@@ -124,7 +124,7 @@ namespace napkin
 		}
 
 		// Check if we need to re-frame camera if requested
-		auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadTextureArg2);
+		auto* frame_arg = apiEvent.getArgumentByName(TexturePreviewAPIComponent::loadTextureArg2);
 		assert(frame_arg != nullptr);
 
 		// Select and bind as active texture
@@ -151,17 +151,17 @@ namespace napkin
 	}
 
 
-	void LoadTextureComponentInstance::loadMesh(const nap::APIEvent& apiEvent)
+	void TexturePreviewAPIComponentInstance::loadMesh(const nap::APIEvent& apiEvent)
 	{
 		// Bail if no texture is loaded
 		if (getType() == EType::None)
 		{
-			nap::Logger::warn("%s cmd failed: can't assign mesh, no texture loaded", LoadTextureComponent::loadMeshCmd);
+			nap::Logger::warn("%s cmd failed: can't assign mesh, no texture loaded", TexturePreviewAPIComponent::loadMeshCmd);
 			return;
 		}
 
 		// Get mesh data
-		auto* data_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadMeshArg1);
+		auto* data_arg = apiEvent.getArgumentByName(TexturePreviewAPIComponent::loadMeshArg1);
 		assert(data_arg != nullptr);
 
 		// De-serialize mesh
@@ -170,7 +170,7 @@ namespace napkin
 		if (!rtti::deserializeJSON(data_arg->asString(), rtti::EPropertyValidationMode::DisallowMissingProperties,
 			rtti::EPointerPropertyMode::OnlyRawPointers, core.getResourceManager()->getFactory(), result, error))
 		{
-			error.fail("%s cmd failed", LoadTextureComponent::loadMeshCmd);
+			error.fail("%s cmd failed", TexturePreviewAPIComponent::loadMeshCmd);
 			nap::Logger::error(error.toString());
 			return;
 		}
@@ -178,13 +178,13 @@ namespace napkin
 		// Ensure type is a mesh
 		if (!result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::IMesh)))
 		{
-			nap::Logger::error("%s cmd failed: unsupported type", LoadTextureComponent::loadMeshCmd);
+			nap::Logger::error("%s cmd failed: unsupported type", TexturePreviewAPIComponent::loadMeshCmd);
 			return;
 		}
 
 		// Warn if there's more than 1 object and store
 		if (result.mReadObjects.size() > 1)
-			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", LoadTextureComponent::loadMeshCmd);
+			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", TexturePreviewAPIComponent::loadMeshCmd);
 
 		// Init mesh relative to project data directory (thread-safe)
 		{
@@ -206,12 +206,12 @@ namespace napkin
 				int idx = mFrame2DTextureComponent->load(std::move(new_mesh), error);
 				if (idx < 0)
 				{
-					nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
+					nap::Logger::error("%s cmd failed: %s", TexturePreviewAPIComponent::loadMeshCmd, error.toString().c_str());
 					break;
 				}
 
 				// Select and frame when requested
-				auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadMeshArg2);
+				auto* frame_arg = apiEvent.getArgumentByName(TexturePreviewAPIComponent::loadMeshArg2);
 				if (frame_arg->asBool())
 				{
 					mFrame2DTextureComponent->setMode(Frame2DTextureComponentInstance::EMode::Mesh);
@@ -226,12 +226,12 @@ namespace napkin
 				int idx = mFrameCubeComponent->load(std::move(new_mesh), error);
 				if (idx < 0)
 				{
-					nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
+					nap::Logger::error("%s cmd failed: %s", TexturePreviewAPIComponent::loadMeshCmd, error.toString().c_str());
 					break;
 				}
 
 				// Select and frame when requested
-				auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadMeshArg2);
+				auto* frame_arg = apiEvent.getArgumentByName(TexturePreviewAPIComponent::loadMeshArg2);
 				if (frame_arg->asBool())
 				{
 					mFrameCubeComponent->setMeshIndex(idx);
@@ -248,7 +248,7 @@ namespace napkin
 	}
 
 
-	const nap::Texture* LoadTextureComponentInstance::getTexture() const
+	const nap::Texture* TexturePreviewAPIComponentInstance::getTexture() const
 	{
 		switch (getType())
 		{
@@ -269,7 +269,7 @@ namespace napkin
 	}
 
 
-	const IMesh* LoadTextureComponentInstance::getMesh() const
+	const IMesh* TexturePreviewAPIComponentInstance::getMesh() const
 	{
 		switch (getType())
 		{
@@ -290,7 +290,7 @@ namespace napkin
 	}
 
 
-	const math::Box& LoadTextureComponentInstance::getMeshBounds() const
+	const math::Box& TexturePreviewAPIComponentInstance::getMeshBounds() const
 	{	
 		switch (getType())
 		{
@@ -307,7 +307,7 @@ namespace napkin
 	}
 
 
-	void LoadTextureComponentInstance::frame()
+	void TexturePreviewAPIComponentInstance::frame()
 	{
 		switch (getType())
 		{
@@ -324,7 +324,7 @@ namespace napkin
 	}
 
 
-	float LoadTextureComponentInstance::getOpacity() const
+	float TexturePreviewAPIComponentInstance::getOpacity() const
 	{
 		switch (getType())
 		{
@@ -339,7 +339,7 @@ namespace napkin
 	}
 
 
-	float LoadTextureComponentInstance::getRotate() const
+	float TexturePreviewAPIComponentInstance::getRotate() const
 	{
 		switch (getType())
 		{
@@ -354,7 +354,7 @@ namespace napkin
 	}
 
 
-	void LoadTextureComponentInstance::processWindowEvents(nap::InputService& inputService, nap::RenderWindow& window)
+	void TexturePreviewAPIComponentInstance::processWindowEvents(nap::InputService& inputService, nap::RenderWindow& window)
 	{
 		switch (getType())
 		{
@@ -373,7 +373,7 @@ namespace napkin
 	}
 
 
-	void LoadTextureComponentInstance::draw(RenderService& renderService, RenderWindow& window)
+	void TexturePreviewAPIComponentInstance::draw(RenderService& renderService, RenderWindow& window)
 	{
 		switch (getType())
 		{
@@ -392,7 +392,7 @@ namespace napkin
 	}
 
 
-	void LoadTextureComponentInstance::setOpacity(float alpha)
+	void TexturePreviewAPIComponentInstance::setOpacity(float alpha)
 	{
 		switch (getType())
 		{
@@ -409,7 +409,7 @@ namespace napkin
 	}
 
 
-	void LoadTextureComponentInstance::setRotate(float speed)
+	void TexturePreviewAPIComponentInstance::setRotate(float speed)
 	{
 		switch (getType())
 		{
@@ -426,15 +426,15 @@ namespace napkin
 	}
 
 
-	void LoadTextureComponentInstance::clear(const nap::APIEvent& apiEvent)
+	void TexturePreviewAPIComponentInstance::clear(const nap::APIEvent& apiEvent)
 	{
 		mSelectedType = EType::None;
 	}
 
 
-	void LoadTextureComponentInstance::changeTheme(const nap::APIEvent& apiEvent)
+	void TexturePreviewAPIComponentInstance::changeTheme(const nap::APIEvent& apiEvent)
 	{
-		auto theme_arg = apiEvent.getArgumentByName(LoadTextureComponent::changeThemeArg1);
+		auto theme_arg = apiEvent.getArgumentByName(TexturePreviewAPIComponent::changeThemeArg1);
 		assert(theme_arg != nullptr);
 		auto theme_name = theme_arg->asString();
 		utility::removeChars(" ", theme_name);

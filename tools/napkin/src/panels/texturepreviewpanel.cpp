@@ -107,9 +107,9 @@ namespace napkin
 			return false;
 
 		// Create load event
-		APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadTextureCmd);
-		load_tex_event->addArgument<nap::APIString>(LoadTextureComponent::loadTextureArg1, writer.GetJSON());
-		load_tex_event->addArgument<nap::APIBool>(LoadTextureComponent::loadTextureArg2, frame);
+		APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(TexturePreviewAPIComponent::loadTextureCmd);
+		load_tex_event->addArgument<nap::APIString>(TexturePreviewAPIComponent::loadTextureArg1, writer.GetJSON());
+		load_tex_event->addArgument<nap::APIBool>(TexturePreviewAPIComponent::loadTextureArg2, frame);
 		mRunner.sendEvent(std::move(load_tex_event));
 
 		// Store for property changes
@@ -124,7 +124,7 @@ namespace napkin
 	{
 		// Bail if no texture is loaded
 		if (!error.check(mLoadedTexture != nullptr, "%s cmd failed: can't assign mesh, no texture loaded",
-			LoadTextureComponent::loadMeshCmd))
+			TexturePreviewAPIComponent::loadMeshCmd))
 			return false;
 
 		// Serialize to JSON
@@ -133,9 +133,9 @@ namespace napkin
 		if (!serializeObjects(list, writer, error))
 			return false;
 
-		APIEventPtr load_mesh_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadMeshCmd);
-		load_mesh_event->addArgument<nap::APIString>(LoadTextureComponent::loadMeshArg1, writer.GetJSON());
-		load_mesh_event->addArgument<nap::APIBool>(LoadTextureComponent::loadMeshArg2, frame);
+		APIEventPtr load_mesh_event = std::make_unique<nap::APIEvent>(TexturePreviewAPIComponent::loadMeshCmd);
+		load_mesh_event->addArgument<nap::APIString>(TexturePreviewAPIComponent::loadMeshArg1, writer.GetJSON());
+		load_mesh_event->addArgument<nap::APIBool>(TexturePreviewAPIComponent::loadMeshArg2, frame);
 		mRunner.sendEvent(std::move(load_mesh_event));
 		mTrackedObject = path.getObject();
 		return true;
@@ -145,7 +145,7 @@ namespace napkin
 	void TexturePreviewPanel::clear()
 	{
 		// Send clear command to applet
-		nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::clearCmd);
+		nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(TexturePreviewAPIComponent::clearCmd);
 		mRunner.sendEvent(std::move(clear_tex_event));
 		mLoadedTexture = nullptr;
 	}
@@ -181,8 +181,8 @@ namespace napkin
 
 	void TexturePreviewPanel::themeChanged(const Theme& theme)
 	{
-		APIEventPtr change_theme_cmd = std::make_unique<nap::APIEvent>(LoadTextureComponent::changeThemeCmd);
-		change_theme_cmd->addArgument<nap::APIString>(LoadTextureComponent::changeThemeArg1, theme.getName().toStdString());
+		APIEventPtr change_theme_cmd = std::make_unique<nap::APIEvent>(TexturePreviewAPIComponent::changeThemeCmd);
+		change_theme_cmd->addArgument<nap::APIString>(TexturePreviewAPIComponent::changeThemeArg1, theme.getName().toStdString());
 		mRunner.sendEvent(std::move(change_theme_cmd));
 	}
 

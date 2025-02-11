@@ -158,4 +158,3 @@ namespace napkin
 		TypedAppletRunner() : AppletRunner(RTTI_OF(T)) { }
 	};
 }
-

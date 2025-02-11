@@ -25,15 +25,15 @@ namespace napkin
 {
 	using namespace nap;
 	class TexturePreviewApplet;
-	class LoadTextureComponentInstance;
+	class TexturePreviewAPIComponentInstance;
 
 	/**
 	 * Loads and sets a texture or mesh from an API command received from Napkin.
 	 */
-	class LoadTextureComponent : public Component
+	class TexturePreviewAPIComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(LoadTextureComponent, LoadTextureComponentInstance)
+		DECLARE_COMPONENT(TexturePreviewAPIComponent, TexturePreviewAPIComponentInstance)
 	public:
 
 		// Load texture cmd & args
@@ -65,7 +65,7 @@ namespace napkin
 	/**
 	 * Loads and sets a texture or mesh from an API command received from Napkin.
 	 */
-	class LoadTextureComponentInstance : public ComponentInstance
+	class TexturePreviewAPIComponentInstance : public ComponentInstance
 	{
 		friend class TexturePreviewApplet;
 		RTTI_ENABLE(ComponentInstance)
@@ -81,7 +81,7 @@ namespace napkin
 
 		// Constructor
 
-		LoadTextureComponentInstance(EntityInstance& entity, Component& resource) :
+		TexturePreviewAPIComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource) { }
 
 		// Init
@@ -91,7 +91,7 @@ namespace napkin
 		 * Current loaded texture type
 		 * @return loaded texture type, none when no texture is loaded
 		 */
-		LoadTextureComponentInstance::EType getType() const { return mSelectedType; }
+		TexturePreviewAPIComponentInstance::EType getType() const { return mSelectedType; }
 
 		/**
 		 * @return current selected and loaded texture, nullptr if no texture is loaded
@@ -148,23 +148,23 @@ namespace napkin
 		void draw(RenderService& renderService, RenderWindow& window);
 
 		// The resolved 2d texture frame component
-		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &LoadTextureComponent::mFrame2DTextureComponent };
+		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &TexturePreviewAPIComponent::mFrame2DTextureComponent };
 
 		// The resolved cubemap frame component
-		ComponentInstancePtr<FrameCubemapComponent> mFrameCubeComponent = { this, &LoadTextureComponent::mFrameCubemapComponent };
+		ComponentInstancePtr<FrameCubemapComponent> mFrameCubeComponent = { this, &TexturePreviewAPIComponent::mFrameCubemapComponent };
 
 	private:
 		void loadTexture(const nap::APIEvent& apiEvent);						//< Loads a texture from JSON
-		nap::Slot<const nap::APIEvent&> mTextureLoadRequested =					{ this, &LoadTextureComponentInstance::loadTexture };
+		nap::Slot<const nap::APIEvent&> mTextureLoadRequested =					{ this, &TexturePreviewAPIComponentInstance::loadTexture };
 
 		void loadMesh(const nap::APIEvent& apiEvent);							//< Loads a mesh from JSON
-		nap::Slot<const nap::APIEvent&> mMeshLoadRequested =					{ this, &LoadTextureComponentInstance::loadMesh };
+		nap::Slot<const nap::APIEvent&> mMeshLoadRequested =					{ this, &TexturePreviewAPIComponentInstance::loadMesh };
 		
 		void clear(const nap::APIEvent& apiEvent);								//< Clears texture
-		nap::Slot<const nap::APIEvent&> mClearRequestedSlot =					{ this, &LoadTextureComponentInstance::clear };
+		nap::Slot<const nap::APIEvent&> mClearRequestedSlot =					{ this, &TexturePreviewAPIComponentInstance::clear };
 
 		void changeTheme(const nap::APIEvent& apiEvent);						//< Changes theme
-		nap::Slot<const nap::APIEvent&> mChangeThemeSlot =						{ this, &LoadTextureComponentInstance::changeTheme };
+		nap::Slot<const nap::APIEvent&> mChangeThemeSlot =						{ this, &TexturePreviewAPIComponentInstance::changeTheme };
 
 		nap::APIComponentInstance* mAPIComponent = nullptr;						//< Pointer to the api component
 		const napkin::AppletExtension* mExtension = nullptr;					//< Applet extension

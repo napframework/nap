@@ -6,7 +6,7 @@
 
 // Local includes
 #include "renderpanel.h"
-#include "../applets/loadtexturecomponent.h"
+#include "../applets/texturepreviewapicomponent.h"
 #include "../applets/texturepreviewapplet.h"
 #include "../appletrunner.h"
 #include "../stagewidget.h"
