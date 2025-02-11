@@ -65,12 +65,12 @@ namespace napkin
 		/**
 		 * Initializes and runs the applet a-synchronous on it's own thread.
 		 * Use the future to synchronize (wait) until initialized succeeded or failed.
-		 * @param projectFilename full path to the project to run
-		 * @param frequency update frequency in hertz
+		 * @param projectPath full path to the project to run
+		 * @pram editorInfo the project being edited in napkin
 		 * @param suspend process loop from running after successful initialization
 		 * @return if initialization succeeded or not
 		 */
-		std::future<bool> start(const std::string& projectFilename, bool suspend);
+		std::future<bool> start(const std::string& projectPath, const nap::ProjectInfo& editorInfo, bool suspend);
 
 		/**
 		 * Returns if the applet launched on a separate thread and is in an active state.
@@ -133,11 +133,12 @@ namespace napkin
 
 		/**
 		 * Initializes the engine and the application.
-		 * @param projectInfo the project to load and run
+		 * @param projectPath the applet project to load and run
+		 * @param editorInfo the project being edited in napkin
 		 * @param error the error message if the app failed to initialize
 		 * @return if the app initialized successfully started
 		 */
-		bool initEngine(const std::string& projectInfo, nap::utility::ErrorState& error);
+		bool initEngine(const std::string& projectPath, std::unique_ptr<nap::ProjectInfo> editorInfo,  nap::utility::ErrorState& error);
 
 		/**
 		 * Runs the applet until stopped

@@ -36,15 +36,6 @@ RTTI_END_CLASS
 
 namespace napkin
 {
-	FrameCubemapComponentInstance::~FrameCubemapComponentInstance()
-	{
-		// Explicitly destroy resource -> unregisters itself with the service
-		// TODO: This should happen automatic when texture is destroyed when manually created
-		if (mTexture != nullptr)
-			mTexture->onDestroy();
-		mTexture.reset(nullptr);
-	}
-
 
 	bool FrameCubemapComponentInstance::init(utility::ErrorState& errorState)
 	{
@@ -97,11 +88,6 @@ namespace napkin
 	{
 		// Bind new texture
 		bind(*texure);
-
-		// Explicitly destroy resource -> unregisters itself with the service
-		// TODO: This should happen automatic when texture is destroyed when manually created
-		if (mTexture != nullptr)
-			mTexture->onDestroy();
 
 		// Replace active texture
 		mTexture = std::move(texure);

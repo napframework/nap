@@ -45,7 +45,7 @@ namespace napkin
 		// Initializing the applet (core, services & application)
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
 		assert(!mFutureInit.valid());
-		mFutureInit = mRunner.start(preview_app, true);
+		mFutureInit = mRunner.start(preview_app, info, true);
 
 		// Let the applet initialize on it's own thread -> install next frame
 		QTimer::singleShot(0, [this]()

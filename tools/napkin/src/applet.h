@@ -61,20 +61,16 @@ namespace napkin
 
 	protected:
 		/**
-		 * Switches data directory to the project one being edited in napkin.
+		 * Changes the current working directory to the data directory that is being edited in Napkin.
+		 * Allows data to be de-serialized relative to the napkin project directory, instead of the applet.
 		 * The current working directory is active until the handle falls out of scope.
-		 * 
-		 * Allows for data to be de-serialized relative to that directory, instead of ours.
-		 * @return Current working directory handle
+		 * @return Napkin working directory handle
 		 */
-		napkin::CWDHandle switchWorkingDir() { assert(mEditorInfo != nullptr); return napkin::CWDHandle(mEditorInfo->getDataDirectory()); }
+		napkin::CWDHandle switchWorkingDir() const;
 
 		/**
 		 * @return project loaded in editor
 		 */
-		const nap::ProjectInfo& getEditorInfo() const { assert(mEditorInfo != nullptr); return *mEditorInfo; }
-
-	private: 
-		std::unique_ptr<nap::ProjectInfo> mEditorInfo = nullptr;	///< Project currently loaded in napkin (provided by applet runner)
+		const nap::ProjectInfo* getEditorInfo() const;
 	};
 }

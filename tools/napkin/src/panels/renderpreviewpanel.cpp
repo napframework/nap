@@ -61,7 +61,7 @@ namespace napkin
 		mRunner.setFrequency(mSpinbox.value());
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
 		assert(!mInitFuture.valid());
-		mInitFuture = mRunner.start(preview_app, true);
+		mInitFuture = mRunner.start(preview_app, info, true);
 
 		// Let the applet initialize on it's own thread -> install next frame
 		QTimer::singleShot(0, [this]()

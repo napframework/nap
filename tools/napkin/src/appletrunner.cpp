@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
+#include "appletextension.h"
 #include "appletrunner.h"
 
 // External includes
@@ -18,7 +19,8 @@ namespace napkin
 {
 	using namespace std::chrono;
 
-	AppletRunner::AppletRunner(nap::rtti::TypeInfo appletType)
+	AppletRunner::AppletRunner(nap::rtti::TypeInfo appletType) :
+		mCore(std::make_unique<napkin::AppletExtension>())
 	{
 		assert(appletType.is_derived_from(RTTI_OF(napkin::Applet)));
 		mApplet.reset(appletType.create<napkin::Applet>({ mCore }));
@@ -40,7 +42,7 @@ namespace napkin
 	}
 
 
-	std::future<bool> AppletRunner::start(const std::string& projectFilename, bool suspend)
+	std::future<bool> AppletRunner::start(const std::string& projectFilename, const nap::ProjectInfo& editorInfo, bool suspend)
 	{
 		// Create and run task
 		assert(!active());
@@ -49,11 +51,14 @@ namespace napkin
 		std::promise<bool> init_promise;
 		auto init_future = init_promise.get_future();
 
-		mThread = std::thread([projectFilename, initPromise = std::move(init_promise), suspend, this]() mutable
+		// Get project to run
+
+		mThread = std::thread([projectFilename, initPromise = std::move(init_promise),
+			projectInfo = editorInfo.clone(), suspend, this]() mutable
 		{
 			// Initialize engine and application
 			nap::utility::ErrorState error;
-			if (!initEngine(projectFilename, error))
+			if (!initEngine(projectFilename, std::move(projectInfo), error))
 			{
 				// Notify waiting thread init failed
 				nap::Logger::error(error.toString());
@@ -80,10 +85,14 @@ namespace napkin
 	}
 
 
-	bool napkin::AppletRunner::initEngine(const std::string& projectInfo, nap::utility::ErrorState& error)
+	bool napkin::AppletRunner::initEngine(const std::string& projectPath, std::unique_ptr<nap::ProjectInfo> editorInfo, nap::utility::ErrorState& error)
 	{
+		// Set napkin project info
+		auto& ext = mCore.getExtension<napkin::AppletExtension>();
+		ext.mProjectInfo = (std::move(AppContext::get().getProjectInfo()->clone()));
+
 		// Initialize engine
-		if (!error.check(mCore.initializeEngine(projectInfo, nap::ProjectInfo::EContext::Application, error),
+		if (!error.check(mCore.initializeEngine(projectPath, nap::ProjectInfo::EContext::Application, error),
 			"Unable to initialize engine"))
 			return false;
 
@@ -108,7 +117,6 @@ namespace napkin
 		}
 
 		// Initialize application
-		mApplet->mEditorInfo = std::move(AppContext::get().getProjectInfo()->clone());
 		if (!error.check(mApplet->init(error), "Unable to initialize applet"))
 			return false;
 
@@ -349,3 +357,4 @@ namespace napkin
 		mProcessCondition.notify_one();
 	}
 }
+

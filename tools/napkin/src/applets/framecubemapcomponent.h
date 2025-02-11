@@ -52,8 +52,6 @@ namespace napkin
 		FrameCubemapComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
-		virtual ~FrameCubemapComponentInstance();
-
 		/**
 		 * Initialize this component
 		 * @param errorState the error message when initialization fails

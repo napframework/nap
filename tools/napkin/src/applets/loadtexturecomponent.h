@@ -7,6 +7,7 @@
 // Local includes
 #include "frame2dtexturecomponent.h"
 #include "framecubemapcomponent.h"
+#include "../appletextension.h"
 
 // External includes
 #include <component.h>
@@ -166,7 +167,7 @@ namespace napkin
 		nap::Slot<const nap::APIEvent&> mChangeThemeSlot =						{ this, &LoadTextureComponentInstance::changeTheme };
 
 		nap::APIComponentInstance* mAPIComponent = nullptr;						//< Pointer to the api component
-		std::string mProjectDataDirectory;										//< Data directory to resolve texture load cmds against
+		const napkin::AppletExtension* mExtension = nullptr;					//< Applet extension
 
 		// Current selected type
 		EType mSelectedType = EType::None;

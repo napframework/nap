@@ -4,6 +4,7 @@
 
 // Local Includes
 #include "loadtexturecomponent.h"
+#include "../appletextension.h"
 #include "../naputils.h"
 
 // External Includes
@@ -62,6 +63,11 @@ namespace napkin
 		if (!errorState.check(change_theme_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::changeThemeCmd))
 			return false;
 
+		mExtension = &getEntityInstance()->getCore()->getExtension<napkin::AppletExtension>();
+		if (!errorState.check(mExtension != nullptr && mExtension->hasProject(),
+			"Unable to resolve editor project information"))
+			return false;
+
 		// Register api cmd listeners
 		mAPIComponent->registerCallback(*load_texture_sig, mTextureLoadRequested);
 		mAPIComponent->registerCallback(*load_mesh_sig, mMeshLoadRequested);
@@ -109,8 +115,7 @@ namespace napkin
 
 		// Init texture relative to project data directory (thread-safe)
 		{
-			assert(!mProjectDataDirectory.empty());
-			napkin::CWDHandle cwd_handle(mProjectDataDirectory);
+			napkin::CWDHandle cwd_handle(mExtension->switchWorkingDir());
 			if (!result.mReadObjects[0]->init(error))
 			{
 				nap::Logger::error(error.toString().c_str());
@@ -183,8 +188,7 @@ namespace napkin
 
 		// Init mesh relative to project data directory (thread-safe)
 		{
-			assert(!mProjectDataDirectory.empty());
-			napkin::CWDHandle cwd_handle(mProjectDataDirectory);
+			napkin::CWDHandle cwd_handle = mExtension->switchWorkingDir();
 			if (!result.mReadObjects[0]->init(error))
 			{
 				nap::Logger::error(error.toString().c_str());

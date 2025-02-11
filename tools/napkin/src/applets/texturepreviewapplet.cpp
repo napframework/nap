@@ -59,13 +59,6 @@ namespace napkin
 		if (!error.check(mAPIEntity != nullptr, "Missing 'APIEntity'"))
 			return false;
 
-		// Set data directory to resolve texture load cmds against
-		// TODO: This should be available to the component directly, exposed as an extension to core...
-		auto* load_tex_comp = mAPIEntity->findComponent<LoadTextureComponentInstance>();
-		if (!error.check(load_tex_comp != nullptr, "Missing 'LoadTextureComponent'"))
-			return false;
-		load_tex_comp->mProjectDataDirectory = getEditorInfo().getDataDirectory();
-
 		return true;
 	}
 
