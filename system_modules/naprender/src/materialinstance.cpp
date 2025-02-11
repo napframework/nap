@@ -762,12 +762,17 @@ namespace nap
 
 	bool BaseMaterialInstance::updateConstants(utility::ErrorState& errorState)
 	{
-		BaseMaterial* material = getMaterial();
+		auto* material = getMaterial();
 		const auto& declarations = material->getShader().getConstantDeclarations();
 
 		for (const auto& declaration : declarations)
 		{
-			auto* constant_instance = material->findConstant(declaration.mName);
+			// Search material instance
+			auto* constant_instance = findConstant(declaration.mName);
+
+			// Search base material
+			if (constant_instance == nullptr)
+				constant_instance = material->findConstant(declaration.mName);
 
 			// If a constant is overriden
 			if (constant_instance != nullptr)
