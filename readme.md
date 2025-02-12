@@ -55,11 +55,11 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 ![Habitat, Heleen Blanken](https://download.nap-labs.tech/shared/habitat_1280.jpg)
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
 ![Shylight, Studio Drift](https://download.nap-labs.tech/shared/shylight_basel_1280.jpg)
-[Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
+[Shylight](https://studiodrift.com/work/shylight/) by Studio Drift
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
 ![NAP Framework](https://download.nap-labs.tech/shared/napkin_multiwindow_demo_hq.jpg)
-[NAP Framework](https://nap.tech) editor & demo
+[NAP Framework](https://nap-framework.tech) editor & demo
 
 # Where to Start
 
