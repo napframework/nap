@@ -66,7 +66,7 @@ namespace nap
 			return false;
 
 		// Bind textures as attachments
-		VkImageView attachment = mDepthTexture->getHandle().getView();
+		const auto attachment = std::as_const(*mDepthTexture).getHandle().getView();
 
 		// Create framebuffer
 		VkFramebufferCreateInfo framebufferInfo = {};
@@ -128,6 +128,9 @@ namespace nap
 	void DepthRenderTarget::endRendering()
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
+
+        // Sync image data with render pass final layout
+        mDepthTexture->syncLayout();
 	}
 
 

@@ -60,6 +60,11 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+        /**
+         * Updates image layout to the target layout after a render pass.
+         */
+        void syncLayout();
+
 		int					mWidth = 0;										///< Property: 'Width' width of a cube face texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of a cube face texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space

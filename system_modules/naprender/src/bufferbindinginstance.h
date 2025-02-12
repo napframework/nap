@@ -340,7 +340,7 @@ namespace nap
 	template<class T>
 	void TypedBufferBindingNumericInstance<T>::setBuffer(TypedGPUBufferNumeric<T>& buffer)
 	{
-		NAP_ASSERT_MSG(buffer.getSize() == mDeclaration->mSize, utility::stringFormat("Buffer size (%zu bytes) does not match the shader declaration (%d bytes)", buffer.getSize(), mDeclaration->mSize).c_str());
+		NAP_ASSERT_MSG(mDeclaration->mStride == buffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size");
 		BufferBindingInstance::mBuffer = &buffer;
 		raiseChanged();
 	}
@@ -348,7 +348,7 @@ namespace nap
 	template<class T>
 	void TypedBufferBindingNumericInstance<T>::setBuffer(const TypedBufferBindingNumeric<T>& resource)
 	{
-		NAP_ASSERT_MSG(resource.mBuffer.getSize() == mDeclaration->mSize, utility::stringFormat("Buffer size (%zu bytes) does not match the shader declaration (%d bytes)", resource.mBuffer.getSize(), mDeclaration->mSize).c_str());
+		NAP_ASSERT_MSG(mDeclaration->mStride == resource.mBuffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size");
 		BufferBindingInstance::mBuffer = resource.mBuffer.get();
 		raiseChanged();
 	}

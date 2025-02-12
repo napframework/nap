@@ -140,9 +140,9 @@ namespace nap
 		auto& positions = mFrustumMesh.getMeshInstance().getOrCreateAttribute<glm::vec3>(vertexid::position).getData();
 		assert(mFrustumMesh.getNormalizedLineBox().size() == positions.size());
 
-		if (mCamera->get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance)))
+        const auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
+        if (mCamera->get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance)))
 		{
-			auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
 			for (uint i = 0; i < mFrustumMesh.getNormalizedLineBox().size(); i++)
 			{
 				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh.getNormalizedLineBox()[i], 1.0f);
@@ -151,7 +151,6 @@ namespace nap
 		}
 		else if (mCamera->get_type().is_derived_from(RTTI_OF(PerspCameraComponentInstance)))
 		{
-			auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
 			for (uint i = 0; i < mFrustumMesh.getNormalizedLineBox().size(); i++)
 			{
 				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh.getNormalizedLineBox()[i], 1.0f);

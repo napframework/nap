@@ -7,6 +7,7 @@
 // Local Includes
 #include "surfacedescriptor.h"
 #include "renderutils.h"
+#include "textureutils.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -128,6 +129,9 @@ namespace nap
 	class NAPAPI Texture2D : public Texture
 	{
 		friend class RenderService;
+        friend void utility::blit(VkCommandBuffer, Texture2D&, Texture2D&);
+        friend void utility::copy(VkCommandBuffer, Texture2D&, Texture2D&);
+
 		RTTI_ENABLE(Texture)
 	public:
 		Texture2D(Core& core);
