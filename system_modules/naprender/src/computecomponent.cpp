@@ -103,11 +103,15 @@ namespace nap
 		// Bind shader descriptors
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
-		// Dispatch compute work with a single group dimension
+		// Verify workgroup size
 		auto workgroup_size = getWorkGroupSize();
 		assert(workgroup_size.x > 0);
 
 		uint group_count_x = (numInvocations / workgroup_size.x) + 1;
+		uint group_count_x_max = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupCount[0];
+		NAP_ASSERT_MSG(group_count_x <= group_count_x_max, utility::stringFormat("%s: group_count_x (%u) exceeds physical device limit of %u. Increase workgroup size or lower invocation count.", mID.c_str(), group_count_x, group_count_x_max).c_str())
+
+		// Dispatch compute work with a single group dimension
 		vkCmdDispatch(commandBuffer, group_count_x, 1, 1);
 
 		// Insert memory barriers if required

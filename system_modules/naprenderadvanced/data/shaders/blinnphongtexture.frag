@@ -42,6 +42,7 @@ uniform shadow
 	mat4 lightViewProjectionMatrix[MAX_LIGHTS];
 	vec2 nearFar[MAX_LIGHTS];
 	float strength[MAX_LIGHTS];
+	float spread[MAX_LIGHTS];
 	uint flags;
 	uint count;
 } sdw;
@@ -131,10 +132,13 @@ void main()
 
 					// Multi sample
 					const uint map_index = getShadowMapIndex(flags);
+					const vec2 tex_size = textureSize(shadowMaps[map_index], 0);
+					
 					float sum = 0.0;
 					for (int s=0; s<QUAD_SAMPLE_COUNT; s++) 
 					{
-						sum += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
+						vec2 jitter = (POISSON_DISK[s]*sdw.spread[i])/tex_size;
+						sum += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + jitter, coord.z));
 					}
 					shadow += sum / float(QUAD_SAMPLE_COUNT);
 				}
@@ -153,11 +157,13 @@ void main()
 				float frag_depth = sdfPlane(lit.lights[i].origin, cubeFace(coord), passPosition);
 
 				const uint map_index = getShadowMapIndex(flags);
+				const vec2 tex_size = textureSize(shadowMaps[map_index], 0);
+
 				float sum = 0.0;
 				for (int s=0; s<CUBE_SAMPLE_COUNT; s++) 
 				{
 					// Add some poisson-based rotational jitter to the sampling vector
-					vec2 jitter = POISSON_DISK[s]/SHADOW_POISSON_SPREAD;
+					vec2 jitter = (POISSON_DISK[s]*sdw.spread[i])/tex_size;
 					vec3 sample_coord = normalize(rotationMatrix(vec3(1.0, 0.0, 0.0), jitter.x) * rotationMatrix(vec3(0.0, 1.0, 0.0), jitter.y) * vec4(coord, 0.0)).xyz;
 		 			sum += 1.0 - texture(cubeShadowMaps[map_index], vec4(sample_coord, nonLinearDepth(frag_depth, nf.x, nf.y)));
 				}

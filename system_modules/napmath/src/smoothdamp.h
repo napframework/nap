@@ -28,9 +28,9 @@ namespace nap
 			BaseSmoothOperator() = default;
 
 			/**
-			* Constructor that takes a smooth time
-			* @param smoothTime the time in seconds it will take to reach the target
-			*/
+			 * Constructor that takes a smooth time
+			 * @param smoothTime the time in seconds it will take to reach the target
+			 */
 			BaseSmoothOperator(float smoothTime) : mSmoothTime(smoothTime)	{ }
 
 			/**
@@ -125,7 +125,6 @@ namespace nap
 		protected:
 			/**
 			 * This needs to be implemented by every template specialized class
-			 * Should set 
 			 */
 			void init();
 
@@ -140,22 +139,22 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T>
-		T& nap::math::SmoothOperator<T>::update(const T& targetValue, float deltaTime)
+		T& SmoothOperator<T>::update(const T& targetValue, float deltaTime)
 		{
 			mTarget = targetValue;
-			nap::math::smooth<T>(mValue, targetValue, mVelocity, deltaTime, mSmoothTime, mMaxSpeed);
+			smooth<T>(mValue, targetValue, mVelocity, deltaTime, mSmoothTime, mMaxSpeed);
 			return mValue;
 		}
 
 		template<typename T>
-		nap::math::SmoothOperator<T>::SmoothOperator(const T& currentValue, float smoothTime, float maxSpeed) : BaseSmoothOperator(smoothTime, maxSpeed),
+		SmoothOperator<T>::SmoothOperator(const T& currentValue, float smoothTime, float maxSpeed) : BaseSmoothOperator(smoothTime, maxSpeed),
 			mValue(currentValue)
 		{
 			init();
 		}
 
 		template<typename T>
-		nap::math::SmoothOperator<T>::SmoothOperator(const T& currentValue, float smoothTime) : BaseSmoothOperator(smoothTime), mValue(currentValue)
+		SmoothOperator<T>::SmoothOperator(const T& currentValue, float smoothTime) : BaseSmoothOperator(smoothTime), mValue(currentValue)
 		{
 			init();
 		}
@@ -176,33 +175,33 @@ namespace nap
 		// Forward declarations
 		//////////////////////////////////////////////////////////////////////////
 		template<>
-		NAPAPI void nap::math::SmoothOperator<float>::init();
+		NAPAPI void SmoothOperator<float>::init();
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<double>::init();
+		NAPAPI void SmoothOperator<double>::init();
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<glm::vec2>::init();
+		NAPAPI void SmoothOperator<glm::vec2>::init();
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<glm::vec3>::init();
+		NAPAPI void SmoothOperator<glm::vec3>::init();
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<glm::vec4>::init();
+		NAPAPI void SmoothOperator<glm::vec4>::init();
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<float>::setValue(const float& value);
+		NAPAPI void SmoothOperator<float>::setValue(const float& value);
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<double>::setValue(const double& value);
+		NAPAPI void SmoothOperator<double>::setValue(const double& value);
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<glm::vec2>::setValue(const glm::vec2& value);
+		NAPAPI void SmoothOperator<glm::vec2>::setValue(const glm::vec2& value);
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<glm::vec3>::setValue(const glm::vec3& value);
+		NAPAPI void SmoothOperator<glm::vec3>::setValue(const glm::vec3& value);
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<glm::vec4>::setValue(const glm::vec4& value);
+		NAPAPI void SmoothOperator<glm::vec4>::setValue(const glm::vec4& value);
 	}
 }

@@ -11,9 +11,6 @@
 const uint SHADOWMAP_QUAD = 0;
 const uint SHADOWMAP_CUBE = 1;
 
-const float SHADOW_POISSON_SPREAD = 768.0;
-
-
 // Returns whether shadows are enabled in the specified light flag
 bool hasShadow(uint flags)
 {
@@ -114,36 +111,7 @@ float sdfPlane(vec3 planeOrig, vec3 planeNormal, vec3 point)
 }
 
 
-// Calculate shadow contribution
-// @param shadowCoord: the fragment position in light space
-// @param lightDir: the light direction
-float computeShadows(sampler2DShadow shadowMaps[8], vec4 shadowCoords[8], uint flags[8], uint count, uint sampleCount)
-{
-	float result = 0.0;
-	for (uint i = 0; i < count; i++)
-	{
-		if (!hasShadow(flags[i]))
-			continue;
-
-		// Perspective divide and map coordinates to [0.0, 1.0] range
-		vec3 coord = ((shadowCoords[i].xyz / shadowCoords[i].w) + 1.0) * 0.5;
-		float bias = 1.0/textureSize(shadowMaps[i], 0).x;
-		float comp = coord.z - bias;
-
-		// Multi sample
-		float shadow = 0.0;
-		for (int s=0; s<sampleCount; s++) 
-		{
-			shadow += 1.0 - texture(shadowMaps[i], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, comp));
-		}
-		result = max(shadow / float(sampleCount), result);
-	}
-
-	return clamp(result, 0.0, 1.0);
-}
-
-
-float computeShadow(sampler2DShadow shadowMap, vec4 shadowCoord, uint sampleCount)
+float computeShadow(sampler2DShadow shadowMap, vec4 shadowCoord, float spread, uint sampleCount)
 {
 	// Perspective divide and map coordinates to [0.0, 1.0] range
 	vec3 coord = ((shadowCoord.xyz / shadowCoord.w) + 1.0) * 0.5;
@@ -151,16 +119,17 @@ float computeShadow(sampler2DShadow shadowMap, vec4 shadowCoord, uint sampleCoun
 	float comp = coord.z - bias;
 
 	// Multi sample
+	const vec2 tex_size = textureSize(shadowMap, 0);
 	float shadow = 0.0;
 	for (int s=0; s<sampleCount; s++) 
 	{
-		shadow += 1.0 - texture(shadowMap, vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, comp));
+		shadow += 1.0 - texture(shadowMap, vec3(coord.xy + (POISSON_DISK[s]*spread)/tex_size, comp));
 	}
 	return clamp(shadow / float(sampleCount), 0.0, 1.0);
 }
 
 
-float computeShadow(sampler2DShadow shadowMap, vec4 shadowCoord, vec3 lightDir, vec3 surfNormal, uint sampleCount)
+float computeShadow(sampler2DShadow shadowMap, vec4 shadowCoord, vec3 lightDir, vec3 surfNormal, float spread, uint sampleCount)
 {
 	// Perspective divide and map coordinates to [0.0, 1.0] range
 	vec3 coord = ((shadowCoord.xyz / shadowCoord.w) + 1.0) * 0.5;
@@ -171,10 +140,11 @@ float computeShadow(sampler2DShadow shadowMap, vec4 shadowCoord, vec3 lightDir, 
 	float comp = coord.z - bias;
 
 	// Multi sample
+	const vec2 tex_size = textureSize(shadowMap, 0);
 	float shadow = 0.0;
 	for (int s=0; s<sampleCount; s++) 
 	{
-		shadow += 1.0 - texture(shadowMap, vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, comp));
+		shadow += 1.0 - texture(shadowMap, vec3(coord.xy + (POISSON_DISK[s]*spread)/tex_size, comp));
 	}
 	return clamp(shadow / float(sampleCount), 0.0, 1.0);
 }
