@@ -41,6 +41,40 @@
 
 namespace FW
 {
+	/**
+	 * Utility function to list all subdirectories of a given directory
+	 * @param directoryPath absolute path of root directory
+	 * @param dirs vector filled with absolute paths of subdirectories
+	 */
+	static void listSubdirectories(const std::string &directoryPath, std::vector<std::string>& dirs)
+	{
+		DIR *dir = opendir(directoryPath.c_str());
+		if (dir == nullptr)
+			return;
+
+		struct dirent *entry;
+		while ((entry = readdir(dir)) != nullptr)
+		{
+			// Skip the '.' and '..' directories
+			if (entry->d_name[0] == '.')
+				continue;
+
+			// Get information about the directory entry
+			struct stat statbuf;
+			std::string fullPath = directoryPath + "/" + entry->d_name;
+			if (stat(fullPath.c_str(), &statbuf) == 0)
+			{
+				// Check if it's a directory
+				if (S_ISDIR(statbuf.st_mode))
+				{
+					dirs.emplace_back(fullPath);
+					listSubdirectories(fullPath, dirs);
+				}
+			}
+		}
+		closedir(dir);
+	}
+
 
 	struct WatchStruct
 	{
@@ -208,38 +242,6 @@ namespace FW
 								Actions::Delete);
 		}
 	}
-
-	void FileWatcherLinux::listSubdirectories(const std::string &directoryPath, std::vector<std::string>& dirs)
-	{
-		DIR *dir = opendir(directoryPath.c_str());
-		if (dir == nullptr)
-			return;
-
-		struct dirent *entry;
-		while ((entry = readdir(dir)) != nullptr)
-		{
-			// Skip the '.' and '..' directories
-			if (entry->d_name[0] == '.')
-				continue;
-
-			std::string fullPath = directoryPath + "/" + entry->d_name;
-			struct stat statbuf;
-
-			// Get information about the directory entry
-			if (stat(fullPath.c_str(), &statbuf) == 0)
-			{
-				// Check if it's a directory
-				if (S_ISDIR(statbuf.st_mode))
-				{
-					dirs.emplace_back(fullPath);
-					listSubdirectories(fullPath, dirs);
-				}
-			}
-		}
-
-		closedir(dir);
-	}
-
 };//namespace FW
 
 
