@@ -174,6 +174,11 @@ namespace nap
 		 */
 		virtual bool getSampleShadingEnabled() const override;
 
+		/**
+		 * @return layout of the texture when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const override									{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+
 	public:	
 		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		RGBAColorFloat						mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target

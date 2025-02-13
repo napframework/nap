@@ -109,12 +109,6 @@ namespace nap
 
 	void Texture::clear(VkCommandBuffer commandBuffer)
 	{
-		// Do not clear if this is an attachment
-		// Attachments use vkCmdClearAttachments for clear operations
-		// But should really be cleared in a renderpass with VK_ATTACHMENT_LOAD_OP_CLEAR
-		if (getTargetLayout() == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL || getTargetLayout() == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || getTargetLayout() > VK_IMAGE_LAYOUT_PREINITIALIZED)
-			return;
-
 		// Texture clear commands are the first subset of commands to be pushed to the upload command buffer at the beginning of a frame
 		// Therefore, the initial layout transition waits for nothing
 		VkAccessFlags srcMask = 0;
@@ -152,7 +146,7 @@ namespace nap
 
 		// Transition image layout
 		utility::transitionImageLayout(commandBuffer,
-            getHandle(),                            getTargetLayout(),
+            getHandle(),                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0,										getMipLevels(),
@@ -293,18 +287,6 @@ namespace nap
 	}
 
 
-
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
-	{
-		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
-			return false;
-
-		// Clear the texture and perform a layout transition to shader read
-		requestClear();
-		return true;
-	}
-
-
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
@@ -365,12 +347,12 @@ namespace nap
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
 		{
-			utility::createMipmaps(commandBuffer, mImageData, mFormat, getTargetLayout(), aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+			utility::createMipmaps(commandBuffer, mImageData, mFormat, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
 			utility::transitionImageLayout(commandBuffer,
-                getHandle(),                            getTargetLayout(),
+                getHandle(),							VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				0,										1,

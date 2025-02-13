@@ -63,11 +63,6 @@ namespace nap
 		virtual const ImageData& getHandle() const = 0;
 
 		/**
-		 * @return Vulkan image layout that this texture is intended for.
-		 */
-		virtual VkImageLayout getTargetLayout() const			{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; };
-
-		/**
 		 * @return Vulkan texture format
 		 */
 		VkFormat getFormat() const								{ return mFormat; }
@@ -113,6 +108,7 @@ namespace nap
 		 */
 		void requestClear();
 
+	protected:
 		RenderService&						mRenderService;								///< Reference to the render service
 		SurfaceDescriptor					mDescriptor;								///< Texture description
 		VkFormat							mFormat = VK_FORMAT_UNDEFINED;				///< Vulkan texture format
@@ -148,18 +144,6 @@ namespace nap
 		 * @return if the texture initialized successfully.
 		 */
 		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
-
-		/**
-		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
-		 * Otherwise the layout of the texture on the GPU will be undefined until upload.
-		 * The Vulkan image usage flags are derived from texture usage.
-		 * @param descriptor texture description.
-		 * @param generateMipMaps if mip maps are generated when data is uploaded.
-		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
-		 * @param errorState contains the error if the texture can't be initialized.
-		 * @return if the texture initialized successfully.
-		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.

@@ -121,7 +121,7 @@ namespace nap
 
     void RenderTextureCube::syncLayout()
     {
-        getHandle().mCurrentLayout = getTargetLayout();
+        //getHandle().mCurrentLayout = getTargetLayout();
     }
 
 

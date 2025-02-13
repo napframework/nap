@@ -121,7 +121,7 @@ namespace nap
 
     void RenderTexture2D::syncLayout()
     {
-        getHandle().mCurrentLayout = getTargetLayout();
+        //getHandle().mCurrentLayout = getTargetLayout();
     }
 
 
@@ -170,6 +170,6 @@ namespace nap
 
     void DepthRenderTexture2D::syncLayout()
     {
-        getHandle().mCurrentLayout = getTargetLayout();
+        //getHandle().mCurrentLayout = getTargetLayout();
     }
 }

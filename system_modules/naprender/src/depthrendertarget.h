@@ -154,6 +154,11 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override;
 
 		/**
+		 * @return layout of the depth texture when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const override					{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+
+		/**
 		 * @return the texture that holds the result of the render pass.
 		 */
 		DepthRenderTexture2D& getDepthTexture();

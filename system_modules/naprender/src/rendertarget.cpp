@@ -108,12 +108,12 @@ namespace nap
 			if (!errorState.check(mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT, "Depth resolve attachments are not supported. Set the sample count to one if a depth texture resource is desired."))
 				return false;
 
-			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, mColorTexture->getTargetLayout(), mClear, true, mRenderPass, errorState))
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, getFinalLayout(), mClear, true, mRenderPass, errorState))
 				return false;
 		}
 		else
 		{
-			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, mColorTexture->getTargetLayout(), mClear, false, mRenderPass, errorState))
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, getFinalLayout(), mClear, false, mRenderPass, errorState))
 				return false;
 		}
 
