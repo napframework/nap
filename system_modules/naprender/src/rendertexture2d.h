@@ -60,6 +60,7 @@ namespace nap
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mColorFormat = EFormat::RGBA8;					///< Property: 'ColorFormat' color texture format
 		RGBAColorFloat		mClearColor	= { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
+		EUsage				mUsage = EUsage::Internal;						///< Property: 'Usage' GPU Texture usage
 	};
 
 
@@ -101,5 +102,6 @@ namespace nap
 		EDepthFormat		mDepthFormat = EDepthFormat::D16;				///< Property: 'DepthFormat' depth texture format
 		float				mClearValue = 1.0f;								///< Property: 'ClearValue' value selection used for clearing the texture
 		bool				mFill = false;									///< Property: 'Fill' if the texture is initialized to black when usage is static
+		EUsage				mUsage = EUsage::Internal;						///< Property: 'Usage' GPU Texture usage
 	};
 }

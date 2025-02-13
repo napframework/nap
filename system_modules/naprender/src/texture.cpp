@@ -17,7 +17,8 @@
 RTTI_BEGIN_ENUM(nap::Texture::EUsage)
 	RTTI_ENUM_VALUE(nap::Texture::EUsage::Static,		"Static"),
 	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicRead,	"DynamicRead"),
-	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicWrite,	"DynamicWrite")
+	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicWrite,	"DynamicWrite"),
+	RTTI_ENUM_VALUE(nap::Texture::EUsage::Internal,		"Internal")
 RTTI_END_ENUM
 
 // Define Texture base
@@ -25,7 +26,6 @@ RTTI_DEFINE_BASE(nap::Texture, "GPU Texture")
 
 // Texture2D class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D, "GPU representation of a 2D image, does not own any CPU data")
-	RTTI_PROPERTY("Usage",	&nap::Texture2D::mUsage, nap::rtti::EPropertyMetaData::Default, "How the texture is used at runtime (static, updated etc..)")
 RTTI_END_CLASS
 
 // TextureCube class definition
@@ -186,7 +186,7 @@ namespace nap
 	}
 
 
-	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
 		mFormat = utility::getTextureFormat(descriptor);
@@ -196,14 +196,9 @@ namespace nap
 		// Ensure our GPU image can be used as a transfer destination during uploads
 		VkFormatProperties format_properties;
 		mRenderService.getFormatProperties(mFormat, format_properties);
-		if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
-		{
-			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
-			return false;
-		}
 
 		// If mip mapping is enabled, ensure it is supported
-		if (generateMipMaps)
+		if (enableMips)
 		{
 			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 			{
@@ -215,7 +210,7 @@ namespace nap
 
 		// Ensure there are enough read callbacks based on max number of frames in flight
 		mImageSizeInBytes = descriptor.getSizeInBytes();
-		if (mUsage == EUsage::DynamicRead)
+		if (usage == EUsage::DynamicRead)
 		{
 			mReadCallbacks.resize(mRenderService.getMaxFramesInFlight());
 			mDownloadStagingBufferIndices.resize(mRenderService.getMaxFramesInFlight());
@@ -239,36 +234,43 @@ namespace nap
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
 		// called, which moves the index one place ahead.
 		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
-
-		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-		VkBufferUsageFlags buffer_usage = mUsage == EUsage::DynamicRead ?
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT :
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-		VmaMemoryUsage memory_usage = mUsage == EUsage::DynamicRead ?
-			VMA_MEMORY_USAGE_GPU_TO_CPU :
-			VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-		mStagingBuffers.resize(getNumStagingBuffers(mRenderService.getMaxFramesInFlight(), mUsage));
-		for (int index = 0; index < mStagingBuffers.size(); ++index)
+		if (usage != EUsage::Internal)
 		{
-			BufferData& staging_buffer = mStagingBuffers[index];
-
-			// Create staging buffer
-			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, 0, staging_buffer, errorState))
+			// Ensure our GPU image can be used as a transfer destination during uploads
+			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
 			{
-				errorState.fail("%s: Unable to create staging buffer for texture", mID.c_str());
+				errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
 				return false;
+			}
+
+			// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
+			VkBufferUsageFlags buffer_usage = usage == EUsage::DynamicRead ?
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT :
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+			// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
+			VmaMemoryUsage memory_usage = usage == EUsage::DynamicRead ?
+				VMA_MEMORY_USAGE_GPU_TO_CPU :
+				VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+			mStagingBuffers.resize(getNumStagingBuffers(mRenderService.getMaxFramesInFlight(), usage));
+			for (int index = 0; index < mStagingBuffers.size(); ++index)
+			{
+				BufferData& staging_buffer = mStagingBuffers[index];
+
+				// Create staging buffer
+				if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, 0, staging_buffer, errorState))
+				{
+					errorState.fail("%s: Unable to create staging buffer for texture", mID.c_str());
+					return false;
+				}
 			}
 		}
 
-		// Set image usage flags: can be written to, read and sampled
-		VkImageUsageFlags usage = requiredFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-
 		// Create GPU image
+		VkImageUsageFlags use_flags = requiredFlags | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels,
-			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, use_flags, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
 			return false;
 
 		// Check whether the texture is flagged as depth
@@ -282,14 +284,14 @@ namespace nap
 		// Initialize buffer indexing
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
+		mUsage = usage;
 
 		return true;
 	}
 
-
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
+		if (!initInternal(descriptor, usage, enableMips, requiredFlags, errorState))
 			return false;
 
 		// Set clear color
@@ -301,9 +303,9 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
+		if (!initInternal(descriptor, usage, enableMips, requiredFlags, errorState))
 			return false;
 
 		// Upload initial data and perform a layout transition to shader read

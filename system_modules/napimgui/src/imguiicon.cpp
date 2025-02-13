@@ -87,7 +87,7 @@ namespace nap
 
 		// Create 2D texture
 		mTexture.mID = mName;
-		return mTexture.init(descriptor, true, file_buffer.getData(), 0, error);
+		return mTexture.init(descriptor, Texture::EUsage::Static, true, file_buffer.getData(), 0, error);
 	}
 
 

@@ -144,7 +144,7 @@ namespace nap
 		mShadowTextureDummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 		mShadowTextureDummy->mWidth = 1;
 		mShadowTextureDummy->mHeight = 1;
-		mShadowTextureDummy->mUsage = Texture::EUsage::Static;
+		mShadowTextureDummy->mUsage = Texture::EUsage::Internal;
 		mShadowTextureDummy->mDepthFormat = configuration->mDepthFormat;
 		mShadowTextureDummy->mColorSpace = EColorSpace::Linear;
 		mShadowTextureDummy->mClearValue = 1.0f;
@@ -649,7 +649,7 @@ namespace nap
 				shadow_map->mWidth = light->getShadowMapSize();
 				shadow_map->mHeight = light->getShadowMapSize();
 				shadow_map->mDepthFormat = configuration->mDepthFormat;
-				shadow_map->mUsage = Texture::EUsage::Static;
+				shadow_map->mUsage = Texture::EUsage::Internal;
 				shadow_map->mColorSpace = EColorSpace::Linear;
 				shadow_map->mClearValue = 1.0f;
 				shadow_map->mFill = true;

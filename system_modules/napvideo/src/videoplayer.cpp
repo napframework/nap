@@ -92,8 +92,7 @@ namespace nap
 
 			// Create Y Texture
 			mYTexture = std::make_unique<Texture2D>(mService.getCore());
-			mYTexture->mUsage = Texture::EUsage::DynamicWrite;
-			if (!mYTexture->init(tex_description, false, glm::zero<glm::vec4>(), 0, error))
+			if (!mYTexture->init(tex_description, Texture::EUsage::DynamicWrite, false, glm::zero<glm::vec4>(), 0, error))
 				return false;
 
 			// Update dimensions for U and V texture
@@ -104,14 +103,12 @@ namespace nap
 
 			// Create U
 			mUTexture = std::make_unique<Texture2D>(mService.getCore());
-			mUTexture->mUsage = Texture::EUsage::DynamicWrite;
-			if (!mUTexture->init(tex_description, false, glm::zero<glm::vec4>(), 0, error))
+			if (!mUTexture->init(tex_description, Texture::EUsage::DynamicWrite, false, glm::zero<glm::vec4>(), 0, error))
 				return false;
 
 			// Create V Texture
 			mVTexture = std::make_unique<Texture2D>(mService.getCore());
-			mVTexture->mUsage = Texture::EUsage::DynamicWrite;
-			if (!mVTexture->init(tex_description, false, glm::zero<glm::vec4>(), 0, error))
+			if (!mVTexture->init(tex_description, Texture::EUsage::DynamicWrite, false, glm::zero<glm::vec4>(), 0, error))
 				return false;
 
 			mTexturesCreated = true;

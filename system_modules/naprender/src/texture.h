@@ -36,9 +36,10 @@ namespace nap
 		 */
 		enum class EUsage
 		{
-			Static,				///< Texture does not change, uploaded to once
-			DynamicRead,		///< Texture is frequently read from GPU to CPU
-			DynamicWrite		///< Texture is frequently updated from CPU to GPU
+			Static			= 0,	///< Texture is uploaded to once and does not change
+			DynamicRead		= 1,	///< Texture is frequently read from GPU to CPU
+			DynamicWrite	= 2,	///< Texture is frequently updated from CPU to GPU
+			Internal		= 3		///< Texture is never uploaded to or downloaded from
 		};
 
 		// Constructor
@@ -137,25 +138,27 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
+		 * @param usage how the texture is intended to be used
 		 * @param generateMipMaps if mip maps are generated when data is uploaded.
 		 * @param clearColor the color to clear the texture with.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
+		 * @param usage how the texture is intended to be used
 		 * @param generateMipMaps if mip maps are generated when data is uploaded.
 		 * @param initialData the data to upload, must be of size SurfaceDescriptor::getSizeInBytes().
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture in texels.
@@ -220,8 +223,6 @@ namespace nap
 		 */
 		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
 
-		EUsage mUsage = EUsage::Static;							///< Property: 'Usage' If this texture is updated frequently or considered static.
-
 	protected:
 		/**
 		 * @return Vulkan GPU data handle, including image and view.
@@ -232,12 +233,12 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param enableMips if mip maps are generated when data is uploaded.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool initInternal(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * Called by the render service when data can be uploaded
@@ -268,6 +269,7 @@ namespace nap
 		std::vector<TextureReadCallback>	mReadCallbacks;								///< Number of callbacks based on number of frames in flight
 		std::vector<int>					mDownloadStagingBufferIndices;				///< Staging buffer indices associated with a frameindex
 		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
+		EUsage								mUsage;
 	};
 
 

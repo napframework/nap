@@ -89,7 +89,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mChannels = ESurfaceChannels::R;
 		
-		if (!mTexture->init(settings, generateMipmaps, bitmap_glyph->bitmap.buffer, 0, errorCode))
+		if (!mTexture->init(settings, Texture::EUsage::Static, generateMipmaps, bitmap_glyph->bitmap.buffer, 0, errorCode))
 			return false;
 
 		// Clean up bitmap data
