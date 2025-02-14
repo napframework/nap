@@ -53,7 +53,7 @@ namespace nap
 	static bool createLayeredDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
 		if (!createLayered2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, 1, layerCount, sampleCount,
-			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 			outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
@@ -129,7 +129,7 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, mCubeTexture->getTargetLayout(), mRenderPass, errorState))
 			return false;
 
 		framebuffer_info.renderPass = mRenderPass;
@@ -155,18 +155,6 @@ namespace nap
 
 	void CubeRenderTarget::beginRendering()
 	{
-		// We transition the layout of the depth attachment from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, once in the first pass
-		if (mIsFirstPass)
-		{
-			utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(),
-                mDepthImage, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-				0, 1, VK_IMAGE_ASPECT_DEPTH_BIT);
-		}
-
 		const RGBAColorFloat& clear_color = mClearColor;
 
 		std::array<VkClearValue, 2> clearValues = {};
@@ -277,8 +265,6 @@ namespace nap
 				mCubeTexture->getWidth(), mCubeTexture->getHeight(), mCubeTexture->getMipLevels(), 0, TextureCube::layerCount
 			);
 		}
-
-		mIsFirstPass = false;
 	}
 
 

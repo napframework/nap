@@ -215,8 +215,7 @@ namespace nap
 
 		std::array<VkFramebuffer, TextureCube::layerCount>	mFramebuffers = { VK_NULL_HANDLE };
 
-		glm::ivec2								mSize;
-		uint									mLayerIndex = 0U;
-		bool									mIsFirstPass = true;
+		glm::ivec2								mSize = { 0, 0 };
+		uint									mLayerIndex = 0;
 	};
 }
