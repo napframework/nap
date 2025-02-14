@@ -28,6 +28,7 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
+	// View transformations to align camera with cube map faces
 	static const std::vector<glm::mat4> sCubeMapViewMatrices =
 	{
 		glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(),	math::Y_AXIS),	// right (+X)
@@ -38,16 +39,17 @@ namespace nap
 		glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f })																					// forward (-Z)	
 	};
 
+	// Inverse view transformations to align camera with cube map faces
+	// Use fast transpose operations to invert the cube map matrices - they are orthonormal: pure-rotations and axis-reflections
 	static const std::vector<glm::mat4> sCubeMapInverseViewMatrices =
 	{
-		glm::inverse(sCubeMapViewMatrices[0]),
-		glm::inverse(sCubeMapViewMatrices[1]),
-		glm::inverse(sCubeMapViewMatrices[2]),
-		glm::inverse(sCubeMapViewMatrices[3]),
-		glm::inverse(sCubeMapViewMatrices[4]),
-		glm::inverse(sCubeMapViewMatrices[5]),
+		glm::transpose(sCubeMapViewMatrices[0]),
+		glm::transpose(sCubeMapViewMatrices[1]),
+		glm::transpose(sCubeMapViewMatrices[2]),
+		glm::transpose(sCubeMapViewMatrices[3]),
+		glm::transpose(sCubeMapViewMatrices[4]),
+		glm::transpose(sCubeMapViewMatrices[5])
 	};
-
 
 	// Create the depth image and view
 	static bool createLayeredDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
@@ -236,7 +238,7 @@ namespace nap
 			setLayerIndex(layer_index);
 			beginRendering();
 			{
-				const auto view_matrix = CubeRenderTarget::getCubeMapInverseViewMatrices()[layer_index] * cam_translation;
+				const auto view_matrix = CubeRenderTarget::getCubeMapViewTransforms()[layer_index] * cam_translation;
 				renderCallback(*this, projectionMatrix, view_matrix);
 			}
 			endRendering();
@@ -281,7 +283,7 @@ namespace nap
 	}
 
 
-	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapInverseViewMatrices()
+	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapViewTransforms()
 	{
 		return sCubeMapInverseViewMatrices;
 	}

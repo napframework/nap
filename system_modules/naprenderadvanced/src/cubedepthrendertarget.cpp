@@ -174,7 +174,7 @@ namespace nap
 			setLayerIndex(layer_index);
 			beginRendering();
 			{
-				const auto view_matrix = CubeRenderTarget::getCubeMapInverseViewMatrices()[layer_index] * cam_translation;
+				const auto view_matrix = CubeRenderTarget::getCubeMapViewTransforms()[layer_index] * cam_translation;
 				renderCallback(*this, projectionMatrix, view_matrix);
 			}
 			endRendering();
