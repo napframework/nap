@@ -89,7 +89,6 @@ namespace nap
 			mSampleShading = false;
 		}
 
-
 		// Store whether a depth texture resource is set
 		mHasDepthTexture = mDepthTexture != nullptr;
 

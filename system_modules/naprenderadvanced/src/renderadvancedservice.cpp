@@ -806,8 +806,8 @@ namespace nap
 		assert(entry.second);
 
 		// Queue a graphics command to pre-render the cube map
-		mRenderService->queueHeadlessCommand([this, cm = &cubemap](RenderService& renderService) {
-
+		mRenderService->queueHeadlessCommand([this, cm = &cubemap](RenderService& renderService)
+		{
 			auto it = mCubeMapTargets.find(cm);
 			assert(it != mCubeMapTargets.end());
 

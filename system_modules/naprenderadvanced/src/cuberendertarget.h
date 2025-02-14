@@ -175,14 +175,9 @@ namespace nap
 		uint getLayerIndex() const												{ return mLayerIndex; }
 
 		/**
-		 * @return a list of view matrices that correspond to each cube texture layer index.
-		 */
-		static const std::vector<glm::mat4>& getCubeMapViewMatrices();
-
-		/**
 		 * @return a list of inverse view matrices that correspond to each cube texture layer index.
 		 */
-		static const std::vector<glm::mat4>& getCubeMapInverseViewMatrices();
+		static const std::vector<glm::mat4>& getCubeMapViewTransforms();
 
 		bool									mSampleShading = true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		bool									mUpdateLODs = false;										///< Property: 'UpdateLODs0' Updates mip-maps using blit operations after rendering when the texture has LODs enabled.
@@ -215,8 +210,7 @@ namespace nap
 
 		std::array<VkFramebuffer, TextureCube::layerCount>	mFramebuffers = { VK_NULL_HANDLE };
 
-		glm::ivec2								mSize;
-		uint									mLayerIndex = 0U;
-		bool									mIsFirstPass = true;
+		glm::ivec2								mSize = { 0, 0 };
+		uint									mLayerIndex = 0;
 	};
 }

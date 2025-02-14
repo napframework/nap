@@ -338,11 +338,6 @@ namespace nap
 		int getHeight() const									{ return mDescriptor.mHeight; }
 
 		/**
-		 *	@return the vulkan image usage flags
-		 */
-		VkImageUsageFlags getImageUsageFlags() const			{ return mImageUsageFlags; }
-
-		/**
 		 * @return the number of texture layers
 		 */
 		virtual uint getLayerCount() const override				{ return layerCount; }
@@ -368,8 +363,5 @@ namespace nap
 	protected:
 		ImageData							mImageData = { TextureCube::layerCount };	///< Cube Texture vulkan image buffers
 		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
-
-	private:
-		VkImageUsageFlags					mImageUsageFlags = 0;
 	};
 }
