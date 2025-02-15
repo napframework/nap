@@ -277,12 +277,6 @@ namespace nap
 	}
 
 
-	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapViewMatrices()
-	{
-		return sCubeMapViewMatrices;
-	}
-
-
 	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapViewTransforms()
 	{
 		return sCubeMapInverseViewMatrices;
