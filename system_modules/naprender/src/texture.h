@@ -22,6 +22,8 @@ namespace nap
 	class Bitmap;
 	class RenderService;
 	class Core;
+	class TextureLink2D;
+	class TextureLinkCube;
 
 	/**
 	 * Texture base class
@@ -115,6 +117,7 @@ namespace nap
 	class NAPAPI Texture2D : public Texture
 	{
 		friend class RenderService;
+		friend class Texture2DLink;
         friend void utility::blit(VkCommandBuffer, Texture2D&, Texture2D&);
         friend void utility::copy(VkCommandBuffer, Texture2D&, Texture2D&);
 		RTTI_ENABLE(Texture)
@@ -223,6 +226,10 @@ namespace nap
 		 */
 		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
 
+		// Don't allow implicit conversion from bool to int -> EVIL
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, bool mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState) = delete;
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, bool mipCount, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState) = delete;
+
 	protected:
 		/**
 		 * @return Vulkan GPU data handle, including image and view.
@@ -295,6 +302,7 @@ namespace nap
 	class NAPAPI TextureCube : public Texture
 	{
 		friend class RenderService;
+		friend class TextureCubeLink;
 		RTTI_ENABLE(Texture)
 	public:
 		// The image layer count is equal to the number of sides of a cube
@@ -350,6 +358,9 @@ namespace nap
 		 * @return Vulkan GPU data handle, including image and view.
 		 */
 		virtual ImageData& getHandle() override					{ return mImageData; }
+
+		// Don't allow implicit conversion from bool to int -> EVIL
+		bool init(const SurfaceDescriptor& descriptor, bool mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState) = delete;
 
 	protected:
 		ImageData							mImageData = { TextureCube::layerCount };	///< Cube Texture vulkan image buffers

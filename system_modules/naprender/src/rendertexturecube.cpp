@@ -132,12 +132,6 @@ namespace nap
 	}
 
 
-    void RenderTextureCube::syncLayout()
-    {
-        //getHandle().mCurrentLayout = getTargetLayout();
-    }
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// DepthRenderTextureCube
 	//////////////////////////////////////////////////////////////////////////
@@ -166,12 +160,12 @@ namespace nap
 			case DepthRenderTextureCube::EDepthFormat::D16:
 			{
 				settings.mDataType = ESurfaceDataType::USHORT;
-				return TextureCube::init(settings, false, clear_color, required_flags, errorState);
+				return TextureCube::init(settings, 1, clear_color, required_flags, errorState);
 			}
 			case DepthRenderTextureCube::EDepthFormat::D32:
 			{
 				settings.mDataType = ESurfaceDataType::FLOAT;
-				return TextureCube::init(settings, false, clear_color, required_flags, errorState);
+				return TextureCube::init(settings, 1, clear_color, required_flags, errorState);
 			}
 			default:
 			{

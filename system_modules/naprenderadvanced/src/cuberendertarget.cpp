@@ -77,7 +77,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	CubeRenderTarget::CubeRenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureLink(*this)
 	{}
 
 
@@ -227,7 +228,7 @@ namespace nap
 
 	void CubeRenderTarget::renderInternal(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, CubeRenderTargetCallback renderCallback)
 	{
-		/**
+		/*
 		 * Render to frame buffers
 		 * Cube face selection following the Vulkan spec
 		 * https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
@@ -245,7 +246,7 @@ namespace nap
 		}
 
         // Sync image data with render pass final layout
-        mCubeTexture->syncLayout();
+		mTextureLink.sync(*mCubeTexture);
 
 		// Update mip maps
 		if (mUpdateLODs && mCubeTexture->getMipLevels() > 1)

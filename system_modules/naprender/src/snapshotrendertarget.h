@@ -9,6 +9,7 @@
 #include "renderutils.h"
 #include "imagedata.h"
 #include "snapshot.h"
+#include "texturelink.h"
 
 // External Includes
 #include <vulkan/vulkan_core.h>
@@ -130,6 +131,7 @@ namespace nap
 		VkRenderPass				mRenderPass = VK_NULL_HANDLE;
 		ImageData					mDepthImage;
 		ImageData					mColorImage;
+		Texture2DTargetLink			mTextureLink;
 
 		uint32_t					mCellIndex = 0;
 	};

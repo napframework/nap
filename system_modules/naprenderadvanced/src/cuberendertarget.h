@@ -12,6 +12,7 @@
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <vulkan/vulkan_core.h>
+#include <texturelink.h>
 
 namespace nap
 {
@@ -217,5 +218,6 @@ namespace nap
 
 		glm::ivec2								mSize = { 0, 0 };
 		uint									mLayerIndex = 0;
+		TextureCubeTargetLink					mTextureLink;
 	};
 }

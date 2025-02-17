@@ -50,11 +50,6 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-        /**
-         * Updates image layout to the target layout after a render pass.
-         */
-        void syncLayout();
-
 		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of the texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
@@ -90,11 +85,6 @@ namespace nap
 		 * @return if the texture was created successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-        /**
-         * Updates image layout to the target layout after a render pass.
-         */
-        void syncLayout();
 
 		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of the texture in texels

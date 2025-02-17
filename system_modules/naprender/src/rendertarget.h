@@ -7,6 +7,7 @@
 // Local Includes
 #include "irendertarget.h"
 #include "rendertexture2d.h"
+#include "texturelink.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -140,7 +141,7 @@ namespace nap
 		/**
 		 * @return whether this render target writes to a specified depth texture resource
 		 */
-		bool hasDepthTexture() const											{ return mHasDepthTexture; }
+		bool hasDepthTexture() const											{ return mDepthTexture != nullptr; }
 
 		/**
 		 * @return the texture that holds the result of the render pass.
@@ -194,6 +195,6 @@ namespace nap
 		VkSampleCountFlagBits				mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		ImageData							mDepthImage;
 		ImageData							mColorImage;
-		bool								mHasDepthTexture = false;
+		Texture2DTargetLink					mTextureLink;
 	};
 }

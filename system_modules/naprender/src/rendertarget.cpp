@@ -59,7 +59,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	RenderTarget::RenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureLink(*this)
 	{}
 
 
@@ -88,9 +89,6 @@ namespace nap
 			nap::Logger::warn("Sample shading requested but not supported");
 			mSampleShading = false;
 		}
-
-		// Store whether a depth texture resource is set
-		mHasDepthTexture = mDepthTexture != nullptr;
 
 		// Set framebuffer size
 		const auto size = mColorTexture->getSize();
@@ -162,9 +160,8 @@ namespace nap
 		framebufferInfo.height = framebuffer_size.height;
 		framebufferInfo.layers = 1;
 
-		if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebufferInfo, nullptr, &mFramebuffer) == VK_SUCCESS, "Failed to create framebuffer"))
-			return false;
-		return true;
+		return errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebufferInfo, nullptr, &mFramebuffer) == VK_SUCCESS,
+			"Failed to create framebuffer");
 	}
 
 
@@ -248,8 +245,10 @@ namespace nap
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
 
-        // Sync image data with render pass final layout
-        mColorTexture->syncLayout();
+		// Sync image data with render pass final layout
+		mTextureLink.sync(*mColorTexture);
+		if (hasDepthTexture())
+			mTextureLink.sync(*mDepthTexture);
 	}
 
 
@@ -267,7 +266,6 @@ namespace nap
 
 	DepthRenderTexture2D& RenderTarget::getDepthTexture()
 	{
-		assert(mHasDepthTexture);
 		assert(mDepthTexture != nullptr);
 		return *mDepthTexture;
 	}
