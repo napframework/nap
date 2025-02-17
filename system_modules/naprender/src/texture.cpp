@@ -91,6 +91,8 @@ namespace nap
 				return 1;
 			case Texture::EUsage::DynamicRead:
 				return maxFramesInFlight;
+			case Texture::EUsage::Internal:
+				return 0;
 			default:
 				assert(false);
 		}
@@ -198,69 +200,13 @@ namespace nap
 		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal or higher than 1", mID.c_str()))
 			return false;
 
-		// Ensure there are enough read callbacks based on max number of frames in flight
-		mImageSizeInBytes = descriptor.getSizeInBytes();
-		if (usage == EUsage::DynamicRead)
-		{
-			mReadCallbacks.resize(mRenderService.getMaxFramesInFlight());
-			mDownloadStagingBufferIndices.resize(mRenderService.getMaxFramesInFlight());
-		}
-
-		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
-		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
-		// at any time. However, as the staging buffers serve as a source for updating the GPU buffers, they are part of the command buffer.
-		// 
-		// We can only safely update the staging buffer if we know it isn't used anymore. We generally make enough resources for each frame
-		// that can be in flight. Once we've passed RenderService::beginRendering, we know that the resources for the current frame are 
-		// not in use anymore. If we would use this strategy, we could only safely use a staging buffer during rendering. To be more 
-		// specific, we could only use the staging buffer during rendering, but before the render pass was set (as this is a Vulkan
-		// requirement for buffer transfers). This is very inconvenient for texture updating, as we'd ideally like to update texture contents
-		// at any point in the frame. We also don't want to make an extra copy of the texture that would be used during rendering. To solve 
-		// this problem, we use one additional staging buffer. This guarantees that there's always a single staging buffer free at any point 
-		// in the frame. So the amount of staging buffers is:  'maxFramesInFlight' + 1. Updating the staging buffer multiple times within a 
-		// frame will just overwrite the same staging buffer.
-		//
-		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
-		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
-		// called, which moves the index one place ahead.
-		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
-		if (usage != EUsage::Internal)
-		{
-			// Ensure our GPU image can be used as a transfer destination during uploads
-			VkFormatProperties format_properties;
-			mRenderService.getFormatProperties(mFormat, format_properties);
-			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
-			{
-				errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
-				return false;
-			}
-
-			// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-			VkBufferUsageFlags buffer_usage = usage == EUsage::DynamicRead ?
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT :
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-			// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-			VmaMemoryUsage memory_usage = usage == EUsage::DynamicRead ?
-				VMA_MEMORY_USAGE_GPU_TO_CPU :
-				VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-			mStagingBuffers.resize(getNumStagingBuffers(mRenderService.getMaxFramesInFlight(), usage));
-			for (int index = 0; index < mStagingBuffers.size(); ++index)
-			{
-				BufferData& staging_buffer = mStagingBuffers[index];
-
-				// Create staging buffer
-				if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, 0, staging_buffer, errorState))
-				{
-					errorState.fail("%s: Unable to create staging buffer for texture", mID.c_str());
-					return false;
-				}
-			}
-		}
+		// Create staging buffers for up and download
+		if (!initStagingBuffers(usage, descriptor.getSizeInBytes(), errorState))
+			return false;
 
 		// Create GPU image
 		// TODO: The usage flags could be more fine grained based on selected usage type
+		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
 		VkImageUsageFlags use_flags = requiredFlags | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels,
 			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, use_flags, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
@@ -278,7 +224,6 @@ namespace nap
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
 		mUsage = usage;
-
 		return true;
 	}
 
@@ -475,9 +420,71 @@ namespace nap
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 
-		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
+		mReadCallbacks[frameIndex](mapped_memory, mDescriptor.getSizeInBytes());
 		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
 		mReadCallbacks[frameIndex] = TextureReadCallback();
+	}
+
+
+	bool Texture2D::initStagingBuffers(EUsage usage, size_t imageSizeBytes, utility::ErrorState& errorState)
+	{
+		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
+		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
+		// at any time. However, as the staging buffers serve as a source for updating the GPU buffers, they are part of the command buffer.
+		// 
+		// We can only safely update the staging buffer if we know it isn't used anymore. We generally make enough resources for each frame
+		// that can be in flight. Once we've passed RenderService::beginRendering, we know that the resources for the current frame are 
+		// not in use anymore. If we would use this strategy, we could only safely use a staging buffer during rendering. To be more 
+		// specific, we could only use the staging buffer during rendering, but before the render pass was set (as this is a Vulkan
+		// requirement for buffer transfers). This is very inconvenient for texture updating, as we'd ideally like to update texture contents
+		// at any point in the frame. We also don't want to make an extra copy of the texture that would be used during rendering. To solve 
+		// this problem, we use one additional staging buffer. This guarantees that there's always a single staging buffer free at any point 
+		// in the frame. So the amount of staging buffers is:  'maxFramesInFlight' + 1. Updating the staging buffer multiple times within a 
+		// frame will just overwrite the same staging buffer.
+		//
+		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
+		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
+		// called, which moves the index one place ahead.
+		int staging_count = getNumStagingBuffers(mRenderService.getMaxFramesInFlight(), usage);
+		if (staging_count == 0)
+			return true;
+
+		// Ensure our GPU image can be used as a transfer destination during uploads
+		VkFormatProperties format_properties;
+		mRenderService.getFormatProperties(mFormat, format_properties);
+		if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
+		{
+			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
+			return false;
+		}
+
+		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
+		VkBufferUsageFlags buffer_usage = usage == EUsage::DynamicRead ?
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT :
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
+		VmaMemoryUsage memory_usage = usage == EUsage::DynamicRead ?
+			VMA_MEMORY_USAGE_GPU_TO_CPU :
+			VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+		// Create staging buffers
+		auto vulkan_allocator = mRenderService.getVulkanAllocator();
+		mStagingBuffers.resize(staging_count);
+		for (BufferData& buffer_data : mStagingBuffers)
+		{
+			if (!errorState.check(createBuffer(vulkan_allocator, imageSizeBytes, buffer_usage, memory_usage, 0, buffer_data, errorState),
+				"%s: Unable to create staging buffer for texture", mID.c_str()))
+				return false;
+		}
+
+		// Ensure there are enough read callbacks based on max number of frames in flight
+		if (usage == EUsage::DynamicRead)
+		{
+			mReadCallbacks.resize(mRenderService.getMaxFramesInFlight());
+			mDownloadStagingBufferIndices.resize(mRenderService.getMaxFramesInFlight());
+		}
+		return true;
 	}
 
 
@@ -548,9 +555,8 @@ namespace nap
 				return false;
 		}
 
-		mDescriptor = descriptor;
-
 		// Set clear color
+		mDescriptor = descriptor;
 		std::memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
 
 		// Clear the texture and perform a layout transition to shader read

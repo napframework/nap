@@ -269,7 +269,14 @@ namespace nap
 		std::vector<TextureReadCallback>	mReadCallbacks;								///< Number of callbacks based on number of frames in flight
 		std::vector<int>					mDownloadStagingBufferIndices;				///< Staging buffer indices associated with a frameindex
 		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
-		EUsage								mUsage;
+		EUsage								mUsage;										///< Intented texture usage
+
+	private:
+		/**
+		 * Creates the various staging buffers, required for data up and download.
+		 * @param usage the intended texture usage
+		 */
+		bool initStagingBuffers(EUsage usage, size_t imageSizeBytes, utility::ErrorState& error);
 	};
 
 
@@ -343,8 +350,6 @@ namespace nap
 		 * @return Vulkan GPU data handle, including image and view.
 		 */
 		virtual ImageData& getHandle() override					{ return mImageData; }
-
-		const EUsage						mUsage = EUsage::Static;					///< Texture usage (cube maps are currently always static)
 
 	protected:
 		ImageData							mImageData = { TextureCube::layerCount };	///< Cube Texture vulkan image buffers
