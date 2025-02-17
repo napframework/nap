@@ -1662,7 +1662,7 @@ namespace nap
 
 		mEmptyTextureCube = std::make_unique<TextureCube>(getCore());
 		mEmptyTextureCube->mID = utility::stringFormat("%s_EmptyTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mEmptyTextureCube->init(settings, false, glm::zero<glm::vec4>(), 0, errorState))
+		if (!mEmptyTextureCube->init(settings, 1, glm::zero<glm::vec4>(), 0, errorState))
 			return false;
 
 		mErrorTexture2D = std::make_unique<Texture2D>(getCore());
@@ -1672,7 +1672,7 @@ namespace nap
 
 		mErrorTextureCube = std::make_unique<TextureCube>(getCore());
 		mErrorTextureCube->mID = utility::stringFormat("%s_ErrorTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mErrorTextureCube->init(settings, false, mErrorColor.toVec4(), 0, errorState))
+		if (!mErrorTextureCube->init(settings, 1, mErrorColor.toVec4(), 0, errorState))
 			return false;
 
 		return true;

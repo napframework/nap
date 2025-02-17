@@ -118,11 +118,17 @@ namespace nap
 			}
 		}
 
+		// Ensure mip-mapping is supported when requested
+		if (!errorState.check(!enableMips || mRenderService.getMipSupport(settings),
+			"%s: hardware mipmap generation not supported", mID.c_str()))
+			return false;
+
 		// Ensure texture can be used as an attachment for a render pass
 		VkImageUsageFlags required_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		// Create render texture
-		return TextureCube::init(settings, enableMips, mClearColor.toVec4(), required_flags, errorState);
+		int lvl = enableMips ? utility::computeMipLevel(settings) : 1;
+		return TextureCube::init(settings, lvl, mClearColor.toVec4(), required_flags, errorState);
 	}
 
 

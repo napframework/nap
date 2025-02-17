@@ -501,8 +501,13 @@ namespace nap
 	}
 
 
-	bool TextureCube::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool TextureCube::init(const SurfaceDescriptor& descriptor, int mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
+		// Store number of mip-maps to generate
+		mMipLevels = mipCount;
+		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal or higher than 1", mID.c_str()))
+			return false;
+
 		// Get the format, when unsupported bail.
 		mFormat = utility::getTextureFormat(descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
@@ -515,17 +520,6 @@ namespace nap
 		{
 			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
 			return false;
-		}
-
-		// If mip mapping is enabled, ensure it is supported
-		if (generateMipMaps)
-		{
-			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-			{
-				errorState.fail("%s: image format does not support linear blitting, consider disabling mipmap generation", mID.c_str());
-				return false;
-			}
-			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
 		}
 
 		// Set image usage flags: can be written to, read and sampled
