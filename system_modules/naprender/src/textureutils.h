@@ -45,7 +45,7 @@ namespace nap
 		/**
 		 * Compute maximum texture level of detail
 		 */
-		bool NAPAPI computeMipLevel(const SurfaceDescriptor& descriptor, VkPhysicalDevice device, int& outLevel, utility::ErrorState& errorState);
+		int NAPAPI computeMipLevel(const SurfaceDescriptor& descriptor);
 
 		/**
 		 * Creates mip maps for the specified Vulkan image.

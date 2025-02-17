@@ -89,12 +89,13 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mChannels = ESurfaceChannels::R;
 
-		// Get lod if mip-map generation is turned on
-		int lvl = 1;
-		if (generateMipmaps && !utility::computeMipLevel(settings, mTexture->getRenderService().getPhysicalDevice(), lvl, errorCode))
-			return false;
+		// Get max supported LOD
+		if (!errorCode.check(!generateMipmaps || mTexture->getRenderService().getMipSupport(settings),
+			"hardware mipmap generation not supported for glyphs"))
+			return  false;
 
 		// Initialize texture
+		int lvl = generateMipmaps ? utility::computeMipLevel(settings) : 1;
 		if (!mTexture->init(settings, Texture::EUsage::Static, lvl, bitmap_glyph->bitmap.buffer, 0, errorCode))
 			return false;
 

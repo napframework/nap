@@ -75,6 +75,7 @@ namespace nap
 
 		// Extract name
 		mName = utility::stripFileExtension(utility::getFileName(mImagePath));
+		mTexture.mID = mName;
 
 		// Load bitmap into memory
 		BitmapFileBuffer file_buffer;
@@ -87,12 +88,12 @@ namespace nap
 			return false;
 
 		// Get max supported LOD
-		int lvl = 1;
-		if (!utility::computeMipLevel(descriptor, mTexture.getRenderService().getPhysicalDevice(), lvl, error))
-			return false;
+		if (!error.check(mTexture.getRenderService().getMipSupport(descriptor),
+			"%s: hardware mipmap generation not supported", mID.c_str()))
+			return  false;
 
 		// Create 2D texture
-		mTexture.mID = mName;
+		int lvl = utility::computeMipLevel(descriptor);
 		return mTexture.init(descriptor, Texture::EUsage::Static, lvl, file_buffer.getData(), 0, error);
 	}
 

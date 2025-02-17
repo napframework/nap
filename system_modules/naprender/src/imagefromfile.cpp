@@ -37,15 +37,13 @@ namespace nap
 		if (!getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		// Compute max lod level
-		int lvl = 1;
-		if (mGenerateLods && !utility::computeMipLevel(getBitmap().mSurfaceDescriptor, mRenderService.getPhysicalDevice(), lvl, errorState))
-		{
-			errorState.fail("Consider disabling mipmap generation");
+		// Ensure hardware mip-mapping is supported
+		if(!errorState.check(!mGenerateLods || mRenderService.getMipSupport(getBitmap().mSurfaceDescriptor),
+			"%s: hardware mipmap generation not supported, consider disabling 'GenerateLods'", mID.c_str()))
 			return false;
-		}
 
-		// Initialize texture
+		// Initialize
+		int lvl = mGenerateLods ? utility::computeMipLevel(getBitmap().mSurfaceDescriptor) : 1;
 		return Texture2D::init(getBitmap().mSurfaceDescriptor, mUsage, lvl, getBitmap().getData(), 0, errorState);
 	}
 }

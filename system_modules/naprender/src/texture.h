@@ -74,12 +74,12 @@ namespace nap
 		const SurfaceDescriptor& getDescriptor() const			{ return mDescriptor; }
 
 		/**
-		 * @return render service
+		 * @return render service, available after construction
 		 */
 		RenderService& getRenderService()						{ return mRenderService; }
 
 		/**
-		 * @return render service
+		 * @return render service, available after construction
 		 */
 		const RenderService& getRenderService() const			{ return mRenderService; }
 

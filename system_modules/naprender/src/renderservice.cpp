@@ -2872,6 +2872,15 @@ namespace nap
 	}
 
 
+	bool RenderService::getMipSupport(const SurfaceDescriptor& descriptor) const
+	{
+		// Get format properties
+		VkFormatProperties properties;
+		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), utility::getTextureFormat(descriptor), &properties);
+		return (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) > 0;
+	}
+
+
 	RenderService::UniqueMaterial::UniqueMaterial(std::unique_ptr<Shader> shader, std::unique_ptr<Material> material) :
 		mShader(std::move(shader)), mMaterial(std::move(material))
 	{ }
