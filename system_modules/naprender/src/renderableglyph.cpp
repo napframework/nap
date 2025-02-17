@@ -82,14 +82,20 @@ namespace nap
 		// Create texture and get parameters
 		mTexture = std::make_unique<Texture2D>(*mCore);
 
-		// Initialize texture
+		// Create glyph texture description
 		SurfaceDescriptor settings;
 		settings.mWidth  = mSize.x;
 		settings.mHeight = mSize.y;
 		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mChannels = ESurfaceChannels::R;
-		
-		if (!mTexture->init(settings, Texture::EUsage::Static, generateMipmaps, bitmap_glyph->bitmap.buffer, 0, errorCode))
+
+		// Get lod if mip-map generation is turned on
+		int lvl = 1;
+		if (generateMipmaps && !utility::computeMipLevel(settings, mTexture->getRenderService().getPhysicalDevice(), lvl, errorCode))
+			return false;
+
+		// Initialize texture
+		if (!mTexture->init(settings, Texture::EUsage::Static, lvl, bitmap_glyph->bitmap.buffer, 0, errorCode))
 			return false;
 
 		// Clean up bitmap data

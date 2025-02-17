@@ -131,6 +131,26 @@ namespace nap
 		}
 
 
+		bool computeMipLevel(const SurfaceDescriptor& descriptor, VkPhysicalDevice device, int& outLevel, utility::ErrorState& errorState)
+		{
+			// Get format properties
+			VkFormatProperties properties;
+			vkGetPhysicalDeviceFormatProperties(device, utility::getTextureFormat(descriptor), &properties);
+
+			// Ensure filtered blitting is supported
+			if (!errorState.check((properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) > 0,
+				"Image format does not support linear blitting"))
+			{
+				outLevel = 1;
+				return false;
+			}
+
+			// Compute level
+			outLevel = static_cast<int>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
+			return true;
+		}
+
+
 		void createMipmaps(VkCommandBuffer buffer, ImageData& image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
 		{
 			return createMipmaps(buffer, image, imageFormat, targetLayout, aspect, texWidth, texHeight, mipLevels, 0, 1);

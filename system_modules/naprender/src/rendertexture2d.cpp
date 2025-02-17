@@ -114,7 +114,7 @@ namespace nap
 		}
 
 		// Create render texture
-		return Texture2D::init(settings, mUsage, false, mClearColor.toVec4(), VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
+		return Texture2D::init(settings, mUsage, 1, mClearColor.toVec4(), VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 	}
 
 
@@ -148,14 +148,12 @@ namespace nap
 			case DepthRenderTexture2D::EDepthFormat::D16:
 			{
 				settings.mDataType = ESurfaceDataType::USHORT;
-				return Texture2D::init(settings, mUsage, false,
-					clear_color, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, mUsage, 1, clear_color, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
 			}
 			case DepthRenderTexture2D::EDepthFormat::D32:
 			{
 				settings.mDataType = ESurfaceDataType::FLOAT;
-				return Texture2D::init(settings, mUsage, false,
-					clear_color, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, mUsage, 1, clear_color, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
 			}
 			default:
 			{

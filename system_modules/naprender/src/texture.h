@@ -139,26 +139,26 @@ namespace nap
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
 		 * @param usage how the texture is intended to be used (static, internal only etc..)
-		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param mipCount total number of mip-maps to generate upon upload, a value of 1 disables mip-mapping
 		 * @param clearColor the color to clear the texture with.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
 		 * @param usage how the texture is intended to be used (static, internal only etc..)
-		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param mipCount total number of mip-maps to generate upon upload, a value of 1 disables mip-mapping
 		 * @param initialData the data to upload, must be of size SurfaceDescriptor::getSizeInBytes().
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture in texels.
@@ -233,12 +233,12 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param enableMips if mip maps are generated when data is uploaded.
+		 * @param mipCount total number of mip-maps to generate upon upload
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool initInternal(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool initInternal(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * Called by the render service when data can be uploaded

@@ -186,27 +186,17 @@ namespace nap
 	}
 
 
-	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
 		mFormat = utility::getTextureFormat(descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
 			return false;
 
-		// Ensure our GPU image can be used as a transfer destination during uploads
-		VkFormatProperties format_properties;
-		mRenderService.getFormatProperties(mFormat, format_properties);
-
-		// If mip mapping is enabled, ensure it is supported
-		if (enableMips)
-		{
-			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-			{
-				errorState.fail("%s: image format does not support linear blitting, consider disabling mipmap generation", mID.c_str());
-				return false;
-			}
-			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
-		}
+		// Store number of mip-maps to generate
+		mMipLevels = mipCount;
+		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal or higher than 1", mID.c_str()))
+			return false;
 
 		// Ensure there are enough read callbacks based on max number of frames in flight
 		mImageSizeInBytes = descriptor.getSizeInBytes();
@@ -237,6 +227,8 @@ namespace nap
 		if (usage != EUsage::Internal)
 		{
 			// Ensure our GPU image can be used as a transfer destination during uploads
+			VkFormatProperties format_properties;
+			mRenderService.getFormatProperties(mFormat, format_properties);
 			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
 			{
 				errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
@@ -290,9 +282,9 @@ namespace nap
 		return true;
 	}
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!initInternal(descriptor, usage, enableMips, requiredFlags, errorState))
+		if (!initInternal(descriptor, usage, mipCount, requiredFlags, errorState))
 			return false;
 
 		// Set clear color
@@ -304,9 +296,9 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, EUsage usage, bool enableMips, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!initInternal(descriptor, usage, enableMips, requiredFlags, errorState))
+		if (!initInternal(descriptor, usage, mipCount, requiredFlags, errorState))
 			return false;
 
 		// Upload initial data and perform a layout transition to shader read

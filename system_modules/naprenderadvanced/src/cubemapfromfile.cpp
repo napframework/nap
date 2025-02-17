@@ -37,7 +37,7 @@ namespace nap
 			return false;
 
 		if (!mSourceImage->init(mSourceImage->getBitmap().mSurfaceDescriptor,
-			EUsage::Static, false, mSourceImage->getBitmap().getData(), 0, errorState))
+			EUsage::Static, 1, mSourceImage->getBitmap().getData(), 0, errorState))
 			return false;
 
 		mRenderAdvancedService->registerCubeMap(*this);

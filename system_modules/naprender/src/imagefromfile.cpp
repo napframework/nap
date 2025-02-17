@@ -8,6 +8,7 @@
 // External Includes
 #include <nap/logger.h>
 #include <nap/core.h>
+#include <renderservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ImageFromFile, "2D image that is loaded from disk and uploaded to the GPU. Holds the CPU (bitmap) and GPU (texture) data")
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -36,7 +37,15 @@ namespace nap
 		if (!getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		// Create 2D texture
-		return Texture2D::init(getBitmap().mSurfaceDescriptor, mUsage, mGenerateLods, getBitmap().getData(), 0, errorState);
+		// Compute max lod level
+		int lvl = 1;
+		if (mGenerateLods && !utility::computeMipLevel(getBitmap().mSurfaceDescriptor, mRenderService.getPhysicalDevice(), lvl, errorState))
+		{
+			errorState.fail("Consider disabling mipmap generation");
+			return false;
+		}
+
+		// Initialize texture
+		return Texture2D::init(getBitmap().mSurfaceDescriptor, mUsage, lvl, getBitmap().getData(), 0, errorState);
 	}
 }
