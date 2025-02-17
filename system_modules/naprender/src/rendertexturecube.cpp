@@ -8,13 +8,13 @@
 
 
 RTTI_BEGIN_ENUM(nap::RenderTextureCube::EFormat)
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA8, "RGBA8"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::BGRA8, "BGRA8"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R8, "R8"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA16, "RGBA16"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R16, "R16"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA32, "RGBA32"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R32, "R32")
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA8,		"RGBA8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::BGRA8,		"BGRA8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R8,		"R8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA16,	"RGBA16"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R16,		"R16"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA32,	"RGBA32"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R32,		"R32")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTextureCube, "Cubemap GPU color texture ")
@@ -51,8 +51,15 @@ namespace nap
 		TextureCube(core)
 	{ }
 
+
 	// Initializes Cube texture. 
 	bool RenderTextureCube::init(utility::ErrorState& errorState)
+	{
+		return init(false, errorState);
+	}
+
+
+	bool RenderTextureCube::init(bool enableMips, utility::ErrorState& errorState)
 	{
 		SurfaceDescriptor settings;
 		settings.mWidth = mWidth;
@@ -115,7 +122,7 @@ namespace nap
 		VkImageUsageFlags required_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		// Create render texture
-		return TextureCube::init(settings, mGenerateLODs, mClearColor.toVec4(), required_flags, errorState);
+		return TextureCube::init(settings, enableMips, mClearColor.toVec4(), required_flags, errorState);
 	}
 
 

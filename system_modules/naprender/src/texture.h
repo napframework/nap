@@ -138,7 +138,7 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param usage how the texture is intended to be used
+		 * @param usage how the texture is intended to be used (static, internal only etc..)
 		 * @param generateMipMaps if mip maps are generated when data is uploaded.
 		 * @param clearColor the color to clear the texture with.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
@@ -151,7 +151,7 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param usage how the texture is intended to be used
+		 * @param usage how the texture is intended to be used (static, internal only etc..)
 		 * @param generateMipMaps if mip maps are generated when data is uploaded.
 		 * @param initialData the data to upload, must be of size SurfaceDescriptor::getSizeInBytes().
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
@@ -300,13 +300,13 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param generateMipMaps if mip-maps are auto generated
+		 * @param generateMips if mip-maps are auto generated
 		 * @param clearColor the color to clear the texture with.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool generateMips, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture in texels.

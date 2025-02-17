@@ -30,7 +30,7 @@ namespace nap
 
 	bool CubeMapFromFile::init(utility::ErrorState& errorState)
 	{
-		if (!RenderTextureCube::init(errorState))
+		if (!RenderTextureCube::init(mGenerateLODs, errorState))
 			return false;
 
 		if (!mSourceImage->getBitmap().initFromFile(mImagePath, errorState))
