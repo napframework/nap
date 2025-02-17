@@ -1657,7 +1657,7 @@ namespace nap
 		SurfaceDescriptor settings = { 1, 1, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
 		mEmptyTexture2D = std::make_unique<Texture2D>(getCore());
 		mEmptyTexture2D->mID = utility::stringFormat("%s_EmptyTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mEmptyTexture2D->init(settings, Texture::EUsage::Internal, 1, glm::zero<glm::vec4>(), 0, errorState))
+		if (!mEmptyTexture2D->init(settings, Texture2D::EUsage::Internal, 1, glm::zero<glm::vec4>(), 0, errorState))
 			return false;
 
 		mEmptyTextureCube = std::make_unique<TextureCube>(getCore());
@@ -1667,7 +1667,7 @@ namespace nap
 
 		mErrorTexture2D = std::make_unique<Texture2D>(getCore());
 		mErrorTexture2D->mID = utility::stringFormat("%s_ErrorTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mErrorTexture2D->init(settings, Texture::EUsage::Internal, 1, mErrorColor.toVec4(), 0, errorState))
+		if (!mErrorTexture2D->init(settings, Texture2D::EUsage::Internal, 1, mErrorColor.toVec4(), 0, errorState))
 			return false;
 
 		mErrorTextureCube = std::make_unique<TextureCube>(getCore());

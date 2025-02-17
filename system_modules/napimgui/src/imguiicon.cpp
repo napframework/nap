@@ -94,7 +94,7 @@ namespace nap
 
 		// Create 2D texture
 		int lvl = utility::computeMipLevel(descriptor);
-		return mTexture.init(descriptor, Texture::EUsage::Static, lvl, file_buffer.getData(), 0, error);
+		return mTexture.init(descriptor, Texture2D::EUsage::Static, lvl, file_buffer.getData(), 0, error);
 	}
 
 

@@ -31,17 +31,6 @@ namespace nap
 		friend class RenderService;
 		RTTI_ENABLE(Resource)
 	public:
-		/**
-		 * Flag that determines how the texture is used at runtime.
-		 */
-		enum class EUsage
-		{
-			Static			= 0,	///< Texture is uploaded to once and does not change
-			DynamicRead		= 1,	///< Texture is frequently read from GPU to CPU
-			DynamicWrite	= 2,	///< Texture is frequently updated from CPU to GPU
-			Internal		= 3		///< Texture is never uploaded to or downloaded from
-		};
-
 		// Constructor
 		Texture(Core& core);
 
@@ -128,9 +117,20 @@ namespace nap
 		friend class RenderService;
         friend void utility::blit(VkCommandBuffer, Texture2D&, Texture2D&);
         friend void utility::copy(VkCommandBuffer, Texture2D&, Texture2D&);
-
 		RTTI_ENABLE(Texture)
+
 	public:
+		/**
+		 * Flag that determines how the 2D texture is used at runtime.
+		 */
+		enum class EUsage
+		{
+			Static			= 0,	///< Texture is uploaded to once and does not change
+			DynamicRead		= 1,	///< Texture is frequently read from GPU to CPU
+			DynamicWrite	= 2,	///< Texture is frequently updated from CPU to GPU
+			Internal		= 3		///< Texture is never uploaded to or downloaded from
+		};
+
 		Texture2D(Core& core);
 		virtual ~Texture2D() override;
 

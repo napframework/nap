@@ -14,11 +14,11 @@
 #include <nap/logger.h>
 #include <glm/gtc/type_ptr.hpp>
 
-RTTI_BEGIN_ENUM(nap::Texture::EUsage)
-	RTTI_ENUM_VALUE(nap::Texture::EUsage::Static,		"Static"),
-	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicRead,	"DynamicRead"),
-	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicWrite,	"DynamicWrite"),
-	RTTI_ENUM_VALUE(nap::Texture::EUsage::Internal,		"Internal")
+RTTI_BEGIN_ENUM(nap::Texture2D::EUsage)
+	RTTI_ENUM_VALUE(nap::Texture2D::EUsage::Static,			"Static"),
+	RTTI_ENUM_VALUE(nap::Texture2D::EUsage::DynamicRead,	"DynamicRead"),
+	RTTI_ENUM_VALUE(nap::Texture2D::EUsage::DynamicWrite,	"DynamicWrite"),
+	RTTI_ENUM_VALUE(nap::Texture2D::EUsage::Internal,		"Internal")
 RTTI_END_ENUM
 
 // Define Texture base
@@ -81,17 +81,17 @@ namespace nap
 	}
 
 
-	static int getNumStagingBuffers(int maxFramesInFlight, Texture::EUsage textureUsage)
+	static int getNumStagingBuffers(int maxFramesInFlight, Texture2D::EUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
-		case Texture::EUsage::DynamicWrite:
-				return maxFramesInFlight + 1;
-			case Texture::EUsage::Static:
+			case Texture2D::EUsage::Static:
 				return 1;
-			case Texture::EUsage::DynamicRead:
+			case Texture2D::EUsage::DynamicRead:
 				return maxFramesInFlight;
-			case Texture::EUsage::Internal:
+			case Texture2D::EUsage::DynamicWrite:
+				return maxFramesInFlight + 1;
+			case Texture2D::EUsage::Internal:
 				return 0;
 			default:
 				assert(false);

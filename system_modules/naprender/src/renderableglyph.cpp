@@ -96,7 +96,7 @@ namespace nap
 
 		// Initialize texture
 		int lvl = generateMipmaps ? utility::computeMipLevel(settings) : 1;
-		if (!mTexture->init(settings, Texture::EUsage::Static, lvl, bitmap_glyph->bitmap.buffer, 0, errorCode))
+		if (!mTexture->init(settings, Texture2D::EUsage::Static, lvl, bitmap_glyph->bitmap.buffer, 0, errorCode))
 			return false;
 
 		// Clean up bitmap data
