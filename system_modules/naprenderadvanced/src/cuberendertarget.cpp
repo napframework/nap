@@ -131,7 +131,7 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, mCubeTexture->getTargetLayout(), mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, getFinalLayout(), mRenderPass, errorState))
 			return false;
 
 		framebuffer_info.renderPass = mRenderPass;
