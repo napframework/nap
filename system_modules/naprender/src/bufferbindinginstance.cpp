@@ -124,7 +124,7 @@ namespace nap
 
 			// Verify bounds
 			if (!errorState.check(isCompatible(buffer_declaration, *binding),
-				utility::stringFormat("Mismatch between element stride and buffer element size for buffer binding '%s'. Please refer to the alignment requirements for shader resources in Section 15.6.4 of the Vulkan specification", buffer_declaration.mName.c_str())))
+				"Mismatch between element stride and buffer element size for buffer binding '%s'. Please refer to the alignment requirements for shader resources in Section 15.8.4 of the Vulkan specification", buffer_declaration.mName.c_str()))
 				return nullptr;
 		}
 
