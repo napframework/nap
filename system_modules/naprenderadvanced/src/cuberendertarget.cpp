@@ -20,6 +20,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeRenderTarget, "Color texture ta
 	RTTI_PROPERTY("SampleShading",			&nap::CubeRenderTarget::mSampleShading,				nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
 	RTTI_PROPERTY("ClearColor",				&nap::CubeRenderTarget::mClearColor,				nap::rtti::EPropertyMetaData::Default,	"Initial clear color")
 	RTTI_PROPERTY("UpdateLODs",				&nap::CubeRenderTarget::mUpdateLODs,				nap::rtti::EPropertyMetaData::Default,  "Create mip-maps when texture has more than 1 LOD")
+	RTTI_PROPERTY("Clear",					&nap::CubeRenderTarget::mClear,						nap::rtti::EPropertyMetaData::Default,  "Whether to clear the render target at the start of each render pass")
 RTTI_END_CLASS
 
 namespace nap
@@ -132,7 +133,7 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, getFinalLayout(), mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, getFinalLayout(), mClear, mRenderPass, errorState))
 			return false;
 
 		framebuffer_info.renderPass = mRenderPass;

@@ -17,57 +17,57 @@ namespace nap
 		{
 			switch (channels)
 			{
-			case ESurfaceChannels::R:
-			{
-				switch (dataType)
+				case ESurfaceChannels::R:
 				{
-				case ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
-				case ESurfaceDataType::FLOAT:
-					return VK_FORMAT_R32_SFLOAT;
-				case ESurfaceDataType::USHORT:
-					return VK_FORMAT_R16_UNORM;
+					switch (dataType)
+					{
+						case ESurfaceDataType::BYTE:
+							return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
+						case ESurfaceDataType::FLOAT:
+							return VK_FORMAT_R32_SFLOAT;
+						case ESurfaceDataType::USHORT:
+							return VK_FORMAT_R16_UNORM;
+					}
+					break;
 				}
-				break;
-			}
-			case ESurfaceChannels::RGBA:
-			{
-				switch (dataType)
+				case ESurfaceChannels::RGBA:
 				{
-				case ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
-				case ESurfaceDataType::FLOAT:
-					return VK_FORMAT_R32G32B32A32_SFLOAT;
-				case ESurfaceDataType::USHORT:
-					return VK_FORMAT_R16G16B16A16_UNORM;
+					switch (dataType)
+					{
+						case ESurfaceDataType::BYTE:
+							return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
+						case ESurfaceDataType::FLOAT:
+							return VK_FORMAT_R32G32B32A32_SFLOAT;
+						case ESurfaceDataType::USHORT:
+							return VK_FORMAT_R16G16B16A16_UNORM;
+					}
+					break;
 				}
-				break;
-			}
-			case ESurfaceChannels::BGRA:
-			{
-				switch (dataType)
+				case ESurfaceChannels::BGRA:
 				{
-				case ESurfaceDataType::BYTE:
-					return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
-				case ESurfaceDataType::FLOAT:
-					return VK_FORMAT_UNDEFINED;
-				case ESurfaceDataType::USHORT:
-					return VK_FORMAT_UNDEFINED;
+					switch (dataType)
+					{
+						case ESurfaceDataType::BYTE:
+							return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
+						case ESurfaceDataType::FLOAT:
+							return VK_FORMAT_UNDEFINED;
+						case ESurfaceDataType::USHORT:
+							return VK_FORMAT_UNDEFINED;
+					}
+					break;
 				}
-				break;
-			}
-			case ESurfaceChannels::D:
-			{
-				switch (dataType)
+				case ESurfaceChannels::D:
 				{
-				case ESurfaceDataType::FLOAT:
-					return VK_FORMAT_D32_SFLOAT;
-				case ESurfaceDataType::USHORT:
-					return VK_FORMAT_D16_UNORM;
+					switch (dataType)
+					{
+						case ESurfaceDataType::FLOAT:
+							return VK_FORMAT_D32_SFLOAT;
+						case ESurfaceDataType::USHORT:
+							return VK_FORMAT_D16_UNORM;
+					}
+					break;
 				}
-				break;
-			}
-			NAP_ASSERT_MSG(false, "Surface descriptor could not be resolved to valid/supported texture format");
+				NAP_ASSERT_MSG(false, "Surface descriptor could not be resolved to valid/supported texture format");
 			}
 			return VK_FORMAT_UNDEFINED;
 		}
@@ -86,20 +86,23 @@ namespace nap
             uint mipLevel, uint mipLevelCount,
             uint layer, uint layerCount, VkImageAspectFlags aspect)
         {
-            VkImageMemoryBarrier barrier = {};
-            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            barrier.oldLayout = oldLayout;
-            barrier.newLayout = newLayout;
-            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.image = image;
-            barrier.subresourceRange.aspectMask = aspect;
-            barrier.subresourceRange.baseMipLevel = mipLevel;
-            barrier.subresourceRange.levelCount = mipLevelCount;
-            barrier.subresourceRange.baseArrayLayer = layer;
-            barrier.subresourceRange.layerCount = layerCount;
-            barrier.srcAccessMask = srcAccessMask;
-            barrier.dstAccessMask = dstAccessMask;
+            VkImageMemoryBarrier barrier = {
+            	.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+				.srcAccessMask = srcAccessMask,
+				.dstAccessMask = dstAccessMask,
+            	.oldLayout = oldLayout,
+            	.newLayout = newLayout,
+				.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+				.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+				.image = image,
+				.subresourceRange = {
+					.aspectMask = aspect,
+					.baseMipLevel = mipLevel,
+					.levelCount = mipLevelCount,
+					.baseArrayLayer = layer,
+					.layerCount = layerCount
+				}
+			};
             vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         }
 
@@ -159,19 +162,28 @@ namespace nap
 					aspect);
 
 				// Create blit structure
-				VkImageBlit blit{};
-				blit.srcOffsets[0] = { 0, 0, 0 };
-				blit.srcOffsets[1] = {mip_width, mip_height, 1 };
-				blit.srcSubresource.aspectMask = aspect;
-				blit.srcSubresource.mipLevel = i-1;
-				blit.srcSubresource.baseArrayLayer = layer;
-				blit.srcSubresource.layerCount = layerCount;
-				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = {mip_width > 1 ? mip_width / 2 : 1, mip_height > 1 ? mip_height / 2 : 1, 1 };
-				blit.dstSubresource.aspectMask = aspect;
-				blit.dstSubresource.mipLevel = i;
-				blit.dstSubresource.baseArrayLayer = layer;
-				blit.dstSubresource.layerCount = layerCount;
+				VkImageBlit blit = {
+					.srcSubresource = {
+						.aspectMask = aspect,
+						.mipLevel = i-1,
+						.baseArrayLayer = layer,
+						.layerCount = layerCount
+					},
+					.srcOffsets = {
+						{ 0, 0, 0 },
+						{ mip_width, mip_height, 1 }
+					},
+					.dstSubresource = {
+						.aspectMask = aspect,
+						.mipLevel = i,
+						.baseArrayLayer = layer,
+						.layerCount = layerCount
+					},
+					.dstOffsets = {
+						{ 0, 0, 0 },
+						{ mip_width > 1 ? mip_width / 2 : 1, mip_height > 1 ? mip_height / 2 : 1, 1 }
+					}
+				};
 
 				// Blit
 				vkCmdBlitImage(buffer,
@@ -227,17 +239,28 @@ namespace nap
 			}
 
 			// Create blit structure
-			VkImageBlit blit{};
-			blit.srcOffsets[0] = { 0, 0, 0 };
-			blit.srcOffsets[1] = { srcTexture.getWidth(), srcTexture.getHeight(), 1 };
-			blit.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-			blit.dstOffsets[0] = { 0, 0, 0 };
-			blit.dstOffsets[1] = { dstTexture.getWidth(), dstTexture.getHeight(), 1 };
-
-			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.dstSubresource.mipLevel = 0;
-			blit.dstSubresource.baseArrayLayer = 0;
-			blit.dstSubresource.layerCount = 1;
+			VkImageBlit blit = {
+				.srcSubresource = {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.mipLevel = 0,
+					.baseArrayLayer = 0,
+					.layerCount = 1
+				},
+				.srcOffsets = {
+					{ 0, 0, 0 },
+					{ srcTexture.getWidth(), srcTexture.getHeight(), 1 }
+				},
+				.dstSubresource = {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.mipLevel = 0,
+					.baseArrayLayer = 0,
+					.layerCount = 1
+				},
+				.dstOffsets = {
+					{ 0, 0, 0 },
+					{ dstTexture.getWidth(), dstTexture.getHeight(), 1 }
+				}
+			};
 
 			// Blit to output
 			vkCmdBlitImage(commandBuffer,
@@ -289,12 +312,27 @@ namespace nap
 			}
 
 			// Create blit structure
-			VkImageCopy region = {};
-			region.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-			region.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-			region.srcOffset = { 0, 0, 0 };
-			region.dstOffset = { 0, 0, 0 };
-			region.extent = { static_cast<uint>(srcTexture.getWidth()), static_cast<uint>(srcTexture.getHeight()), 1 };
+			VkImageCopy region = {
+				.srcSubresource = {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.mipLevel = 0,
+					.baseArrayLayer = 0,
+					.layerCount = 1
+				},
+				.srcOffset = { 0, 0, 0 },
+				.dstSubresource = {
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.mipLevel = 0,
+					.baseArrayLayer = 0,
+					.layerCount = 1
+				},
+				.dstOffset = { 0, 0, 0 },
+				.extent = {
+					static_cast<uint>(srcTexture.getWidth()),
+					static_cast<uint>(srcTexture.getHeight()),
+					1
+				}
+			};
 
 			// Blit to output
 			vkCmdCopyImage(commandBuffer,

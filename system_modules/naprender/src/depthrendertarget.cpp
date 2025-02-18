@@ -82,7 +82,7 @@ namespace nap
 		VkExtent2D framebuffer_size = { size.x, size.y };
 
 		// Create depth render pass based on format
-		if (!createDepthOnlyRenderPass(mRenderService->getDevice(), mDepthTexture->getFormat(), mRasterizationSamples, mDepthTexture->getTargetLayout(), mRenderPass, errorState))
+		if (!createDepthOnlyRenderPass(mRenderService->getDevice(), mDepthTexture->getFormat(), mRasterizationSamples, getFinalLayout(), mRenderPass, errorState))
 			return false;
 
 		// Store as attachments

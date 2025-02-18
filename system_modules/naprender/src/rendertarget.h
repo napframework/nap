@@ -186,7 +186,7 @@ namespace nap
 		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		ResourcePtr<RenderTexture2D>		mColorTexture;										///< Property: 'ColorTexture' texture to render to
 		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' optional depth texture to render to
-        bool                                mClear = true;                                      ///< Property: 'Clear' whether to clear the render target
+        bool                                mClear = true;                                      ///< Property: 'Clear' whether to clear the render target at the start of each render pass
 
 	private:
 		RenderService*						mRenderService;

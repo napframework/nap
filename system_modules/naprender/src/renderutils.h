@@ -38,17 +38,7 @@ namespace nap
         /**
          * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
          */
-        bool NAPAPI createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool clear, bool consumeDepth, VkRenderPass& renderPass, utility::ErrorState& errorState);
-
-        /**
-		 * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
-		 */
-		bool NAPAPI createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool consumeDepth, VkRenderPass& renderPass, utility::ErrorState& errorState);
-
-		/**
-		 * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
-		 */
-		bool NAPAPI createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, VkRenderPass& renderPass, utility::ErrorState& errorState);
+        bool NAPAPI createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool clear, VkRenderPass& renderPass, utility::ErrorState& errorState);
 
 		/**
 		 * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
@@ -93,7 +83,7 @@ namespace nap
 		/**
 		 * Creates a Vulkan buffer
 		 */
-		bool NAPAPI createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocationFlags, BufferData& outBuffer, utility::ErrorState& error);
+		bool NAPAPI createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocationFlags, BufferData& outBuffer, utility::ErrorState& errorState);
 
 		/**
 		 * Destroys a Vulkan buffer

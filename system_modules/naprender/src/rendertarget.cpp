@@ -11,7 +11,6 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget, "Color and Depth texture target for render operations")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("ColorTexture",			&nap::RenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required, "The storage color texture")
@@ -19,7 +18,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget, "Color and Depth text
 	RTTI_PROPERTY("SampleShading",			&nap::RenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
 	RTTI_PROPERTY("Samples",				&nap::RenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
 	RTTI_PROPERTY("ClearColor",				&nap::RenderTarget::mClearColor,			nap::rtti::EPropertyMetaData::Default,	"Initial clear value")
-	RTTI_PROPERTY("Clear",					&nap::RenderTarget::mClear,					nap::rtti::EPropertyMetaData::Default,	"Whether to clear the render target")
+	RTTI_PROPERTY("Clear",					&nap::RenderTarget::mClear,					nap::rtti::EPropertyMetaData::Default,	"Whether to clear the render target at the start of each render pass")
 RTTI_END_CLASS
 
 namespace nap
@@ -101,12 +100,12 @@ namespace nap
 		// When there's only 1 there's no need for a resolve step
 		if (hasDepthTexture())
 		{
-			if (!createConsumeRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, mColorTexture->getTargetLayout(), mClear, mRenderPass, errorState))
+			if (!createConsumeRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, getFinalLayout(), mClear, mRenderPass, errorState))
 				return false;
 		}
 		else
 		{
-			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, getFinalLayout(), mClear, false, mRenderPass, errorState))
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, getFinalLayout(), mClear, mRenderPass, errorState))
 				return false;
 		}
 
@@ -154,16 +153,17 @@ namespace nap
 		}
 
 		// Create framebuffer
-		VkFramebufferCreateInfo framebufferInfo = {};
-		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = mRenderPass;
-		framebufferInfo.attachmentCount = attachment_count;
-		framebufferInfo.pAttachments = attachments.data();
-		framebufferInfo.width = framebuffer_size.width;
-		framebufferInfo.height = framebuffer_size.height;
-		framebufferInfo.layers = 1;
+		VkFramebufferCreateInfo framebuffer_info = {
+			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+			.renderPass = mRenderPass,
+			.attachmentCount = attachment_count,
+			.pAttachments = attachments.data(),
+			.width = framebuffer_size.width,
+			.height = framebuffer_size.height,
+			.layers = 1
+		};
 
-		return errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebufferInfo, nullptr, &mFramebuffer) == VK_SUCCESS,
+		return errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffer) == VK_SUCCESS,
 			"Failed to create framebuffer");
 	}
 
@@ -188,20 +188,23 @@ namespace nap
 			else
 			{
 				// When MSAA is enabled, transition the color image
-				VkImageMemoryBarrier barrier = {};
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.image = mColorImage.getImage();
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				barrier.subresourceRange.baseMipLevel = 0;
-				barrier.subresourceRange.levelCount = 1;
-				barrier.subresourceRange.baseArrayLayer = 0;
-				barrier.subresourceRange.layerCount = 1;
-				barrier.srcAccessMask = 0;
-				barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				VkImageMemoryBarrier barrier = {
+					.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+					.srcAccessMask = 0,
+					.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+					.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+					.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+					.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+					.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+					.image = mColorImage.getImage(),
+					.subresourceRange = {
+						.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+						.baseMipLevel = 0,
+						.levelCount = 1,
+						.baseArrayLayer = 0,
+						.layerCount = 1
+					}
+				};
 				vkCmdPipelineBarrier(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 			}
         }
@@ -213,33 +216,36 @@ namespace nap
 		clear_values[2].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 
 		// Setup render pass
-		VkRenderPassBeginInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = mRenderPass;
-		renderPassInfo.framebuffer = mFramebuffer;
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) };;
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clear_values.size());
-		renderPassInfo.pClearValues = clear_values.data();
+		VkRenderPassBeginInfo render_pass_info = {
+			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			.renderPass = mRenderPass,
+			.framebuffer = mFramebuffer,
+			.renderArea = {
+				.offset = { 0, 0 },
+				.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) }
+			},
+			.clearValueCount = static_cast<uint32_t>(clear_values.size()),
+			.pClearValues = clear_values.data()
+		};
 
 		// Begin render pass
-		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
 		// Ensure scissor and viewport are covering complete area
-		VkRect2D rect;
-		rect.offset.x = 0;
-		rect.offset.y = 0;
-		rect.extent.width = size.x;
-		rect.extent.height = size.y;
+		VkRect2D rect = {
+			.offset = { 0, 0 },
+			.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) }
+		};
 		vkCmdSetScissor(mRenderService->getCurrentCommandBuffer(), 0, 1, &rect);
 
-		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = size.y;
-		viewport.width = size.x;
-		viewport.height = -size.y;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
+		VkViewport viewport = {
+			.x = 0.0f,
+			.y = size.y,
+			.width = size.x,
+			.height = -size.y,
+			.minDepth = 0.0f,
+			.maxDepth = 1.0f
+		};
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
 	}
 
