@@ -103,7 +103,6 @@ namespace nap
 				target->mClearColor = resource->mInputTexture->mClearColor;
 				target->mSampleShading = false;
 				target->mRequestedSamples = ERasterizationSamples::One;
-
 				if (!target->init(errorState))
 				{
 					errorState.fail("%s: Failed to initialize internal render target", target->mID.c_str());

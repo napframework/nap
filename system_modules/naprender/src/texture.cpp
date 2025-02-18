@@ -197,7 +197,7 @@ namespace nap
 
 		// Store number of mip-maps to generate
 		mMipLevels = mipCount;
-		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal or higher than 1", mID.c_str()))
+		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal to or higher than 1", mID.c_str()))
 			return false;
 
 		// Create staging buffers for up and download
@@ -512,7 +512,7 @@ namespace nap
 	{
 		// Store number of mip-maps to generate
 		mMipLevels = mipCount;
-		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal or higher than 1", mID.c_str()))
+		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal to or higher than 1", mID.c_str()))
 			return false;
 
 		// Get the format, when unsupported bail.
