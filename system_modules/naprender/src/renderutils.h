@@ -51,9 +51,14 @@ namespace nap
 		bool NAPAPI createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, VkRenderPass& renderPass, utility::ErrorState& errorState);
 
 		/**
+		 * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
+		 */
+		bool NAPAPI createConsumeRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool clear, VkRenderPass& renderPass, utility::ErrorState& errorState);
+
+		/**
 		 * Creates a single or multi-sample depth-only renderpass based depth format.
 		 */
-		bool NAPAPI createDepthOnlyRenderPass(VkDevice device, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState);
+		bool NAPAPI createDepthOnlyRenderPass(VkDevice device, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, VkRenderPass& renderPass, utility::ErrorState& errorState);
 
 		/**
 		 * Creates a Vulkan image based on the described image usage and given properties.

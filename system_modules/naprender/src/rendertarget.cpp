@@ -42,12 +42,12 @@ namespace nap
 
 
 	// Create the depth image and view
-	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
+	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, VkImageUsageFlags usage, ImageData& outImage, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | usage, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outImage.getImage(), renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outImage.getImage(), depthFormat, 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
 			return false;
 
 		return true;
@@ -97,17 +97,13 @@ namespace nap
 		VkExtent2D framebuffer_size = { (uint32)size.x, (uint32)size.y };
 
 		// Store as attachments
-		std::array<VkImageView, 3> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
+		std::array<VkImageView, 4> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
 		if (hasDepthTexture())
 		{
-			// Ensure the sample count is 1 when a depth texture resource is used
-			if (!errorState.check(mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT, "Depth resolve attachments are not supported. Set the sample count to one if a depth texture resource is desired."))
-				return false;
-
-			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, mColorTexture->getTargetLayout(), mClear, true, mRenderPass, errorState))
+			if (!createConsumeRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, mColorTexture->getTargetLayout(), mClear, mRenderPass, errorState))
 				return false;
 		}
 		else
@@ -116,6 +112,7 @@ namespace nap
 				return false;
 		}
 
+		uint attachment_count = 2;
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
 			// Bind textures as attachments
@@ -123,17 +120,15 @@ namespace nap
 			{
 				attachments[0] = std::as_const(*mColorTexture).getHandle().getView();
 				attachments[1] = std::as_const(*mDepthTexture).getHandle().getView();
-				attachments[2] = VK_NULL_HANDLE;
 			}
 			else
 			{
 				// Create depth image data and hook up to depth attachment
-				if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
+				if (!createDepthResource(*mRenderService, framebuffer_size, mRenderService->getDepthFormat(), mRasterizationSamples, 0, mDepthImage, errorState))
 					return false;
 
 				attachments[0] = std::as_const(*mColorTexture).getHandle().getView();
 				attachments[1] = mDepthImage.getView();
-				attachments[2] = VK_NULL_HANDLE;
 			}
 		}
 		else
@@ -143,20 +138,28 @@ namespace nap
 				return false;
 
 			// Create multi-sampled depth attachment
-			if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
+			VkFormat depth_format = hasDepthTexture() ? mDepthTexture->getFormat() : mRenderService->getDepthFormat();
+			if (!createDepthResource(*mRenderService, framebuffer_size, depth_format, mRasterizationSamples, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, mDepthImage, errorState))
 				return false;
 
 			// Bind textures as attachments
 			attachments[0] = mColorImage.getView();
 			attachments[1] = mDepthImage.getView();
 			attachments[2] = std::as_const(*mColorTexture).getHandle().getView();
+			attachment_count = 3;
+
+			if (hasDepthTexture())
+			{
+				attachments[3] = std::as_const(*mDepthTexture).getHandle().getView();
+				attachment_count = 4;
+			}
 		}
 
 		// Create framebuffer
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = mRenderPass;
-		framebufferInfo.attachmentCount = mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3;
+		framebufferInfo.attachmentCount = attachment_count;
 		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = framebuffer_size.width;
 		framebufferInfo.height = framebuffer_size.height;

@@ -136,7 +136,7 @@ namespace nap
 		/**
 		 * @return used number of samples when rendering to the target.
 		 */
-		virtual VkSampleCountFlagBits getSampleCount() const override			{ return VK_SAMPLE_COUNT_1_BIT; }
+		virtual VkSampleCountFlagBits getSampleCount() const override			{ return mRasterizationSamples; }
 
 		/**
 		 * @return if sample based shading is enabled when rendering to the target.
@@ -169,6 +169,7 @@ namespace nap
 		VkFramebuffer						mFramebuffer = VK_NULL_HANDLE;
 		VkRenderPass						mRenderPass = VK_NULL_HANDLE;
 		VkSampleCountFlagBits				mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		ImageData							mDepthImage;
 		RGBAColorFloat						mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 }

@@ -73,7 +73,7 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createDepthOnlyRenderPass(mRenderService->getDevice(), mCubeDepthTexture->getFormat(), mRenderPass, errorState))
+		if (!createDepthOnlyRenderPass(mRenderService->getDevice(), mCubeDepthTexture->getFormat(), getSampleCount(), mCubeDepthTexture->getTargetLayout(), mRenderPass, errorState))
 			return false;
 
 		const auto& tex = static_cast<const DepthRenderTextureCube&>(*mCubeDepthTexture);

@@ -23,6 +23,23 @@ RTTI_END_CLASS
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	// Static functions
+	//////////////////////////////////////////////////////////////////////////
+
+	// Create the depth image and view
+	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, VkImageUsageFlags usage, ImageData& outImage, utility::ErrorState& errorState)
+	{
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | usage, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
+			return false;
+
+		if (!create2DImageView(renderer.getDevice(), outImage.getImage(), depthFormat, 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
+			return false;
+
+		return true;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// DepthRenderTarget
 	//////////////////////////////////////////////////////////////////////////
 
@@ -38,6 +55,8 @@ namespace nap
 	
 		if (mRenderPass != VK_NULL_HANDLE)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
+
+		utility::destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
 	}
 
 
@@ -62,18 +81,30 @@ namespace nap
 		VkExtent2D framebuffer_size = { size.x, size.y };
 
 		// Create depth render pass based on format
-		if (!createDepthOnlyRenderPass(mRenderService->getDevice(), mDepthTexture->getFormat(), mRenderPass, errorState))
+		if (!createDepthOnlyRenderPass(mRenderService->getDevice(), mDepthTexture->getFormat(), mRasterizationSamples, mDepthTexture->getTargetLayout(), mRenderPass, errorState))
 			return false;
 
-		// Bind textures as attachments
-		const auto attachment = std::as_const(*mDepthTexture).getHandle().getView();
+		// Store as attachments
+		std::array<VkImageView, 2> attachments { std::as_const(*mDepthTexture).getHandle().getView(), VK_NULL_HANDLE };
+
+		uint attachment_count = 1;
+		if (mRasterizationSamples != VK_SAMPLE_COUNT_1_BIT)
+		{
+			// Create depth image data and hook up to depth attachment
+			if (!createDepthResource(*mRenderService, framebuffer_size, mDepthTexture->getFormat(), mRasterizationSamples, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, mDepthImage, errorState))
+				return false;
+
+			attachments[0] = mDepthImage.getView();
+			attachments[1] = std::as_const(*mDepthTexture).getHandle().getView();
+			attachment_count = 2;
+		}
 
 		// Create framebuffer
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = mRenderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = &attachment;
+		framebufferInfo.attachmentCount = attachment_count;
+		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = framebuffer_size.width;
 		framebufferInfo.height = framebuffer_size.height;
 		framebufferInfo.layers = 1;

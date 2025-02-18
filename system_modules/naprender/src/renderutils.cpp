@@ -52,11 +52,11 @@ namespace nap
             depth_attachment.format = depthFormat;
             depth_attachment.samples = samples;
             depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            depth_attachment.storeOp = consumeDepth ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            depth_attachment.finalLayout = consumeDepth ? targetLayout : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
             VkAttachmentReference color_attachment_ref = {};
             color_attachment_ref.attachment = 0;
@@ -83,7 +83,7 @@ namespace nap
 
             dependencies[1].srcSubpass = 0;
             dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-            dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | (consumeDepth ? VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT : 0);
+            dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
             dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
             dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -133,7 +133,7 @@ namespace nap
 
         bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool consumeDepth, VkRenderPass& renderPass, utility::ErrorState& errorState)
         {
-            return createRenderPass(device, colorFormat, depthFormat, samples, targetLayout, true, consumeDepth, renderPass, errorState);
+            return createRenderPass(device, colorFormat, depthFormat, samples, targetLayout, true, false, renderPass, errorState);
         }
 
 
@@ -143,55 +143,259 @@ namespace nap
         }
 
 
-		bool createDepthOnlyRenderPass(VkDevice device, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
+		bool createConsumeRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool clear, VkRenderPass& renderPass, utility::ErrorState& errorState)
 		{
-			VkAttachmentDescription depth_attachment = {};
-			depth_attachment.format = depthFormat;
-			depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-			depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			depth_attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			if (!errorState.check(targetLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR || targetLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, "Failed to create render pass. Unsupported target layout."))
+				return false;
 
-			VkAttachmentReference depth_attachment_ref = {};
-			depth_attachment_ref.attachment = 0;
-			depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			bool multi_sample = samples != VK_SAMPLE_COUNT_1_BIT;
 
-			VkSubpassDescription subpass = {};
-			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-			subpass.colorAttachmentCount = 0;
-			subpass.pDepthStencilAttachment = &depth_attachment_ref;
+			VkAttachmentDescription2 color_attachment = {
+				.sType 			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+				.format 		= colorFormat,
+				.samples 		= samples,
+				.loadOp 		= clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+				.storeOp 		= multi_sample ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE,
+				.stencilLoadOp 	= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				.initialLayout 	= clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				.finalLayout 	= multi_sample ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : targetLayout
+			};
 
-			std::array<VkSubpassDependency, 2> dependencies;
-			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-			dependencies[0].dstSubpass = 0;
-			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-			dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			VkAttachmentDescription2 depth_attachment = {
+				.sType 			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+				.format 		= depthFormat,
+				.samples 		= samples,
+				.loadOp 		= VK_ATTACHMENT_LOAD_OP_CLEAR,
+				.storeOp 		= VK_ATTACHMENT_STORE_OP_STORE,
+				.stencilLoadOp 	= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				.initialLayout 	= VK_IMAGE_LAYOUT_UNDEFINED,
+				.finalLayout 	= targetLayout
+			};
 
-			dependencies[1].srcSubpass = 0;
-			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			dependencies[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			VkAttachmentReference2 color_attachment_ref = {
+				.sType 			= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+				.attachment 	= 0,
+				.layout 		= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				.aspectMask 	= VK_IMAGE_ASPECT_COLOR_BIT
+			};
+
+			VkAttachmentReference2 depth_attachment_ref = {
+				.sType 			= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+				.attachment 	= 1,
+				.layout 		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				.aspectMask 	= VK_IMAGE_ASPECT_DEPTH_BIT
+			};
+
+			VkSubpassDescription2 subpass = {
+				.sType						= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2,
+				.flags						= 0,
+				.pipelineBindPoint			= VK_PIPELINE_BIND_POINT_GRAPHICS,
+				.colorAttachmentCount		= 1,
+				.pColorAttachments			= &color_attachment_ref,
+				.pDepthStencilAttachment	= &depth_attachment_ref
+			};
+
+			std::array<VkSubpassDependency2, 2> dependencies;
+			dependencies[0] = {
+				.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
+				.srcSubpass 		= VK_SUBPASS_EXTERNAL,
+				.dstSubpass 		= 0,
+				.srcStageMask 		= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				.dstStageMask 		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+				.srcAccessMask 		= VK_ACCESS_SHADER_READ_BIT,
+				.dstAccessMask 		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+				.dependencyFlags 	= VK_DEPENDENCY_BY_REGION_BIT,
+			};
+			dependencies[1] = {
+				.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
+				.srcSubpass 		= 0,
+				.dstSubpass 		= VK_SUBPASS_EXTERNAL,
+				.srcStageMask 		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+				.dstStageMask 		= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				.srcAccessMask 		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+				.dstAccessMask 		= VK_ACCESS_SHADER_READ_BIT,
+				.dependencyFlags 	= VK_DEPENDENCY_BY_REGION_BIT
+			};
+
+			VkRenderPassCreateInfo2 renderpass_info = {
+				.sType 				= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
+				.subpassCount 		= 1,
+				.pSubpasses 		= &subpass,
+				.dependencyCount 	= static_cast<uint32_t>(dependencies.size()),
+				.pDependencies 		= dependencies.data()
+			};
+
+			// Single-sample render pass
+			if (!multi_sample)
+			{
+				std::array<VkAttachmentDescription2, 2> attachments = { color_attachment, depth_attachment };
+				renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+				renderpass_info.pAttachments = attachments.data();
+
+				return errorState.check(vkCreateRenderPass2(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
+			}
+
+			// Multi-sample render pass
+			VkAttachmentDescription2 color_resolve_attachment = {
+				.sType				= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+				.format 			= colorFormat,
+				.samples 			= VK_SAMPLE_COUNT_1_BIT,
+				.loadOp 			= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.storeOp 			= VK_ATTACHMENT_STORE_OP_STORE,
+				.stencilLoadOp 		= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.stencilStoreOp 	= VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				.initialLayout 		= VK_IMAGE_LAYOUT_UNDEFINED,
+				.finalLayout 		= targetLayout
+			};
+
+			VkAttachmentReference2 color_resolve_attachment_ref = {
+				.sType 				= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+				.attachment 		= 2,
+				.layout 			= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				.aspectMask 		= VK_IMAGE_ASPECT_COLOR_BIT
+			};
+
+			VkAttachmentDescription2 depth_resolve_attachment = {
+				.sType				= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+				.format 			= depthFormat,
+				.samples 			= VK_SAMPLE_COUNT_1_BIT,
+				.loadOp 			= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.storeOp 			= VK_ATTACHMENT_STORE_OP_STORE,
+				.stencilLoadOp 		= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.stencilStoreOp 	= VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				.initialLayout 		= VK_IMAGE_LAYOUT_UNDEFINED,
+				.finalLayout 		= targetLayout
+			};
+
+			VkAttachmentReference2 depth_resolve_attachment_ref = {
+				.sType 				= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+				.attachment 		= 3,
+				.layout				= VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+				.aspectMask			= VK_IMAGE_ASPECT_DEPTH_BIT
+			};
+
+			VkSubpassDescriptionDepthStencilResolve subpass_depth_extension = {
+				.sType 				= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE,
+				.depthResolveMode 	= VK_RESOLVE_MODE_AVERAGE_BIT,
+				.pDepthStencilResolveAttachment = &depth_resolve_attachment_ref
+			};
+			subpass.pNext = &subpass_depth_extension;
+			subpass.pResolveAttachments = &color_resolve_attachment_ref;
+
+			std::array<VkAttachmentDescription2, 4> attachments = { color_attachment, depth_attachment, color_resolve_attachment, depth_resolve_attachment };
+			renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderpass_info.pAttachments = attachments.data();
+
+			return errorState.check(vkCreateRenderPass2(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
+		}
+
+
+		bool createDepthOnlyRenderPass(VkDevice device, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, VkRenderPass& renderPass, utility::ErrorState& errorState)
+		{
+			if (!errorState.check(targetLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, "Failed to create render pass. Unsupported target layout."))
+				return false;
+
+			bool multi_sample = samples != VK_SAMPLE_COUNT_1_BIT;
+
+			VkAttachmentDescription2 depth_attachment = {
+				.sType			= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+				.format 		= depthFormat,
+				.samples 		= samples,
+				.loadOp 		= VK_ATTACHMENT_LOAD_OP_CLEAR,
+				.storeOp 		= multi_sample ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE,
+				.stencilLoadOp 	= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				.initialLayout 	= VK_IMAGE_LAYOUT_UNDEFINED,
+				.finalLayout 	= multi_sample ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : targetLayout
+			};
+
+			VkAttachmentReference2 depth_attachment_ref = {
+				.sType			= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+				.attachment 	= 0,
+				.layout 		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				.aspectMask 	= VK_IMAGE_ASPECT_DEPTH_BIT
+			};
+
+			VkSubpassDescription2 subpass = {
+				.sType						= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2,
+				.pipelineBindPoint 			= VK_PIPELINE_BIND_POINT_GRAPHICS,
+				.colorAttachmentCount 		= 0,
+				.pDepthStencilAttachment 	= &depth_attachment_ref
+			};
+
+			std::array<VkSubpassDependency2, 2> dependencies;
+			dependencies[0] = {
+				.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
+				.srcSubpass 		= VK_SUBPASS_EXTERNAL,
+				.dstSubpass 		= 0,
+				.srcStageMask 		= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				.dstStageMask 		= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+				.srcAccessMask 		= VK_ACCESS_SHADER_READ_BIT,
+				.dstAccessMask 		= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+				.dependencyFlags 	= VK_DEPENDENCY_BY_REGION_BIT
+			};
+			dependencies[1] = {
+				.sType				= VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
+				.srcSubpass 		= 0,
+				.dstSubpass 		= VK_SUBPASS_EXTERNAL,
+				.srcStageMask 		= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+				.dstStageMask 		= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				.srcAccessMask 		= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+				.dstAccessMask 		= VK_ACCESS_SHADER_READ_BIT,
+				.dependencyFlags 	= VK_DEPENDENCY_BY_REGION_BIT,
+			};
 
 			// Create depth render pass
-			VkRenderPassCreateInfo renderpass_info = {};
-			renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-			renderpass_info.subpassCount = 1;
-			renderpass_info.pSubpasses = &subpass;
-			renderpass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
-			renderpass_info.pDependencies = dependencies.data();
-			renderpass_info.attachmentCount = 1;
-			renderpass_info.pAttachments = &depth_attachment;
+			VkRenderPassCreateInfo2 renderpass_info = {
+				.sType 				= VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
+				.subpassCount 		= 1,
+				.pSubpasses 		= &subpass,
+				.dependencyCount 	= static_cast<uint32_t>(dependencies.size()),
+				.pDependencies 		= dependencies.data()
+			};
 
-			return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
+			// Single-sample render pass
+			if (!multi_sample)
+			{
+				renderpass_info.attachmentCount = 1;
+				renderpass_info.pAttachments = &depth_attachment;
+				return errorState.check(vkCreateRenderPass2(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
+			}
+
+			// Multi-sample render pass
+			VkAttachmentDescription2 depth_resolve_attachment = {
+				.sType				= VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+				.format 			= depthFormat,
+				.samples 			= VK_SAMPLE_COUNT_1_BIT,
+				.loadOp 			= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.storeOp 			= VK_ATTACHMENT_STORE_OP_STORE,
+				.stencilLoadOp 		= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				.stencilStoreOp 	= VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				.initialLayout 		= VK_IMAGE_LAYOUT_UNDEFINED,
+				.finalLayout 		= targetLayout
+			};
+
+			VkAttachmentReference2 depth_resolve_attachment_ref = {
+				.sType				= VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+				.attachment 		= 1,
+				.layout				= VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+				.aspectMask 		= VK_IMAGE_ASPECT_DEPTH_BIT
+			};
+
+			VkSubpassDescriptionDepthStencilResolve subpass_depth_extension = {
+				.sType 				= VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE,
+				.depthResolveMode 	= VK_RESOLVE_MODE_AVERAGE_BIT,
+				.pDepthStencilResolveAttachment = &depth_resolve_attachment_ref
+			};
+			subpass.pNext = &subpass_depth_extension;
+			subpass.pResolveAttachments = &depth_resolve_attachment_ref;
+
+			std::array<VkAttachmentDescription2, 2> attachments = { depth_attachment, depth_resolve_attachment };
+			renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderpass_info.pAttachments = attachments.data();
+			return errorState.check(vkCreateRenderPass2(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 		}
 
 
