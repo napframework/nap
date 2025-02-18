@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "irendertarget.h"
+#include "texturelink.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -154,21 +155,27 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override;
 
 		/**
+		 * @return layout of the depth texture when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const override					{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+
+		/**
 		 * @return the texture that holds the result of the render pass.
 		 */
 		DepthRenderTexture2D& getDepthTexture();
 
 	public:
-		float								mClearValue = 1.0f;									///< Property: 'ClearValue' value selection used for clearing the render target
-		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' depth texture to render to
+		float									mClearValue = 1.0f;									///< Property: 'ClearValue' value selection used for clearing the render target
+		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
+		ResourcePtr<DepthRenderTexture2D>		mDepthTexture;										///< Property: 'DepthTexture' depth texture to render to
 
 	private:
-		RenderService*						mRenderService;
-		VkFramebuffer						mFramebuffer = VK_NULL_HANDLE;
-		VkRenderPass						mRenderPass = VK_NULL_HANDLE;
-		VkSampleCountFlagBits				mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-		RGBAColorFloat						mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		RenderService*							mRenderService;
+		VkFramebuffer							mFramebuffer = VK_NULL_HANDLE;
+		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
+		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		RGBAColorFloat							mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		Texture2DTargetLink						mTextureTargetLink;
 	};
 }

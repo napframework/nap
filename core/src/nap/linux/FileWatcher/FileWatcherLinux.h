@@ -34,6 +34,8 @@
 
 #include <map>
 #include <sys/types.h>
+#include <vector>
+#include <unordered_map>
 
 namespace FW
 {
@@ -81,6 +83,10 @@ namespace FW
 		struct timeval mTimeOut;
 		/// File descriptor set
 		fd_set mDescriptorSet;
+
+        /// Stores watches for subdirectories that were added with addWatch with the recursive option set to true
+        /// The key is the watchid of the root watch
+        std::unordered_map<WatchID, std::vector<WatchID>> mSubDirWatches;
 
 	};//end FileWatcherLinux
 

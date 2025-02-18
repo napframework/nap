@@ -54,20 +54,25 @@ namespace nap
 		RenderTextureCube(Core& core);
 
 		/**
-		 * Creates the texture on the GPU.
+		 * Creates the texture on the GPU without mip-maps.
 		 * @param errorState Contains error state if the function fails.
 		 * @return if the texture was created successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Creates the texture on the GPU with or without mip-maps.
+		 * @param enableMips if mip-maps should be generated
+		 * @param errorState Contains error state if the function fails.
+		 * @return if the texture was created successfully
+		 */
+		virtual bool init(bool enableMips, utility::ErrorState& errorState);
 
 		int					mWidth = 0;										///< Property: 'Width' width of a cube face texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of a cube face texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mColorFormat = EFormat::RGBA8;					///< Property: 'ColorFormat' color texture format
 		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
-
-	protected:
-		bool				mGenerateLODs = false;
 	};
 
 

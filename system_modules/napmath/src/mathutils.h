@@ -48,7 +48,7 @@ namespace nap
 		 * @return mapped value
 		 */
 		template<typename T>
-		float fit(T value, T min, T max, T outMin, T outMax);
+		T fit(T value, T min, T max, T outMin, T outMax);
 
 		/**
 		 * Blends a value between start and end value based on percentage (0-1).
@@ -183,43 +183,36 @@ namespace nap
 		void NAPAPI setRandomSeed(int value);
 
 		/**
-		 * Interpolates a float value over time to a target using a dampening model
+		 * Interpolates a float value over time to a targetValue using a dampening model
+		 * The smoothTime argument is the expected time in seconds to reach the targetValue assuming the currentValue value changes at maximum currentVelocity.
+		 * The weights of this function are tuned for the range 0-1.
+		 * Based on Chapter 1.10 of "Game Programming Gems 4".
 		 * @param currentValue the current blend value, often the return value
 		 * @param targetValue the value to blend to
 		 * @param currentVelocity the current velocity used to blend to target
 		 * @param deltaTime time in seconds between cooks
-		 * @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
+		 * @param smoothTime approximately the time it will take to reach the target in seconds. A smaller value will reach the target faster.
 		 * @param maxSpeed allows you to clamp the maximum speed
-		 * @return the blended current value
+		 * @return the blended currentValue value
 		 */
-		float NAPAPI smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = math::max<float>());
-
-		/**
-		 * Interpolates a double value over time to a target using a dampening model.
-		 * @param currentValue the current blend value, often the return value
-		 * @param targetValue the value to blend to
-		 * @param currentVelocity the current velocity used to blend to target
-		 * @param deltaTime time in seconds between cooks
-		 * @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
-		 * @param maxSpeed allows you to clamp the maximum speed
-		 * @return the blended current value
-		 */
-		double NAPAPI smoothDamp(double currentValue, double targetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = math::max<float>());
-
-		/**
-		* Smoothly interpolates a value of type T over time to a target using a dampening model.
-		* This is a specialization of the default smoothDamp() function.
-		* @param currentValue the current blend value, will be updated after calling
-		* @param targetValue the value to blend to
-		* @param currentVelocity the current velocity used to blend to target
-		* @param deltaTime time in seconds between cooks
-		* @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
-		* @param maxSpeed allows you to clamp the maximum speed
-		* @return the blended current value
-		*/
 		template<typename T>
-		void smooth(T& currentValue, const T& targetValue, T& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
-		
+		T NAPAPI smoothDamp(T currentValue, T targetValue, T& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = math::max<float>());
+
+		/**
+		 * Smoothly interpolates a value of type T over time to a target using a dampening model.
+		 * The smoothTime argument is the expected time in seconds to reach the target assuming the current value changes at maximum velocity.
+		 * This is a specialization of the default smoothDamp() function.
+		 * @param currentValue the current blend value, will be updated after calling
+		 * @param targetValue the value to blend to
+		 * @param currentVelocity the current velocity used to blend to target
+		 * @param deltaTime time in seconds between cooks
+		 * @param smoothTime approximately the time it will take to reach the target in seconds. A smaller value will reach the target faster.
+		 * @param maxSpeed allows you to clamp the maximum speed
+		 * @return the blended current value
+		 */
+		template<typename T>
+		void NAPAPI smooth(T& currentValue, const T& targetValue, T& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
 		/**
 		 * Composes a 4x4 matrix based on individual transformation, rotation and scale values
 		 * @param translate a vector describing the objects position
@@ -313,7 +306,7 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T>
-		float fit(T value, T min, T max, T outMin, T outMax)
+		T fit(T value, T min, T max, T outMin, T outMax)
 		{
 			T v = glm::clamp<T>(value, min, max);
 			T m = max - min;
@@ -387,6 +380,7 @@ namespace nap
 			T x = math::clamp<T>((value - edge0) / (edge1 - edge0), 0, 1);
 			return x * x * (3 - 2 * x);
 		}
+
 
 		//////////////////////////////////////////////////////////////////////////
 		// Forward declarations of template functions

@@ -821,7 +821,7 @@ namespace nap
 			}
 
 			// Verify buffer object type
-			if (!errorState.check(ubo_declaration.mDescriptorType == EDescriptorType::Uniform, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str())))
+			if (!errorState.check(ubo_declaration.mDescriptorType == EDescriptorType::Uniform, "Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str()))
 				return false;
 
 			// Pass 2: gather leaf uniform instances for a single ubo

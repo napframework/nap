@@ -12,6 +12,7 @@
 #include <FreeImage.h>
 #include <bitmapfilebuffer.h>
 #include <copyimagedata.h>
+#include <renderservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Icon, "Icon that can be displayed in a GUI")
 	RTTI_CONSTRUCTOR(nap::IMGuiService&)
@@ -74,6 +75,7 @@ namespace nap
 
 		// Extract name
 		mName = utility::stripFileExtension(utility::getFileName(mImagePath));
+		mTexture.mID = mName + "_icon";
 
 		// Load bitmap into memory
 		BitmapFileBuffer file_buffer;
@@ -85,9 +87,14 @@ namespace nap
 		if (mInvert && !invert(file_buffer, error))
 			return false;
 
+		// Get max supported LOD
+		if (!error.check(mTexture.getRenderService().getMipSupport(descriptor),
+			"%s: hardware mipmap generation not supported", mID.c_str()))
+			return  false;
+
 		// Create 2D texture
-		mTexture.mID = mName;
-		return mTexture.init(descriptor, true, file_buffer.getData(), 0, error);
+		int lvl = utility::computeMipLevel(descriptor);
+		return mTexture.init(descriptor, Texture2D::EUsage::Static, lvl, file_buffer.getData(), 0, error);
 	}
 
 

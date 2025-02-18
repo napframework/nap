@@ -28,6 +28,7 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
+	// View transformations to align camera with cube map faces
 	static const std::vector<glm::mat4> sCubeMapViewMatrices =
 	{
 		glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(),	math::Y_AXIS),	// right (+X)
@@ -38,22 +39,23 @@ namespace nap
 		glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f })																					// forward (-Z)	
 	};
 
+	// Inverse view transformations to align camera with cube map faces
+	// Use fast transpose operations to invert the cube map matrices - they are orthonormal: pure-rotations and axis-reflections
 	static const std::vector<glm::mat4> sCubeMapInverseViewMatrices =
 	{
-		glm::inverse(sCubeMapViewMatrices[0]),
-		glm::inverse(sCubeMapViewMatrices[1]),
-		glm::inverse(sCubeMapViewMatrices[2]),
-		glm::inverse(sCubeMapViewMatrices[3]),
-		glm::inverse(sCubeMapViewMatrices[4]),
-		glm::inverse(sCubeMapViewMatrices[5]),
+		glm::transpose(sCubeMapViewMatrices[0]),
+		glm::transpose(sCubeMapViewMatrices[1]),
+		glm::transpose(sCubeMapViewMatrices[2]),
+		glm::transpose(sCubeMapViewMatrices[3]),
+		glm::transpose(sCubeMapViewMatrices[4]),
+		glm::transpose(sCubeMapViewMatrices[5])
 	};
-
 
 	// Create the depth image and view
 	static bool createLayeredDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
 		if (!createLayered2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, 1, layerCount, sampleCount,
-			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
 			outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
@@ -75,7 +77,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	CubeRenderTarget::CubeRenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureLink(*this)
 	{}
 
 
@@ -129,7 +132,7 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, getFinalLayout(), mRenderPass, errorState))
 			return false;
 
 		framebuffer_info.renderPass = mRenderPass;
@@ -155,18 +158,6 @@ namespace nap
 
 	void CubeRenderTarget::beginRendering()
 	{
-		// We transition the layout of the depth attachment from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, once in the first pass
-		if (mIsFirstPass)
-		{
-			utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImage.mImage,
-				mDepthImage.mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-				0, 1, VK_IMAGE_ASPECT_DEPTH_BIT);
-		}
-
 		const RGBAColorFloat& clear_color = mClearColor;
 
 		std::array<VkClearValue, 2> clearValues = {};
@@ -241,18 +232,21 @@ namespace nap
 		 * Render to frame buffers
 		 * Cube face selection following the Vulkan spec
 		 * https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
-		 **/
+		 */
 		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), camPosition);
 		for (int layer_index = TextureCube::layerCount - 1; layer_index >= 0; layer_index--)
 		{
 			setLayerIndex(layer_index);
 			beginRendering();
 			{
-				const auto view_matrix = CubeRenderTarget::getCubeMapInverseViewMatrices()[layer_index] * cam_translation;
+				const auto view_matrix = CubeRenderTarget::getCubeMapViewTransforms()[layer_index] * cam_translation;
 				renderCallback(*this, projectionMatrix, view_matrix);
 			}
 			endRendering();
 		}
+
+        // Sync image data with render pass final layout
+		mTextureLink.sync(*mCubeTexture);
 
 		// Update mip maps
 		if (mUpdateLODs && mCubeTexture->getMipLevels() > 1)
@@ -262,20 +256,18 @@ namespace nap
 			VkImageAspectFlags aspect = is_depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
 			// Layout transition to TRANSFER_DST to setup the mip map blit operation
-			utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(), mCubeTexture->getHandle().getImage(),
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(),
+                mCubeTexture->getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 				0, mCubeTexture->getMipLevels(),
 				0, TextureCube::layerCount, VK_IMAGE_ASPECT_COLOR_BIT);
 
-			utility::createMipmaps(mRenderService->getCurrentCommandBuffer(), mCubeTexture->getHandle().getImage(),
+			utility::createMipmaps(mRenderService->getCurrentCommandBuffer(), mCubeTexture->getHandle(),
 				mCubeTexture->getFormat(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, aspect,
 				mCubeTexture->getWidth(), mCubeTexture->getHeight(), mCubeTexture->getMipLevels(), 0, TextureCube::layerCount
 			);
 		}
-
-		mIsFirstPass = false;
 	}
 
 
@@ -286,13 +278,7 @@ namespace nap
 	}
 
 
-	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapViewMatrices()
-	{
-		return sCubeMapViewMatrices;
-	}
-
-
-	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapInverseViewMatrices()
+	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapViewTransforms()
 	{
 		return sCubeMapInverseViewMatrices;
 	}

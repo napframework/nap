@@ -67,10 +67,9 @@ namespace nap
 		Texture2D& getSourceTexture() const				{ return *mSourceImage; }
 
 	public:
-		std::string					mImagePath;								///< Property: 'ImagePath' Path to the image on disk to load
-		bool						mSampleShading = false;					///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
-
-		using RenderTextureCube::mGenerateLODs;								///< Property: 'GenerateLODs' whether to use and update mip-maps each time the cube texture is updated
+		std::string		mImagePath;					///< Property: 'ImagePath' Path to the image on disk to load
+		bool			mSampleShading = false;		///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
+		bool			mGenerateLODs;				///< Property: 'GenerateLODs' whether to use and update mip-maps each time the cube texture is updated
 
 	private:
 		RenderAdvancedService*				mRenderAdvancedService = nullptr;

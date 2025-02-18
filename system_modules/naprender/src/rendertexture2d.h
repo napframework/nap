@@ -23,7 +23,9 @@ namespace nap
 	 */
 	class NAPAPI RenderTexture2D : public Texture2D
 	{
-		RTTI_ENABLE(Texture2D)
+        friend class RenderTarget;
+
+        RTTI_ENABLE(Texture2D)
 	public:
 		/**
 		 * All supported render texture 2D formats.
@@ -48,16 +50,12 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * @return Vulkan GPU data handle, including image and view.
-		 */
-		virtual const ImageData& getHandle() const override { return mImageData; }
-
 		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of the texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mColorFormat = EFormat::RGBA8;					///< Property: 'ColorFormat' color texture format
 		RGBAColorFloat		mClearColor	= { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
+		EUsage				mUsage = EUsage::Internal;						///< Property: 'Usage' GPU Texture usage
 	};
 
 
@@ -68,7 +66,6 @@ namespace nap
 	 */
 	class NAPAPI DepthRenderTexture2D : public Texture2D
 	{
-		friend class DepthRenderTarget;
 		RTTI_ENABLE(Texture2D)
 	public:
 		/**
@@ -89,16 +86,12 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * @return Vulkan GPU data handle, including image and view.
-		 */
-		virtual const ImageData& getHandle() const override { return mImageData; }
-
 		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of the texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EDepthFormat		mDepthFormat = EDepthFormat::D16;				///< Property: 'DepthFormat' depth texture format
 		float				mClearValue = 1.0f;								///< Property: 'ClearValue' value selection used for clearing the texture
 		bool				mFill = false;									///< Property: 'Fill' if the texture is initialized to black when usage is static
+		EUsage				mUsage = EUsage::Internal;						///< Property: 'Usage' GPU Texture usage
 	};
 }

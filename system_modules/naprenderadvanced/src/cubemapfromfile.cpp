@@ -30,14 +30,14 @@ namespace nap
 
 	bool CubeMapFromFile::init(utility::ErrorState& errorState)
 	{
-		if (!RenderTextureCube::init(errorState))
+		if (!RenderTextureCube::init(mGenerateLODs, errorState))
 			return false;
 
-		mSourceImage->mUsage = EUsage::Static;
 		if (!mSourceImage->getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		if (!mSourceImage->init(mSourceImage->getBitmap().mSurfaceDescriptor, false, mSourceImage->getBitmap().getData(), 0, errorState))
+		if (!mSourceImage->init(mSourceImage->getBitmap().mSurfaceDescriptor,
+			Texture2D::EUsage::Static, 1, mSourceImage->getBitmap().getData(), 0, errorState))
 			return false;
 
 		mRenderAdvancedService->registerCubeMap(*this);

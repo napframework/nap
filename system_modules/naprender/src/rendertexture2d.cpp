@@ -23,6 +23,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D, "Holds the color o
 	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mColorFormat,	nap::rtti::EPropertyMetaData::Required, "Texture color format")
 	RTTI_PROPERTY("ColorSpace", &nap::RenderTexture2D::mColorSpace,		nap::rtti::EPropertyMetaData::Default,	"Texture color space")
 	RTTI_PROPERTY("ClearColor", &nap::RenderTexture2D::mClearColor,		nap::rtti::EPropertyMetaData::Default,	"Initial clear color")
+	RTTI_PROPERTY("Usage",		&nap::RenderTexture2D::mUsage,			nap::rtti::EPropertyMetaData::Default,	"How the texture is used at runtime (internal, updated etc..)")
 RTTI_END_CLASS
 
 RTTI_BEGIN_ENUM(nap::DepthRenderTexture2D::EDepthFormat)
@@ -38,6 +39,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTexture2D, "Holds the de
 	RTTI_PROPERTY("Format",		&nap::DepthRenderTexture2D::mDepthFormat,	nap::rtti::EPropertyMetaData::Required, "Texture depth format")
 	RTTI_PROPERTY("ColorSpace", &nap::DepthRenderTexture2D::mColorSpace,	nap::rtti::EPropertyMetaData::Default,	"Texture color space")
 	RTTI_PROPERTY("ClearValue", &nap::DepthRenderTexture2D::mClearValue,	nap::rtti::EPropertyMetaData::Default,	"Initial clear value")
+	RTTI_PROPERTY("Usage",		&nap::DepthRenderTexture2D::mUsage,			nap::rtti::EPropertyMetaData::Default,	"How the texture is used at runtime (internal, updated etc..)")
 RTTI_END_CLASS
 
 
@@ -111,11 +113,8 @@ namespace nap
 			}
 		}
 
-		// Ensure texture can be used as an attachment for a render pass
-		VkImageUsageFlags required_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
 		// Create render texture
-		return Texture2D::init(settings, false, mClearColor.toVec4(), required_flags, errorState);
+		return Texture2D::init(settings, mUsage, 1, mClearColor.toVec4(), VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 	}
 
 
@@ -136,29 +135,25 @@ namespace nap
 		settings.mColorSpace = mColorSpace;
 		settings.mChannels = ESurfaceChannels::D;
 
-		const glm::vec4 clear_color = { mClearValue, mClearValue, mClearValue, mClearValue };
-
-		// Ensure texture can be used as an attachment for a render pass
-		VkImageUsageFlags required_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
 		// Initialize based on selected format
+		const glm::vec4 clear_color = { mClearValue, mClearValue, mClearValue, mClearValue };
 		switch (mDepthFormat)
 		{
-		case DepthRenderTexture2D::EDepthFormat::D16:
-		{
-			settings.mDataType = ESurfaceDataType::USHORT;
-			return Texture2D::init(settings, false, clear_color, required_flags, errorState);
-		}
-		case DepthRenderTexture2D::EDepthFormat::D32:
-		{
-			settings.mDataType = ESurfaceDataType::FLOAT;
-			return Texture2D::init(settings, false, clear_color, required_flags, errorState);
-		}
-		default:
-		{
-			errorState.fail("Unsupported format");
-			return false;
-		}
+			case DepthRenderTexture2D::EDepthFormat::D16:
+			{
+				settings.mDataType = ESurfaceDataType::USHORT;
+				return Texture2D::init(settings, mUsage, 1, clear_color, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+			}
+			case DepthRenderTexture2D::EDepthFormat::D32:
+			{
+				settings.mDataType = ESurfaceDataType::FLOAT;
+				return Texture2D::init(settings, mUsage, 1, clear_color, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+			}
+			default:
+			{
+				errorState.fail("Unsupported format");
+				return false;
+			}
 		}
 	}
 }

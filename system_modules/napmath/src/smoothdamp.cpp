@@ -54,7 +54,6 @@ namespace nap
 		{
 			mVelocity = { 0.0f, 0.0f };
 			mTarget = { 0.0f, 0.0f };
-
 		}
 
 		template<>

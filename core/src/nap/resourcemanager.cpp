@@ -110,7 +110,6 @@ namespace nap
 		mRollbackObjects = false;
 	}
 
-
 	void ResourceManager::RollbackHelper::addExistingDevice(Device& device)
 	{
 		mExistingDevices.push_back(&device);

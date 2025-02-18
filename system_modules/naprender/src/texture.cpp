@@ -14,10 +14,11 @@
 #include <nap/logger.h>
 #include <glm/gtc/type_ptr.hpp>
 
-RTTI_BEGIN_ENUM(nap::Texture::EUsage)
-	RTTI_ENUM_VALUE(nap::Texture::EUsage::Static,		"Static"),
-	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicRead,	"DynamicRead"),
-	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicWrite,	"DynamicWrite")
+RTTI_BEGIN_ENUM(nap::Texture2D::EUsage)
+	RTTI_ENUM_VALUE(nap::Texture2D::EUsage::Static,			"Static"),
+	RTTI_ENUM_VALUE(nap::Texture2D::EUsage::DynamicRead,	"DynamicRead"),
+	RTTI_ENUM_VALUE(nap::Texture2D::EUsage::DynamicWrite,	"DynamicWrite"),
+	RTTI_ENUM_VALUE(nap::Texture2D::EUsage::Internal,		"Internal")
 RTTI_END_ENUM
 
 // Define Texture base
@@ -25,7 +26,6 @@ RTTI_DEFINE_BASE(nap::Texture, "GPU Texture")
 
 // Texture2D class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D, "GPU representation of a 2D image, does not own any CPU data")
-	RTTI_PROPERTY("Usage",	&nap::Texture2D::mUsage, nap::rtti::EPropertyMetaData::Default, "How the texture is used at runtime (static, updated etc..)")
 RTTI_END_CLASS
 
 // TextureCube class definition
@@ -81,16 +81,18 @@ namespace nap
 	}
 
 
-	static int getNumStagingBuffers(int maxFramesInFlight, Texture::EUsage textureUsage)
+	static int getNumStagingBuffers(int maxFramesInFlight, Texture2D::EUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
-		case Texture::EUsage::DynamicWrite:
-				return maxFramesInFlight + 1;
-			case Texture::EUsage::Static:
+			case Texture2D::EUsage::Static:
 				return 1;
-			case Texture::EUsage::DynamicRead:
+			case Texture2D::EUsage::DynamicRead:
 				return maxFramesInFlight;
+			case Texture2D::EUsage::DynamicWrite:
+				return maxFramesInFlight + 1;
+			case Texture2D::EUsage::Internal:
+				return 0;
 			default:
 				assert(false);
 		}
@@ -109,12 +111,6 @@ namespace nap
 
 	void Texture::clear(VkCommandBuffer commandBuffer)
 	{
-		// Do not clear if this is an attachment
-		// Attachments use vkCmdClearAttachments for clear operations
-		// But should really be cleared in a renderpass with VK_ATTACHMENT_LOAD_OP_CLEAR
-		if (getTargetLayout() == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL || getTargetLayout() == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || getTargetLayout() > VK_IMAGE_LAYOUT_PREINITIALIZED)
-			return;
-
 		// Texture clear commands are the first subset of commands to be pushed to the upload command buffer at the beginning of a frame
 		// Therefore, the initial layout transition waits for nothing
 		VkAccessFlags srcMask = 0;
@@ -130,8 +126,8 @@ namespace nap
 
 		// Get image ready for clear, applied to all mipmap layers
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		utility::transitionImageLayout(commandBuffer, getHandle().mImage,
-			getHandle().mCurrentLayout,		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			srcMask,						dstMask,
 			srcStage,						dstStage,
 			0,								getMipLevels(),
@@ -151,15 +147,12 @@ namespace nap
 		}
 
 		// Transition image layout
-		utility::transitionImageLayout(commandBuffer, getHandle().mImage,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getTargetLayout(),
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0,										getMipLevels(),
 			aspect);
-
-		// We store the last image layout, which is used as input for a subsequent upload
-		getHandle().mCurrentLayout = getTargetLayout();
 	}
 
 
@@ -195,89 +188,28 @@ namespace nap
 	}
 
 
-	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
 		mFormat = utility::getTextureFormat(descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
 			return false;
 
-		// Ensure our GPU image can be used as a transfer destination during uploads
-		VkFormatProperties format_properties;
-		mRenderService.getFormatProperties(mFormat, format_properties);
-		if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
-		{
-			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
+		// Store number of mip-maps to generate
+		mMipLevels = mipCount;
+		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal to or higher than 1", mID.c_str()))
 			return false;
-		}
 
-		// If mip mapping is enabled, ensure it is supported
-		if (generateMipMaps)
-		{
-			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-			{
-				errorState.fail("%s: image format does not support linear blitting, consider disabling mipmap generation", mID.c_str());
-				return false;
-			}
-			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
-		}
-
-		// Ensure there are enough read callbacks based on max number of frames in flight
-		mImageSizeInBytes = descriptor.getSizeInBytes();
-		if (mUsage == EUsage::DynamicRead)
-		{
-			mReadCallbacks.resize(mRenderService.getMaxFramesInFlight());
-			mDownloadStagingBufferIndices.resize(mRenderService.getMaxFramesInFlight());
-		}
-
-		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
-		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
-		// at any time. However, as the staging buffers serve as a source for updating the GPU buffers, they are part of the command buffer.
-		// 
-		// We can only safely update the staging buffer if we know it isn't used anymore. We generally make enough resources for each frame
-		// that can be in flight. Once we've passed RenderService::beginRendering, we know that the resources for the current frame are 
-		// not in use anymore. If we would use this strategy, we could only safely use a staging buffer during rendering. To be more 
-		// specific, we could only use the staging buffer during rendering, but before the render pass was set (as this is a Vulkan
-		// requirement for buffer transfers). This is very inconvenient for texture updating, as we'd ideally like to update texture contents
-		// at any point in the frame. We also don't want to make an extra copy of the texture that would be used during rendering. To solve 
-		// this problem, we use one additional staging buffer. This guarantees that there's always a single staging buffer free at any point 
-		// in the frame. So the amount of staging buffers is:  'maxFramesInFlight' + 1. Updating the staging buffer multiple times within a 
-		// frame will just overwrite the same staging buffer.
-		//
-		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
-		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
-		// called, which moves the index one place ahead.
-		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
-
-		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-		VkBufferUsageFlags buffer_usage = mUsage == EUsage::DynamicRead ?
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT :
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-		VmaMemoryUsage memory_usage = mUsage == EUsage::DynamicRead ?
-			VMA_MEMORY_USAGE_GPU_TO_CPU :
-			VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-		mStagingBuffers.resize(getNumStagingBuffers(mRenderService.getMaxFramesInFlight(), mUsage));
-		for (int index = 0; index < mStagingBuffers.size(); ++index)
-		{
-			BufferData& staging_buffer = mStagingBuffers[index];
-
-			// Create staging buffer
-			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, 0, staging_buffer, errorState))
-			{
-				errorState.fail("%s: Unable to create staging buffer for texture", mID.c_str());
-				return false;
-			}
-		}
-
-		// Set image usage flags: can be written to, read and sampled
-		VkImageUsageFlags usage = requiredFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		// Create staging buffers for up and download
+		if (!initStagingBuffers(usage, descriptor.getSizeInBytes(), errorState))
+			return false;
 
 		// Create GPU image
+		// TODO: The usage flags could be more fine grained based on selected usage type
+		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
+		VkImageUsageFlags use_flags = requiredFlags | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels,
-			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, use_flags, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
 			return false;
 
 		// Check whether the texture is flagged as depth
@@ -291,26 +223,13 @@ namespace nap
 		// Initialize buffer indexing
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
-
+		mUsage = usage;
 		return true;
 	}
 
-
-
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
-			return false;
-
-		// Clear the texture and perform a layout transition to shader read
-		requestClear();
-		return true;
-	}
-
-
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
-	{
-		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
+		if (!initInternal(descriptor, usage, mipCount, requiredFlags, errorState))
 			return false;
 
 		// Set clear color
@@ -322,9 +241,9 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
+		if (!initInternal(descriptor, usage, mipCount, requiredFlags, errorState))
 			return false;
 
 		// Upload initial data and perform a layout transition to shader read
@@ -355,8 +274,8 @@ namespace nap
 
 		// Get image ready for copy, applied to all mipmap layers
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
-			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			srcMask,			dstMask,
 			srcStage,			dstStage,
 			0,					mMipLevels,
@@ -368,20 +287,17 @@ namespace nap
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
 		{
-			utility::createMipmaps(commandBuffer, mImageData.mImage, mFormat, getTargetLayout(), aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+			utility::createMipmaps(commandBuffer, mImageData, mFormat, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
-			utility::transitionImageLayout(commandBuffer, mImageData.mImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getTargetLayout(),
+			utility::transitionImageLayout(commandBuffer,
+                getHandle(),							VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				0,										1,
 				aspect);
 		}
-
-		// We store the last image layout, which is used as input for a subsequent upload
-		mImageData.mCurrentLayout = getTargetLayout();
 
 		// Destroy staging buffer when usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
@@ -409,8 +325,8 @@ namespace nap
 
 		// Transition for copy
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
 			0,											1,
@@ -420,8 +336,8 @@ namespace nap
 		copyImageToBuffer(commandBuffer, mImageData.mImage, buffer.mBuffer, aspect, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Transition back to shader usage
-		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0,											1,
@@ -504,9 +420,71 @@ namespace nap
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
 
-		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
+		mReadCallbacks[frameIndex](mapped_memory, mDescriptor.getSizeInBytes());
 		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
 		mReadCallbacks[frameIndex] = TextureReadCallback();
+	}
+
+
+	bool Texture2D::initStagingBuffers(EUsage usage, size_t imageSizeBytes, utility::ErrorState& errorState)
+	{
+		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
+		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
+		// at any time. However, as the staging buffers serve as a source for updating the GPU buffers, they are part of the command buffer.
+		// 
+		// We can only safely update the staging buffer if we know it isn't used anymore. We generally make enough resources for each frame
+		// that can be in flight. Once we've passed RenderService::beginRendering, we know that the resources for the current frame are 
+		// not in use anymore. If we would use this strategy, we could only safely use a staging buffer during rendering. To be more 
+		// specific, we could only use the staging buffer during rendering, but before the render pass was set (as this is a Vulkan
+		// requirement for buffer transfers). This is very inconvenient for texture updating, as we'd ideally like to update texture contents
+		// at any point in the frame. We also don't want to make an extra copy of the texture that would be used during rendering. To solve 
+		// this problem, we use one additional staging buffer. This guarantees that there's always a single staging buffer free at any point 
+		// in the frame. So the amount of staging buffers is:  'maxFramesInFlight' + 1. Updating the staging buffer multiple times within a 
+		// frame will just overwrite the same staging buffer.
+		//
+		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
+		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
+		// called, which moves the index one place ahead.
+		int staging_count = getNumStagingBuffers(mRenderService.getMaxFramesInFlight(), usage);
+		if (staging_count == 0)
+			return true;
+
+		// Ensure our GPU image can be used as a transfer destination during uploads
+		VkFormatProperties format_properties;
+		mRenderService.getFormatProperties(mFormat, format_properties);
+		if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
+		{
+			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
+			return false;
+		}
+
+		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
+		VkBufferUsageFlags buffer_usage = usage == EUsage::DynamicRead ?
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT :
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
+		VmaMemoryUsage memory_usage = usage == EUsage::DynamicRead ?
+			VMA_MEMORY_USAGE_GPU_TO_CPU :
+			VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+		// Create staging buffers
+		auto vulkan_allocator = mRenderService.getVulkanAllocator();
+		mStagingBuffers.resize(staging_count);
+		for (BufferData& buffer_data : mStagingBuffers)
+		{
+			if (!errorState.check(createBuffer(vulkan_allocator, imageSizeBytes, buffer_usage, memory_usage, 0, buffer_data, errorState),
+				"%s: Unable to create staging buffer for texture", mID.c_str()))
+				return false;
+		}
+
+		// Ensure there are enough read callbacks based on max number of frames in flight
+		if (usage == EUsage::DynamicRead)
+		{
+			mReadCallbacks.resize(mRenderService.getMaxFramesInFlight());
+			mDownloadStagingBufferIndices.resize(mRenderService.getMaxFramesInFlight());
+		}
+		return true;
 	}
 
 
@@ -530,8 +508,13 @@ namespace nap
 	}
 
 
-	bool TextureCube::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool TextureCube::init(const SurfaceDescriptor& descriptor, int mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
+		// Store number of mip-maps to generate
+		mMipLevels = mipCount;
+		if (!errorState.check(mMipLevels > 0, "%s, Mip map count must be equal to or higher than 1", mID.c_str()))
+			return false;
+
 		// Get the format, when unsupported bail.
 		mFormat = utility::getTextureFormat(descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
@@ -546,24 +529,14 @@ namespace nap
 			return false;
 		}
 
-		// If mip mapping is enabled, ensure it is supported
-		if (generateMipMaps)
-		{
-			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-			{
-				errorState.fail("%s: image format does not support linear blitting, consider disabling mipmap generation", mID.c_str());
-				return false;
-			}
-			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
-		}
-
 		// Set image usage flags: can be written to, read and sampled
-		mImageUsageFlags = requiredFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		// TODO: The usage flags could be more fine grained
+		VkImageUsageFlags use_flags = requiredFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create GPU image
 		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
 		if (!createLayered2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, getLayerCount(),
-			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, mImageUsageFlags, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, use_flags, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
 			return false;
 
 		// Check whether the texture is flagged as depth
@@ -582,9 +555,8 @@ namespace nap
 				return false;
 		}
 
-		mDescriptor = descriptor;
-
 		// Set clear color
+		mDescriptor = descriptor;
 		std::memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
 
 		// Clear the texture and perform a layout transition to shader read
