@@ -105,7 +105,12 @@ namespace nap
 
 	void CalendarItem::setTitle(const std::string& title)
 	{
-		mTitle = title;
+		// Check if title has changed, if so, signal the outside world
+		if (title!=mTitle)
+		{
+			mTitle = title;
+			changed(*this);
+		}
 	}
 
 
@@ -117,7 +122,12 @@ namespace nap
 
 	void CalendarItem::setDescription(const std::string& description)
 	{
-		mDescription = description;
+		// Check if description has changed, if so, signal the outside world
+		if (description != mDescription)
+		{
+			mDescription = description;
+			changed(*this);
+		}
 	}
 
 
@@ -129,12 +139,17 @@ namespace nap
 
 	bool CalendarItem::setPoint(const Point& point)
 	{
-		if (point.valid())
+		if (!point.valid())
+			return false;
+
+		// Signal the outside world this item has changed if the point has changed
+		if (mPoint != point)
 		{
 			mPoint = point;
-			return true;
+			changed(*this);
 		}
-		return false;
+
+		return true;
 	}
 
 
@@ -147,12 +162,20 @@ namespace nap
 	bool CalendarItem::setTime(const Time& time)
 	{
 		Time backup = mPoint.mTime;
-		mPoint.mTime = time;
+
 		if (!mPoint.valid())
 		{
 			mPoint.mTime = backup;
 			return false;
 		}
+
+		// Signal the outside world if this item has changed
+		if (mPoint.mTime != time)
+		{
+			mPoint.mTime = time;
+			changed(*this);
+		}
+
 		return true;
 	}
 
@@ -165,7 +188,11 @@ namespace nap
 
 	void CalendarItem::setDuration(const Time& duration)
 	{
-		mPoint.mDuration = duration;
+		if (duration!=mPoint.mDuration)
+		{
+			mPoint.mDuration = duration;
+			changed(*this);
+		}
 	}
 
 
@@ -195,9 +222,10 @@ namespace nap
 
 	bool WeeklyCalendarItem::setDay(EDay day)
 	{
-		if (day != EDay::Unknown)
+		if (day != EDay::Unknown && day != mDay)
 		{
 			mDay = day;
+			changed(*this);
 			return true;
 		}
 		return false;
@@ -297,6 +325,8 @@ namespace nap
 	{
 		if (!date.valid()) { return false; }
 		mDate = date;
+		if (date != mDate)
+			changed(*this);
 		return true;
 	}
 
@@ -338,6 +368,8 @@ namespace nap
 		if (day >= 1 && day <= 31)
 		{
 			mDay = day;
+			if (mDay!= day)
+				changed(*this);
 			return true;
 		}
 		return false;
@@ -409,6 +441,8 @@ namespace nap
 		if (day < 1 || day > 31 || month == EMonth::Unknown)
 			return false;
 		mDay = day; mMonth = month;
+		if (mDay != day || mMonth != month)
+			changed(*this);
 		return false;
 	}
 

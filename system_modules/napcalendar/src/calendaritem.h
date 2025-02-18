@@ -8,6 +8,7 @@
 #include <nap/resource.h>
 #include <nap/datetime.h>
 #include <nap/numeric.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -47,6 +48,19 @@ namespace nap
 			 * @return calendar point in time, hour and minute is negative if conversion fails
 			 */
 			static Time fromString(const std::string& time);
+
+			// Comparison operators
+			bool operator == (const Time &c) const
+			{
+				if (mHour == c.mHour && mMinute == c.mMinute)
+					return true;
+				return false;
+			}
+
+			bool operator != (const Time &c) const
+			{
+				return !(*this == c);
+			}
 		};
 
 		/**
@@ -60,6 +74,19 @@ namespace nap
 			Time mTime;							///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
 			Time mDuration;						///< Property: 'Duration' length of event: hours (0-X) & minutes (0-59). Duration of 0 = never
 			bool valid() const;  				///< Returns if time is valid
+
+			// Comparison operators
+			bool operator == (const Point &c) const
+			{
+				if (mTime == c.mTime && mDuration == c.mDuration)
+					return true;
+				return false;
+			}
+
+			bool operator != (const Point &c) const
+			{
+				return !(*this == c);
+			}
 		};
 
 		// Default Constructor
@@ -141,6 +168,8 @@ namespace nap
 		 * @return item duration (hours, minutes)
 		 */
 		const Time& getDuration() const;
+
+		Signal<const CalendarItem&> changed;		///< Called when the item changes
 
 		std::string mTitle = "";			///< Property: 'Title' item title
 		Point		mPoint;					///< Property; 'Point' point in time together with duration
