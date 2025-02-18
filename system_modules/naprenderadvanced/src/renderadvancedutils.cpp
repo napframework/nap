@@ -99,6 +99,7 @@ namespace nap
 				std::array<VkAttachmentDescription2, 2> attachments = { color_attachment, depth_attachment };
 				renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
 				renderpass_info.pAttachments = attachments.data();
+
 				return errorState.check(vkCreateRenderPass2(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 			}
 
@@ -152,6 +153,7 @@ namespace nap
 			std::array<VkAttachmentDescription2, 4> attachments = { color_attachment, depth_attachment, color_resolve_attachment, depth_resolve_attachment };
 			renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
 			renderpass_info.pAttachments = attachments.data();
+
 			return errorState.check(vkCreateRenderPass2(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
 		}
 
@@ -225,6 +227,7 @@ namespace nap
 			{
 				renderpass_info.attachmentCount = 1;
 				renderpass_info.pAttachments = &depth_attachment;
+
 				return errorState.check(vkCreateRenderPass2(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 			}
 
@@ -259,6 +262,7 @@ namespace nap
 			std::array<VkAttachmentDescription2, 2> attachments = { depth_attachment, depth_resolve_attachment };
 			renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
 			renderpass_info.pAttachments = attachments.data();
+
 			return errorState.check(vkCreateRenderPass2(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 		}
 	}

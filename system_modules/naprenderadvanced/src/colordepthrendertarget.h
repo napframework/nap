@@ -21,8 +21,8 @@ namespace nap
 	class RenderService;
 
 	/**
-	 * A resource that is used to render one or multiple objects to a nap::RenderTexture2D instead of a nap::RenderWindow.
-	 * This objects requires a link to a nap::RenderTexture2D to store the result of the render pass.
+	 * This render target renders to both nap::RenderTexture2D and nap::DepthRenderTexture2D. This lets you
+	 * use the depth buffer as a shader resource in a subsequent render operation.
 	 * Only render to a render target within a headless recording pass, failure to do so will result in undefined behavior.
 	 * Make sure to call beginRendering() to start the render pass and endRendering() to end the render pass.
 	 * Always call RenderService::endHeadlessRecording after having recorded all off-screen render operations.
@@ -44,12 +44,6 @@ namespace nap
 	 *		}
 	 *		mRenderService->endFrame();
 	 * ~~~~~
-	 *
-	 * nap::ColorDepthRenderTarget can also be used to hook up a nap::DepthRenderTexture2D as a depth attachment. This lets you
-	 * use the depth buffer as a shader resource in a subsequent render operation. The property `DepthTexture` is optional.
-	 * When empty, an internal depth attachment is created to use during rendering and calls to
-	 * `nap::ColorDepthRenderTarget::getDepthTexture()` will fail (always make sure `hasDepthTexture()` returns true first). When a
-	 * depth texture is set, `nap::ColorDepthRenderTarget::getDepthTexture()` return a reference to the resource successfully.
 	 */
 	class NAPAPI ColorDepthRenderTarget : public Resource, public IRenderTarget
 	{
@@ -177,10 +171,11 @@ namespace nap
 
 	public:	
 		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		RGBAColorFloat						mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
+		RGBAColorFloat						mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' value used for clearing the color attachment
+		float								mClearDepth = 1.0f;									///< Property: 'ClearDepth' value used for clearing the depth attachment
 		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		ResourcePtr<RenderTexture2D>		mColorTexture;										///< Property: 'ColorTexture' texture to render to
-		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' optional depth texture to render to
+		ResourcePtr<RenderTexture2D>		mColorTexture;										///< Property: 'ColorTexture' color texture to render to
+		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' depth texture to render to
 
 	private:
 		RenderService*						mRenderService;

@@ -16,9 +16,10 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ColorDepthRenderTarget, "Color and 
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("ColorTexture",			&nap::ColorDepthRenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required, "The storage color texture")
 	RTTI_PROPERTY("DepthTexture",			&nap::ColorDepthRenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Required, "The storage depth texture")
-	RTTI_PROPERTY("SampleShading",			&nap::ColorDepthRenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
-	RTTI_PROPERTY("Samples",				&nap::ColorDepthRenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
-	RTTI_PROPERTY("ClearColor",				&nap::ColorDepthRenderTarget::mClearColor,				nap::rtti::EPropertyMetaData::Default,	"Initial clear value")
+	RTTI_PROPERTY("SampleShading",			&nap::ColorDepthRenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost, applies to both color and depth")
+	RTTI_PROPERTY("Samples",				&nap::ColorDepthRenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use, applies to both color and depth")
+	RTTI_PROPERTY("ClearColor",				&nap::ColorDepthRenderTarget::mClearColor,				nap::rtti::EPropertyMetaData::Default,	"Initial clear color value")
+	RTTI_PROPERTY("ClearDepth",				&nap::ColorDepthRenderTarget::mClearDepth,				nap::rtti::EPropertyMetaData::Default,	"Initial clear depth value")
 RTTI_END_CLASS
 
 namespace nap
@@ -145,9 +146,9 @@ namespace nap
 		const auto size = mColorTexture->getSize();
 		std::array<VkClearValue, 4> clear_values = {};
 		clear_values[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
-		clear_values[1].depthStencil = { 1.0f, 0 };
+		clear_values[1].depthStencil = { mClearDepth, 0 };
 		clear_values[2].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
-		clear_values[3].depthStencil = { 1.0f, 0 };
+		clear_values[3].depthStencil = { mClearDepth, 0 };
 
 		// Setup render pass
 		VkRenderPassBeginInfo render_pass_info = {
