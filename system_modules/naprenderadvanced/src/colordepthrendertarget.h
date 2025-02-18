@@ -44,8 +44,14 @@ namespace nap
 	 *		}
 	 *		mRenderService->endFrame();
 	 * ~~~~~
+	 *
+	 * nap::ColorDepthRenderTarget can also be used to hook up a nap::DepthRenderTexture2D as a depth attachment. This lets you
+	 * use the depth buffer as a shader resource in a subsequent render operation. The property `DepthTexture` is optional.
+	 * When empty, an internal depth attachment is created to use during rendering and calls to
+	 * `nap::ColorDepthRenderTarget::getDepthTexture()` will fail (always make sure `hasDepthTexture()` returns true first). When a
+	 * depth texture is set, `nap::ColorDepthRenderTarget::getDepthTexture()` return a reference to the resource successfully.
 	 */
-	class NAPAPI RenderTarget : public Resource, public IRenderTarget
+	class NAPAPI ColorDepthRenderTarget : public Resource, public IRenderTarget
 	{
 		RTTI_ENABLE(Resource)
 	public:
@@ -53,12 +59,12 @@ namespace nap
 		 * Every render target requires a reference to core.
 		 * @param core link to a nap core instance
 		 */
-		RenderTarget(Core& core);
+		ColorDepthRenderTarget(Core& core);
 		
 		/**
 		 * Destroys allocated render resources
 		 */
-		~RenderTarget();
+		~ColorDepthRenderTarget();
 
 		/**
 		 * Initializes the render target, including all the required resources.
@@ -138,6 +144,13 @@ namespace nap
 		RenderTexture2D& getColorTexture();
 
 		/**
+		 * Returns the depth texture resource if available, asserts if this is not the case.
+		 * Always make sure `hasDepthTexture()` returns true before calling this function.
+		 * @return the depth texture that holds the result of the render pass, asserts otherwise.
+		 */
+		DepthRenderTexture2D& getDepthTexture();
+
+		/**
 		 * @return render target color format. This is the format of the linked in color texture.
 		 */
 		virtual VkFormat getColorFormat() const override;
@@ -167,7 +180,7 @@ namespace nap
 		RGBAColorFloat						mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
 		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		ResourcePtr<RenderTexture2D>		mColorTexture;										///< Property: 'ColorTexture' texture to render to
-        bool                                mClear = true;                                      ///< Property: 'Clear' whether to clear the render target at the start of each render pass
+		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' optional depth texture to render to
 
 	private:
 		RenderService*						mRenderService;

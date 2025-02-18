@@ -5,6 +5,7 @@
 // Local Includes
 #include "cubedepthrendertarget.h"
 #include "cuberendertarget.h"
+#include "renderadvancedutils.h"
 
 // Nap includes
 #include <perspcameracomponent.h>

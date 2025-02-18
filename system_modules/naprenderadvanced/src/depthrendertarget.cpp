@@ -6,11 +6,11 @@
 #include "depthrendertarget.h"
 #include "rendertexture2d.h"
 #include "renderservice.h"
+#include "renderadvancedutils.h"
 
 // External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
-
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTarget, "Depth texture target for render operations")
 	RTTI_CONSTRUCTOR(nap::Core&)
