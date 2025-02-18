@@ -148,7 +148,6 @@ namespace nap
 		mShadowTextureDummy->mDepthFormat = configuration->mDepthFormat;
 		mShadowTextureDummy->mColorSpace = EColorSpace::Linear;
 		mShadowTextureDummy->mClearValue = 1.0f;
-		mShadowTextureDummy->mFill = true;
 		if (!mShadowTextureDummy->init(errorState))
 		{
 			errorState.fail("%s: Failed to create shadow texture dummy", this->get_type().get_name().to_string().c_str());
@@ -652,7 +651,6 @@ namespace nap
 				shadow_map->mUsage = Texture2D::EUsage::Internal;
 				shadow_map->mColorSpace = EColorSpace::Linear;
 				shadow_map->mClearValue = 1.0f;
-				shadow_map->mFill = true;
 
 				if (!shadow_map->init(errorState))
 				{
@@ -689,7 +687,6 @@ namespace nap
 				cube_map->mDepthFormat = configuration->mDepthFormatCube;
 				cube_map->mColorSpace = EColorSpace::Linear;
 				cube_map->mClearValue = 1.0f;
-				cube_map->mFill = true;
 
  				if (!cube_map->init(errorState))
 				{

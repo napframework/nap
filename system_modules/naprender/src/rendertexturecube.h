@@ -121,6 +121,5 @@ namespace nap
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EDepthFormat		mDepthFormat = EDepthFormat::D16;				///< Property: 'DepthFormat' depth texture format
 		float				mClearValue = 1.0f;								///< Property: 'ClearValue' value selection used for clearing the texture
-		bool				mFill = false;									///< Property: 'Fill' if the texture is initialized to black when usage is static
 	};
 }
