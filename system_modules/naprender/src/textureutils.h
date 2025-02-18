@@ -43,6 +43,11 @@ namespace nap
 			VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, uint mipLevel, uint mipLevelCount, uint layer, uint layerCount, VkImageAspectFlags aspect);
 
 		/**
+		 * Compute maximum texture level of detail
+		 */
+		int NAPAPI computeMipLevel(const SurfaceDescriptor& descriptor);
+
+		/**
 		 * Creates mip maps for the specified Vulkan image.
 		 */
 		void NAPAPI createMipmaps(VkCommandBuffer buffer, ImageData& image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels);

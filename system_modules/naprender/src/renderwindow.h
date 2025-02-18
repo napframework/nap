@@ -263,6 +263,11 @@ namespace nap
 		 */
 		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
+		/**
+		 * @return layout of the texture when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const override						{ return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
+
 		bool					mSampleShading		= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth				= 512;								///< Property: 'Width' window horizontal resolution
 		int						mHeight				= 512;								///< Property: 'Height' window vertical resolution

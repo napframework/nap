@@ -59,7 +59,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	RenderTarget::RenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureLink(*this)
 	{}
 
 
@@ -89,9 +90,6 @@ namespace nap
 			mSampleShading = false;
 		}
 
-		// Store whether a depth texture resource is set
-		mHasDepthTexture = mDepthTexture != nullptr;
-
 		// Set framebuffer size
 		const auto size = mColorTexture->getSize();
 		VkExtent2D framebuffer_size = { (uint32)size.x, (uint32)size.y };
@@ -107,12 +105,12 @@ namespace nap
 			if (!errorState.check(mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT, "Depth resolve attachments are not supported. Set the sample count to one if a depth texture resource is desired."))
 				return false;
 
-			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, mColorTexture->getTargetLayout(), mClear, true, mRenderPass, errorState))
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, getFinalLayout(), mClear, true, mRenderPass, errorState))
 				return false;
 		}
 		else
 		{
-			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, mColorTexture->getTargetLayout(), mClear, false, mRenderPass, errorState))
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, getFinalLayout(), mClear, false, mRenderPass, errorState))
 				return false;
 		}
 
@@ -162,9 +160,8 @@ namespace nap
 		framebufferInfo.height = framebuffer_size.height;
 		framebufferInfo.layers = 1;
 
-		if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebufferInfo, nullptr, &mFramebuffer) == VK_SUCCESS, "Failed to create framebuffer"))
-			return false;
-		return true;
+		return errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebufferInfo, nullptr, &mFramebuffer) == VK_SUCCESS,
+			"Failed to create framebuffer");
 	}
 
 
@@ -248,8 +245,10 @@ namespace nap
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
 
-        // Sync image data with render pass final layout
-        mColorTexture->syncLayout();
+		// Sync image data with render pass final layout
+		mTextureLink.sync(*mColorTexture);
+		if (hasDepthTexture())
+			mTextureLink.sync(*mDepthTexture);
 	}
 
 
@@ -267,7 +266,6 @@ namespace nap
 
 	DepthRenderTexture2D& RenderTarget::getDepthTexture()
 	{
-		assert(mHasDepthTexture);
 		assert(mDepthTexture != nullptr);
 		return *mDepthTexture;
 	}

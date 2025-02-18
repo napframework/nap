@@ -149,7 +149,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	SnapshotRenderTarget::SnapshotRenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureLink(*this)
 	{}
 
 	SnapshotRenderTarget::~SnapshotRenderTarget()
@@ -293,13 +294,13 @@ namespace nap
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
 	}
 
+
 	void SnapshotRenderTarget::endRendering()
 	{
+		// Finalize rendering and sync layout
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
-
-        // Sync image data with render pass final layout
-        for (auto& tex : mSnapshot->mColorTextures)
-            tex->syncLayout();
+		for (auto& tex : mSnapshot->mColorTextures)
+			mTextureLink.sync(*tex);
 	}
 
 

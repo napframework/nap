@@ -846,6 +846,13 @@ namespace nap
 		bool getLargePointsSupported() const										{ return mLargePointsSupported; }
 
 		/**
+		 * Returns if hardware down-sampling is supported for the given texture type
+		 * @param descriptor texture description
+		 * @return if map-map generation is supported for the given texture type
+		 */
+		bool getMipSupport(const SurfaceDescriptor& descriptor) const;
+
+		/**
 		 * Configurable setting.
 		 * When enabled fonts and general scaling is adjusted for high dpi monitors.
 		 * @return if high dpi mode is enabled
