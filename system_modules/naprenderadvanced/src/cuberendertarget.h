@@ -12,6 +12,7 @@
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <vulkan/vulkan_core.h>
+#include <texturelink.h>
 
 namespace nap
 {
@@ -125,6 +126,11 @@ namespace nap
 		virtual bool getSampleShadingEnabled() const override					{ return mSampleShading; }
 
 		/**
+		 * @return layout of the texture when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const override					{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+
+		/**
 		 * @return the absolute size of a single cube face in pixels.
 		 */
 		glm::ivec2 getSize() const												{ return mSize; }
@@ -212,5 +218,6 @@ namespace nap
 
 		glm::ivec2								mSize = { 0, 0 };
 		uint									mLayerIndex = 0;
+		TextureCubeTargetLink					mTextureLink;
 	};
 }

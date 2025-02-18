@@ -117,6 +117,11 @@ namespace nap
 		virtual bool getSampleShadingEnabled() const override					{ return mSampleShading; }
 
 		/**
+		 * @return image layout when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const override					{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+
+		/**
 		 * @return the absolute size of a single cube face in pixels.
 		 */
 		glm::ivec2 getSize() const												{ return mSize; }
@@ -162,8 +167,7 @@ namespace nap
 		bool									mSampleShading = true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		float									mClearValue = 1.0f;											///< Property: 'ClearValue' value selection used for clearing the render target
 		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;				///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D32;	///< Property: 'DepthFormat' the cube texture depth format.
-																											
+		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D32;	///< Property: 'DepthFormat' the cube texture depth format.																											
 		ResourcePtr<DepthRenderTextureCube>		mCubeDepthTexture;											///< Property: 'CubeDepthTexture' Cube depth texture to render to.
 
 	private:

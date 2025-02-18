@@ -44,7 +44,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	DepthRenderTarget::DepthRenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureTargetLink(*this)
 	{}
 
 
@@ -158,10 +159,9 @@ namespace nap
 
 	void DepthRenderTarget::endRendering()
 	{
+		// End render pass and sync layout
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
-
-        // Sync image data with render pass final layout
-        mDepthTexture->syncLayout();
+		mTextureTargetLink.sync(*mDepthTexture);
 	}
 
 

@@ -77,7 +77,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	CubeRenderTarget::CubeRenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureLink(*this)
 	{}
 
 
@@ -131,7 +132,7 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, mCubeTexture->getTargetLayout(), mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, getFinalLayout(), mRenderPass, errorState))
 			return false;
 
 		framebuffer_info.renderPass = mRenderPass;
@@ -231,7 +232,7 @@ namespace nap
 		 * Render to frame buffers
 		 * Cube face selection following the Vulkan spec
 		 * https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
-		 **/
+		 */
 		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), camPosition);
 		for (int layer_index = TextureCube::layerCount - 1; layer_index >= 0; layer_index--)
 		{
@@ -245,7 +246,7 @@ namespace nap
 		}
 
         // Sync image data with render pass final layout
-        mCubeTexture->syncLayout();
+		mTextureLink.sync(*mCubeTexture);
 
 		// Update mip maps
 		if (mUpdateLODs && mCubeTexture->getMipLevels() > 1)

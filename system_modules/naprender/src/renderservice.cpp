@@ -1658,22 +1658,22 @@ namespace nap
 		SurfaceDescriptor settings = { 1, 1, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
 		mEmptyTexture2D = std::make_unique<Texture2D>(getCore());
 		mEmptyTexture2D->mID = utility::stringFormat("%s_EmptyTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mEmptyTexture2D->init(settings, false, 0, errorState))
+		if (!mEmptyTexture2D->init(settings, Texture2D::EUsage::Internal, 1, glm::zero<glm::vec4>(), 0, errorState))
 			return false;
 
 		mEmptyTextureCube = std::make_unique<TextureCube>(getCore());
 		mEmptyTextureCube->mID = utility::stringFormat("%s_EmptyTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mEmptyTextureCube->init(settings, false, glm::zero<glm::vec4>(), 0, errorState))
+		if (!mEmptyTextureCube->init(settings, 1, glm::zero<glm::vec4>(), 0, errorState))
 			return false;
 
 		mErrorTexture2D = std::make_unique<Texture2D>(getCore());
 		mErrorTexture2D->mID = utility::stringFormat("%s_ErrorTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mErrorTexture2D->init(settings, false, mErrorColor.toVec4(), 0, errorState))
+		if (!mErrorTexture2D->init(settings, Texture2D::EUsage::Internal, 1, mErrorColor.toVec4(), 0, errorState))
 			return false;
 
 		mErrorTextureCube = std::make_unique<TextureCube>(getCore());
 		mErrorTextureCube->mID = utility::stringFormat("%s_ErrorTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mErrorTextureCube->init(settings, false, mErrorColor.toVec4(), 0, errorState))
+		if (!mErrorTextureCube->init(settings, 1, mErrorColor.toVec4(), 0, errorState))
 			return false;
 
 		return true;
@@ -2870,6 +2870,15 @@ namespace nap
 		return mDepthFormat != VK_FORMAT_D32_SFLOAT ? 
 			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : 
 			VK_IMAGE_ASPECT_DEPTH_BIT;
+	}
+
+
+	bool RenderService::getMipSupport(const SurfaceDescriptor& descriptor) const
+	{
+		// Get format properties
+		VkFormatProperties properties;
+		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), utility::getTextureFormat(descriptor), &properties);
+		return (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) > 0;
 	}
 
 
