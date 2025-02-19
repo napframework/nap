@@ -52,10 +52,10 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 
 ![Between Mind and Matter, Nick Verstand](https://download.nap-labs.tech/shared/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
+![Shylight, Studio Drift](https://download.nap-labs.tech/shared/shylight_nycb.jpg)
+[Shylight](https://studiodrift.com/work/shylight/) by Studio Drift
 ![Habitat, Heleen Blanken](https://download.nap-labs.tech/shared/habitat_1280.jpg)
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
-![Shylight, Studio Drift](https://download.nap-labs.tech/shared/shylight_basel_1280.jpg)
-[Shylight](https://studiodrift.com/work/shylight/) by Studio Drift
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
 ![NAP Framework](https://download.nap-labs.tech/shared/napkin_interface.jpg)
