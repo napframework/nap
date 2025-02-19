@@ -88,6 +88,11 @@ namespace nap
 		virtual size_t getSize() const					{ assert(mBuffer != nullptr); return mBuffer->getSize(); }
 
 		/**
+		 * @return The element size in bytes
+		 */
+		virtual size_t getElementSize() const			{ assert(mBuffer != nullptr); return mBuffer->getElementSize(); }
+
+		/**
 		 * @return the base GPU buffer, nullptr if not set
 		 */
 		const GPUBuffer* getBuffer() const				{ return mBuffer; }

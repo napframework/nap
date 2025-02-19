@@ -28,16 +28,53 @@
 
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
+#include <cstring>
+#include <cstdio>
+#include <cerrno>
 #include <unistd.h>
 #include <sys/inotify.h>
+
+#include <sys/types.h>
+#include <dirent.h>
 
 #define BUFF_SIZE ((sizeof(struct inotify_event)+FILENAME_MAX)*1024)
 
 namespace FW
 {
+	/**
+	 * Utility function to list all subdirectories of a given directory
+	 * @param directoryPath absolute path of root directory
+	 * @param dirs vector filled with absolute paths of subdirectories
+	 */
+	static void listSubdirectories(const std::string &directoryPath, std::vector<std::string>& dirs)
+	{
+		DIR *dir = opendir(directoryPath.c_str());
+		if (dir == nullptr)
+			return;
+
+		struct dirent *entry;
+		while ((entry = readdir(dir)) != nullptr)
+		{
+			// Skip the '.' and '..' directories
+			if (entry->d_name[0] == '.')
+				continue;
+
+			// Get information about the directory entry
+			struct stat statbuf;
+			std::string fullPath = directoryPath + "/" + entry->d_name;
+			if (stat(fullPath.c_str(), &statbuf) == 0)
+			{
+				// Check if it's a directory
+				if (S_ISDIR(statbuf.st_mode))
+				{
+					dirs.emplace_back(fullPath);
+					listSubdirectories(fullPath, dirs);
+				}
+			}
+		}
+		closedir(dir);
+	}
+
 
 	struct WatchStruct
 	{
@@ -82,9 +119,6 @@ namespace FW
 				throw FileNotFoundException(directory);
 			else
 				throw Exception(strerror(errno));
-
-//			fprintf (stderr, "Error: %s\n", strerror(errno));
-//			return -1;
 		}
 		
 		WatchStruct* pWatch = new WatchStruct();
@@ -93,7 +127,22 @@ namespace FW
 		pWatch->mDirName = directory;
 		
 		mWatches.insert(std::make_pair(wd, pWatch));
-	
+
+        // create watches for subdirectories
+        // when recursive is true watches will be added that watch each subdirectories
+        // the watches are stored in a map so they can be removed when the root watch is removed
+        // a root watch is a watch that was added with the recursive option set to true
+		if (recursive)
+		{
+            // obtain a list of all subdirectories
+			std::vector<std::string> dirs;
+			listSubdirectories(directory, dirs);
+
+            // add watches for each subdirectory
+			for (const auto& dir : dirs)
+                mSubDirWatches[wd].emplace_back(addWatch(dir, watcher, false));
+		}
+
 		return wd;
 	}
 
@@ -106,7 +155,10 @@ namespace FW
 		{
 			if(directory == iter->second->mDirName)
 			{
-				removeWatch(iter->first);
+                // remove watch
+                WatchID wd = iter->first;
+				removeWatch(wd);
+
 				return;
 			}
 		}
@@ -127,6 +179,16 @@ namespace FW
 		
 		delete watch;
 		watch = 0;
+
+        // remove watches for subdirectories if those were added with the root watch
+        auto it = mSubDirWatches.find(watchid);
+        if (it != mSubDirWatches.end())
+        {
+            for (const auto& subDirWatch : it->second)
+                removeWatch(subDirWatch);
+
+            mSubDirWatches.erase(it);
+        }
 	}
 
 	//--------
@@ -180,7 +242,8 @@ namespace FW
 								Actions::Delete);
 		}
 	}
-
 };//namespace FW
+
+
 
 #endif//FILEWATCHER_PLATFORM_LINUX

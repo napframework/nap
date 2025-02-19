@@ -7,6 +7,7 @@
 // Local Includes
 #include "surfacedescriptor.h"
 #include "renderutils.h"
+#include "textureutils.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -21,6 +22,8 @@ namespace nap
 	class Bitmap;
 	class RenderService;
 	class Core;
+	class TextureLink2D;
+	class TextureLinkCube;
 
 	/**
 	 * Texture base class
@@ -30,16 +33,6 @@ namespace nap
 		friend class RenderService;
 		RTTI_ENABLE(Resource)
 	public:
-		/**
-		 * Flag that determines how the texture is used at runtime.
-		 */
-		enum class EUsage
-		{
-			Static,				///< Texture does not change, uploaded to once
-			DynamicRead,		///< Texture is frequently read from GPU to CPU
-			DynamicWrite		///< Texture is frequently updated from CPU to GPU
-		};
-
 		// Constructor
 		Texture(Core& core);
 
@@ -62,11 +55,6 @@ namespace nap
 		virtual const ImageData& getHandle() const = 0;
 
 		/**
-		 * @return Vulkan image layout that this texture is intended for.
-		 */
-		virtual VkImageLayout getTargetLayout() const			{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; };
-
-		/**
 		 * @return Vulkan texture format
 		 */
 		VkFormat getFormat() const								{ return mFormat; }
@@ -77,12 +65,12 @@ namespace nap
 		const SurfaceDescriptor& getDescriptor() const			{ return mDescriptor; }
 
 		/**
-		 * @return render service
+		 * @return render service, available after construction
 		 */
 		RenderService& getRenderService()						{ return mRenderService; }
 
 		/**
-		 * @return render service
+		 * @return render service, available after construction
 		 */
 		const RenderService& getRenderService() const			{ return mRenderService; }
 
@@ -112,6 +100,7 @@ namespace nap
 		 */
 		void requestClear();
 
+	protected:
 		RenderService&						mRenderService;								///< Reference to the render service
 		SurfaceDescriptor					mDescriptor;								///< Texture description
 		VkFormat							mFormat = VK_FORMAT_UNDEFINED;				///< Vulkan texture format
@@ -128,8 +117,23 @@ namespace nap
 	class NAPAPI Texture2D : public Texture
 	{
 		friend class RenderService;
+		friend class Texture2DLink;
+        friend void utility::blit(VkCommandBuffer, Texture2D&, Texture2D&);
+        friend void utility::copy(VkCommandBuffer, Texture2D&, Texture2D&);
 		RTTI_ENABLE(Texture)
+
 	public:
+		/**
+		 * Flag that determines how the 2D texture is used at runtime.
+		 */
+		enum class EUsage
+		{
+			Static			= 0,	///< Texture is uploaded to once and does not change
+			DynamicRead		= 1,	///< Texture is frequently read from GPU to CPU
+			DynamicWrite	= 2,	///< Texture is frequently updated from CPU to GPU
+			Internal		= 3		///< Texture is never uploaded to or downloaded from
+		};
+
 		Texture2D(Core& core);
 		virtual ~Texture2D() override;
 
@@ -137,37 +141,27 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param usage how the texture is intended to be used (static, internal only etc..)
+		 * @param mipCount total number of mip-maps to generate upon upload, a value of 1 disables mip-mapping
 		 * @param clearColor the color to clear the texture with.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
-
-		/**
-		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
-		 * Otherwise the layout of the texture on the GPU will be undefined until upload.
-		 * The Vulkan image usage flags are derived from texture usage.
-		 * @param descriptor texture description.
-		 * @param generateMipMaps if mip maps are generated when data is uploaded.
-		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
-		 * @param errorState contains the error if the texture can't be initialized.
-		 * @return if the texture initialized successfully.
-		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param usage how the texture is intended to be used (static, internal only etc..)
+		 * @param mipCount total number of mip-maps to generate upon upload, a value of 1 disables mip-mapping
 		 * @param initialData the data to upload, must be of size SurfaceDescriptor::getSizeInBytes().
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture in texels.
@@ -232,7 +226,9 @@ namespace nap
 		 */
 		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
 
-		EUsage mUsage = EUsage::Static;							///< Property: 'Usage' If this texture is updated frequently or considered static.
+		// Don't allow implicit conversion from bool to int -> EVIL
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, bool mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState) = delete;
+		bool init(const SurfaceDescriptor& descriptor, EUsage usage, bool mipCount, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState) = delete;
 
 	protected:
 		/**
@@ -244,12 +240,12 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param mipCount total number of mip-maps to generate upon upload
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool initInternal(const SurfaceDescriptor& descriptor, EUsage usage, int mipCount, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * Called by the render service when data can be uploaded
@@ -280,6 +276,14 @@ namespace nap
 		std::vector<TextureReadCallback>	mReadCallbacks;								///< Number of callbacks based on number of frames in flight
 		std::vector<int>					mDownloadStagingBufferIndices;				///< Staging buffer indices associated with a frameindex
 		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
+		EUsage								mUsage;										///< Intented texture usage
+
+	private:
+		/**
+		 * Creates the various staging buffers, required for data up and download.
+		 * @param usage the intended texture usage
+		 */
+		bool initStagingBuffers(EUsage usage, size_t imageSizeBytes, utility::ErrorState& error);
 	};
 
 
@@ -298,6 +302,7 @@ namespace nap
 	class NAPAPI TextureCube : public Texture
 	{
 		friend class RenderService;
+		friend class TextureCubeLink;
 		RTTI_ENABLE(Texture)
 	public:
 		// The image layer count is equal to the number of sides of a cube
@@ -310,13 +315,13 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
-		 * @param generateMipMaps if mip-maps are auto generated
+		 * @param mipCount number of mip-maps to generate when cubemap is created
 		 * @param clearColor the color to clear the texture with.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, int mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture in texels.
@@ -332,11 +337,6 @@ namespace nap
 		 *	@return height of the texture in texels
 		 */
 		int getHeight() const									{ return mDescriptor.mHeight; }
-
-		/**
-		 *	@return the vulkan image usage flags
-		 */
-		VkImageUsageFlags getImageUsageFlags() const			{ return mImageUsageFlags; }
 
 		/**
 		 * @return the number of texture layers
@@ -359,13 +359,11 @@ namespace nap
 		 */
 		virtual ImageData& getHandle() override					{ return mImageData; }
 
-		const EUsage						mUsage = EUsage::Static;					///< Texture usage (cube maps are currently always static)
+		// Don't allow implicit conversion from bool to int -> EVIL
+		bool init(const SurfaceDescriptor& descriptor, bool mipCount, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState) = delete;
 
 	protected:
 		ImageData							mImageData = { TextureCube::layerCount };	///< Cube Texture vulkan image buffers
 		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
-
-	private:
-		VkImageUsageFlags					mImageUsageFlags = 0;
 	};
 }
