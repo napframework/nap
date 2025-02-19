@@ -32,7 +32,7 @@ namespace nap
 	bool EquiRectangularCubeMap::init(nap::Texture2D& source, utility::ErrorState& errorState)
 	{
 		// Initialize base
-		if (!RenderTextureCube::init(errorState))
+		if (!RenderTextureCube::init(mGenerateLods, errorState))
 			return false;
 
 		// Register and store

@@ -63,8 +63,7 @@ namespace nap
 			return false;
 
 		// Initialize equirectangular texture on GPU
-		mEquiRectangularTexture.mUsage = EUsage::Static;
-		if (!mEquiRectangularTexture.init(test_bitmap->getDescriptor(), false,
+		if (!mEquiRectangularTexture.init(test_bitmap->getDescriptor(), Texture2D::EUsage::Static, 1,
 			test_bitmap->getData(), 0, errorState))
 			return false;
 
@@ -95,8 +94,7 @@ namespace nap
 			return false;
 
 		// Initialize equirectangular texture on GPU
-		mEquiRectangularTexture.mUsage = EUsage::Static;
-		if (!mEquiRectangularTexture.init(sunset_bitmap->getDescriptor(), false,
+		if (!mEquiRectangularTexture.init(sunset_bitmap->getDescriptor(), Texture2D::EUsage::Static, 1,
 			sunset_bitmap->getData(), 0, errorState))
 			return false;
 

@@ -12,6 +12,7 @@
 #include <mathutils.h>
 #include <nap/assert.h>
 #include <libavformat/avformat.h>
+#include <glm/gtc/constants.hpp>
 
 // nap::videoplayer run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoPlayer, "Decodes a video in a background thread and stores the result in a set of YUV textures.")
@@ -91,8 +92,7 @@ namespace nap
 
 			// Create Y Texture
 			mYTexture = std::make_unique<Texture2D>(mService.getCore());
-			mYTexture->mUsage = Texture::EUsage::DynamicWrite;
-			if (!mYTexture->init(tex_description, false, 0, error))
+			if (!mYTexture->init(tex_description, Texture2D::EUsage::DynamicWrite, 1, glm::zero<glm::vec4>(), 0, error))
 				return false;
 
 			// Update dimensions for U and V texture
@@ -103,14 +103,12 @@ namespace nap
 
 			// Create U
 			mUTexture = std::make_unique<Texture2D>(mService.getCore());
-			mUTexture->mUsage = Texture::EUsage::DynamicWrite;
-			if (!mUTexture->init(tex_description, false, 0, error))
+			if (!mUTexture->init(tex_description, Texture2D::EUsage::DynamicWrite, 1, glm::zero<glm::vec4>(), 0, error))
 				return false;
 
 			// Create V Texture
 			mVTexture = std::make_unique<Texture2D>(mService.getCore());
-			mVTexture->mUsage = Texture::EUsage::DynamicWrite;
-			if (!mVTexture->init(tex_description, false, 0, error))
+			if (!mVTexture->init(tex_description, Texture2D::EUsage::DynamicWrite, 1, glm::zero<glm::vec4>(), 0, error))
 				return false;
 
 			mTexturesCreated = true;

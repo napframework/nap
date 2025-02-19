@@ -47,7 +47,7 @@ namespace nap
 		/**
 		 * Uploads and renders the given equirectangular texture to cubemap.
 		 * @param source the equirectangular source image, must be initialized
-		 * @param errorState contains the error message when initialization fails
+		 * @param errorState contains the error message when initialization failsRTTI_PROPERTY("SampleShading",		&nap::CubeMapFromFile::mSampleShading,	nap::rtti::EPropertyMetaData::Default, "Reduces texture aliasing at higher computational cost")
 		 */
 		virtual bool init(nap::Texture2D& equiRectangularTexture, utility::ErrorState& errorState);
 
@@ -67,7 +67,7 @@ namespace nap
 		virtual void onDestroy();
 
 		bool mSampleShading = false;						///< Property: 'SampleShading' Reduces texture aliasing when cubemap is generated, at higher computational cost
-		using RenderTextureCube::mGenerateLods;				///< Property: 'GenerateLODs' whether to create mip-maps when the cubemap is generated
+		bool mGenerateLods;									///< Property: 'GenerateLODs' whether to create mip-maps when the cubemap is generated
 
 	protected:
 		RenderAdvancedService* mRenderAdvancedService = nullptr;

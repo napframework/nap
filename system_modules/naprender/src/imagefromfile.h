@@ -42,5 +42,6 @@ namespace nap
 	public:
 		std::string				mImagePath;								///< Property: 'ImagePath' Path to the image on disk to load
 		bool					mGenerateLods = true;					///< Property: 'GenerateLods' If LODs are generated for this image
+		EUsage					mUsage = EUsage::Static;				///< Property: 'Usage' GPU Texture usage
 	};
 }

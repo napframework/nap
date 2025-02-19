@@ -138,7 +138,7 @@ namespace nap
 		mIntermediateTexture.mWidth = mResource->mInputTarget->getBufferSize().x;
 		mIntermediateTexture.mHeight = mResource->mInputTarget->getBufferSize().y;
 		mIntermediateTexture.mColorFormat = mResource->mInputTarget->getColorTexture().mColorFormat;
-		mIntermediateTexture.mUsage = Texture::EUsage::Static;
+		mIntermediateTexture.mUsage = Texture2D::EUsage::Internal;
 		if (!mIntermediateTexture.init(errorState))
 		{
 			errorState.fail("%s: Failed to initialize internal render target", mIntermediateTexture.mID.c_str());

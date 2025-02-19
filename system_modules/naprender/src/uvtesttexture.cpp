@@ -58,8 +58,14 @@ namespace nap
 		if (bitmap == nullptr)
 			return false;
 
+		// Ensure hardware mip-mapping is supported
+		if (!errorState.check(!mGenerateLods || mRenderService.getMipSupport(bitmap->mSurfaceDescriptor),
+			"%s: hardware mipmap generation not supported, consider disabling 'GenerateLods'", mID.c_str()))
+			return false;
+
 		// Initialize texture on GPU
-		return Texture2D::init(bitmap->getDescriptor(),
-			mGenerateLods, bitmap->getData(), 0, errorState);
+		int lvl = mGenerateLods ? utility::computeMipLevel(bitmap->mSurfaceDescriptor) : 1;
+		return Texture2D::init(bitmap->getDescriptor(), EUsage::Static,
+			lvl, bitmap->getData(), 0, errorState);
 	}
 }

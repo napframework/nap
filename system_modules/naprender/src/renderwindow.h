@@ -229,6 +229,11 @@ namespace nap
 		math::Rect getRectPixels() const;
 
 		/**
+		 * @return render window ratio, height over width
+		 */
+		inline float getRatio()	const												{ return static_cast<float>(getBufferSize().y) / static_cast<float>(getBufferSize().x); }
+
+		/**
 		 * Starts a render pass. Only call this when recording is enabled.
 		 */
 		virtual void beginRendering() override;
@@ -267,6 +272,11 @@ namespace nap
 		 * @return render pass associated with this window.
 		 */
 		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
+
+		/**
+		 * @return layout of the texture when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const override						{ return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
 
 		bool					mSampleShading		= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth				= 512;								///< Property: 'Width' window horizontal resolution

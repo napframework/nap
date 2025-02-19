@@ -149,7 +149,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	SnapshotRenderTarget::SnapshotRenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureLink(*this)
 	{}
 
 	SnapshotRenderTarget::~SnapshotRenderTarget()
@@ -215,8 +216,9 @@ namespace nap
 			framebuffer_info.renderPass = mRenderPass;
 
 			// Bind textures as attachments
-			for (int i = 0; i < num_cells; i++) {
-				std::array<VkImageView, 2> attachments{ mSnapshot->mColorTextures[i]->getHandle().getView(), mDepthImage.getView() };
+			for (int i = 0; i < num_cells; i++)
+            {
+				std::array<VkImageView, 2> attachments{ std::as_const(*mSnapshot->mColorTextures[i]).getHandle().getView(), mDepthImage.getView() };
 				framebuffer_info.pAttachments = attachments.data();
 
 				// Create framebuffer
@@ -237,8 +239,9 @@ namespace nap
 			framebuffer_info.attachmentCount = 3;
 			framebuffer_info.renderPass = mRenderPass;
 
-			for (int i = 0; i < num_cells; i++) {
-				std::array<VkImageView, 3> attachments{ mColorImage.getView(), mDepthImage.getView(), mSnapshot->mColorTextures[i]->getHandle().getView() };
+			for (int i = 0; i < num_cells; i++)
+            {
+				std::array<VkImageView, 3> attachments{ mColorImage.getView(), mDepthImage.getView(), std::as_const(*mSnapshot->mColorTextures[i]).getHandle().getView() };
 				framebuffer_info.pAttachments = attachments.data();
 
 				// Create a framebuffer that links the cell target texture to the appropriate resolved color attachment
@@ -255,9 +258,10 @@ namespace nap
 		glm::ivec2 size = getBufferSize();
 		const RGBAColorFloat& clear_color = mSnapshot->mClearColor;
 
-		std::array<VkClearValue, 2> clearValues = {};
+		std::array<VkClearValue, 3> clearValues = {};
 		clearValues[0].color = { clear_color[0], clear_color[1], clear_color[2], clear_color[3] };
 		clearValues[1].depthStencil = { 1.0f, 0 };
+		clearValues[2].color = { clear_color[0], clear_color[1], clear_color[2], clear_color[3] };
 
 		// Setup render pass
 		VkRenderPassBeginInfo renderPassInfo = {};
@@ -290,9 +294,13 @@ namespace nap
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
 	}
 
+
 	void SnapshotRenderTarget::endRendering()
 	{
+		// Finalize rendering and sync layout
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
+		for (auto& tex : mSnapshot->mColorTextures)
+			mTextureLink.sync(*tex);
 	}
 
 

@@ -77,10 +77,9 @@ namespace nap
 		virtual bool getSampleShadingEnabled() const = 0;
 
 		/**
-		 * Returns buffer ratio, height over width 
-		 * @return the buffer ratio, height over width
+		 * @return image layout when render pass ends
 		 */
-		inline float getRatio()	{ return static_cast<float>(getBufferSize().y) / static_cast<float>(getBufferSize().x); }
+		virtual VkImageLayout getFinalLayout() const = 0;
 	};
 }
 

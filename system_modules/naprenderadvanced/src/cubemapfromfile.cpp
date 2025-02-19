@@ -23,10 +23,10 @@ namespace nap
 
 	bool CubeMapFromFile::init(utility::ErrorState& errorState)
 	{
-		// Load & schedule upload equirectangular texture 
+		// Load & schedule upload equirectangular 2D texture 
 		mEquiRectangularImage.mGenerateLods = false;
 		mEquiRectangularImage.mImagePath = mImagePath;
-		mEquiRectangularImage.mUsage = EUsage::Static;
+		mEquiRectangularImage.mUsage = Texture2D::EUsage::Static;
 		mEquiRectangularImage.mID = nap::utility::stringFormat("%s_source", mID.c_str());
 		if (!mEquiRectangularImage.init(errorState))
 			return false;
