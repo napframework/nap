@@ -687,7 +687,6 @@ namespace nap
 				cube_map->mDepthFormat = configuration->mDepthFormatCube;
 				cube_map->mColorSpace = EColorSpace::Linear;
 				cube_map->mClearValue = 1.0f;
-				cube_map->mFill = true;
 
  				if (!cube_map->init(errorState))
 				{
