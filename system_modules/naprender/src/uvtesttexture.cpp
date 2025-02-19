@@ -55,7 +55,7 @@ namespace nap
 	{
 		// Get bitmap instance
 		auto* bitmap = getBitmap(mRenderService.getModule(), errorState);
-		if (bitmap == nullptr)
+		if (!errorState.check(bitmap != nullptr, "Unable to load bitmap"))
 			return false;
 
 		// Ensure hardware mip-mapping is supported

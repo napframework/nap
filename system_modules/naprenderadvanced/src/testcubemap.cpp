@@ -59,7 +59,7 @@ namespace nap
 			});
 
 		// If test bitmap isn't available, bail
-		if (test_bitmap == nullptr)
+		if (!errorState.check(test_bitmap != nullptr, "Unable to load equirectangular bitmap"))
 			return false;
 
 		// Initialize equirectangular texture on GPU
