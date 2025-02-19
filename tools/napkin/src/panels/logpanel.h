@@ -94,6 +94,9 @@ namespace napkin
 		void setCurrentLevel(const nap::LogLevel& level);
 		int getLevelIndex(const nap::LogLevel& level) const;
 
+	Q_SIGNALS:
+		void importantMessageReceived(const nap::LogMessage& msg);
+
 	protected:
 		void closeEvent(QCloseEvent* event) override;
 		void showEvent(QShowEvent* event) override;
@@ -117,11 +120,11 @@ namespace napkin
 		void themeChanged(const Theme& theme);
 
 		nap::qt::FilterTreeView mTreeView; 	// Treeview with log entries
-		QVBoxLayout mLayout;		// The main layout
-		QHBoxLayout mCornerLayout; 	// Layout at the top-right corner
-		QComboBox mFilterCombo;		// Combo containing the log levels to filter on
-		LogModel mLogModel;		  	// The model containing the log entries
-		bool wasMaxScroll = true; 	// Whether the scroll view was at max
+		QVBoxLayout mLayout;				// The main layout
+		QHBoxLayout mCornerLayout; 			// Layout at the top-right corner
+		QComboBox mFilterCombo;				// Combo containing the log levels to filter on
+		LogModel mLogModel;		  			// The model containing the log entries
+		bool mScrolledToBottom = true; 		// Whether the scroll view was at max
 	};
 
 	class LogPanelWidgetStorer : public nap::qt::WidgetStorer<LogPanel>

@@ -4,10 +4,10 @@
 
 // External Includes
 #include <nap/group.h>
-#include <cubemapfromfile.h>
+#include <equirectangularcubemap.h>
 
 namespace nap
 {
 	// Group that only holds cube map from file resources
-	using CubeMapFromFileGroup = Group<CubeMapFromFile>;
+	using CubeMapFromFileGroup = Group<EquiRectangularCubeMap>;
 }

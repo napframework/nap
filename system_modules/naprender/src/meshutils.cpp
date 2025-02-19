@@ -120,6 +120,12 @@ namespace nap
 		}
 
 
+		float computeBoundingSphere(const math::Box& box)
+		{
+			return glm::distance(box.getMin(), box.getCenter());
+		}
+
+
 		void computeNormals(const MeshInstance& meshInstance, const VertexAttribute<glm::vec3>& positions, VertexAttribute<glm::vec3>& outNormals)
 		{
 			assert(outNormals.getCount() == positions.getCount());
@@ -281,6 +287,19 @@ namespace nap
 			r[2] = (d00 * d21 - d01 * d20) / denom;
 			r[0] = 1.0f - r[1] - r[2];
 			return r;
+		}
+
+
+		float computeCameraDistance(const glm::vec2& dimensions, float fov)
+		{
+			auto s = dimensions[0] > dimensions[1] ? dimensions[0] : dimensions[1];
+			return (s / 2.0f) / glm::tan(math::radians(fov) / 2.0f);
+		}
+
+
+		float computeCameraDistance(float radius, float fov)
+		{
+			return radius / glm::tan(math::radians(fov) / 2.0f);
 		}
 	}
 }

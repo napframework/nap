@@ -13,5 +13,5 @@ PYBIND11_EMBEDDED_MODULE(nap, module)
 }
 #endif // NAP_ENABLE_PYTHON
 
-NAP_MODULE("napcore", "0.2.0")
+NAP_MODULE(nap::moduleCoreName, "0.2.0")
 

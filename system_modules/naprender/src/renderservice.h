@@ -991,7 +991,7 @@ namespace nap
 		 * 2 is therefore a good number, where 3 offers only, in most situations, a slight increase in performance.
 		 * This however greatly depends on the application GPU and CPU load.
 		 */
-		int getMaxFramesInFlight() const											{ return 2; }
+		constexpr int getMaxFramesInFlight() const									{ return 2; }
 
 		/**
 		 * Returns the physical device properties for the requested Vulkan format.
@@ -1031,6 +1031,20 @@ namespace nap
 		 */
 		uint32 getVulkanVersionMinor() const;
 
+		/**
+		 * Initialize the SDL video sub system and render engine -> the service owns the renderer.
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 * Initializes the complete render engine
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		bool initEngine(utility::ErrorState& error);
+		
 		/**
 		 * Initializes GLSL shader compilation and linking.
 		 * Don't call this in your application! Only required by external processes
@@ -1081,13 +1095,6 @@ namespace nap
 		 * Register dependencies, render module depends on scene
 		 */
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-
-		/**
-		 * Initialize the renderer, the service owns the renderer.
-		 * @param errorState contains the error message if the service could not be initialized
-		 * @return if the service has been initialized successfully
-		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * Waits for the device to be idle and deletes queued resources.

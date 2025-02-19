@@ -4,8 +4,6 @@
     "RequiredModules": [
         "naprender",
         "napsvg",
-        "napscene",
-        "napmath",
         "napparameter"
     ],
     "WindowsDllSearchPaths": []

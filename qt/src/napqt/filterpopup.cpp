@@ -11,28 +11,30 @@
 using namespace nap::qt;
 
 
-FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QMenu(parent)
+FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QDialog(parent)
 {
+	// Create model
+	mModel = std::make_unique<StringModel>(std::move(entries));
+	mFilterTree.setModel(mModel.get());
+	mFilterTree.getTreeView().setHeaderHidden(true);
+	mFilterTree.getTreeView().setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+	mFilterTree.getTreeView().setRootIsDecorated(mModel->nested());
+
+	// Install layout
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.setSpacing(0);
 	mLayout.setAlignment(Qt::AlignTop);
-
-	auto& tree = mFilterTree.getTreeView();
-	tree.setRootIsDecorated(false);
-	tree.setHeaderHidden(true);
-	tree.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-
 	mLayout.addWidget(&mFilterTree);
 	mLayout.activate();
 
-	auto& model = mFilterTree.getProxyModel();
-	connect(&model, &QSortFilterProxyModel::rowsRemoved, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
-	connect(&model, &QSortFilterProxyModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
-	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this] (auto index) { accept(); });
+	// Ensure widget size is re-computed when sorting ends
+	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this](auto index) { accept(); });
+	connect(&mFilterTree, &FilterTreeView::sortingEnded, [this]() { mFilterTree.getTreeView().expandAll(); });
 
-	mModel = std::make_unique<StringModel>(std::move(entries));
-	mFilterTree.setModel(mModel.get());
+	// Handle key up and down for item selection
+	mFilterTree.getLineEdit().installEventFilter(this);
+
 	computeSize();
 }
 
@@ -47,6 +49,7 @@ QString FilterPopup::show(QWidget* parent, StringModel::Entries&& entries, QPoin
 {
 	// Create popup
 	FilterPopup popup(std::move(entries), parent);
+	popup.setWindowFlags(Qt::Popup);
 
 	// Ensure popup is within display bounds
 	QRect geo = QGuiApplication::screenAt(pos)->geometry();
@@ -68,7 +71,8 @@ QString FilterPopup::show(QWidget* parent, StringModel::Entries&& entries, QPoin
 	}
 
 	// Show
-	popup.exec(f_pos);
+	popup.move(f_pos);
+	popup.exec();
 	return popup.mChoice;
 }
 
@@ -77,46 +81,22 @@ void FilterPopup::keyPressEvent(QKeyEvent* event)
 {
 	switch (event->key())
 	{
-		case Qt::Key_Down:
-		{
-			moveSelection(1);
-			event->accept();
-			return;
-		}
-		case Qt::Key_Up:
-		{
-			moveSelection(-1);
-			event->accept();
-			return;
-		}
 		case Qt::Key_Enter:
 		case Qt::Key_Return:
 		{
 			event->accept();
 			accept();
+			return;
 		}
-		default:
-			QMenu::keyPressEvent(event);
 	}
+	QDialog::keyPressEvent(event);
 }
 
 
 void FilterPopup::showEvent(QShowEvent* event)
 {
-	QWidget::showEvent(event);
+	QDialog::showEvent(event);
 	mFilterTree.getLineEdit().setFocus();
-}
-
-
-void FilterPopup::moveSelection(int d)
-{
-	auto& tree = mFilterTree.getTreeView();
-	int row = tree.currentIndex().row();
-	int nextRow = qMax(0, qMin(row + d, mFilterTree.getProxyModel().rowCount() - 1));
-	if (row == nextRow)
-		return;
-
-	tree.setCurrentIndex(mFilterTree.getProxyModel().index(nextRow, 0));
 }
 
 
@@ -132,31 +112,41 @@ void FilterPopup::accept()
 void FilterPopup::computeSize()
 {
 	// Update layout
-	mLayout.update();
+	mFilterTree.getTreeView().expandAll();
 
 	// Ensure there is always something selected
 	auto& model = mFilterTree.getProxyModel();
-	auto& tree = *qobject_cast<FilterTree_*>(&mFilterTree.getTreeView());
+	auto& tree = mFilterTree.getTreeView();
 	if (!tree.currentIndex().isValid())
 		tree.setCurrentIndex(model.index(0, 0));
 
 	// Adjust size based on contents
+	auto vis_rect = mFilterTree.getVisibleRect();
+	int width = mModel->nested() ? 350 : 300;
 	int height = mFilterTree.getLineEdit().sizeHint().height();
-	int rowCount = model.rowCount();
-	if (rowCount > 0)
-	{
-		QItemSelection selection;
-		selection.select(model.index(0, 0), model.index(rowCount-1, 0));
-		auto rect = tree.visualRectFor(selection);
-		height += rect.height();
-	}
-	else
-	{
-		height *= 2;
-	}
+	height += vis_rect.isValid() ? vis_rect.height() : height * 2;
+	height = qMin(height, 500);
+	setMinimumSize(width, height);
+	resize(width, height);
+}
 
-	setFixedSize(300, qMin(height, 500));
-	adjustSize();
+
+bool FilterPopup::eventFilter(QObject* watched, QEvent* event)
+{
+	// Only handle key-presses
+	if (event->type() == QEvent::KeyPress)
+	{
+		// Cast and handle
+		assert(qobject_cast<QLineEdit*>(watched) != nullptr);
+		switch (static_cast<QKeyEvent*>(event)->key())
+		{
+		case Qt::Key_Down:
+		case Qt::Key_Up:
+			focusNextChild();
+			return true;
+		}
+	}
+	return false;
 }
 
 
@@ -165,37 +155,71 @@ QVariant StringModel::data(const QModelIndex& index, int role) const
 	switch (role)
 	{
 	case Qt::DisplayRole:
+	{
+		return static_cast<StringModel::Item*>(itemFromIndex(index))->mEntry.mText;
+	}
+	case Qt::FontRole:
+	{
+		auto* item = static_cast<StringModel::Item*>(itemFromIndex(index));
+		if (item->hasChildren())
 		{
-			auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
-			assert(string_item != nullptr);
-			return string_item->mEntry.mText;
+			QFont font(item->font());
+			font.setBold(true);
+			return font;
 		}
+		return QStandardItemModel::data(index, role);
+	}
+	case Qt::DecorationRole:
+	{
+		auto* item = static_cast<StringModel::Item*>(itemFromIndex(index));
+		return item->mEntry.mIcon.isNull() ?
+			QStandardItemModel::data(index, role) :
+			item->mEntry.mIcon;
+	}
 	case Qt::ToolTipRole:
-		{
-			auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
-			assert(string_item != nullptr);
-			return string_item->mEntry.mTooltip.isNull() ? QStandardItemModel::data(index, role) :
-				string_item->mEntry.mTooltip;
-		}
+	{
+		auto* item = static_cast<StringModel::Item*>(itemFromIndex(index));
+		return item->mEntry.mTooltip.isNull() ? QStandardItemModel::data(index, role) :
+			item->mEntry.mTooltip;
+	}
 	default:
 		return QStandardItemModel::data(index, role);
 	}
 }
 
 
-nap::qt::StringModel::StringModel(Entries&& items)
+nap::qt::StringModel::StringModel(Entries&& entries)
 {
-	for (auto& item : items)
+	for (auto& entry : entries)
 	{
-		appendRow(new Item(std::move(item)));
+		if (!entry.mChildren.empty())
+			mNested = true;
+		appendRow(new Item(std::move(entry)));
 	}
 }
 
 
 void nap::qt::StringModel::sort(Entries& ioEntries, bool reverseSort)
 {
+	// Sort list
 	std::sort(ioEntries.begin(), ioEntries.end(), [reverseSort](const auto& a, const auto& b)
 		{
 			return reverseSort ? b.mText < a.mText : a.mText < b.mText;
 		});
+
+	// Recursively sort children
+	for (auto& entry : ioEntries)
+		StringModel::sort(entry.mChildren);
+}
+
+
+nap::qt::StringModel::Item::Item(Entry&& entry) : QStandardItem(entry.mText), mEntry(std::move(entry))
+{
+	// Add children
+	setEditable(false);
+	for (auto& child_entry : mEntry.mChildren)
+		appendRow(new StringModel::Item(std::move(child_entry)));
+
+	// Clear invalidated children
+	mEntry.mChildren.clear();
 }

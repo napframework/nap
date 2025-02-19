@@ -81,12 +81,34 @@ namespace nap
 		/**
 		 * Disable responding to input for this controller.
 		 */
-		void disable() { mEnabled = false; }
+		void disable()										{ mEnabled = false; }
 
 		/**
 		 * @return the current position the camera controlled by the orbit controller looks at. 
 		 */
 		const glm::vec3 getLookAtPos() const				{ return mLookAtPos; }
+
+		/**
+		 * @return camera movement speed
+		 */
+		float getMovementSpeed() const						{ return mMovementSpeed; }
+
+		/**
+		 * Set the camera movement speed
+		 * @param relative movement speed
+		 */
+		void setMovementSpeed(float speed)					{ mMovementSpeed = speed; }
+
+		/**
+		 * @return camera rotation speed
+		 */
+		float getRotateSpeed() const						{ return mRotateSpeed; }
+
+		/**
+		 * Set the camera rotation speed
+		 * @param relative rotation speed
+		 */
+		void setRotateSpeed(float speed)					{ mRotateSpeed = speed; }
 
 		/**
 		 * @return The perspective camera component that we are controlling.
@@ -123,6 +145,8 @@ namespace nap
 		EMode											mMode = EMode::Idle;				// Camera mode
 		glm::vec3										mLookAtPos;							// Target position to orbit around
 		bool											mEnabled = false;					// Enables responding to input
+		float											mMovementSpeed = 0.5f;				///< The speed with which to move the camera
+		float											mRotateSpeed = 0.005f;				///< The speed with which to rotate the camera
 	};
 
 }

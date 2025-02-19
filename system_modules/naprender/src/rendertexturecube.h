@@ -51,6 +51,7 @@ namespace nap
 			R32				///< 32 bit float, 1 component
 		};
 
+		// Constructor
 		RenderTextureCube(Core& core);
 
 		/**

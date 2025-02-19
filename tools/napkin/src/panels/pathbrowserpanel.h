@@ -48,7 +48,7 @@ namespace napkin
 		nap::qt::FilterTreeView& treeView();
 
 	Q_SIGNALS:
-		void selectionChanged(QList<PropertyPath> obj);
+		void selectionChanged(const QList<PropertyPath>& obj);
 
 	private:
 		QVBoxLayout mLayout;      // Layout

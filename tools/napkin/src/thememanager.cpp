@@ -491,4 +491,3 @@ void napkin::ThemeManager::changeWidgetFont(QWidget& widget, const QString& key)
 	if (mCurrentTheme != nullptr)
 		mCurrentTheme->changeWidgetFont(widget, key);
 }
-

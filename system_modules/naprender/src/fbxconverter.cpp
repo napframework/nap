@@ -59,7 +59,7 @@ namespace nap
 		for (uint vertex = 0; vertex < numVertices; vertex++)
 		{
 			auto* current_id = &fbxAttribute[vertex];
-			attribute.addData(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+			attribute.addData({ current_id->x, current_id->y, current_id->z });
 		}
 	}
 
@@ -71,7 +71,7 @@ namespace nap
 		for (uint vertex = 0; vertex < numVertices; vertex++)
 		{
 			auto* current_id = &fbxAttribute[vertex];
-			attribute.addData(glm::vec4(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z), 0.0f));
+			attribute.addData({ current_id->x, current_id->y, current_id->z, 0.0f });
 		}
 	}
 
@@ -195,7 +195,7 @@ namespace nap
 				for (uint vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiColor4D* current_id = &(color_channel_data[vertex]);
-					color_attribute.addData(glm::vec4(static_cast<float>(current_id->r), static_cast<float>(current_id->g), static_cast<float>(current_id->b), static_cast<float>(current_id->a)));
+					color_attribute.addData({ current_id->r, current_id->g, current_id->b, current_id->a });
 				}
 			}
 

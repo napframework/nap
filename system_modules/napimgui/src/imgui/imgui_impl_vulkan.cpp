@@ -77,28 +77,28 @@ struct ImGui_ImplVulkanH_WindowRenderBuffers
 };
 
 // Vulkan data
-static ImGui_ImplVulkan_InitInfo	g_VulkanInitInfo = {};
-static VkDeviceSize					g_BufferMemoryAlignment = 256;
-static VkPipelineCreateFlags		g_PipelineCreateFlags = 0x00;
-static VkDescriptorSetLayout		g_DescriptorSetLayout = VK_NULL_HANDLE;
-static VkDescriptorSet				g_FontDescriptorSet = VK_NULL_HANDLE;
-static VkPipelineLayout				g_PipelineLayout = VK_NULL_HANDLE;
-static VkShaderModule				g_VertModule = VK_NULL_HANDLE;
-static VkShaderModule				g_FragModule = VK_NULL_HANDLE;
+static thread_local ImGui_ImplVulkan_InitInfo	g_VulkanInitInfo = {};
+static thread_local VkDeviceSize				g_BufferMemoryAlignment = 256;
+static thread_local VkPipelineCreateFlags		g_PipelineCreateFlags = 0x00;
+static thread_local VkDescriptorSetLayout		g_DescriptorSetLayout = VK_NULL_HANDLE;
+static thread_local VkDescriptorSet				g_FontDescriptorSet = VK_NULL_HANDLE;
+static thread_local VkPipelineLayout			g_PipelineLayout = VK_NULL_HANDLE;
+static thread_local VkShaderModule				g_VertModule = VK_NULL_HANDLE;
+static thread_local VkShaderModule				g_FragModule = VK_NULL_HANDLE;
 
 // Unique pipeline for every MXSAA flag
-static std::unordered_map<VkSampleCountFlagBits, VkPipeline> g_Pipelines;
+static thread_local std::unordered_map<VkSampleCountFlagBits, VkPipeline> g_Pipelines;
 
 // Font data
-static VkSampler                g_FontSampler = VK_NULL_HANDLE;
-static VkDeviceMemory           g_FontMemory = VK_NULL_HANDLE;
-static VkImage                  g_FontImage = VK_NULL_HANDLE;
-static VkImageView              g_FontView = VK_NULL_HANDLE;
-static VkDeviceMemory           g_UploadBufferMemory = VK_NULL_HANDLE;
-static VkBuffer                 g_UploadBuffer = VK_NULL_HANDLE;
+static thread_local VkSampler                g_FontSampler = VK_NULL_HANDLE;
+static thread_local VkDeviceMemory           g_FontMemory = VK_NULL_HANDLE;
+static thread_local VkImage                  g_FontImage = VK_NULL_HANDLE;
+static thread_local VkImageView              g_FontView = VK_NULL_HANDLE;
+static thread_local VkDeviceMemory           g_UploadBufferMemory = VK_NULL_HANDLE;
+static thread_local VkBuffer                 g_UploadBuffer = VK_NULL_HANDLE;
 
 // Render buffers
-static std::unordered_map<ImGuiContext*, ImGui_ImplVulkanH_WindowRenderBuffers> g_RenderBuffers;
+static thread_local std::unordered_map<ImGuiContext*, ImGui_ImplVulkanH_WindowRenderBuffers> g_RenderBuffers;
 
 // Forward Declarations
 bool		ImGui_ImplVulkan_CreateDeviceObjects();

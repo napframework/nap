@@ -96,6 +96,13 @@ namespace nap
 		std::string stripNamespace(const std::string& str);
 
 		/**
+		 * Remove a list of characters from the given string
+		 * @param chars the chars to remove
+		 * @param string the string to remove chars from
+		 */
+		void removeChars(const char* chars, std::string& ioString);
+
+		/**
 		 * Tokenize str into tokens.
 		 * @param str the string to tokenize
 		 * @param tokens the tokens used to process the string

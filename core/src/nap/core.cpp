@@ -40,7 +40,7 @@ namespace nap
 		// Initialize timer
 		mTimer.reset();
 		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mModuleManager = std::make_unique<ModuleManager>(*this);
+		mModuleManager = std::make_unique<ModuleManager>();
 	}
 
 
@@ -88,11 +88,6 @@ namespace nap
 		assert(!mInitialized);
 		if (!loadProjectInfo(projectInfofile, context, error))
 			return false;
-
-		// Ensure our current working directory is where the executable is.
-		// Works around issues with the current working directory not being set as
-		// expected when apps are launched directly from macOS Finder and probably other things too.
-		nap::utility::changeDir(nap::utility::getExecutableDir());
 
 		// Setup our Python environment
 #ifdef NAP_ENABLE_PYTHON
@@ -443,6 +438,7 @@ namespace nap
 			return false;
 
 		// Initialize it
+		nap::Logger::debug("Initializing project '%s'", mProjectInfo->mTitle.c_str());
 		if (!mProjectInfo->init(projectFilename, context, err))
 		{
 			err.fail("Failed to initialize project");

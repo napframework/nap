@@ -11,7 +11,23 @@
 namespace nap
 {
 	/**
-	 * Enum describing a list of all possible keys that are supported
+	 * Keyboard modification key bit-mask
+	 */
+	using KeyModifier = nap::uint8;
+
+	/**
+	 * Keyboard modification keys
+	 */
+	enum class EKeyModifier : KeyModifier
+	{
+		None	= 0x00,
+		Shift	= 0x02,
+		Control = 0x04,
+		Alt		= 0x08
+	};
+
+	/**
+	 * Keyboard key codes
 	 */
 	enum class EKeyCode : int
 	{
@@ -250,6 +266,17 @@ namespace nap
 		KEY_KBDILLUMDOWN,
 		KEY_KBDILLUMUP,
 		KEY_EJECT,
-		KEY_SLEEP
+		KEY_SLEEP,
+		KEY_TILDE
 	};
+
+	/**
+	 * Convert a nap key press to UTF-8 character.
+	 * Note that only the most common (roman) keys are supported.
+	 * 
+	 * @param key the key to convert
+	 * @param mod key modifier (bitmask including shift, ctrl etc..)
+	 * @return utf character code, 0x00 if key can't be converted.
+	 */
+	nap::uint NAPAPI toUtf8(nap::EKeyCode key, KeyModifier mod);
 }
