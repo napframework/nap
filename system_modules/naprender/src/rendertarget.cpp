@@ -93,7 +93,7 @@ namespace nap
 		VkExtent2D framebuffer_size = { (uint32)size.x, (uint32)size.y };
 
 		// Store as attachments
-		std::array<VkImageView, 4> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
+		std::array<VkImageView, 3> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
