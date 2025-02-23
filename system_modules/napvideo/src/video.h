@@ -401,8 +401,9 @@ namespace nap
 	public:
 		/**
 		 * @param path the video file on disk
+		 * @param numThreads the number of threads to use for decoding. 0 means automatic.
 		 */
-		Video(const std::string& path);
+		Video(const std::string& path, int numThreads = 0);
 
 		// Destructor
 		virtual ~Video();
@@ -679,5 +680,7 @@ namespace nap
 		uint64_t				mAudioFrameSize = 0;						///< Size of the current decoded (and possible resampled) audio buffer, in bytes
 		bool					mDecodeAudio = false;						///< Whether audio is enabled or not
 		IOThreadState			mIOThreadState = IOThreadState::Playing;	///< FSM state of the I/O thread
+
+        int                     mNumThreads = 0; ///< Number of threads to use for decoding. 0 means automatic.
 	};
 }

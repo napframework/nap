@@ -979,10 +979,10 @@ namespace nap
 
 	static int sMaxPacketQueueSizeInBytes = 16 * 1024 * 1024;
 
-	Video::Video(const std::string& path) : 
+	Video::Video(const std::string& path, int numThreads) :
 		mAudioState(*this), 
 		mVideoState(*this),
-		mPath(path) { }
+		mPath(path), mNumThreads(numThreads) { }
 
 
 	Video::~Video()
@@ -1065,7 +1065,8 @@ namespace nap
 
 		// This option causes the codec context to spawn threads internally for decoding, speeding up the decoding process
 		AVDictionary* options = nullptr;
-		av_dict_set(&options, "threads", "auto", 0);
+        std::string thread_num = std::to_string(mNumThreads);
+		av_dict_set(&options, "threads", thread_num.c_str(), 0);
 
 		// We need to set this option to make sure that the decoder transfers ownership from decode buffers to us
 		// when we decode frames. Otherwise, the decoder will reuse buffers, which will then overwrite data already in our queue.
