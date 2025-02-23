@@ -34,8 +34,7 @@ namespace nap
 	public:
 		ParameterizedWindowEvent(int inX, int inY, int window) : WindowEvent(window),
 			mX(inX), mY(inY)		
-		{
-		}
+		{ }
 
 		int mX;
 		int mY;

@@ -766,5 +766,9 @@ function(package_path_mappings)
     install(DIRECTORY ${NAP_ROOT}/tools/buildsystem/path_mappings/${MAPPINGS_PREFIX}/
             DESTINATION tools/buildsystem/path_mappings
             PATTERN "source.json" EXCLUDE)
+
+    install(DIRECTORY ${NAP_ROOT}/tools/buildsystem/path_mappings/applet
+            DESTINATION tools/buildsystem/path_mappings
+            PATTERN "framework_release.json" EXCLUDE)
 endfunction()
 

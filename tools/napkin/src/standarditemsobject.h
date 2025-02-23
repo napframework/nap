@@ -236,7 +236,7 @@ namespace napkin
 		nap::rtti::Object* mObject = nullptr; // The object held by this item
 
 	private:
-		void onPropertyValueChanged(PropertyPath path);
+		void onPropertyValueChanged(const PropertyPath& path);
 		void onObjectRemoved(nap::rtti::Object* o);
 		std::string mAbsolutePath;
 		bool mIsPointer;

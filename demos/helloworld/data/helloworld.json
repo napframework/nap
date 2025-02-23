@@ -273,8 +273,8 @@
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1,
-            "RestoreSize": true,
-            "RestorePosition": true
+            "RestoreSize": false,
+            "RestorePosition": false
         },
         {
             "Type": "nap::ResourceGroup",

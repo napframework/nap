@@ -5,8 +5,8 @@
             "mID": "CubeMaps",
             "Members": [
                 {
-                    "Type": "nap::CubeMapFromFile",
-                    "mID": "UffiziCubeMap",
+                    "Type": "nap::SunsetCubeMap",
+                    "mID": "Sunset Cubemap",
                     "Width": 1024,
                     "Height": 1024,
                     "Format": "RGBA8",
@@ -19,15 +19,14 @@
                             0.0
                         ]
                     },
-                    "ImagePath": "equi_uffizi.png",
                     "SampleShading": false,
                     "GenerateLODs": true
                 },
                 {
                     "Type": "nap::CubeMapFromFile",
-                    "mID": "TestCubeMap",
-                    "Width": 256,
-                    "Height": 256,
+                    "mID": "Outdoor Cubemap",
+                    "Width": 1024,
+                    "Height": 1024,
                     "Format": "RGBA8",
                     "ColorSpace": "Linear",
                     "ClearColor": {
@@ -38,7 +37,63 @@
                             0.0
                         ]
                     },
-                    "ImagePath": "equi_test.jpg",
+                    "SampleShading": false,
+                    "GenerateLODs": true,
+                    "ImagePath": "cube_equirectangular_outdoor.jpg"
+                },
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "Indoor Cubemap",
+                    "Width": 1024,
+                    "Height": 1024,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "SampleShading": false,
+                    "GenerateLODs": true,
+                    "ImagePath": "cube_equirectangular_indoor.jpg"
+                },
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "Uffizi Cubemap",
+                    "Width": 1024,
+                    "Height": 1024,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "SampleShading": false,
+                    "GenerateLODs": true,
+                    "ImagePath": "cube_equirectangular_uffizi.jpg"
+                },
+                {
+                    "Type": "nap::TestCubeMap",
+                    "mID": "Test Cubemap",
+                    "Width": 512,
+                    "Height": 512,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
                     "SampleShading": false,
                     "GenerateLODs": true
                 }
@@ -92,15 +147,15 @@
                     "Type": "nap::OrbitController",
                     "mID": "OrbitController",
                     "MovementSpeed": 0.004999999888241291,
-                    "RotateSpeed": 0.0010000001639127732,
+                    "RotateSpeed": 0.0010000001639127731,
                     "PerspCameraComponent": "./PerspCamera",
+                    "LimitZoomDistance": true,
+                    "MinimumZoomDistance": 1.5,
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    },
-                    "MinimumZoomDistance": 1.5,
-                    "LimitZoomDistance": true
+                    }
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -153,7 +208,7 @@
                     "Tags": [],
                     "Layer": "RenderLayer_SkyBox",
                     "BlendMode": "AlphaBlend",
-                    "CubeTexture": "UffiziCubeMap",
+                    "CubeTexture": "Sunset Cubemap",
                     "Color": {
                         "Values": [
                             1.0,
@@ -198,13 +253,13 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "RenderLayer_Default",
-                    "Mesh": "TorusMesh",
+                    "Mesh": "ReflectionMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "TorusMaterial",
+                        "Material": "ReflectionMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
                     },
@@ -305,14 +360,14 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": false,
+            "SampleShading": true,
             "Title": "skybox demo",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.16078431904315949,
+                    0.16078431904315948,
                     0.3450980484485626,
                     1.0,
                     1.0
@@ -325,18 +380,18 @@
         },
         {
             "Type": "nap::ResourceGroup",
-            "mID": "Torus",
+            "mID": "Reflection",
             "Members": [
                 {
                     "Type": "nap::ShaderFromFile",
-                    "mID": "TorusShader",
-                    "VertShader": "shaders/environment.vert",
-                    "FragShader": "shaders/environment.frag",
+                    "mID": "ReflectionShader",
+                    "VertShader": "shaders/reflection.vert",
+                    "FragShader": "shaders/reflection.frag",
                     "RestrictModuleIncludes": false
                 },
                 {
                     "Type": "nap::TorusMesh",
-                    "mID": "TorusMesh",
+                    "mID": "ReflectionMesh",
                     "Radius": 0.75,
                     "TubeRadius": 0.25,
                     "Segments": 64,
@@ -356,7 +411,7 @@
                 },
                 {
                     "Type": "nap::Material",
-                    "mID": "TorusMaterial",
+                    "mID": "ReflectionMaterial",
                     "Uniforms": [
                         {
                             "Type": "nap::UniformStruct",
@@ -402,12 +457,12 @@
                             "BorderColor": "IntOpaqueBlack",
                             "CompareMode": "LessOrEqual",
                             "EnableCompare": false,
-                            "Texture": "UffiziCubeMap"
+                            "Texture": "Sunset Cubemap"
                         }
                     ],
                     "Buffers": [],
                     "Constants": [],
-                    "Shader": "TorusShader",
+                    "Shader": "ReflectionShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "InheritFromBlendMode"

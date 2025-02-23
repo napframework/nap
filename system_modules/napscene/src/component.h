@@ -197,7 +197,7 @@ namespace nap
 #define DECLARE_COMPONENT(ComponentType, ComponentInstanceType)				\
 	public:																	\
 		using InstanceType = ComponentInstanceType;							\
-		virtual const rtti::TypeInfo getInstanceType() const override		\
+		virtual const nap::rtti::TypeInfo getInstanceType() const override		\
 		{																	\
 			return nap::rtti::TypeInfo::get<InstanceType>();				\
 		}																	\

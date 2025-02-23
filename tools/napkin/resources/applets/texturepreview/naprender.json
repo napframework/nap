@@ -1,0 +1,13 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napscene",
+        "napfont",
+        "napinput",
+        "napcolor"
+    ],
+    "DataSearchPaths": [
+        "{ROOT}/system_modules/{MODULE_NAME}/data"
+    ]
+}

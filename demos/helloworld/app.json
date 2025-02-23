@@ -9,6 +9,7 @@
     "RequiredModules": [
         "napapp",
         "napimgui",
-        "napcameracontrol"
+        "napcameracontrol",
+        "napapi"
     ]
 }

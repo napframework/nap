@@ -7,6 +7,7 @@
 #include "appcontext.h"
 #include "napkinglobals.h"
 #include "napkin-resources.h"
+#include "stagewidget.h"
 
 #include <QAction>
 #include <QFileDialog>

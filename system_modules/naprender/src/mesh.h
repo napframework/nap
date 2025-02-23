@@ -334,7 +334,8 @@ namespace nap
 		const MeshShape& getShape(int index) const								{ return mProperties.mShapes[index]; }
 
 		/**
-		 * Create and add a new shape to this mesh. The returned shape is uninitialized; it is up to the client to initialize as needed
+		 * Create and add a new shape to this mesh.
+		 * The returned shape is uninitialized; it is up to the client to initialize as needed
 		 * @return The new shape
 		 */
 		MeshShape& createShape();
@@ -349,6 +350,12 @@ namespace nap
 		 * @return how this mesh is used at runtime
 		 */
 		EMemoryUsage getUsage() const											{ return mProperties.mUsage; }
+
+		/**
+		 * returns all available vertex attributes
+		 * @return vertex attribute list
+		 */
+		const auto& getAttributes() const										{ return mProperties.mAttributes; }
 
 		/**
 		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),
