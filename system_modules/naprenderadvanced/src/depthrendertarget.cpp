@@ -88,7 +88,6 @@ namespace nap
 		// Store as attachments
 		std::array<VkImageView, 2> attachments { std::as_const(*mDepthTexture).getHandle().getView(), VK_NULL_HANDLE };
 
-		uint attachment_count = 1;
 		if (mRasterizationSamples != VK_SAMPLE_COUNT_1_BIT)
 		{
 			// Create depth image data and hook up to depth attachment
@@ -97,14 +96,13 @@ namespace nap
 
 			attachments[0] = mDepthImage.getView();
 			attachments[1] = std::as_const(*mDepthTexture).getHandle().getView();
-			attachment_count = 2;
 		}
 
 		// Create framebuffer
 		VkFramebufferCreateInfo framebuffer_info = {
 			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
 			.renderPass = mRenderPass,
-			.attachmentCount = attachment_count,
+			.attachmentCount = mRasterizationSamples != VK_SAMPLE_COUNT_1_BIT ? uint32_t(2) : uint32_t(1),
 			.pAttachments = attachments.data(),
 			.width = framebuffer_size.width,
 			.height = framebuffer_size.height,
@@ -120,9 +118,9 @@ namespace nap
 
 	void DepthRenderTarget::beginRendering()
 	{
-		VkClearValue clear_value = {
-			.depthStencil = { mClearValue, 0 }
-		};
+		std::array<VkClearValue, 2> clear_values = {};
+		clear_values[0].depthStencil = { mClearValue, 0 };
+		clear_values[1].depthStencil = { mClearValue, 0 };
 
 		glm::vec2 size = mDepthTexture->getSize();
 
@@ -135,8 +133,8 @@ namespace nap
 				.offset = { 0, 0 },
 				.extent = {static_cast<uint>(size.x), static_cast<uint>(size.y) }
 			},
-			.clearValueCount = 1,
-			.pClearValues = &clear_value
+			.clearValueCount = clear_values.size(),
+			.pClearValues = clear_values.data()
 		};
 
 		// Begin render pass
