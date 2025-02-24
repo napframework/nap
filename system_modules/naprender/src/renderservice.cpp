@@ -1751,7 +1751,10 @@ namespace nap
 			// Create dummy window and verify creation
 			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
 			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
+			{
+				errorState.fail(SDL_GetError());
 				return false;
+			}
 			
 			// Get all available vulkan instance extensions, required to create a presentable surface.
 			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
