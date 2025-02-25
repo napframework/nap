@@ -68,11 +68,11 @@ namespace nap
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
 		// Persistent configuration
-		mMeshInstance->setNumVertices(UnitLineBox.size());
+		mMeshInstance->setNumVertices(NormalizedLineBox.size());
 		mMeshInstance->setUsage(mUsage);
 		mMeshInstance->setPolygonMode(EPolygonMode::Line);
 		mMeshInstance->setDrawMode(EDrawMode::Lines);
-		mMeshInstance->setCullMode(ECullMode::Back);
+		mMeshInstance->setCullMode(ECullMode::None);
 
 		if (!mIsSetupManually)
 			setup();
@@ -114,7 +114,6 @@ namespace nap
 		shape.setIndices(indices.data(), indices.size());
 
 		mIsSetupManually = true;
-
 		return true;
 	}
 
