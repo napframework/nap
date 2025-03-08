@@ -136,6 +136,11 @@ namespace nap
 		MaterialInstance& getMaterialInstance();
 
 		/**
+		 * @return current material used when drawing the mesh.
+		 */
+		MaterialInstance* getOrCreateMaterial()         { return &mMaterialInstance; }
+
+		/**
 		 * Sets whether to preserve the texture aspect ratio when rendering to the target
 		 */
 		void setPreserveAspect(bool preserveAspect);
