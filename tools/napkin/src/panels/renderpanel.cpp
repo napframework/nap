@@ -114,6 +114,9 @@ namespace napkin
 			case QEvent::Resize:
 			{
 				// Resize window
+				// TODO: Take into consideration parent widget scaling factor ->
+				// TODO: On linux with X11, the returned sizes are not absolute and the result is incorrect, ie:
+				// TODO: Reported size of 4 with applied scaling of 2 (200%) should be 8, not 4
 				auto resize_event = static_cast<QResizeEvent*>(event);
 				nap::SDL::setWindowSize(mWindow, { resize_event->size().width(), resize_event->size().height() });
 				return true;
