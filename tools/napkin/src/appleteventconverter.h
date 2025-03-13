@@ -10,6 +10,7 @@
 #include <windowevent.h>
 #include <SDL_video.h>
 #include <QPoint>
+#include <QWindow>
 
 namespace napkin
 {
@@ -20,7 +21,8 @@ namespace napkin
 	{
 	public:
 		// Default constructor
-		AppletEventConverter(SDL_Window* window) : mWindow(window) { }
+		AppletEventConverter(SDL_Window* window, QWindow* qWindow) :
+			mWindow(window), mQWindow(qWindow) { }
 
 		// Default destructor
 		virtual ~AppletEventConverter() = default;
@@ -99,9 +101,19 @@ namespace napkin
 		*/
 		nap::WindowEventPtr translateWindowEvent(const QEvent& qtEvent);
 
+		/**
+		 * Returns the platform specific pixel conversion ratio from QT to NAP.
+		 * @return the platform specific pixel conversion ratio from QT to NAP.
+		 */
+		float getPixelRatio() const;
+
 	private:
 		SDL_Window* mWindow = nullptr;		///< SDL window handle
+		QWindow* mQWindow = nullptr;		///< QWindow handle
 		QPoint mLocation = { -1, -1 };		///< Previous mouse location
+
+		nap::InputEvent* translateQtKeyEvent(const QEvent& qtEvent, const nap::rtti::TypeInfo& eventType) const;
+		nap::InputEvent* translateQtMouseEvent(const QEvent &qtEvent, QPoint &ioPrevious, const nap::rtti::TypeInfo &eventType) const;
 	};
 }
 

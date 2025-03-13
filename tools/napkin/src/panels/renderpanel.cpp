@@ -71,20 +71,9 @@ namespace napkin
 
 
 	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet) :
-		mContainer(container), mWindow(window), mApplet(applet), mConverter(window)
+		mContainer(container), mWindow(window), mApplet(applet), mConverter(window, container->windowHandle())
 	{
 		mContainer->installEventFilter(this);
-	}
-
-
-	float RenderPanel::getPixelRatio() const
-	{
-#ifdef __linux__
-		return QGuiApplication::platformName() == "xcb" ?
-			static_cast<float>(mContainer->window()->devicePixelRatio()) : 1.0f;
-#else
-		return 1.0f;
-#endif
 	}
 
 
@@ -126,7 +115,7 @@ namespace napkin
 			{
 				// Resize window
 				auto* resize_event = static_cast<QResizeEvent*>(event);
-				float ratio = getPixelRatio();
+				float ratio = mConverter.getPixelRatio();
 				glm::ivec2 sdl_size = {
 						static_cast<int>(static_cast<float>(resize_event->size().width())  * ratio),
 						static_cast<int>(static_cast<float>(resize_event->size().height()) * ratio),

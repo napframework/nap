@@ -48,13 +48,6 @@ namespace napkin
 		 */
 		const QWidget& getWidget() const				{ assert(mContainer != nullptr); return *mContainer; }
 
-		/**
-		 * Returns the ratio between physical and device independent pixels, as required by SDL.
-		 * This value is
-		 * @return ratio between physical and device independent pixels, as required by SDL.
-		 */
-		float getPixelRatio() const;
-
 	protected:
 		// Handle shown event
 		virtual bool eventFilter(QObject* watched, QEvent* event) override;

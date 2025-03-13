@@ -235,7 +235,7 @@ namespace napkin
 	/**
 	 * Helper function to convert an SDL KeyCode to nap KeyCode
 	 */
-	static nap::uint8 toNapKeyModifier(const Qt::KeyboardModifiers& mods)
+	nap::uint8 toNapKeyModifier(const Qt::KeyboardModifiers& mods)
 	{
 		nap::uint8 nap_key_mod = 0;
 		nap_key_mod |= mods.testFlag(Qt::ShiftModifier)	? static_cast<nap::uint8>(nap::EKeyModifier::Shift) : 0;
@@ -245,7 +245,7 @@ namespace napkin
 	}
 
 
-	static nap::InputEvent* translateQtKeyEvent(const QEvent& qtEvent, SDL_Window* window, const nap::rtti::TypeInfo& eventType)
+	nap::InputEvent* AppletEventConverter::translateQtKeyEvent(const QEvent& qtEvent, const nap::rtti::TypeInfo& eventType) const
 	{
 		nap::InputEvent* key_event = nullptr;
 		switch (qtEvent.type())
@@ -253,7 +253,7 @@ namespace napkin
 		case QEvent::KeyRelease:
 		case QEvent::KeyPress:
 		{
-			int wid = SDL_GetWindowID(window);
+			int wid = SDL_GetWindowID(mWindow);
 			const auto& qt_key_event = static_cast<const QKeyEvent&>(qtEvent);
 			key_event = eventType.create<nap::InputEvent>(
 				{
@@ -290,10 +290,10 @@ namespace napkin
 	}
 
 
-	static nap::InputEvent* translateQtMouseEvent(const QEvent& qtEvent, SDL_Window* window, QPoint& ioPrevious, const nap::rtti::TypeInfo& eventType)
+	nap::InputEvent* AppletEventConverter::translateQtMouseEvent(const QEvent& qtEvent, QPoint& ioPrevious, const nap::rtti::TypeInfo& eventType) const
 	{
 		// Get window id
-		int window_id = SDL_GetWindowID(window);
+		int window_id = SDL_GetWindowID(mWindow);
 
 		// Create event based on qt mouse event type
 		nap::InputEvent* mouse_event = nullptr;
@@ -302,8 +302,8 @@ namespace napkin
 		case QEvent::Wheel:
 		{
 			const auto& qt_wheel_event = static_cast<const QWheelEvent&>(qtEvent);
-			int dix = static_cast<int>(qt_wheel_event.angleDelta().rx());
-			int diy = static_cast<int>(qt_wheel_event.angleDelta().ry());
+			int dix = qt_wheel_event.angleDelta().rx();
+			int diy = qt_wheel_event.angleDelta().ry();
 			mouse_event = eventType.create<nap::InputEvent>({ dix, diy, window_id });
 			break;
 		}
@@ -312,15 +312,14 @@ namespace napkin
 		{
 			int sx, sy;
 			const auto& qt_mouse_event = static_cast<const QMouseEvent&>(qtEvent);
-			SDL_GetWindowSize(window, &sx, &sy);
-			int px = qt_mouse_event.position().x();
-			int py = sy - 1 - qt_mouse_event.position().y();
-			nap::PointerEvent::ESource source = nap::PointerEvent::ESource::Mouse;
+			SDL_GetWindowSize(mWindow, &sx, &sy);
+			float ratio = getPixelRatio();
+			int px = static_cast<int>(static_cast<float>(qt_mouse_event.position().x()) * ratio);
+			int py = sy - 1 - static_cast<int>(static_cast<float>(qt_mouse_event.position().y()) * ratio);
 			mouse_event = eventType.create<nap::InputEvent>(
 				{
 					px, py, toNapPointerButton(qt_mouse_event.button()), window_id, nap::PointerEvent::ESource::Mouse
 				});
-
 			ioPrevious = { -1, -1 };
 			break;
 		}
@@ -329,9 +328,10 @@ namespace napkin
 			// Get position
 			int sx, sy;
 			const auto& qt_mouse_event = static_cast<const QMouseEvent&>(qtEvent);
-			SDL_GetWindowSize(window, &sx, &sy);
-			int px = static_cast<int>(qt_mouse_event.position().x());
-			int py = sy - 1 - static_cast<int>(qt_mouse_event.position().y());
+			SDL_GetWindowSize(mWindow, &sx, &sy);
+			float ratio = getPixelRatio();
+			int px = static_cast<int>(static_cast<float>(qt_mouse_event.position().x()) * ratio);
+			int py = sy - 1 - static_cast<int>(static_cast<float>(qt_mouse_event.position().y()) * ratio);
 			int rx = ioPrevious.x() >= 0 ? px - ioPrevious.x() : 0;
 			int ry = ioPrevious.y() >= 0 ? py - ioPrevious.y() : 0;
 
@@ -393,7 +393,7 @@ namespace napkin
 		auto key_it = key_map.find(qtEvent.type());
 		if (key_it != key_map.end())
 		{
-			nap::InputEvent* key_event = translateQtKeyEvent(qtEvent, mWindow, key_it->second);
+			nap::InputEvent* key_event = translateQtKeyEvent(qtEvent, key_it->second);
 			return nap::InputEventPtr(key_event);
 		}
 
@@ -402,7 +402,7 @@ namespace napkin
 		auto mouse_it = mouse_map.find(qtEvent.type());
 		if (mouse_it != mouse_map.end())
 		{
-			nap::InputEvent* mouse_event = translateQtMouseEvent(qtEvent, mWindow, mLocation, mouse_it->second);
+			nap::InputEvent* mouse_event = translateQtMouseEvent(qtEvent, mLocation, mouse_it->second);
 			return nap::InputEventPtr(mouse_event);
 		}
 
@@ -426,7 +426,7 @@ namespace napkin
 			return nullptr;
 
 		// Translate and return unique instance
-		auto* input_event = translateQtKeyEvent(qtEvent, mWindow, key_it->second);
+		auto* input_event = translateQtKeyEvent(qtEvent, key_it->second);
 		return nap::InputEventPtr(input_event);
 	}
 
@@ -446,7 +446,7 @@ namespace napkin
 		if (mouse_it == mouse_map.end())
 			return nullptr;
 
-		nap::InputEvent* mouse_event = translateQtMouseEvent(qtEvent, mWindow, mLocation, mouse_it->second);
+		nap::InputEvent* mouse_event = translateQtMouseEvent(qtEvent, mLocation, mouse_it->second);
 		return nap::InputEventPtr(mouse_event);
 	}
 
@@ -467,5 +467,16 @@ namespace napkin
 
 		nap::WindowEvent* window_event = translateQtWindowEvent(qtEvent, mWindow, window_it->second);
 		return nap::WindowEventPtr(window_event);
+	}
+
+
+	float AppletEventConverter::getPixelRatio() const
+	{
+#ifdef __linux__
+		return QGuiApplication::platformName() == "xcb" ?
+			static_cast<float>(mQWindow->devicePixelRatio()) : 1.0f;
+#else
+		return 1.0f;
+#endif
 	}
 }
