@@ -139,6 +139,14 @@ bool parseCommandline(QApplication& app, napkin::AppContext& context)
  */
 int main(int argc, char* argv[])
 {
+	// Force X11 when running Linux -> required because of NAP applets.
+	// Applets are NAP applications that run inside NAPKIN and use SDL2 which defaults to X11 - not wayland.
+	// X applications executed in a wayland session use XWayland for compatibility.
+	// It is recommended that you use X11 instead of wayland until properly supported by SDL and NVIDIA.
+#ifdef __linux__
+	napkin::setEnv("QT_QPA_PLATFORM", "xcb");
+#endif
+
 	// Start logging to file next to console
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
 
