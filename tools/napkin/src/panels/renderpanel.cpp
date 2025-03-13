@@ -77,6 +77,17 @@ namespace napkin
 	}
 
 
+	float RenderPanel::getPixelRatio() const
+	{
+#ifdef __linux__
+		return QGuiApplication::platformName() == "xcb" ?
+			static_cast<float>(mContainer->window()->devicePixelRatio()) : 1.0f;
+#else
+		return 1.0f;
+#endif
+	}
+
+
 	bool RenderPanel::eventFilter(QObject* obj, QEvent* event)
 	{
 		// Handle specific events targeting the window
@@ -114,11 +125,13 @@ namespace napkin
 			case QEvent::Resize:
 			{
 				// Resize window
-				// TODO: Take into consideration parent widget scaling factor ->
-				// TODO: On linux with X11, the returned sizes are not absolute and the result is incorrect, ie:
-				// TODO: Reported size of 4 with applied scaling of 2 (200%) should be 8, not 4
-				auto resize_event = static_cast<QResizeEvent*>(event);
-				nap::SDL::setWindowSize(mWindow, { resize_event->size().width(), resize_event->size().height() });
+				auto* resize_event = static_cast<QResizeEvent*>(event);
+				float ratio = getPixelRatio();
+				glm::ivec2 sdl_size = {
+						static_cast<int>(static_cast<float>(resize_event->size().width())  * ratio),
+						static_cast<int>(static_cast<float>(resize_event->size().height()) * ratio),
+					};
+				nap::SDL::setWindowSize(mWindow, sdl_size);
 				return true;
 			}
 			case QEvent::FocusIn:
