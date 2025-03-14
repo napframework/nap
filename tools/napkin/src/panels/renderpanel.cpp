@@ -120,6 +120,9 @@ namespace napkin
 						static_cast<int>(static_cast<float>(resize_event->size().width())  * ratio),
 						static_cast<int>(static_cast<float>(resize_event->size().height()) * ratio),
 					};
+
+				// TODO: This explicit resize call is only required on Linux X11
+				// TODO: Create an event instead and forward that to the running application
 				nap::SDL::setWindowSize(mWindow, sdl_size);
 				return true;
 			}
@@ -150,3 +153,4 @@ namespace napkin
 		return false;
 	}
 }
+

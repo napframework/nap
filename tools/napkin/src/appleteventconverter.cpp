@@ -482,6 +482,8 @@ namespace napkin
 
 	float AppletEventConverter::getPixelRatio() const
 	{
+		// TODO: Because SDL2 doesn't have uniform high DPI handling conversion is different for different platforms.
+		// TODO: Migrate to SDL3 und integrate uniform high DPI handling for X11, Wayland and Windows.
 #ifdef __linux__
 		return QGuiApplication::platformName() == "xcb" ?
 			static_cast<float>(mQWindow->devicePixelRatio()) : 1.0f;

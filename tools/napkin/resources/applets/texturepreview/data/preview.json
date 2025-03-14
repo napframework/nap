@@ -694,7 +694,7 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 15
+                "Size": 16
             },
             "Font": "fonts/Manrope-Light.otf"
         },
