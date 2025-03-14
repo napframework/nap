@@ -52,10 +52,10 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 
 ![Between Mind and Matter, Nick Verstand](https://download.nap-labs.tech/shared/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
+![Shylight, Studio Drift](https://download.nap-labs.tech/shared/shylight_nycb.jpg)
+[Shylight](https://studiodrift.com/work/shylight/) by Studio Drift
 ![Habitat, Heleen Blanken](https://download.nap-labs.tech/shared/habitat_1280.jpg)
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
-![Shylight, Studio Drift](https://download.nap-labs.tech/shared/shylight_basel_1280.jpg)
-[Shylight](https://studiodrift.com/work/shylight/) by Studio Drift
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
 ![NAP Framework](https://download.nap-labs.tech/shared/napkin_interface.jpg)
@@ -67,23 +67,36 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 
 Currently, whether working with the packaged framework release or against the framework source, we support the following architectures and operating systems:
 
-**x86**
-```
-x86-64: Windows 10 & 11, Visual Studio (2019 & 2022) - MSVC
-x86-64: Ubuntu Linux LTS (v22.04 & v24.04) - GCC
-```
-**ARM**
-```
-arm64: Raspberry Pi OS (v12 Bookworm) - GCC
-```
+### Windows
+
+| arch   | os                | version      | compiler    |
+|--------|-------------------|--------------|-------------|
+| x86-64 | Windows           | 10, 11       | msvc 16, 17 |
+
+The default `CMake` generator is Visual Studio 2019 or 2022.
+
+### Linux
+
+| arch   | os                | version      | compiler    |
+|--------|-------------------|--------------|-------------|
+| x86-64 | Ubuntu            | 22.04, 24.04 | gcc         |
+| arm64  | Raspberry Pi OS   | 12           | gcc         |
+
+The default `CMake` generator is `Make`. 
+
+Other Linux distributions *may* work, but they have not been tested and are not officially supported.
+
+#### Display Server
+
+When `Wayland` is configured as the display server, NAP applications will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is fully supported.
+
+#### Raspberry Pi
+
+Only the `Raspberry Pi 4 & 5` running `Debian Bookworm (v12, arm64)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and up.
 
 ## Binary Packages
 
 Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. Follow the [framework installation instructions](https://docs.nap-framework.tech/pages.html) to get started. Continue reading below to compile, package and work with NAP from source.
-
-## Raspberry Pi
-
-Only the `Raspberry Pi 4 & 5` running `Debian Bookworm (v12, arm64)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and higher.
 
 # Compilation
 
