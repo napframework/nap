@@ -279,7 +279,7 @@ namespace nap
 			QAction mFrameViewAction;
 
 		Q_SIGNALS:
-			void selectionChanged(QMap<AbstractCurve*, QList<int>> points);
+			void selectionChanged(const QMap<AbstractCurve*, QList<int>>& points);
 
 		protected:
 			void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -365,8 +365,7 @@ namespace nap
 		private:
 			void onTimeChanged(qreal t);
 			void onValueChanged(qreal v);
-
-			void onSelectionChanged(QMap<AbstractCurve*, QList<int>> points);
+			void onSelectionChanged(const QMap<AbstractCurve*, QList<int>>& points);
 			void onPointsChanged();
 
 			CurveView mCurveView;

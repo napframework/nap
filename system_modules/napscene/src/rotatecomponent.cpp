@@ -53,21 +53,17 @@ namespace nap
 	{
 		if (mEnabled)
 		{
-			// Update elapsed time taking in to account rotation speed
 			mElapsedTime += (deltaTime * mProperties.mSpeed);
-
-			// Calculate rotation angle including offset
-			float rot_angle = (mElapsedTime + mProperties.mOffset) * 360.0f;
-			glm::quat new_ror = glm::rotate(mInitialRotate, glm::radians(rot_angle), mProperties.mAxis);
-
-			// Set new rotation
-			mTransform->setRotate(new_ror);
+			rotate();
 		}
 	}
 
 
-	void RotateComponentInstance::reset()
+	void RotateComponentInstance::rotate()
 	{
-		mElapsedTime = 0.0f;
+		// Calculate rotation angle and set
+		float rot_angle = (mElapsedTime + mProperties.mOffset) * 360.0f;
+		glm::quat new_ror = glm::rotate(mInitialRotate, glm::radians(rot_angle), mProperties.mAxis);
+		mTransform->setRotate(new_ror);
 	}
 }

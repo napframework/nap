@@ -1,15 +1,24 @@
 project(napkin)
 nap_qt_pre()
 
-file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE HEADERS src/*.h)
+# Get additional resources
 file(GLOB_RECURSE RESOURCES resources/*.qrc)
-
 if (MSVC)
     set(RESOURCES ${RESOURCES} resources/resources.rc)
 endif()
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
+# Create target + resources
+add_executable(${PROJECT_NAME} ${RESOURCES})
+
+# Add source code groups
+add_source_dir("applets" "src/applets")
+add_source_dir("panels" "src/panels")
+add_source_dir("napkin" "src")
+
+# Uncomment 'NAP_DEV' to enable working on applets within Napkin! 
+# This will make applet specific resources and components accessible and editable in Napkin.
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_DEV)
+
 if(MSVC OR APPLE)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
@@ -38,7 +47,7 @@ if(${ARCH} STREQUAL "armhf")
 endif()
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath naprender napinput napfont)
+set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath naprender napcameracontrol napfont napapp napinput napsdlinput napimgui napapi naprenderadvanced)
 
 # Add python if enabled
 if(NAP_ENABLE_PYTHON)
@@ -159,7 +168,9 @@ if(MSVC)
     install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release-${ARCH}/napkin
             DESTINATION tools/
             CONFIGURATIONS Release 
-            PATTERN "*.pdb" EXCLUDE)
+            PATTERN "*.pdb" EXCLUDE
+            PATTERN "*/napkin.ini" EXCLUDE
+            )
 
     if(PACKAGE_PDBS)
         install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> 
@@ -181,7 +192,18 @@ if(APPLE)
                                                     Release)
 endif()   
 
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources DESTINATION tools/napkin/)
+# Install napkin resources, exlude path mapping -> seperate install
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources 
+    DESTINATION tools/napkin/
+    PATTERN */path_mapping.json EXCLUDE
+    )
+
+# Install path mapping for framework release context
+install(FILES ${NAP_ROOT}/tools/buildsystem/path_mappings/applet/framework_release.json
+    DESTINATION tools/napkin/resources/applets
+    RENAME path_mapping.json)
+
+# Install module dependencies
 module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 set(PATH_TO_THIRDPARTY "../../thirdparty")

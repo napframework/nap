@@ -1,0 +1,16 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "renderpreview",
+    "Version": "0.1.0",
+    "RequiredModules": [
+        "napapp",
+        "napcameracontrol",
+        "napsdlinput",
+        "napimgui",
+        "napapi"
+    ],
+    "Data": "data/preview.json",
+    "ServiceConfig": "",
+    "PathMapping": "../path_mapping.json"
+}

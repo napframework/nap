@@ -1140,7 +1140,7 @@ namespace nap
 		std::vector<std::string> search_paths = { "shaders", utility::getFileDir(mVertPath), utility::getFileDir(mFragPath) };
 		if (!mRestrictModuleIncludes)
 		{
-			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
+			for (const auto& mod : mRenderService->getCore().getModuleManager().getModules())
 			{
 				for (const auto& path : mod->getInformation().mDataSearchPaths)
 				{
@@ -1186,7 +1186,7 @@ namespace nap
 		std::vector<std::string> search_paths = { "shaders", utility::getFileDir(mComputePath) };
 		if (!mRestrictModuleIncludes)
 		{
-			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
+			for (const auto& mod : mRenderService->getCore().getModuleManager().getModules())
 			{
 				for (const auto& path : mod->getInformation().mDataSearchPaths)
 				{

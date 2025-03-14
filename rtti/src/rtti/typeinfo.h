@@ -11,6 +11,7 @@
 #endif
 #include <utility/dllexport.h>
 #include <string.h>
+#include <utility/module.h>
 
 /**
  * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system, properties and functions are also automatically exposed to Python.
@@ -137,6 +138,9 @@ namespace nap
 {
 	namespace rtti
 	{
+		/**
+		 * Common rtti types
+		 */
 		using TypeInfo = rttr::type;
 		using Enum = rttr::enumeration;
 		using Property = rttr::property;
@@ -151,6 +155,7 @@ namespace nap
 		namespace method
 		{
 			constexpr const char* description = "description";					///< rtti type description
+			constexpr const char* moduleDescription = "moduleDescription";		///< nap module description
 			constexpr const char* assign = "assign";							///< assignment
 			constexpr const char* toObject = "toObject";						///< to object pointer
 			constexpr const char* toString	= "toString";						///< to object path
@@ -383,11 +388,13 @@ namespace nap
 	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
+		static nap::ModuleDescriptor* getModuleDescriptor() { return NAP_MODULE_DESCIPTOR_HANDLE; }				\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
-			registration::class_<Type> rtti_class_type(#Type);													
+			registration::class_<Type> rtti_class_type(#Type);													\
+			rtti_class_type.method(nap::rtti::method::moduleDescription, &getModuleDescriptor);
 #endif // NAP_ENABLE_PYTHON
 
 
@@ -416,13 +423,15 @@ namespace nap
 #define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
-		static const char* getTypeDescription()	{ return Description; }											\
+		static const char* getTypeDescription()				{ return Description; }								\
+		static nap::ModuleDescriptor* getModuleDescriptor()	{ return NAP_MODULE_DESCIPTOR_HANDLE; }				\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
-			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);
+			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);						\
+			rtti_class_type.method(nap::rtti::method::moduleDescription, &getModuleDescriptor);					
 #endif // NAP_ENABLE_PYTHON
 
 // Selector

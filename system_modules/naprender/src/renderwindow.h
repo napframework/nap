@@ -64,6 +64,11 @@ namespace nap
 		RenderWindow(Core& core);
 
 		/**
+		 * This constructor is called when creating the render window using napkin
+		 */
+		RenderWindow(Core& core, SDL_Window* windowHandle);
+
+		/**
 		 * Destroys all render resources
 		 */
 		virtual ~RenderWindow() override;
@@ -74,7 +79,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Called when the window is detroyed.
+		 * Called when the window is destroyed.
 		 */
 		virtual void onDestroy() override;
 
@@ -224,6 +229,11 @@ namespace nap
 		math::Rect getRectPixels() const;
 
 		/**
+		 * @return render window ratio, height over width
+		 */
+		inline float getRatio()	const												{ return static_cast<float>(getBufferSize().y) / static_cast<float>(getBufferSize().x); }
+
+		/**
 		 * Starts a render pass. Only call this when recording is enabled.
 		 */
 		virtual void beginRendering() override;
@@ -307,6 +317,7 @@ namespace nap
 		bool							mRecreateSwapchain = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};
+		SDL_Window*						mExternalHandle = nullptr;
 
 		/**
 		 * Called by the render service. 
@@ -350,10 +361,5 @@ namespace nap
 		 * @return if the swapchain extent is higher than zero in both axis
 		 */
 		bool validSwapchainExtent() const;
-
-		/**
-		 * Checks if the event is a window resize event and updates size accordingly.
-		 */
-		void handleEvent(const Event& event);
 	};
 }

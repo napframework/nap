@@ -491,5 +491,23 @@ namespace nap
 			auto base_types = type.get_base_classes();
 			return base_types.empty() ? nullptr : getDescription(*base_types.crbegin());
 		}
+
+
+		const nap::ModuleDescriptor* getModuleDescription(const rtti::TypeInfo& type)
+		{
+			// Find module description for given type -> module descriptions are stacked, therefore start with latest registered one
+			auto range = type.get_methods(rttr::filter_item::static_item | rttr::filter_item::public_access);
+			for (auto it = range.rbegin(); it != range.rend(); it++)
+			{
+				if (it->get_name() == nap::rtti::method::moduleDescription)
+				{
+					rttr::variant return_var = it->invoke(rttr::instance());
+					assert(return_var.is_valid());
+					return return_var.can_convert<const nap::ModuleDescriptor*>() ?
+						return_var.convert<const nap::ModuleDescriptor*>() : nullptr;
+				}
+			}
+			return nullptr;
+		}
 	}
 }

@@ -261,6 +261,21 @@ namespace nap
 	}
 
 
+	// Binds a specific SDL key modifier to a NAP key modifier
+	using SDLKeyModifierMap = std::unordered_map<Uint16, nap::EKeyModifier>;
+	static const SDLKeyModifierMap& getSDLKeyModifierMap()
+	{
+		static const SDLKeyModifierMap sdl_key_mod_map =
+		{
+			{ KMOD_NONE,	nap::EKeyModifier::None },
+			{ KMOD_SHIFT,	nap::EKeyModifier::Shift },
+			{ KMOD_CTRL,	nap::EKeyModifier::Control },
+			{ KMOD_ALT,		nap::EKeyModifier::Alt }
+		}; 
+		return sdl_key_mod_map;
+	}
+
+
 	// Binds a specific SDL mouse event to a pointer event type
 	using SDLWindowMap = std::unordered_map<Uint32, rtti::TypeInfo>;
 	static const SDLWindowMap& getSDLWindowMap()
@@ -361,6 +376,19 @@ namespace nap
 		auto pos = getSDLKeyCodeMap().find(key);
 		return pos != getSDLKeyCodeMap().end() ? pos->second :
 			nap::EKeyCode::KEY_UNKNOWN;
+	}
+
+
+	/**
+	 * Helper function to convert an SDL KeyCode to nap KeyCode
+	 */
+	static nap::uint8 toNapKeyModifier(Uint16 mods)
+	{
+		nap::uint8 nap_key_mod = 0;
+		nap_key_mod |= (mods & KMOD_SHIFT)	> 0 ? static_cast<nap::uint8>(nap::EKeyModifier::Shift)		: 0;
+		nap_key_mod |= (mods & KMOD_ALT)	> 0 ? static_cast<nap::uint8>(nap::EKeyModifier::Alt)		: 0;
+		nap_key_mod |= (mods & KMOD_CTRL)	> 0 ? static_cast<nap::uint8>(nap::EKeyModifier::Control)	: 0;
+		return nap_key_mod;
 	}
 
 
@@ -668,7 +696,8 @@ namespace nap
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
 		{
-			key_event = eventType.create<InputEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
+			key_event = eventType.create<InputEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym),
+				toNapKeyModifier(sdlEvent.key.keysym.mod),  window_id });
 			break;
 		}
 		default:
