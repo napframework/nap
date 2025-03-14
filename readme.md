@@ -82,7 +82,9 @@ The default `CMake` generator is Visual Studio 2019 or 2022.
 | x86-64 | Ubuntu            | 22.04, 24.04 | gcc         |
 | arm64  | Raspberry Pi OS   | 12           | gcc         |
 
-The default `CMake` generator is `Make`.
+The default `CMake` generator is `Make`. 
+
+Other Linux distributions *may* work, but they have not been tested and are not officially supported.
 
 #### Display Server
 
