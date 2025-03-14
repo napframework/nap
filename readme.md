@@ -78,7 +78,7 @@ arm64: Raspberry Pi OS (v12 Bookworm, X11) - GCC
 ```
 #### Display Server
 
-On Linux, when `Wayland` is configured as the display server, NAP applications and the Napkin editor will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is (fully) supported.
+On Linux, when `Wayland` is configured as the display server, NAP applications and Napkin (the editor) will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is (fully) supported.
 
 ## Binary Packages
 
