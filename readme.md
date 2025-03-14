@@ -67,26 +67,34 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 
 Currently, whether working with the packaged framework release or against the framework source, we support the following architectures and operating systems:
 
-**x86**
-```
-x86-64: Windows 10 & 11, Visual Studio (2019 & 2022) - MSVC
-x86-64: Ubuntu Linux LTS (v22.04 & v24.04, X11) - GCC
-```
-**ARM**
-```
-arm64: Raspberry Pi OS (v12 Bookworm, X11) - GCC
-```
+### Windows
+
+| arch   | os                | version      | compiler    |
+|--------|-------------------|--------------|-------------|
+| x86-64 | Windows           | 10, 11       | msvc 16, 17 |
+
+The default `CMake` generator is Visual Studio 2019 or 2022.
+
+### Linux
+
+| arch   | os                | version      | compiler    |
+|--------|-------------------|--------------|-------------|
+| x86-64 | Ubuntu            | 22.04, 24.04 | gcc         |
+| arm64  | Raspberry Pi OS   | 12           | gcc         |
+
+The default `CMake` generator is `Make`.
+
 #### Display Server
 
-On Linux, when `Wayland` is configured as the display server, NAP applications and Napkin (the editor) will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is (fully) supported.
+When `Wayland` is configured as the display server, NAP applications and Napkin (the editor) will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is (fully) supported.
+
+#### Raspberry Pi
+
+Only the `Raspberry Pi 4 & 5` running `Debian Bookworm (v12, arm64)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and up.
 
 ## Binary Packages
 
 Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. Follow the [framework installation instructions](https://docs.nap-framework.tech/pages.html) to get started. Continue reading below to compile, package and work with NAP from source.
-
-## Raspberry Pi
-
-Only the `Raspberry Pi 4 & 5` running `Debian Bookworm (v12, arm64)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and higher.
 
 # Compilation
 
