@@ -70,12 +70,15 @@ Currently, whether working with the packaged framework release or against the fr
 **x86**
 ```
 x86-64: Windows 10 & 11, Visual Studio (2019 & 2022) - MSVC
-x86-64: Ubuntu Linux LTS (v22.04 & v24.04) - GCC
+x86-64: Ubuntu Linux LTS (v22.04 & v24.04, X11) - GCC
 ```
 **ARM**
 ```
-arm64: Raspberry Pi OS (v12 Bookworm) - GCC
+arm64: Raspberry Pi OS (v12 Bookworm, X11) - GCC
 ```
+#### Display Server
+
+On Linux, when `Wayland` is configured as the display server, NAP applications and the Napkin editor will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is (fully) supported.
 
 ## Binary Packages
 
