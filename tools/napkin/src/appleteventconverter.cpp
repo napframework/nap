@@ -211,7 +211,8 @@ namespace napkin
 		{
 			{ QEvent::Resize,				RTTI_OF(nap::WindowResizedEvent) },
 			{ QEvent::Show,					RTTI_OF(nap::WindowShownEvent) },
-			{ QEvent::Hide,					RTTI_OF(nap::WindowHiddenEvent) }
+			{ QEvent::Hide,					RTTI_OF(nap::WindowHiddenEvent) },
+			{ QEvent::Move,					RTTI_OF(nap::WindowMovedEvent) }
 		};
 		return qt_window_map;
 	}
@@ -253,7 +254,7 @@ namespace napkin
 		case QEvent::KeyRelease:
 		case QEvent::KeyPress:
 		{
-			int wid = SDL_GetWindowID(mWindow);
+			int wid = static_cast<int>(nap::SDL::getWindowId(mWindow));
 			const auto& qt_key_event = static_cast<const QKeyEvent&>(qtEvent);
 			key_event = eventType.create<nap::InputEvent>(
 				{
@@ -293,7 +294,7 @@ namespace napkin
 	nap::InputEvent* AppletEventConverter::translateQtMouseEvent(const QEvent& qtEvent, QPoint& ioPrevious, const nap::rtti::TypeInfo& eventType) const
 	{
 		// Get window id
-		int window_id = SDL_GetWindowID(mWindow);
+		int wid = static_cast<int>(nap::SDL::getWindowId(mWindow));
 
 		// Create event based on qt mouse event type
 		nap::InputEvent* mouse_event = nullptr;
@@ -304,21 +305,20 @@ namespace napkin
 			const auto& qt_wheel_event = static_cast<const QWheelEvent&>(qtEvent);
 			int dix = qt_wheel_event.angleDelta().rx();
 			int diy = qt_wheel_event.angleDelta().ry();
-			mouse_event = eventType.create<nap::InputEvent>({ dix, diy, window_id });
+			mouse_event = eventType.create<nap::InputEvent>({ dix, diy, wid });
 			break;
 		}
 		case QEvent::MouseButtonRelease:
 		case QEvent::MouseButtonPress:
 		{
-			int sx, sy;
 			const auto& qt_mouse_event = static_cast<const QMouseEvent&>(qtEvent);
-			SDL_GetWindowSize(mWindow, &sx, &sy);
+			auto ws = nap::SDL::getWindowSize(mWindow);
 			float ratio = getPixelRatio();
 			int px = static_cast<int>(static_cast<float>(qt_mouse_event.position().x()) * ratio);
-			int py = sy - 1 - static_cast<int>(static_cast<float>(qt_mouse_event.position().y()) * ratio);
+			int py = ws.y - 1 - static_cast<int>(static_cast<float>(qt_mouse_event.position().y()) * ratio);
 			mouse_event = eventType.create<nap::InputEvent>(
 				{
-					px, py, toNapPointerButton(qt_mouse_event.button()), window_id, nap::PointerEvent::ESource::Mouse
+					px, py, toNapPointerButton(qt_mouse_event.button()), wid, nap::PointerEvent::ESource::Mouse
 				});
 			ioPrevious = { -1, -1 };
 			break;
@@ -326,18 +326,17 @@ namespace napkin
 		case QEvent::MouseMove:
 		{
 			// Get position
-			int sx, sy;
 			const auto& qt_mouse_event = static_cast<const QMouseEvent&>(qtEvent);
-			SDL_GetWindowSize(mWindow, &sx, &sy);
+			auto ws = nap::SDL::getWindowSize(mWindow);
 			float ratio = getPixelRatio();
 			int px = static_cast<int>(static_cast<float>(qt_mouse_event.position().x()) * ratio);
-			int py = sy - 1 - static_cast<int>(static_cast<float>(qt_mouse_event.position().y()) * ratio);
+			int py = ws.y - 1 - static_cast<int>(static_cast<float>(qt_mouse_event.position().y()) * ratio);
 			int rx = ioPrevious.x() >= 0 ? px - ioPrevious.x() : 0;
 			int ry = ioPrevious.y() >= 0 ? py - ioPrevious.y() : 0;
 
 			mouse_event = eventType.create<nap::InputEvent>(
 				{
-					rx, ry, px, py, window_id, nap::PointerEvent::ESource::Mouse
+					rx, ry, px, py, wid, nap::PointerEvent::ESource::Mouse
 				});
 
 			ioPrevious = { px, py };
@@ -351,10 +350,10 @@ namespace napkin
 	}
 
 
-	static nap::WindowEvent* translateQtWindowEvent(const QEvent& qtEvent, SDL_Window* window, const nap::rtti::TypeInfo& eventType)
+	nap::WindowEvent* AppletEventConverter::translateQtWindowEvent(const QEvent& qtEvent, const nap::rtti::TypeInfo& eventType)
 	{
 		// Get window id
-		int window_id = SDL_GetWindowID(window);
+		int wid = static_cast<int>(nap::SDL::getWindowId(mWindow));
 
 		// Create event based on qt mouse event type
 		nap::WindowEvent* window_event = nullptr;
@@ -364,13 +363,24 @@ namespace napkin
 			case QEvent::Resize:
 			{
 				const auto& resize_event = static_cast<const QResizeEvent&>(qtEvent);
-				int d1 = static_cast<int>(resize_event.size().width());
-				int d2 = static_cast<int>(resize_event.size().height());
-				return window_event = eventType.create<nap::WindowEvent>({ d1, d2, window_id });
+				float ratio = getPixelRatio();
+				int d1 = static_cast<int>(static_cast<float>(resize_event.size().width())  * ratio);
+				int d2 = static_cast<int>(static_cast<float>(resize_event.size().height()) * ratio);
+				window_event = eventType.create<nap::WindowEvent>({ d1, d2, wid });
+				break;
+			}
+			case QEvent::Move:
+			{
+				const auto& move_event = static_cast<const QMoveEvent&>(qtEvent);
+				window_event = eventType.create<nap::WindowMovedEvent>({
+						move_event.pos().x(),move_event.pos().y(), wid
+					});
+				break;
 			}
 			default:
 			{
-				window_event = eventType.create<nap::WindowEvent>({ window_id });
+				window_event = eventType.create<nap::WindowEvent>({ wid });
+				break;
 			}
 		}
 		return window_event;
@@ -465,7 +475,7 @@ namespace napkin
 		if (window_it == map.end())
 			return nullptr;
 
-		nap::WindowEvent* window_event = translateQtWindowEvent(qtEvent, mWindow, window_it->second);
+		nap::WindowEvent* window_event = translateQtWindowEvent(qtEvent, window_it->second);
 		return nap::WindowEventPtr(window_event);
 	}
 

@@ -8,9 +8,9 @@
 #include <QEvent>
 #include <inputevent.h>
 #include <windowevent.h>
-#include <SDL_video.h>
 #include <QPoint>
 #include <QWindow>
+#include <sdlhelpers.h>
 
 namespace napkin
 {
@@ -114,6 +114,7 @@ namespace napkin
 
 		nap::InputEvent* translateQtKeyEvent(const QEvent& qtEvent, const nap::rtti::TypeInfo& eventType) const;
 		nap::InputEvent* translateQtMouseEvent(const QEvent &qtEvent, QPoint &ioPrevious, const nap::rtti::TypeInfo &eventType) const;
+		nap::WindowEvent* translateQtWindowEvent(const QEvent& qtEvent, const nap::rtti::TypeInfo& eventType);
 	};
 }
 

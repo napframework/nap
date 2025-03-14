@@ -694,7 +694,7 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 18
+                "Size": 15
             },
             "Font": "fonts/Manrope-Light.otf"
         },
@@ -961,7 +961,6 @@
                         {
                             "Type": "nap::UVTestTexture",
                             "mID": "Fallback2DTexture",
-                            "Usage": "Static",
                             "GenerateLods": false
                         },
                         {

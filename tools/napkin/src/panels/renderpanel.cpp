@@ -123,6 +123,14 @@ namespace napkin
 				nap::SDL::setWindowSize(mWindow, sdl_size);
 				return true;
 			}
+			case QEvent::Move:
+			{
+				auto ptr = mConverter.translateWindowEvent(*event);
+				assert(ptr != nullptr);
+				mApplet.sendEvent(std::move(ptr));
+				event->accept();
+				return true;
+			}
 			case QEvent::FocusIn:
 			case QEvent::FocusOut:
 			case QEvent::Paint:
