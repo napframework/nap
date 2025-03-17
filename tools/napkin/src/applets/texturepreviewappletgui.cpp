@@ -144,8 +144,8 @@ namespace napkin
 
 	void TexturePreviewAppletGUI::texDetail(std::string&& label, const std::string& value, std::string&& appendix)
 	{
-		static constexpr float xoff = 125.0f;
-		static constexpr float yoff = xoff * 2.0f;
+		float xoff = gui::dpi * mApplet.mGuiService->getScale() * 1.25f;
+		float yoff = xoff * 2.0f;
 		ImGui::TextColored(mApplet.mGuiService->getPalette().mFront3Color, label.c_str());
 		ImGui::SameLine(xoff);
 		ImGui::Text(value.c_str());
