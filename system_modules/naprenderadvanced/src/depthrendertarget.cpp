@@ -99,15 +99,14 @@ namespace nap
 		}
 
 		// Create framebuffer
-		VkFramebufferCreateInfo framebuffer_info = {
-			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.renderPass = mRenderPass,
-			.attachmentCount = mRasterizationSamples != VK_SAMPLE_COUNT_1_BIT ? uint32_t(2) : uint32_t(1),
-			.pAttachments = attachments.data(),
-			.width = framebuffer_size.width,
-			.height = framebuffer_size.height,
-			.layers = 1
-		};
+		VkFramebufferCreateInfo framebuffer_info = {};
+		framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebuffer_info.renderPass = mRenderPass;
+		framebuffer_info.attachmentCount = attachment_count;
+		framebuffer_info.pAttachments = attachments.data();
+		framebuffer_info.width = framebuffer_size.width;
+		framebuffer_info.height = framebuffer_size.height;
+		framebuffer_info.layers = 1;
 
 		if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffer) == VK_SUCCESS, "Failed to create framebuffer"))
 			return false;
@@ -118,43 +117,40 @@ namespace nap
 
 	void DepthRenderTarget::beginRendering()
 	{
-		std::array<VkClearValue, 2> clear_values = {};
-		clear_values[0].depthStencil = { mClearValue, 0 };
-		clear_values[1].depthStencil = { mClearValue, 0 };
+		VkClearValue clear_value = {};
+		clear_value.depthStencil = { mClearValue, 0 };
 
-		glm::vec2 size = mDepthTexture->getSize();
+		glm::ivec2 size = mDepthTexture->getSize();
+		const glm::ivec2 offset = { 0, 0 };
 
 		// Setup render pass
-		VkRenderPassBeginInfo render_pass_info = {
-			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-			.renderPass = mRenderPass,
-			.framebuffer = mFramebuffer,
-			.renderArea = {
-				.offset = { 0, 0 },
-				.extent = {static_cast<uint>(size.x), static_cast<uint>(size.y) }
-			},
-			.clearValueCount = clear_values.size(),
-			.pClearValues = clear_values.data()
-		};
+		VkRenderPassBeginInfo renderpass_info = {};
+		renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderpass_info.renderPass = mRenderPass;
+		renderpass_info.framebuffer = mFramebuffer;
+		renderpass_info.renderArea.offset = { offset.x, offset.y };
+		renderpass_info.renderArea.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) };
+		renderpass_info.clearValueCount = 1;
+		renderpass_info.pClearValues = &clear_value;
 
 		// Begin render pass
-		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderpass_info, VK_SUBPASS_CONTENTS_INLINE);
 
 		// Ensure scissor and viewport are covering complete area
-		VkRect2D rect = {
-			.offset = { 0, 0 },
-			.extent = { static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y) }
-		};
+		VkRect2D rect;
+		rect.offset.x = offset.x;
+		rect.offset.y = offset.y;
+		rect.extent.width = size.x;
+		rect.extent.height = size.y;
 		vkCmdSetScissor(mRenderService->getCurrentCommandBuffer(), 0, 1, &rect);
 
-		VkViewport viewport = {
-			.x = 0.0f,
-			.y = size.y,
-			.width = size.x,
-			.height = -size.y,
-			.minDepth = 0.0f,
-			.maxDepth = 1.0f
-		};
+		VkViewport viewport = {};
+		viewport.x = static_cast<float>(offset.x);
+		viewport.y = size.y + static_cast<float>(offset.y);
+		viewport.width = size.x;
+		viewport.height = -size.y;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
 	}
 

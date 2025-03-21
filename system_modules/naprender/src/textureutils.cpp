@@ -86,23 +86,20 @@ namespace nap
             uint mipLevel, uint mipLevelCount,
             uint layer, uint layerCount, VkImageAspectFlags aspect)
         {
-            VkImageMemoryBarrier barrier = {
-            	.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-				.srcAccessMask = srcAccessMask,
-				.dstAccessMask = dstAccessMask,
-            	.oldLayout = oldLayout,
-            	.newLayout = newLayout,
-				.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-				.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-				.image = image,
-				.subresourceRange = {
-					.aspectMask = aspect,
-					.baseMipLevel = mipLevel,
-					.levelCount = mipLevelCount,
-					.baseArrayLayer = layer,
-					.layerCount = layerCount
-				}
-			};
+			VkImageMemoryBarrier barrier = {};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.srcAccessMask = srcAccessMask;
+			barrier.dstAccessMask = dstAccessMask;
+			barrier.oldLayout = oldLayout;
+			barrier.newLayout = newLayout;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.image = image;
+			barrier.subresourceRange.aspectMask = aspect;
+			barrier.subresourceRange.baseMipLevel = mipLevel;
+			barrier.subresourceRange.levelCount = mipLevelCount;
+			barrier.subresourceRange.baseArrayLayer = layer;
+			barrier.subresourceRange.layerCount = layerCount;
             vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         }
 
@@ -162,28 +159,19 @@ namespace nap
 					aspect);
 
 				// Create blit structure
-				VkImageBlit blit = {
-					.srcSubresource = {
-						.aspectMask = aspect,
-						.mipLevel = i-1,
-						.baseArrayLayer = layer,
-						.layerCount = layerCount
-					},
-					.srcOffsets = {
-						{ 0, 0, 0 },
-						{ mip_width, mip_height, 1 }
-					},
-					.dstSubresource = {
-						.aspectMask = aspect,
-						.mipLevel = i,
-						.baseArrayLayer = layer,
-						.layerCount = layerCount
-					},
-					.dstOffsets = {
-						{ 0, 0, 0 },
-						{ mip_width > 1 ? mip_width / 2 : 1, mip_height > 1 ? mip_height / 2 : 1, 1 }
-					}
-				};
+				VkImageBlit blit = {};
+				blit.srcSubresource.aspectMask = aspect;
+				blit.srcSubresource.mipLevel = i-1;
+				blit.srcSubresource.baseArrayLayer = layer;
+				blit.srcSubresource.layerCount = layerCount;
+				blit.srcOffsets[0] = { 0, 0, 0 };
+				blit.srcOffsets[1] = { mip_width, mip_height, 1 };
+				blit.dstSubresource.aspectMask = aspect;
+				blit.dstSubresource.mipLevel = i;
+				blit.dstSubresource.baseArrayLayer = layer;
+				blit.dstSubresource.layerCount = layerCount;
+				blit.dstOffsets[0] = { 0, 0, 0 };
+				blit.dstOffsets[1] = { mip_width > 1 ? mip_width / 2 : 1, mip_height > 1 ? mip_height / 2 : 1, 1 };
 
 				// Blit
 				vkCmdBlitImage(buffer,
@@ -239,28 +227,19 @@ namespace nap
 			}
 
 			// Create blit structure
-			VkImageBlit blit = {
-				.srcSubresource = {
-					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-					.mipLevel = 0,
-					.baseArrayLayer = 0,
-					.layerCount = 1
-				},
-				.srcOffsets = {
-					{ 0, 0, 0 },
-					{ srcTexture.getWidth(), srcTexture.getHeight(), 1 }
-				},
-				.dstSubresource = {
-					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-					.mipLevel = 0,
-					.baseArrayLayer = 0,
-					.layerCount = 1
-				},
-				.dstOffsets = {
-					{ 0, 0, 0 },
-					{ dstTexture.getWidth(), dstTexture.getHeight(), 1 }
-				}
-			};
+			VkImageBlit blit = {};
+			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.mipLevel = 0;
+			blit.srcSubresource.baseArrayLayer = 0;
+			blit.srcSubresource.layerCount = 1;
+			blit.srcOffsets[0] = { 0, 0, 0 };
+			blit.srcOffsets[1] = { srcTexture.getWidth(), srcTexture.getHeight(), 1 };
+			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.mipLevel = 0;
+			blit.dstSubresource.baseArrayLayer = 0;
+			blit.dstSubresource.layerCount = 1;
+			blit.dstOffsets[0] = { 0, 0, 0 };
+			blit.dstOffsets[1] = { dstTexture.getWidth(), dstTexture.getHeight(), 1 };
 
 			// Blit to output
 			vkCmdBlitImage(commandBuffer,
@@ -311,27 +290,21 @@ namespace nap
 					0, 1, VK_IMAGE_ASPECT_COLOR_BIT);
 			}
 
-			// Create blit structure
-			VkImageCopy region = {
-				.srcSubresource = {
-					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-					.mipLevel = 0,
-					.baseArrayLayer = 0,
-					.layerCount = 1
-				},
-				.srcOffset = { 0, 0, 0 },
-				.dstSubresource = {
-					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-					.mipLevel = 0,
-					.baseArrayLayer = 0,
-					.layerCount = 1
-				},
-				.dstOffset = { 0, 0, 0 },
-				.extent = {
-					static_cast<uint>(srcTexture.getWidth()),
-					static_cast<uint>(srcTexture.getHeight()),
-					1
-				}
+			VkImageCopy region = {};
+			region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.srcSubresource.mipLevel = 0;
+			region.srcSubresource.baseArrayLayer = 0;
+			region.srcSubresource.layerCount = 1;
+			region.srcOffset = { 0, 0, 0 };
+			region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.dstSubresource.mipLevel = 0;
+			region.dstSubresource.baseArrayLayer = 0;
+			region.dstSubresource.layerCount = 1;
+			region.dstOffset = { 0, 0, 0 };
+			region.extent = {
+				static_cast<uint32_t>(srcTexture.getWidth()),
+				static_cast<uint32_t>(srcTexture.getHeight()),
+				1
 			};
 
 			// Blit to output

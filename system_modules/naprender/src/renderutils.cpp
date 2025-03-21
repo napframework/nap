@@ -26,99 +26,91 @@ namespace nap
 
             bool multi_sample = samples != VK_SAMPLE_COUNT_1_BIT;
 
-            VkAttachmentDescription color_attachment = {
-				.format 		= colorFormat,
-				.samples 		= samples,
-				.loadOp 		= clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
-				.storeOp 		= multi_sample ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE,
-				.stencilLoadOp 	= VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-				.initialLayout 	= clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				.finalLayout 	= multi_sample ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : targetLayout
-			};
+			VkAttachmentDescription color_attachment = {};
+			color_attachment.format = colorFormat;
+			color_attachment.samples = samples;
+			color_attachment.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+			color_attachment.storeOp = multi_sample ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
+			color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			color_attachment.initialLayout = clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			color_attachment.finalLayout = multi_sample ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : targetLayout;
 
-            VkAttachmentDescription depth_attachment = {
-				.format = depthFormat,
-				.samples = samples,
-				.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-				.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-				.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-				.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-				.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-			};
+			VkAttachmentDescription depth_attachment = {};
+			depth_attachment.format = depthFormat;
+			depth_attachment.samples = samples;
+			depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            VkAttachmentReference color_attachment_ref = {
-				.attachment = 0,
-				.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-			};
+			VkAttachmentReference color_attachment_ref = {};
+			color_attachment_ref.attachment = 0;
+			color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            VkAttachmentReference depth_attachment_ref = {
-            	.attachment = 1,
-            	.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-			};
+			VkAttachmentReference depth_attachment_ref = {};
+			depth_attachment_ref.attachment = 1;
+			depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            VkSubpassDescription subpass = {
-           		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-           		.colorAttachmentCount = 1,
-           		.pColorAttachments = &color_attachment_ref,
-           		.pDepthStencilAttachment = &depth_attachment_ref
-			};
+			VkSubpassDescription subpass = {};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = 1;
+			subpass.pColorAttachments = &color_attachment_ref;
+			subpass.pDepthStencilAttachment = &depth_attachment_ref;
 
-            std::array<VkSubpassDependency, 2> dependencies;
-            dependencies[0] = {
-				.srcSubpass = VK_SUBPASS_EXTERNAL,
-            	.dstSubpass = 0,
-            	.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            	.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            	.srcAccessMask = VK_ACCESS_SHADER_READ_BIT,
-            	.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-            	.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
-			};
-            dependencies[1] = {
-				.srcSubpass = 0,
-           		.dstSubpass = VK_SUBPASS_EXTERNAL,
-           		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-           		.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-           		.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-           		.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-           		.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
-			};
+			std::array<VkSubpassDependency, 2> dependencies = {};
 
-            VkRenderPassCreateInfo renderpass_info = {
-            	.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-            	.subpassCount = 1,
-            	.pSubpasses = &subpass,
-            	.dependencyCount = static_cast<uint32_t>(dependencies.size()),
-            	.pDependencies = dependencies.data()
-			};
+			dependencies[0] = {};
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-            // Single-sample render pass
-            if (!multi_sample)
-            {
-                std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
-                renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-                renderpass_info.pAttachments = attachments.data();
+			dependencies[1] = {};
+			dependencies[1].srcSubpass = 0;
+			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-                return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
-            }
+			VkRenderPassCreateInfo renderpass_info = {};
+			renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderpass_info.subpassCount = 1;
+			renderpass_info.pSubpasses = &subpass;
+			renderpass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
+			renderpass_info.pDependencies = dependencies.data();
+
+			// Single-sample render pass
+			if (!multi_sample) 
+			{
+				std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
+				renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+				renderpass_info.pAttachments = attachments.data();
+
+				return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
+			}
 
 			// Multi-sample render pass
-			VkAttachmentDescription resolve_attachment = {
-				.format = colorFormat,
-				.samples = VK_SAMPLE_COUNT_1_BIT,
-				.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-				.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-				.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-				.finalLayout = targetLayout
-			};
+			VkAttachmentDescription resolve_attachment = {};
+			resolve_attachment.format = colorFormat;
+			resolve_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			resolve_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			resolve_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			resolve_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			resolve_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			resolve_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			resolve_attachment.finalLayout = targetLayout;
 
-			VkAttachmentReference resolve_attachment_ref = {
-				.attachment = 2,
-				.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-			};
+			VkAttachmentReference resolve_attachment_ref = {};
+			resolve_attachment_ref.attachment = 2;
+			resolve_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 			subpass.pResolveAttachments = &resolve_attachment_ref;
 
@@ -133,30 +125,26 @@ namespace nap
 		bool create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
 		{
 			// Image creation info
-			VkImageCreateInfo image_info = {
-				.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-				.imageType = VK_IMAGE_TYPE_2D,
-				.format = format,
-				.extent = {
-					.width = width,
-					.height = height,
-					.depth = 1,
-				},
-				.mipLevels = mipLevels,
-				.arrayLayers = 1,
-				.samples = samples,
-				.tiling = tiling,
-				.usage = imageUsage,
-				.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-			    .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-			};
+			VkImageCreateInfo image_info = {};
+			image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+			image_info.imageType = VK_IMAGE_TYPE_2D;
+			image_info.format = format;
+			image_info.extent.width = width;
+			image_info.extent.height = height;
+			image_info.extent.depth = 1;
+			image_info.mipLevels = mipLevels;
+			image_info.arrayLayers = 1;
+			image_info.samples = samples;
+			image_info.tiling = tiling;
+			image_info.usage = imageUsage;
+			image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 			// Allocation creation info
-			VmaAllocationCreateInfo alloc_info = {
-				.flags = 0,
-				.usage = memoryUsage,
-				.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			};
+			VmaAllocationCreateInfo alloc_info = {};
+			alloc_info.flags = 0;
+			alloc_info.usage = memoryUsage;
+			alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 			// Create image using allocator and allocation instructions
 			VkResult result = vmaCreateImage(allocator, &image_info, &alloc_info, &outImage, &outAllocation, &outAllocationInfo);
@@ -166,19 +154,16 @@ namespace nap
 
 		bool create2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, VkImageView& outImageView, utility::ErrorState& errorState)
 		{
-			VkImageViewCreateInfo view_info = {
-				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-				.image = image,
-				.viewType = VK_IMAGE_VIEW_TYPE_2D,
-				.format = format,
-				.subresourceRange = {
-					.aspectMask = aspectFlags,
-					.baseMipLevel = 0,
-					.levelCount = mipLevels,
-					.baseArrayLayer = 0,
-					.layerCount = 1
-				}
-			};
+			VkImageViewCreateInfo view_info = {};
+			view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			view_info.image = image;
+			view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			view_info.format = format;
+			view_info.subresourceRange.aspectMask = aspectFlags;
+			view_info.subresourceRange.baseMipLevel = 0;
+			view_info.subresourceRange.levelCount = mipLevels;
+			view_info.subresourceRange.baseArrayLayer = 0;
+			view_info.subresourceRange.layerCount = 1;
 			return errorState.check(vkCreateImageView(device, &view_info, nullptr, &outImageView) == VK_SUCCESS, "Failed to create image view");
 		}
 
@@ -186,31 +171,27 @@ namespace nap
 		bool createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImageCreateFlags flags, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
 		{
 			// Image creation info
-			VkImageCreateInfo image_info = {
-				.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-				.flags = flags,
-				.imageType = VK_IMAGE_TYPE_2D,
-				.format = format,
-				.extent = {
-					.width = width,
-					.height = height,
-					.depth = 1
-				},
-				.mipLevels = mipLevels,
-				.arrayLayers = layerCount,
-				.samples = samples,
-				.tiling = tiling,
-				.usage = imageUsage,
-				.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-				.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-			};
+			VkImageCreateInfo image_info = {};
+			image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+			image_info.flags = flags;
+			image_info.imageType = VK_IMAGE_TYPE_2D;
+			image_info.format = format;
+			image_info.extent.width = width;
+			image_info.extent.height = height;
+			image_info.extent.depth = 1;
+			image_info.mipLevels = mipLevels;
+			image_info.arrayLayers = layerCount;
+			image_info.samples = samples;
+			image_info.tiling = tiling;
+			image_info.usage = imageUsage;
+			image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 			// Allocation creation info
-			VmaAllocationCreateInfo alloc_info = {
-				.flags = 0,
-				.usage = memoryUsage,
-				.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			};
+			VmaAllocationCreateInfo alloc_info = {};
+			alloc_info.flags = 0;
+			alloc_info.usage = memoryUsage;
+			alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 			// Create image using allocator and allocation instructions
 			VkResult result = vmaCreateImage(allocator, &image_info, &alloc_info, &outImage, &outAllocation, &outAllocationInfo);
@@ -220,38 +201,32 @@ namespace nap
 
 		bool createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, uint32 layerIndex, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState)
 		{
-			VkImageViewCreateInfo view_info = {
-				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-				.image = image,
-				.viewType = VK_IMAGE_VIEW_TYPE_2D,
-				.format = format,
-				.subresourceRange = {
-					.aspectMask = aspectFlags,
-					.baseMipLevel = 0,
-					.levelCount = mipLevels,
-					.baseArrayLayer = layerIndex,
-					.layerCount = layerCount
-				}
-			};
+			VkImageViewCreateInfo view_info = {};
+			view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			view_info.image = image;
+			view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			view_info.format = format;
+			view_info.subresourceRange.aspectMask = aspectFlags;
+			view_info.subresourceRange.baseMipLevel = 0;
+			view_info.subresourceRange.levelCount = mipLevels;
+			view_info.subresourceRange.baseArrayLayer = layerIndex;
+			view_info.subresourceRange.layerCount = layerCount;
 			return errorState.check(vkCreateImageView(device, &view_info, nullptr, &outImageView) == VK_SUCCESS, "Failed to create image view");
 		}
 
 
 		bool createCubeImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState)
 		{
-			VkImageViewCreateInfo view_info = {
-				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-				.image = image,
-				.viewType = VK_IMAGE_VIEW_TYPE_CUBE,
-				.format = format,
-				.subresourceRange = {
-					.aspectMask = aspectFlags,
-					.baseMipLevel = 0,
-					.levelCount = mipLevels,
-					.baseArrayLayer = 0,
-					.layerCount = layerCount
-				}
-			};
+			VkImageViewCreateInfo view_info = {};
+			view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			view_info.image = image;
+			view_info.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+			view_info.format = format;
+			view_info.subresourceRange.aspectMask = aspectFlags;
+			view_info.subresourceRange.baseMipLevel = 0;
+			view_info.subresourceRange.levelCount = mipLevels;
+			view_info.subresourceRange.baseArrayLayer = 0;
+			view_info.subresourceRange.layerCount = layerCount;
 			return errorState.check(vkCreateImageView(device, &view_info, nullptr, &outImageView) == VK_SUCCESS, "Failed to create image view");
 		}
 
@@ -290,19 +265,17 @@ namespace nap
 			if (!errorState.check(size != 0, "Unable to create buffer of size zero"))
 				return false;
 
-			// Create buffer information 
-			VkBufferCreateInfo buffer_info = {
-				.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-				.size = size,
-				.usage = bufferUsage,
-				.sharingMode = VK_SHARING_MODE_EXCLUSIVE
-			};
+			// Create buffer information
+			VkBufferCreateInfo buffer_info = {};
+			buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			buffer_info.size = size;
+			buffer_info.usage = bufferUsage;
+			buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 			// Create allocation information
-			VmaAllocationCreateInfo alloc_info = {
-				.flags = allocationFlags,
-				.usage = memoryUsage
-			};
+			VmaAllocationCreateInfo alloc_info = {};
+			alloc_info.flags = allocationFlags;
+			alloc_info.usage = memoryUsage;
 
 			switch (memoryUsage)
 			{

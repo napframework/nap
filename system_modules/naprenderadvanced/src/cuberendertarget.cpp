@@ -125,12 +125,11 @@ namespace nap
 		VkExtent2D framebuffer_size = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
 
 		// Create framebuffer info
-		VkFramebufferCreateInfo framebuffer_info = {
-			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.width = framebuffer_size.width,
-			.height = framebuffer_size.height,
-			.layers = 1
-		};
+		VkFramebufferCreateInfo framebuffer_info = {};
+		framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebuffer_info.width = framebuffer_size.width;
+		framebuffer_info.height = framebuffer_size.height;
+		framebuffer_info.layers = 1;
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
@@ -167,37 +166,32 @@ namespace nap
 		clear_values[1].depthStencil = {1.0f, 0 };
 
 		// Setup render pass
-		VkRenderPassBeginInfo render_pass_info = {
-			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-			.renderPass = mRenderPass,
-			.framebuffer = mFramebuffers[mLayerIndex],
-			.renderArea = {
-				.offset = { 0, 0 },
-				.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) }
-			},
-			.clearValueCount = static_cast<uint32_t>(clear_values.size()),
-			.pClearValues = clear_values.data()
-		};
+		VkRenderPassBeginInfo renderpass_info = {};
+		renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderpass_info.renderPass = mRenderPass;
+		renderpass_info.framebuffer = mFramebuffers[mLayerIndex];
+		renderpass_info.renderArea.offset = { 0, 0 };
+		renderpass_info.renderArea.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
+		renderpass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
+		renderpass_info.pClearValues = clear_values.data();
 
 		// Begin render pass
-		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderpass_info, VK_SUBPASS_CONTENTS_INLINE);
 
 		// Ensure scissor and viewport are covering the cell area
-		VkRect2D rect = {
-			.offset = { 0, 0 },
-			.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) }
-		};
+		VkRect2D rect = {};
+		rect.offset = { 0, 0 };
+		rect.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
 		vkCmdSetScissor(mRenderService->getCurrentCommandBuffer(), 0, 1, &rect);
 
 		auto size = glm::vec2(mSize);
-		VkViewport viewport = {
-			.x = 0.0f,
-			.y = size.x,
-			.width = size.x,
-			.height = -size.y,
-			.minDepth = 0.0f,
-			.maxDepth = 1.0f
-		};
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = size.y;
+		viewport.width = size.x;
+		viewport.height = -size.y;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
 	}
 
