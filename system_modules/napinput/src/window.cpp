@@ -19,7 +19,6 @@ namespace nap
 	{
 		for (auto& event : mWindowEvents)
 			mWindowEvent(*event);
-
 		mWindowEvents.clear();
 	}
 }

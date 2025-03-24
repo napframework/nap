@@ -7,6 +7,7 @@
 #include "appcontext.h"
 #include "napkinglobals.h"
 #include "napkin-resources.h"
+#include "stagewidget.h"
 
 #include <QAction>
 #include <QFileDialog>
@@ -46,7 +47,7 @@ namespace napkin
 
 	private:
 		void loadIcon();
-		void onThemeChanged(const Theme* theme)		{ loadIcon(); }
+		void onThemeChanged(const Theme& theme)		{ loadIcon(); }
 		QString mIconName;
 	};
 

@@ -10,7 +10,13 @@
                     "Ports": [],
                     "Channels": [],
                     "Numbers": [],
-                    "Types": []
+                    "NoteOn": true,
+                    "NoteOff": true,
+                    "Aftertouch": true,
+                    "ControlChange": true,
+                    "ProgramChange": true,
+                    "ChannelPressure": true,
+                    "PitchBend": true
                 },
                 {
                     "Type": "nap::MidiHandlerComponent",
@@ -68,7 +74,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::Scene",

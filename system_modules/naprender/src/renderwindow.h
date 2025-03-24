@@ -64,6 +64,11 @@ namespace nap
 		RenderWindow(Core& core);
 
 		/**
+		 * This constructor is called when creating the render window using napkin
+		 */
+		RenderWindow(Core& core, SDL_Window* windowHandle);
+
+		/**
 		 * Destroys all render resources
 		 */
 		virtual ~RenderWindow() override;
@@ -74,7 +79,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Called when the window is detroyed.
+		 * Called when the window is destroyed.
 		 */
 		virtual void onDestroy() override;
 
@@ -224,6 +229,11 @@ namespace nap
 		math::Rect getRectPixels() const;
 
 		/**
+		 * @return render window ratio, height over width
+		 */
+		inline float getRatio()	const												{ return static_cast<float>(getBufferSize().y) / static_cast<float>(getBufferSize().x); }
+
+		/**
 		 * Starts a render pass. Only call this when recording is enabled.
 		 */
 		virtual void beginRendering() override;
@@ -263,6 +273,11 @@ namespace nap
 		 */
 		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
+		/**
+		 * @return layout of the texture when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const override						{ return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
+
 		bool					mSampleShading		= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth				= 512;								///< Property: 'Width' window horizontal resolution
 		int						mHeight				= 512;								///< Property: 'Height' window vertical resolution
@@ -275,7 +290,7 @@ namespace nap
 		ERasterizationSamples	mRequestedSamples	= ERasterizationSamples::Four;		///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
 		int						mAddedSwapImages	= 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 		bool					mRestorePosition	= true;								///< Property: 'RestorePosition' if window position is restored from previous session
-		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is restored from previous session
+		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is restored from previous session	
 
 	private:
 		RenderService*					mRenderService	= nullptr;
@@ -302,6 +317,7 @@ namespace nap
 		bool							mRecreateSwapchain = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};
+		SDL_Window*						mExternalHandle = nullptr;
 
 		/**
 		 * Called by the render service. 
@@ -316,11 +332,6 @@ namespace nap
 		 * Ends the recording operation, submits the queue and asks for presentation.
 		 */
 		void endRecording();
-		
-		/**
-		 * Checks if the event is a window resize event and updates size accordingly.
-		 */
-		void handleEvent(const Event& event);
 
 		/**
 		 * Obtain the surface properties that are required for the creation of the swap chain 

@@ -266,6 +266,15 @@ namespace nap
 		const T& getExtension() const;
 
 		/**
+		 * Returns the extension associated with this instance of core as T. 
+		 * Note that an extension is given explicitly to core on construction.
+		 * When using the default constructor core has no interface associated with it!
+		 * @return extension associated with core as type T
+		 */
+		template <typename T>
+		T& getExtension();
+
+		/**
 		 * @return if core has an extension of type T	
 		 */
 		template <typename T>
@@ -513,6 +522,18 @@ const T* nap::Core::getService() const
  */
 template <typename T>
 const T& nap::Core::getExtension() const
+{
+	T* core_ext = rtti_cast<T>(mExtension.get());
+	assert(core_ext != nullptr);
+	return *core_ext;
+}
+
+
+/**
+ * Returns the core extension as an extension of type T
+ */
+template <typename T>
+T& nap::Core::getExtension()
 {
 	T* core_ext = rtti_cast<T>(mExtension.get());
 	assert(core_ext != nullptr);

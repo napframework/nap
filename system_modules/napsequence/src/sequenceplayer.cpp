@@ -4,6 +4,7 @@
 
 // local includes
 #include "sequenceplayer.h"
+#include "rtti/binaryreader.h"
 
 // nap include
 #include <nap/logger.h>
@@ -207,6 +208,58 @@ namespace nap
 
         mSequenceFileName = name;
         sequenceLoaded.trigger(*this, mSequenceFileName);
+
+        // if the sequencer is playing, we need to re-create adapters because assigned outputs probably have changed
+        if(mIsPlaying)
+        {
+            createAdapters();
+        }
+
+        return true;
+    }
+
+
+    bool SequencePlayer::loadBinary(const std::vector<nap::uint8>& buffer, utility::ErrorState& errorState)
+    {
+        std::lock_guard<std::mutex> lock(mMutex);
+        rtti::DeserializeResult result;
+
+        //
+        auto stream = utility::MemoryStream(buffer.data(), buffer.size());
+        rtti::Factory factory;
+        if(!rtti::deserializeBinary(stream, factory, result, errorState))
+            return false;
+
+        // Resolve links
+        if(!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
+            return false;
+
+        // Move ownership of read objects
+        mReadObjects.clear();
+        mReadObjectIDs.clear();
+        for(auto &read_object: result.mReadObjects)
+        {
+            if (read_object->get_type().is_derived_from<Sequence>())
+            {
+                mSequence = static_cast<Sequence*>(read_object.get());
+            }
+
+            mReadObjectIDs.emplace(read_object->mID);
+            mReadObjects.emplace_back(std::move(read_object));
+        }
+
+        // init objects
+        for(auto &object_ptr: mReadObjects)
+        {
+            if(!object_ptr->init(errorState))
+                return false;
+        }
+
+        // check if we have deserialized a sequence
+        if(!errorState.check(mSequence != nullptr, "sequence is null"))
+        {
+            return false;
+        }
 
         // if the sequencer is playing, we need to re-create adapters because assigned outputs probably have changed
         if(mIsPlaying)

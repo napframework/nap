@@ -1,91 +1,69 @@
 #!/usr/bin/env python3
 import os
-from platform import machine
 from multiprocessing import cpu_count
 import shutil
 import subprocess
-from sys import platform
 import sys
 import argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_nap_root
+from nap_shared import get_cmake_path, get_nap_root, BuildType, Platform, get_default_build_dir, max_build_parallelization, get_system_generator
 
-LINUX_BUILD_DIR = 'build'
-MACOS_BUILD_DIR = 'Xcode'
-MSVC_BUILD_DIR = 'msvc64'
-DEFAULT_BUILD_TYPE = 'Release'
+ERROR_CONFIGURE = 2
 
 def call(cwd, cmd, shell=False):
-    print('Dir: %s' % cwd)
-    print('Command: %s' % ' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=cwd, shell=shell)
     proc.communicate()
     if proc.returncode != 0:
         sys.exit(proc.returncode)
 
 def main(target, clean_build, build_type, enable_python):
-    build_dir = None
-    if platform.startswith('linux'):
-        build_dir = LINUX_BUILD_DIR
-    elif platform == 'darwin':
-        build_dir = MACOS_BUILD_DIR
-    else:
-        build_dir = MSVC_BUILD_DIR
+    # Solution generation cmd
     nap_root = get_nap_root()
-    build_dir = os.path.join(nap_root, build_dir)
-
-    # Clear build directory when a clean build is required
-    if clean_build and os.path.exists(build_dir):
-        shutil.rmtree(build_dir)
-
-    # Get arguments to generate solution
-    solution_args = []
-    if platform.startswith('linux'):
-        solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type.lower()]
-    elif platform == 'darwin':
-        solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir]
+    if Platform.get() == Platform.Windows:
+        gen_cmd = ['{}\\generate_solution.bat'.format(get_nap_root())]
     else:
-        solution_args = ['generate_solution.bat', '--build-path=%s' % build_dir]
+        gen_cmd = ['./generate_solution.sh']
 
-    # Enable python if requested 
-    if enable_python:
-        solution_args.append('-p')
-    
     # Generate solution
-    rc = call(nap_root, solution_args)
+    build_dir = get_default_build_dir()
+    gen_cmd.extend(['--build-path=%s' % build_dir, '-t', build_type])
+    if enable_python:
+        gen_cmd.append('-p')
+    if clean_build:
+        gen_cmd.append('-c')
+    call(nap_root, gen_cmd)
         
-    # Build
-    build_config = build_type.capitalize()
-    if platform.startswith('linux'):
-        # Linux
-        call(build_dir, ['make', target, '-j%s' % cpu_count()])
-    elif platform == 'darwin':
-        # macOS
-        cmd = ['xcodebuild', '-project', 'NAP.xcodeproj', '-configuration', build_config]
-        if target == 'all':
-            cmd.append('-alltargets')
-        else:
-            cmd.extend(['-target', target])
-        call(build_dir, cmd)
-    else:
-        # Windows
-        cmake = get_cmake_path()
-        nap_root = get_nap_root()
-        cmake = get_cmake_path()
-        cmd = [cmake, '--build', build_dir, '--config', build_config]
-        if target != 'all':
-            cmd.extend(['--target', target])
-        call(nap_root, cmd)
+    # Build target
+    build_cmd = [get_cmake_path(), '--build', build_dir, '--target', target]
+    if not get_system_generator().is_single():
+        build_cmd.extend(['--config', build_type])
+    call(nap_root, max_build_parallelization(build_cmd))
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("PROJECT_NAME", type=str, help="The project name (default='all')", default="all", nargs="?")
-    parser.add_argument('-t', '--build-type', type=str.lower, default=DEFAULT_BUILD_TYPE,
-            choices=['release', 'debug'], help="Build configuration (default=%s)" % DEFAULT_BUILD_TYPE.lower())
-    parser.add_argument('-c', '--clean', default=False, action="store_true", help="Clean before build")
-    parser.add_argument('-p', '--enable-python', action="store_true", help="Enable Python integration using pybind (deprecated)")
+    parser.add_argument("PROJECT_NAME", 
+        type=str, 
+        help="The project name (default='all')", 
+        default="all", 
+        nargs="?")
+    
+    parser.add_argument('-t', '--build-type',
+        type=str,
+        default=BuildType.get_default(),
+        action='store', nargs='?',
+        choices=BuildType.to_list(),
+        help="Build type, default: {0}".format(BuildType.get_default()))
+    
+    parser.add_argument('-c', '--clean', 
+        default=False, 
+        action="store_true", 
+        help="Clean before build")
+    
+    parser.add_argument('-p', '--enable-python', 
+        action="store_true", 
+        help="Enable Python integration using pybind (deprecated)")
 
     args = parser.parse_args()
 

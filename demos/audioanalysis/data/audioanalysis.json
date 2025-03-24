@@ -37,7 +37,7 @@
                     "AnalysisWindowSize": 10.0,
                     "MeterType": "RMS",
                     "FilterInput": true,
-                    "CenterFrequency": 400.0,
+                    "CenterFrequency": 100.0,
                     "BandWidth": 100.0,
                     "Channel": 0
                 },

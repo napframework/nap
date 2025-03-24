@@ -461,7 +461,7 @@ int ObjectItem::nameIndex(const ObjectItem& childItem) const
 }
 
 
-void ObjectItem::onPropertyValueChanged(PropertyPath path)
+void ObjectItem::onPropertyValueChanged(const PropertyPath& path)
 {
 	if (path.getObject() == mObject)
 		refresh();
@@ -944,7 +944,7 @@ nap::RootEntity& ComponentInstanceItem::rootEntity() const
 
 QVariant ComponentInstanceItem::data(int role) const
 {
-	if (role == Qt::TextColorRole)
+	if (role == Qt::ForegroundRole)
 	{
 		for (const auto& overrides : mRootEntity.mInstanceProperties)
 		{

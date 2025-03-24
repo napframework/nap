@@ -5,10 +5,20 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/macros_and_functions.cmake)
 
 # NAP modules which Napkin uses (as a minimum)
-set(NAPKIN_DEPENDENT_NAP_MODULES napscene napmath)
+set(NAPKIN_DEPENDENT_NAP_MODULES napscene
+        napcolor
+        napfont
+        naprender
+        napcameracontrol
+        napapp
+        napinput
+        napsdlinput
+        napimgui
+        napapi
+        naprenderadvanced)
 
 # Qt frameworks which Napkin uses
-set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 message(STATUS "Preparing Napkin deployment to output directory")
 
 # Let find_python find our prepackaged Python in thirdparty,
@@ -24,10 +34,21 @@ if(pybind11_FOUND)
 endif()
 
 if(WIN32)
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory "${NAP_ROOT}/tools/napkin" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin"
-                       COMMENT "Copy Napkin")
+    # Copy napkin directory -> exclude path mapping
+    install(DIRECTORY ${NAP_ROOT}/tools/napkin/
+        DESTINATION napkin
+        PATTERN "*/path_mapping.json" EXCLUDE
+        PATTERN "*/napkin.ini" EXCLUDE)
+
+    # Napkin has dependencies the application might not have -> we must include the (shared) data for those.
+    # For example: renderadvanced is required by Napkin but not by most demos -> it requires those shaders to run
+    foreach(NAP_MODULE ${NAPKIN_DEPENDENT_NAP_MODULES})
+        set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/system_modules/${NAP_MODULE}/module_extra.cmake)
+        if(EXISTS ${MODULE_EXTRA_CMAKE_PATH})
+            include(${MODULE_EXTRA_CMAKE_PATH})
+        endif()
+    endforeach()
+
 elseif(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
 
@@ -122,6 +143,11 @@ else()
     endforeach()
     unset(INSTALLING_MODULE_FOR_NAPKIN)
 endif()
+
+# Install path mapping for applets running in packaged app context
+install(FILES ${NAP_ROOT}/tools/buildsystem/path_mappings/applet/packaged_app.json
+    DESTINATION napkin/resources/applets
+    RENAME path_mapping.json)
 
 # Install Qt licenses into packaged app
 install(DIRECTORY ${THIRDPARTY_DIR}/Qt/licenses/ DESTINATION licenses/Qt)

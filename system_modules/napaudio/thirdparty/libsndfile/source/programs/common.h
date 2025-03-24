@@ -54,6 +54,11 @@ typedef struct
 	const char * origination_date ;
 	const char * origination_time ;
 	const char * umid ;
+	const char * loudness_value ;
+	const char * loudness_range ;
+	const char * max_true_peak_level ;
+	const char * max_momentary_loudness ;
+	const char * max_shortterm_loudness ;
 	const char * coding_history ;
 	const char * time_ref ;
 } METADATA_INFO ;
@@ -62,7 +67,7 @@ typedef SF_BROADCAST_INFO_VAR (2048) SF_BROADCAST_INFO_2K ;
 
 void sfe_apply_metadata_changes (const char * filenames [2], const METADATA_INFO * info) ;
 
-void sfe_copy_data_fp (SNDFILE *outfile, SNDFILE *infile, int channels, int normalize) ;
+int sfe_copy_data_fp (SNDFILE *outfile, SNDFILE *infile, int channels, int normalize) ;
 
 void sfe_copy_data_int (SNDFILE *outfile, SNDFILE *infile, int channels) ;
 
@@ -75,4 +80,3 @@ const char * program_name (const char * argv0) ;
 const char * sfe_endian_name (int format) ;
 const char * sfe_container_name (int format) ;
 const char * sfe_codec_name (int format) ;
-

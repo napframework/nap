@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2001-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 2001-2020 Erik de Castro Lopo <erikd@mega-nerd.com>
 ** Copyright (C) 2004 Paavo Jumppanen
 **
 ** This program is free software; you can redistribute it and/or modify
@@ -238,61 +238,61 @@ sd2_write_rsrc_fork (SF_PRIVATE *psf, int UNUSED (calc_length))
 	rsrc.map_offset = rsrc.data_offset + rsrc.data_length ;
 
 	/* Very start of resource fork. */
-	psf_binheader_writef (psf, "E444", rsrc.data_offset, rsrc.map_offset, rsrc.data_length) ;
+	psf_binheader_writef (psf, "E444", BHW4 (rsrc.data_offset), BHW4 (rsrc.map_offset), BHW4 (rsrc.data_length)) ;
 
-	psf_binheader_writef (psf, "Eop", make_size_t (0x30), psf->file.name.c) ;
-	psf_binheader_writef (psf, "Eo2mm", make_size_t (0x50), 0, Sd2f_MARKER, lsf1_MARKER) ;
+	psf_binheader_writef (psf, "Eop", BHWo (0x30), BHWp (psf->file.name)) ;
+	psf_binheader_writef (psf, "Eo2mm", BHWo (0x50), BHW2 (0), BHWm (Sd2f_MARKER), BHWm (lsf1_MARKER)) ;
 
 	/* Very start of resource map. */
-	psf_binheader_writef (psf, "E444", make_size_t (rsrc.map_offset), rsrc.data_offset, rsrc.map_offset, rsrc.data_length) ;
+	psf_binheader_writef (psf, "E4444", BHW4 (rsrc.map_offset), BHW4 (rsrc.data_offset), BHW4 (rsrc.map_offset), BHW4 (rsrc.data_length)) ;
 
 	/* These I don't currently understand. */
 	if (1)
-	{	psf_binheader_writef (psf, "Eo1422", make_size_t (rsrc.map_offset + 16), 1, 0x12345678, 0xabcd, 0) ;
+	{	psf_binheader_writef (psf, "Eo1422", BHWo (rsrc.map_offset + 16), BHW1 (1), BHW4 (0x12345678), BHW2 (0xabcd), BHW2 (0)) ;
 		} ;
 
 	/* Resource type offset. */
 	rsrc.type_offset = rsrc.map_offset + 30 ;
-	psf_binheader_writef (psf, "Eo2", make_size_t (rsrc.map_offset + 24), rsrc.type_offset - rsrc.map_offset - 2) ;
+	psf_binheader_writef (psf, "Eo2", BHWo (rsrc.map_offset + 24), BHW2 (rsrc.type_offset - rsrc.map_offset - 2)) ;
 
 	/* Type index max. */
 	rsrc.type_count = 2 ;
-	psf_binheader_writef (psf, "Eo2", make_size_t (rsrc.map_offset + 28), rsrc.type_count - 1) ;
+	psf_binheader_writef (psf, "Eo2", BHWo (rsrc.map_offset + 28), BHW2 (rsrc.type_count - 1)) ;
 
 	rsrc.item_offset = rsrc.type_offset + rsrc.type_count * 8 ;
 
 	rsrc.str_count = ARRAY_LEN (str_rsrc) ;
 	rsrc.string_offset = rsrc.item_offset + (rsrc.str_count + 1) * 12 - rsrc.map_offset ;
-	psf_binheader_writef (psf, "Eo2", make_size_t (rsrc.map_offset + 26), rsrc.string_offset) ;
+	psf_binheader_writef (psf, "Eo2", BHWo (rsrc.map_offset + 26), BHW2 (rsrc.string_offset)) ;
 
 	/* Write 'STR ' resource type. */
 	rsrc.str_count = 3 ;
-	psf_binheader_writef (psf, "Eom22", make_size_t (rsrc.type_offset), STR_MARKER, rsrc.str_count - 1, 0x12) ;
+	psf_binheader_writef (psf, "Eom22", BHWo (rsrc.type_offset), BHWm (STR_MARKER), BHW2 (rsrc.str_count - 1), BHW2 (0x12)) ;
 
 	/* Write 'sdML' resource type. */
-	psf_binheader_writef (psf, "Em22", sdML_MARKER, 0, 0x36) ;
+	psf_binheader_writef (psf, "Em22", BHWm (sdML_MARKER), BHW2 (0), BHW2 (0x36)) ;
 
 	str_offset = rsrc.map_offset + rsrc.string_offset ;
 	next_str = 0 ;
 	data_offset = rsrc.data_offset ;
 	for (k = 0 ; k < ARRAY_LEN (str_rsrc) ; k++)
-	{	psf_binheader_writef (psf, "Eop", make_size_t (str_offset), str_rsrc [k].name) ;
-		psf_binheader_writef (psf, "Eo22", make_size_t (rsrc.item_offset + k * 12), str_rsrc [k].id, next_str) ;
+	{	psf_binheader_writef (psf, "Eop", BHWo (str_offset), BHWp (str_rsrc [k].name)) ;
+		psf_binheader_writef (psf, "Eo22", BHWo (rsrc.item_offset + k * 12), BHW2 (str_rsrc [k].id), BHW2 (next_str)) ;
 
 		str_offset += strlen (str_rsrc [k].name) ;
 		next_str += strlen (str_rsrc [k].name) ;
 
-		psf_binheader_writef (psf, "Eo4", make_size_t (rsrc.item_offset + k * 12 + 4), data_offset - rsrc.data_offset) ;
-		psf_binheader_writef (psf, "Eo4", make_size_t (data_offset), str_rsrc [k].value_len) ;
+		psf_binheader_writef (psf, "Eo4", BHWo (rsrc.item_offset + k * 12 + 4), BHW4 (data_offset - rsrc.data_offset)) ;
+		psf_binheader_writef (psf, "Eo4", BHWo (data_offset), BHW4 (str_rsrc [k].value_len)) ;
 
-		psf_binheader_writef (psf, "Eob", make_size_t (data_offset + 4), str_rsrc [k].value, make_size_t (str_rsrc [k].value_len)) ;
+		psf_binheader_writef (psf, "Eob", BHWo (data_offset + 4), BHWv (str_rsrc [k].value), BHWz (str_rsrc [k].value_len)) ;
 		data_offset += 4 + str_rsrc [k].value_len ;
 		} ;
 
 	/* Finally, calculate and set map length. */
 	rsrc.map_length = str_offset - rsrc.map_offset ;
-	psf_binheader_writef (psf, "Eo4o4", make_size_t (12), rsrc.map_length,
-							make_size_t (rsrc.map_offset + 12), rsrc.map_length) ;
+	psf_binheader_writef (psf, "Eo4o4", BHWo (12), BHW4 (rsrc.map_length),
+							BHWo (rsrc.map_offset + 12), BHW4 (rsrc.map_length)) ;
 
 	psf->header.indx = rsrc.map_offset + rsrc.map_length ;
 
@@ -516,6 +516,7 @@ parse_str_rsrc (SF_PRIVATE *psf, SD2_RSRC * rsrc)
 	str_offset = rsrc->string_offset ;
 	psf_log_printf (psf, "  Offset    RsrcId    dlen    slen    Value\n") ;
 
+
 	for (k = 0 ; data_offset + data_len < rsrc->rsrc_len ; k++)
 	{	int slen ;
 
@@ -523,7 +524,13 @@ parse_str_rsrc (SF_PRIVATE *psf, SD2_RSRC * rsrc)
 		read_rsrc_str (rsrc, str_offset + 1, name, SF_MIN (SIGNED_SIZEOF (name), slen + 1)) ;
 		str_offset += slen + 1 ;
 
-		rsrc_id = read_rsrc_short (rsrc, rsrc->item_offset + k * 12) ;
+		// work-around for GitHub issue #340
+		int id_offset = rsrc->item_offset + k * 12 ;
+		if (id_offset < 0 || id_offset + 1 >= rsrc->rsrc_len)
+		{	psf_log_printf (psf, "Exiting parser on id_offset of %d.\n", id_offset) ;
+			break ;
+			}
+		rsrc_id = read_rsrc_short (rsrc, id_offset) ;
 
 		data_offset = rsrc->data_offset + read_rsrc_int (rsrc, rsrc->item_offset + k * 12 + 4) ;
 		if (data_offset < 0 || data_offset > rsrc->rsrc_len)
@@ -541,6 +548,11 @@ parse_str_rsrc (SF_PRIVATE *psf, SD2_RSRC * rsrc)
 		read_rsrc_str (rsrc, data_offset + 5, value, SF_MIN (SIGNED_SIZEOF (value), slen + 1)) ;
 
 		psf_log_printf (psf, "  0x%04x     %4d     %4d     %3d    '%s'\n", data_offset, rsrc_id, data_len, slen, value) ;
+
+		if (strstr (value, "Photoshop"))
+		{	psf_log_printf (psf, "Exiting parser on Photoshop data.\n", data_offset) ;
+			break ;
+			} ;
 
 		if (rsrc_id == 1000 && rsrc->sample_size == 0)
 			rsrc->sample_size = strtol (value, NULL, 10) ;

@@ -37,9 +37,18 @@ namespace nap {
          * @param trackID the id of the track
          * @param segmentID the id of the segment we need to edit
          * @param duration the new duration
+         * @param adjustFollowingSegments if true, following segments will be moved
          * @return new duration of segment
           */
-        double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
+         double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration, bool adjustFollowingSegments);
+
+         /**
+          * Sets the segment locked property
+          * @param trackID the track id
+          * @param segmentID the segment id
+          * @param locked the locked value
+          */
+         void setSegmentLocked(const std::string& trackID, const std::string& segmentID, bool locked);
 
         /**
          * adds a new curve track of type T ( float, vec2, vec3, vec4 )
@@ -156,6 +165,14 @@ namespace nap {
          */
         void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type,
                              int curveIndex);
+
+        /**
+        * changes the color of a curve segment
+        * @param trackID the trackID
+        * @param segmentID the segmentID
+        * @param newColor the new color
+        */
+        void changeSegmentColor(const std::string& trackID, const std::string& segmentID, const RGBAColorFloat& newColor);
 
     protected:
         /**

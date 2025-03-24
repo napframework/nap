@@ -25,19 +25,25 @@ namespace napkin
 
 		namespace color
 		{
-			inline constexpr const char* dark1						= "dark1";
-			inline constexpr const char* dark2						= "dark2";
-			inline constexpr const char* background1				= "background1";
-			inline constexpr const char* background2				= "background2";
-			inline constexpr const char* highlight1					= "highlight1";
-			inline constexpr const char* highlight2					= "highlight2";
-			inline constexpr const char* highlight3					= "highlight3";
-			inline constexpr const char* front1						= "front1";
-			inline constexpr const char* front2						= "front2";
-			inline constexpr const char* front3						= "front3";
-			inline constexpr const char* front4						= "front4";
-			inline constexpr const char* instancePropertyOverride	= "instancePropertyOverride";
-			inline constexpr const char* dimmedItem					= "dimmedItem";
+			constexpr const char* dark1							= "dark1";
+			constexpr const char* dark2							= "dark2";
+			constexpr const char* background1					= "background1";
+			constexpr const char* background2					= "background2";
+			constexpr const char* highlight1					= "highlight1";
+			constexpr const char* highlight2					= "highlight2";
+			constexpr const char* highlight3					= "highlight3";
+			constexpr const char* front1						= "front1";
+			constexpr const char* front2						= "front2";
+			constexpr const char* front3						= "front3";
+			constexpr const char* front4						= "front4";
+			constexpr const char* instancePropertyOverride		= "instancePropertyOverride";
+			constexpr const char* dimmedItem					= "dimmedItem";
+		}
+
+		namespace font
+		{
+			constexpr const char* regular						= "regularFont";
+			constexpr const char* mono							= "monoFont";
 		}
 	}
 
@@ -89,9 +95,32 @@ namespace napkin
 		QColor getLogColor(const nap::LogLevel& lvl) const;
 
 		/**
-		 * @return specific color associated with given key
+		 * @return specific color associated with given key, invalid if key doesn't exist
 		 */
 		QColor getColor(const QString& key) const;
+
+		/**
+		 * Returns the font associated with the given key, default font if key is invalid or font isn't loaded 
+		 * @param key font key id (monoSpace, etc..)
+		 * @param style font style (QFont::StyleNormal etc..)
+		 * @param pointSize font size
+		 * @return font for the given key, default font when key is invalid or font isn't loaded
+		 */
+		QFont getFont(const QString& key, const QString& style, int pointSize) const;
+
+		/**
+		 * Returns the font family name associated with the given key, invalid font name if key not available
+		 * @param key font identifier
+		 * @return font name for given key, invalid if not available
+		 */
+		QString getFontName(const QString& key) const;
+
+		/**
+		 * Updates the font (family) for the given widget, whilst maintaining font properties
+		 * @param widget the widget to change the font for
+		 * @param key font key identifier
+		 */
+		void changeWidgetFont(QWidget& widget, const QString& key) const;
 
 		/**
 		 * @return if the icons should be inverted or not
@@ -183,9 +212,33 @@ namespace napkin
 		QColor getLogColor(const nap::LogLevel& lvl) const;
 
 		/**
-		 * @return A color defined by the theme, by name.
+		 * @param key color key (front, back etc...) 
+		 * @return A color defined by the theme, invalid when color does not exist
 		 */
 		QColor getColor(const QString& key) const;
+
+		/**
+		 * Returns the font family name associated with the given key, invalid font name if key not available
+		 * @param key font identifier
+		 * @return font name for given key, invalid if not available
+		 */
+		QString getFontName(const QString& key) const;
+
+		/**
+		 * Returns the font associated with the given key, returns the default font if key is invalid or font isn't loaded
+		 * @param key font identifier (monoSpace, etc..)
+		 * @param style font style (QFont::StyleNormal etc..)
+		 * @param pointSize font size
+		 * @return font for the given key, default font when key is invalid or font isn't loaded
+		 */
+		QFont getFont(const QString& key, const QString& style, int pointSize) const;
+
+		/**
+		 * Updates the font (family) for the given widget, whilst maintaining font properties
+		 * @param widget the widget to change the font for
+		 * @param key font key identifier
+		 */
+		void changeWidgetFont(QWidget& widget, const QString& key) const;
 
 		/**
 		 * Start watching the theme dir for changes and update when necessary.
@@ -197,7 +250,7 @@ namespace napkin
          * Will be fired when the theme has changed
          * @param theme The name of the theme
          */
-        void themeChanged(const Theme* theme);
+        void themeChanged(const Theme& theme);
 
 	private:
 
@@ -205,7 +258,7 @@ namespace napkin
          * Set apply the specified theme by name.
          * @param theme The name of the theme
          */
-		void setTheme(Theme* theme);
+		void setTheme(Theme& theme);
 
 		/**
 		 * Find the theme with the given name

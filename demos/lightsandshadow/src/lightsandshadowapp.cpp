@@ -93,6 +93,10 @@ namespace nap
 		auto shadow = light.getShadowStrength();
 		if (ImGui::SliderFloat("Shadow Strength", &shadow, 0.0f, 1.0f, "%.3f", 1.0f))
 			light.setShadowStrength(shadow);
+
+		auto spread = light.getShadowSpread();
+		if (ImGui::SliderFloat("Shadow Spread", &spread, 0.0f, 10.0f, "%.3f", 1.0f))
+			light.setShadowSpread(spread);
 	}
 
 

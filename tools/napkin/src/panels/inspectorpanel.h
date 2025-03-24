@@ -7,6 +7,7 @@
 #include "standarditemsproperty.h"
 #include "widgetdelegate.h"
 #include "menuoptioncontroller.h"
+#include "thememanager.h"
 
 #include <QStandardItemModel>
 #include <QMenu>
@@ -196,6 +197,11 @@ namespace napkin
 		 * Creates possible actions for menu hook
 		 */
 		void createMenuCallbacks();
+
+		/**
+		 * Occurs when theme changes
+		 */
+		void themeChanged(const Theme& theme);
 
 	private:
 		InspectorModel mModel;						// The model for the view

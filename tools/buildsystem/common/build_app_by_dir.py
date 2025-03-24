@@ -5,7 +5,7 @@ import os
 from subprocess import call
 import sys
 
-from nap_shared import read_console_char, get_python_path, get_nap_root
+from nap_shared import read_console_char, get_python_path, get_nap_root, BuildType
 
 def build_app_by_dir(app_path, build_type, pause_on_failed_build):
     app_name = os.path.basename(os.path.abspath(app_path.strip('\\')))
@@ -15,16 +15,13 @@ def build_app_by_dir(app_path, build_type, pause_on_failed_build):
     # Determine our Python interpreter location
     python = get_python_path()
 
-    cmd = [python, script_path, app_name]
-    if build_type != None:
-        cmd.append('--build-type=%s' % build_type)
+    # Create and run command to call
+    cmd = [python, script_path, app_name, '-t', build_type]
     exit_code = call(cmd)
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
     if exit_code != 0 and pause_on_failed_build:
         print("Press key to close...")
-
-        # Read a char from console
         read_console_char()
 
     return exit_code
@@ -32,17 +29,19 @@ def build_app_by_dir(app_path, build_type, pause_on_failed_build):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='build')
     parser.add_argument("APP_PATH", type=str, help=argparse.SUPPRESS)
-    parser.add_argument('BUILD_TYPE', nargs='?', type=str.lower, default=None,
-            choices=['release', 'debug'], help="Build type (default=release)", metavar='BUILD_TYPE')
-    if not sys.platform.startswith('linux'):
-        parser.add_argument("-np", "--no-pause", action="store_true",
-                            help="Don't pause afterwards on failed build")
-    args = parser.parse_args()
+    parser.add_argument('-t', '--build-type',
+        type=str,
+        default=BuildType.get_default(),
+        action='store', nargs='?',
+        choices=BuildType.to_list(),
+        help="Build type, default: {0}".format(BuildType.get_default()))
 
-    pause = False
-    if not sys.platform.startswith('linux') and not args.no_pause:
-        pause = True
-    exit_code = build_app_by_dir(args.APP_PATH, args.BUILD_TYPE, pause)
+    parser.add_argument("-np", "--no-pause", 
+        action="store_true",
+        help="Don't pause afterwards on failed build")
+
+    args = parser.parse_args()
+    exit_code = build_app_by_dir(args.APP_PATH, args.build_type, not args.no_pause)
 
     # Expose exit code
     sys.exit(exit_code)

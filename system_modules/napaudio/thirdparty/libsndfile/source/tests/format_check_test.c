@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2011 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 2011-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
 #endif
 
 #include "sndfile.h"
@@ -100,11 +102,16 @@ format_combo_test (void)
 			char filename [128] ;
 			int subtype_is_valid, check_is_valid ;
 
+			memset (&info, 0, sizeof (info)) ;
 			memset (&subtype_fmt_info, 0, sizeof (subtype_fmt_info)) ;
 			subtype_fmt_info.format = codec ;
 			subtype_is_valid = sf_command (NULL, SFC_GET_FORMAT_SUBTYPE, &subtype_fmt_info, sizeof (subtype_fmt_info)) == 0 ;
 
-			sf_info_setup (&info, major_fmt_info.format | subtype_fmt_info.format, 22050, 1) ;
+			/* Opus only works with a fixed set of sample rates. */
+			if (subtype_fmt_info.format == SF_FORMAT_OPUS)
+				sf_info_setup (&info, major_fmt_info.format | subtype_fmt_info.format, 24000, 1) ;
+			else
+				sf_info_setup (&info, major_fmt_info.format | subtype_fmt_info.format, 22050, 1) ;
 
 			check_is_valid = sf_format_check (&info) ;
 
@@ -113,6 +120,16 @@ format_combo_test (void)
 				"\n\nLine %d : Subtype is not valid but checks ok.\n",
 				__LINE__
 				) ;
+
+			/* Only have decode, not encode support for MPEG Layer I and II */
+			if (subtype_fmt_info.format == SF_FORMAT_MPEG_LAYER_I ||
+					subtype_fmt_info.format == SF_FORMAT_MPEG_LAYER_II)
+				continue ;
+
+			/* MPEG Layer III in WAV is decode only currently */
+			if (subtype_fmt_info.format == SF_FORMAT_MPEG_LAYER_III &&
+					major_fmt_info.format == SF_FORMAT_WAV)
+				continue ;
 
 			snprintf (filename, sizeof (filename), "format-check.%s", major_fmt_info.extension) ;
 

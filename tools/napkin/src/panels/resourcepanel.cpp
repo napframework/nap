@@ -115,9 +115,18 @@ napkin::ResourcePanel::ResourcePanel()
 			this->onIndexChanged(parent, item);
 		});
 
+	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &ResourcePanel::themeChanged);
+
 	createMenuCallbacks();
 	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
 	mTreeView.installEventFilter(this);
+}
+
+
+void ResourcePanel::registerStageOption(StageOption&& stageOption)
+{
+	auto it = mStageOptions.emplace(std::move(stageOption));
+	assert(it.second);
 }
 
 
@@ -190,6 +199,28 @@ static void addMoveAction(const PropertyPath& container, nap::rtti::Object& obje
 
 void napkin::ResourcePanel::createMenuCallbacks()
 {
+	// Option to preview object in compatible widget
+	mMenuController.addOption<ObjectItem>([this](auto& item, auto& menu)
+	{
+		auto object_item = static_cast<ObjectItem*>(&item);
+		for (const auto& stage_option : mStageOptions)
+		{
+			// If the option is compatible (can load) the object, create an action to do so
+			if (stage_option.isCompatible(object_item->getObject().get_type()))
+			{
+				// Add action as lambda -> prevents us from having to pass around the resource panel
+				auto icon = QIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_URL));
+				auto text = QString("Load into '%1'").arg(stage_option.mDisplayName.c_str());
+				menu.addAction(icon, text, [this, obj_path = object_item->propertyPath(), stage_option]()
+				{
+					stageRequested(obj_path, stage_option);
+				});
+
+				continue;
+			}
+		}
+	});
+
 	// Move child entity up or down
 	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
 	{
@@ -395,6 +426,12 @@ void napkin::ResourcePanel::createMenuCallbacks()
 }
 
 
+void napkin::ResourcePanel::themeChanged(const Theme& theme)
+{
+	theme.changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::regular);
+}
+
+
 void napkin::ResourcePanel::onProjectLoaded(const nap::ProjectInfo& projectInfo)
 {
 	mModel.getRootResourcesItem().setEnabled(true);
@@ -506,4 +543,3 @@ void ResourcePanel::emitSelectionChanged()
 	}
 	selectionChanged(selectedPaths);
 }
-

@@ -35,8 +35,9 @@ namespace nap
 		 * Sets the window to be full screen in desktop mode
 		 * @param window the window to enable / disable
 		 * @param value if the window is full screen
+		 * @return if full screen operation succeeded
 		 */
-		void NAPAPI setFullscreen(SDL_Window* window, bool value);
+		bool NAPAPI setFullscreen(SDL_Window* window, bool value);
 
 		/**
 		 * Returns if the window is full screen (Desktop)
@@ -211,6 +212,12 @@ namespace nap
 		 * @return if the system initialized correctly or not
 		 */
 		bool NAPAPI initVideo(utility::ErrorState& error);
+
+		/**
+		 * Returns if the video subsystem has been initialized 
+		 * @return if the SDL video subsystem has been initialized
+		 */
+		bool NAPAPI videoInitialized();
 
 		/**
 	 	 * Controls if the window has any borders.

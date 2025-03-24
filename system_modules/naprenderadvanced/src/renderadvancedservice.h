@@ -19,7 +19,6 @@
 #include "lightflags.h"
 #include "rendertag.h"
 #include "emptymesh.h"
-#include "cubemapfromfile.h"
 
 namespace nap
 {
@@ -27,6 +26,7 @@ namespace nap
 	class RenderService;
 	class RenderableComponentInstance;
 	class Material;
+	class EquiRectangularCubeMap;
 
 	// Light scene identifier
 	namespace scene
@@ -99,7 +99,7 @@ namespace nap
 	class NAPAPI RenderAdvancedService : public Service
 	{
 		friend class LightComponentInstance;
-		friend class CubeMapFromFile;
+		friend class EquiRectangularCubeMap;
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
@@ -144,9 +144,17 @@ namespace nap
 		void renderLocators(IRenderTarget& renderTarget, CameraComponentInstance& camera, bool drawFrustrum);
 
 		/**
-		 * Push light data In order for shaders to be compatible with the light system they must include an uniform struct with 
-		 * the name `light`, and additionally `shadow` when shadows are supported.
+		 * Push light data to the shader programs of the given render components.
+		 * This function must be called exactly once before rendering when shadows are **not** used, ie: 'renderShadows' is not invoked.
+		 *
+		 * This call searches for a method called 'getOrCreateMaterial' to locate and extract the program from the component.
+		 * If the shader program cannot be found, no action is taken, as the method is not exposed via RTTI.
+		 * Refer to 'RenderableMeshComponentInstance::getOrCreateMaterial' for an example.
+		 * 
 		 * Additional data related to the material surface is excluded from the system and must be set by the user.
+		 * 
+		 * In order for shaders to be compatible with the light system they must include an uniform struct with 
+		 * the name 'light', and additionally 'shadow' when shadows are supported.
 		 *
 		 * ~~~~~{.cpp}
 		 *	if (mRenderService->beginHeadlessRecording())
@@ -232,8 +240,8 @@ namespace nap
 		void pushLightsInternal(const std::vector<MaterialInstance*>& materials);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
-		void registerCubeMap(CubeMapFromFile& cubemap);
-		void removeCubeMap(CubeMapFromFile& cubemap);
+		void registerEquiRectangularCubeMap(EquiRectangularCubeMap& cubemap);
+		void removeEquiRectangularCubeMap(EquiRectangularCubeMap& cubemap);
 		bool initServiceResources(utility::ErrorState& errorState);
 
 		/**
@@ -286,7 +294,7 @@ namespace nap
 		bool mShadowResourcesCreated = false;											///< Whether shadow resources are created, enabled after `initServiceResources` completed successfully
 
 		// Cube maps from file
-		std::unordered_map<CubeMapFromFile*, std::unique_ptr<CubeRenderTarget>> mCubeMapTargets;		///< List of all registered cube map from file resources
+		std::unordered_map<EquiRectangularCubeMap*, std::unique_ptr<CubeRenderTarget>> mCubeMapTargets;		///< List of all registered cube map from file resources
 
 		std::unique_ptr<EmptyMesh>					mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;		///< Run-time cube map material instance resource

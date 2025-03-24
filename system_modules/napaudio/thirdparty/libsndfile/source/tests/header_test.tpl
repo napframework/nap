@@ -1,6 +1,6 @@
 [+ AutoGen5 template c +]
 /*
-** Copyright (C) 2001-2012 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 2001-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software ; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@
 #define LOG_BUFFER_SIZE	1024
 
 static void	update_header_test (const char *filename, int typemajor) ;
+static void	update_header_before_write_test (const char *filename, int typemajor) ;
 
 [+ FOR data_type
 +]static void	update_seek_[+ (get "name") +]_test	(const char *filename, int filetype) ;
@@ -105,7 +106,7 @@ main (int argc, char *argv [])
 		update_seek_int_test ("header_int.aiff", SF_FORMAT_AIFF) ;
 		update_seek_float_test ("header_float.aiff", SF_FORMAT_AIFF) ;
 		update_seek_double_test ("header_double.aiff", SF_FORMAT_AIFF) ;
-		header_shrink_test ("header_shrink.wav", SF_FORMAT_AIFF) ;
+		header_shrink_test ("header_shrink.aiff", SF_FORMAT_AIFF) ;
 		extra_header_test ("extra.aiff", SF_FORMAT_AIFF) ;
 		test_count++ ;
 		} ;
@@ -226,6 +227,14 @@ main (int argc, char *argv [])
 		test_count++ ;
 		} ;
 
+	if (do_all || ! strcmp (argv [1], "flac"))
+	{	if (HAVE_EXTERNAL_XIPH_LIBS)
+			update_header_before_write_test ("header.flac", SF_FORMAT_FLAC) ;
+		else
+			puts ("    No FLAC tests because FLAC support was not compiled in.") ;
+		test_count++ ;
+		} ;
+
 	if (test_count == 0)
 	{	printf ("Mono : ************************************\n") ;
 		printf ("Mono : *  No '%s' test defined.\n", argv [1]) ;
@@ -247,10 +256,10 @@ update_header_sub (const char *filename, int typemajor, int write_mode)
 	SF_INFO		sfinfo ;
 	int			k ;
 
+	memset (&sfinfo, 0, sizeof (sfinfo)) ;
 	sfinfo.samplerate = 44100 ;
 	sfinfo.format = (typemajor | SF_FORMAT_PCM_16) ;
 	sfinfo.channels = 1 ;
-	sfinfo.frames = 0 ;
 
 	outfile = test_open_file_or_die (filename, write_mode, &sfinfo, SF_TRUE, __LINE__) ;
 
@@ -323,6 +332,36 @@ update_header_test (const char *filename, int typemajor)
 	puts ("ok") ;
 } /* update_header_test */
 
+static void
+update_header_before_write_test (const char *filename, int typemajor)
+{
+	SNDFILE		*outfile ;
+	SF_INFO		sfinfo ;
+	int			k ;
+
+	print_test_name ("update_header_before_write", filename) ;
+
+	memset (&sfinfo, 0, sizeof (sfinfo)) ;
+	sfinfo.samplerate = 44100 ;
+	sfinfo.format = (typemajor | SF_FORMAT_PCM_16) ;
+	sfinfo.channels = 1 ;
+
+	outfile = test_open_file_or_die (filename, SFM_WRITE, &sfinfo, SF_TRUE, __LINE__) ;
+
+	/* FLAC can only write the header once; if the first call to sf_write() will
+	** also attempt to write the header, it fails. FLAC-specific regression
+	*/
+	sf_command (outfile, SFC_UPDATE_HEADER_NOW, NULL, 0) ;
+
+	for (k = 0 ; k < BUFFER_LEN ; k++)
+		data_out [k] = k + 1 ;
+	test_write_int_or_die (outfile, 0, data_out, BUFFER_LEN, __LINE__) ;
+
+	sf_close (outfile) ;
+	unlink (filename) ;
+	puts ("ok") ;
+} /* update_header_before_write_test */
+
 /*==============================================================================
 */
 
@@ -340,6 +379,7 @@ update_seek_[+ (get "name") +]_test	(const char *filename, int filetype)
 	memset (buffer, 0, sizeof (buffer)) ;
 
 	/* Create sound outfile with no data. */
+	memset (&sfinfo, 0, sizeof (sfinfo)) ;
 	sfinfo.format = filetype | [+ (get "format") +] ;
 	sfinfo.samplerate = 48000 ;
 	sfinfo.channels = 2 ;
@@ -450,6 +490,7 @@ extra_header_test (const char *filename, int filetype)
 
 	print_test_name ("extra_header_test", filename) ;
 
+	memset (&sfinfo, 0, sizeof (sfinfo)) ;
 	sfinfo.samplerate = 44100 ;
 	sfinfo.format = (filetype | SF_FORMAT_PCM_16) ;
 	sfinfo.channels = 1 ;
@@ -540,4 +581,3 @@ extra_header_test (const char *filename, int filetype)
 	return ;
 #endif
 } /* extra_header_test */
-

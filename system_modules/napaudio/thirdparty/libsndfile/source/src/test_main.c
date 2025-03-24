@@ -20,6 +20,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#if defined (HAVE_SYS_TYPES_H) && (HAVE_SYS_TYPES_H == 1)
+#include <sys/types.h>
+#endif
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
@@ -59,6 +62,8 @@ main (void)
 	test_psf_strlcpy_crlf () ;
 	test_broadcast_var () ;
 	test_cart_var () ;
+
+	test_nms_adpcm () ;
 
 	return 0 ;
 } /* main */

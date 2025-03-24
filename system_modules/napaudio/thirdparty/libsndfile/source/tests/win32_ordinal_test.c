@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2006-2014 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 2006-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -31,6 +31,9 @@
 
 #include <string.h>
 #include <fcntl.h>
+#ifdef HAVE_DIRECT_H
+#include <direct.h>
+#endif
 #include <sys/types.h>
 
 #include "utils.h"

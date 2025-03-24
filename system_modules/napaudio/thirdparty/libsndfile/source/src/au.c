@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 1999-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
@@ -239,12 +239,12 @@ au_write_header (SF_PRIVATE *psf, int calc_length)
 		datalength = (int) (psf->datalength & 0x7FFFFFFF) ;
 
 	if (psf->endian == SF_ENDIAN_BIG)
-	{	psf_binheader_writef (psf, "Em4", DOTSND_MARKER, AU_DATA_OFFSET) ;
-		psf_binheader_writef (psf, "E4444", datalength, encoding, psf->sf.samplerate, psf->sf.channels) ;
+	{	psf_binheader_writef (psf, "Em4", BHWm (DOTSND_MARKER), BHW4 (AU_DATA_OFFSET)) ;
+		psf_binheader_writef (psf, "E4444", BHW4 (datalength), BHW4 (encoding), BHW4 (psf->sf.samplerate), BHW4 (psf->sf.channels)) ;
 		}
 	else if (psf->endian == SF_ENDIAN_LITTLE)
-	{	psf_binheader_writef (psf, "em4", DNSDOT_MARKER, AU_DATA_OFFSET) ;
-		psf_binheader_writef (psf, "e4444", datalength, encoding, psf->sf.samplerate, psf->sf.channels) ;
+	{	psf_binheader_writef (psf, "em4", BHWm (DNSDOT_MARKER), BHW4 (AU_DATA_OFFSET)) ;
+		psf_binheader_writef (psf, "e4444", BHW4 (datalength), BHW4 (encoding), BHW4 (psf->sf.samplerate), BHW4 (psf->sf.channels)) ;
 		}
 	else
 		return (psf->error = SFE_BAD_OPEN_FORMAT) ;
@@ -291,6 +291,7 @@ static int
 au_read_header (SF_PRIVATE *psf)
 {	AU_FMT	au_fmt ;
 	int		marker, dword ;
+	sf_count_t data_end ;
 
 	memset (&au_fmt, 0, sizeof (au_fmt)) ;
 	psf_binheader_readf (psf, "pm", 0, &marker) ;
@@ -317,14 +318,15 @@ au_read_header (SF_PRIVATE *psf)
 		return SFE_AU_EMBED_BAD_LEN ;
 		} ;
 
+	data_end = (sf_count_t) au_fmt.dataoffset + (sf_count_t) au_fmt.datasize ;
 	if (psf->fileoffset > 0)
-	{	psf->filelength = au_fmt.dataoffset + au_fmt.datasize ;
+	{	psf->filelength = data_end ;
 		psf_log_printf (psf, "  Data Size   : %d\n", au_fmt.datasize) ;
 		}
-	else if (au_fmt.datasize == -1 || au_fmt.dataoffset + au_fmt.datasize == psf->filelength)
+	else if (au_fmt.datasize == -1 || data_end == psf->filelength)
 		psf_log_printf (psf, "  Data Size   : %d\n", au_fmt.datasize) ;
-	else if (au_fmt.dataoffset + au_fmt.datasize < psf->filelength)
-	{	psf->filelength = au_fmt.dataoffset + au_fmt.datasize ;
+	else if (data_end < psf->filelength)
+	{	psf->filelength = data_end ;
 		psf_log_printf (psf, "  Data Size   : %d\n", au_fmt.datasize) ;
 		}
 	else

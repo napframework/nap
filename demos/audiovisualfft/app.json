@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "audiovisualfft",
+    "Version": "0.1.0",
+    "RequiredModules": [
+        "napapp",
+        "napparametergui",
+        "napaudiovisualfft"
+    ],
+    "Data": "data/objects.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}

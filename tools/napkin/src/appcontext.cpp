@@ -21,6 +21,7 @@
 #include <mathutils.h>
 #include <renderservice.h>
 #include <constantshader.h>
+#include <sdlhelpers.h>
 
 // local
 #include <naputils.h>
@@ -46,6 +47,9 @@ AppContext::~AppContext()
 
 	// Close service configuration
 	closeServiceConfiguration();
+
+	// Stop applet event loop
+	mAppletEventLoop.reset(nullptr);
 
 	// Clear project info
 	mProjectInfo.reset(nullptr);
@@ -145,6 +149,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	mRenderService = mCore.getService<nap::RenderService>();
 	if (mRenderService != nullptr)
 	{
+		// Init GLSL shader compilation
 		nap::Logger::info("Initializing %s", mRenderService->getTypeName().data());
 		if (!mRenderService->initShaderCompilation(err))
 		{
@@ -153,6 +158,10 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 			return nullptr;
 		}
 	}
+
+	// Create and start SDL app event handler for NAP applets
+	// Also initializes the video subsystem
+	mAppletEventLoop = std::make_unique<AppletSDLEventSink>(1);
 
 	// Load document (data file)
 	addRecentlyOpenedProject(project_file_name);
@@ -279,14 +288,15 @@ bool AppContext::saveDocumentAs(const QString& filename)
 
 std::string AppContext::documentToString() const
 {
-	ObjectList ser_objects;
 	const auto& doc_objects = getDocument()->getObjects();
+	ObjectList ser_objects;
+	ser_objects.reserve(doc_objects.size());
 	for (auto& obj : doc_objects)
 	{
+		// TODO: Instance property filtering shouldn't be required here?
+		// Why are instance properties (nap::RootEntity::mInstanceProperties) not embedded?
 		if (!obj.second->get_type().is_derived_from<nap::InstancePropertyValue>())
-		{
 			ser_objects.emplace_back(obj.second.get());
-		}
 	}
 
 	JSONWriter writer; ErrorState err;
@@ -347,9 +357,7 @@ void AppContext::restoreUI()
 
 	// Let the ui come up before loading all the recent file and initializing core
 	if (getProjectInfo() == nullptr && mOpenRecentProjectAtStartup)
-	{
 		openRecentProject();
-	}
 }
 
 
@@ -511,6 +519,12 @@ napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
 nap::RenderService* napkin::AppContext::getRenderService() const
 {
 	return mRenderService;
+}
+
+
+napkin::AppletSDLEventSink* napkin::AppContext::getEventLoop() const
+{
+	return mAppletEventLoop.get();
 }
 
 

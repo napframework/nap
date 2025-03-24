@@ -47,5 +47,8 @@
 		<file>icons/move_up.png</file>
 		<file>icons/clear.png</file>
 		<file>icons/duplicate.png</file>
+		<file>icons/spin_up.png</file>
+		<file>icons/spin_down.png</file>
 	</qresource>
 </RCC>
+

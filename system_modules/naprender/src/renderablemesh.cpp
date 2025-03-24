@@ -35,7 +35,10 @@ namespace nap
 		mVertexBuffers = std::move(other.mVertexBuffers);
 		mVertexBufferOffsets = std::move(other.mVertexBufferOffsets);
 		mVertexBuffersDirty = other.mVertexBuffersDirty;
-		mVertexBufferDataChangedSlot = std::move(other.mVertexBufferDataChangedSlot);
+
+        // Don't copy the slot -> that will also copy the function that is called
+        // Only copy potential triggers (signals)
+        mVertexBufferDataChangedSlot.copyCauses(other.mVertexBufferDataChangedSlot);
 	}
 
 
@@ -46,7 +49,10 @@ namespace nap
 		mVertexBuffers = rhs.mVertexBuffers;
 		mVertexBufferOffsets = rhs.mVertexBufferOffsets;
 		mVertexBuffersDirty = rhs.mVertexBuffersDirty;
-		mVertexBufferDataChangedSlot = rhs.mVertexBufferDataChangedSlot;
+
+        // Don't copy the slot -> that will also copy the function that is called
+        // Only copy potential triggers (signals)
+        mVertexBufferDataChangedSlot.copyCauses(rhs.mVertexBufferDataChangedSlot);
 	}
 
 

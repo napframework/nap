@@ -14,7 +14,17 @@
                         "TopPlane": 100.0,
                         "BottomPlane": 0.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 1000.0
+                        "FarClippingPlane": 1000.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
                     }
                 },
                 {
@@ -96,16 +106,16 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.032999999821186069,
-                    "RotateSpeed": 0.0032999999821186067,
+                    "MovementSpeed": 0.032999999821186066,
+                    "RotateSpeed": 0.0032999999821186066,
                     "PerspCameraComponent": "PerspCameraComponent",
+                    "LimitZoomDistance": false,
+                    "MinimumZoomDistance": 0.5,
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    },
-                    "MinimumZoomDistance": 0.5,
-                    "LimitZoomDistance": false
+                    }
                 }
             ],
             "Children": []
@@ -164,16 +174,16 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitControllerTwo",
-                    "MovementSpeed": 0.032999999821186069,
-                    "RotateSpeed": 0.0032999999821186067,
+                    "MovementSpeed": 0.032999999821186066,
+                    "RotateSpeed": 0.0032999999821186066,
                     "PerspCameraComponent": "PerspCameraComponentTwo",
+                    "LimitZoomDistance": false,
+                    "MinimumZoomDistance": 0.5,
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    },
-                    "MinimumZoomDistance": 0.5,
-                    "LimitZoomDistance": false
+                    }
                 }
             ],
             "Children": []
@@ -186,11 +196,14 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_2",
                     "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "PlaneMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -240,6 +253,8 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_3",
                     "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -253,12 +268,18 @@
                                 "MipMapMode": "Linear",
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
+                                "MinLodLevel": 0,
                                 "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
                                 "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
                                 "Texture": "TextureTwo"
                             }
                         ],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "PlaneMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -308,11 +329,14 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
                     "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
                     "Mesh": "WorldMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "WorldMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -354,6 +378,7 @@
                 {
                     "Type": "nap::RotateComponent",
                     "mID": "nap::RotateComponent",
+                    "Enabled": true,
                     "Properties": {
                         "Axis": {
                             "x": 0.0,
@@ -403,8 +428,8 @@
                     "CullMode": "Back",
                     "PolygonMode": "Fill",
                     "Radius": 1.0,
-                    "Rings": 50.0,
-                    "Sectors": 50.0,
+                    "Rings": 50,
+                    "Sectors": 50,
                     "Color": {
                         "Values": [
                             1.0,
@@ -412,6 +437,11 @@
                             1.0,
                             1.0
                         ]
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
                     }
                 }
             ],
@@ -452,7 +482,8 @@
                             "Type": "nap::ShaderFromFile",
                             "mID": "PlaneShader",
                             "VertShader": "shaders/multiwindow/plane.vert",
-                            "FragShader": "shaders/multiwindow/plane.frag"
+                            "FragShader": "shaders/multiwindow/plane.frag",
+                            "RestrictModuleIncludes": false
                         },
                         {
                             "Type": "nap::Material",
@@ -468,12 +499,18 @@
                                     "MipMapMode": "Linear",
                                     "AddressModeVertical": "ClampToEdge",
                                     "AddressModeHorizontal": "ClampToEdge",
+                                    "MinLodLevel": 0,
                                     "MaxLodLevel": 1000,
+                                    "LodBias": 0.0,
                                     "AnisotropicSamples": "Default",
+                                    "BorderColor": "IntOpaqueBlack",
+                                    "CompareMode": "LessOrEqual",
+                                    "EnableCompare": false,
                                     "Texture": "TextureOne"
                                 }
                             ],
                             "Buffers": [],
+                            "Constants": [],
                             "Shader": "PlaneShader",
                             "VertexAttributeBindings": [
                                 {
@@ -520,12 +557,18 @@
                                     "MipMapMode": "Linear",
                                     "AddressModeVertical": "ClampToEdge",
                                     "AddressModeHorizontal": "ClampToEdge",
+                                    "MinLodLevel": 0,
                                     "MaxLodLevel": 1000,
+                                    "LodBias": 0.0,
                                     "AnisotropicSamples": "Default",
+                                    "BorderColor": "IntOpaqueBlack",
+                                    "CompareMode": "LessOrEqual",
+                                    "EnableCompare": false,
                                     "Texture": "WorldTexture"
                                 }
                             ],
                             "Buffers": [],
+                            "Constants": [],
                             "Shader": "WorldShader",
                             "VertexAttributeBindings": [
                                 {
@@ -548,7 +591,8 @@
                             "Type": "nap::ShaderFromFile",
                             "mID": "WorldShader",
                             "VertShader": "shaders/multiwindow/world.vert",
-                            "FragShader": "shaders/multiwindow/world.frag"
+                            "FragShader": "shaders/multiwindow/world.frag",
+                            "RestrictModuleIncludes": false
                         }
                     ],
                     "Children": []
@@ -579,7 +623,9 @@
                         ]
                     },
                     "Samples": "Four",
-                    "AdditionalSwapImages": 1
+                    "AdditionalSwapImages": 1,
+                    "RestoreSize": false,
+                    "RestorePosition": false
                 },
                 {
                     "Type": "nap::RenderWindow",
@@ -601,7 +647,9 @@
                         ]
                     },
                     "Samples": "Four",
-                    "AdditionalSwapImages": 1
+                    "AdditionalSwapImages": 1,
+                    "RestoreSize": false,
+                    "RestorePosition": false
                 },
                 {
                     "Type": "nap::RenderWindow",
@@ -623,7 +671,9 @@
                         ]
                     },
                     "Samples": "Four",
-                    "AdditionalSwapImages": 1
+                    "AdditionalSwapImages": 1,
+                    "RestoreSize": false,
+                    "RestorePosition": false
                 }
             ],
             "Children": []

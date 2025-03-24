@@ -22,15 +22,15 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource, "GPU 
 	RTTI_PROPERTY(nap::material::constants,		&nap::MaterialInstanceResource::mConstants,					nap::rtti::EPropertyMetaData::Embedded, "Shader specialization constant overrides")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::MaterialInstanceResource, "Applies a graphics material and provides an interface to override input defaults")
+RTTI_BEGIN_STRUCT(nap::MaterialInstanceResource, "Applies a graphics material and provides an interface to override input defaults")
 	RTTI_PROPERTY(nap::MaterialInstanceResource::matProperty,	&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required, "Graphics material default")
 	RTTI_PROPERTY("BlendMode",	&nap::MaterialInstanceResource::mBlendMode,		nap::rtti::EPropertyMetaData::Default, "Color blend mode override")
 	RTTI_PROPERTY("DepthMode",	&nap::MaterialInstanceResource::mDepthMode,		nap::rtti::EPropertyMetaData::Default, "Depth mode override")
-RTTI_END_CLASS
+RTTI_END_STRUCT
 
-RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource, "Applies a compute material and provides an interface to override input defaults")
+RTTI_BEGIN_STRUCT(nap::ComputeMaterialInstanceResource, "Applies a compute material and provides an interface to override input defaults")
 	RTTI_PROPERTY(nap::ComputeMaterialInstanceResource::matProperty, &nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required, "Compute material default")
-RTTI_END_CLASS
+RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstance)
 	RTTI_FUNCTION("getOrCreateUniform", (nap::UniformStructInstance* (nap::BaseMaterialInstance::*)(const std::string&))& nap::BaseMaterialInstance::getOrCreateUniform);
@@ -821,7 +821,7 @@ namespace nap
 			}
 
 			// Verify buffer object type
-			if (!errorState.check(ubo_declaration.mDescriptorType == EDescriptorType::Uniform, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str())))
+			if (!errorState.check(ubo_declaration.mDescriptorType == EDescriptorType::Uniform, "Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str()))
 				return false;
 
 			// Pass 2: gather leaf uniform instances for a single ubo

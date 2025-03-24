@@ -332,9 +332,7 @@ namespace nap
 
     void SequenceControllerAudio::alignAudioSegments(const std::string& trackID)
     {
-        /**
-         * Sort segments by time, check if they overlap and if segments overlap adjust the start time
-         */
+        // Sort segments by time, check if they overlap and if segments overlap adjust the start time
         SequenceTrack* track = findTrack(trackID);
         assert(track!=nullptr); // track not found
 
@@ -344,11 +342,11 @@ namespace nap
             return a->mStartTime<b->mStartTime;
         });
 
-        SequenceTrackSegment* prev_segment = nullptr;
-        for (auto segment_resourceptr : track->mSegments)
+        SequenceTrackSegmentAudio* prev_segment = nullptr;
+        for (auto& segment_resourceptr : track->mSegments)
         {
-            auto* segment = segment_resourceptr.get();
-            if (prev_segment!=nullptr)
+            auto* segment = static_cast<SequenceTrackSegmentAudio*>(segment_resourceptr.get());
+            if(prev_segment!=nullptr)
             {
                 if (segment->mStartTime<prev_segment->mStartTime+prev_segment->mDuration)
                 {

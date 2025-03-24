@@ -119,7 +119,7 @@ namespace napkin
 		bool eventFilter(QObject* obj, QEvent* ev) override;
 
 	Q_SIGNALS:
-		void selectionChanged(QList<PropertyPath> obj);
+		void selectionChanged(const QList<PropertyPath>& obj);
 
 	private:
 		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);

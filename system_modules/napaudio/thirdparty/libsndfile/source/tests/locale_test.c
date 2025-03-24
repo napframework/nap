@@ -24,6 +24,8 @@
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
 #endif
 
 #if HAVE_LOCALE_H
@@ -32,7 +34,6 @@
 
 #if OS_IS_WIN32
 #include <windows.h>
-#define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 1
 #endif
 
 #include "sndfile.h"

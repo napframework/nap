@@ -10,6 +10,7 @@
 // External Includes
 #include <material.h>
 #include <materialinstance.h>
+#include <qwidget.h>
 
 namespace napkin
 {

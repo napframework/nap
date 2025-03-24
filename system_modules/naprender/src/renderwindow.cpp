@@ -12,6 +12,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <SDL_vulkan.h>
+#include <SDL_hints.h>
 #include <mathutils.h>
 
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
@@ -48,7 +49,7 @@ namespace nap
 	 * Creates a new SDL window based on the settings provided by the render window
 	 * @return: the create window, nullptr if not successful
 	 */
-	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, nap::utility::ErrorState& errorState)
+	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, utility::ErrorState& error)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
@@ -66,7 +67,7 @@ namespace nap
 			renderWindow.mHeight,
 			options);
 
-		if (!errorState.check(new_window != nullptr, "Failed to create window: %s", SDL::getSDLError().c_str()))
+		if (!error.check(new_window != nullptr, "Failed to create window: %s", SDL::getSDLError().c_str()))
 			return nullptr;
 
 		return new_window;
@@ -84,9 +85,8 @@ namespace nap
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		// Use SDL to create the surface
-		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
-			return false;
-		return true;
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+			"Unable to create Vulkan compatible surface using SDL");
 	}
 
 
@@ -455,6 +455,11 @@ namespace nap
 	{ }
 
 
+	RenderWindow::RenderWindow(Core& core, SDL_Window* windowHandle) :
+		mRenderService(core.getService<RenderService>()), mExternalHandle(windowHandle)
+	{ }
+
+
 	RenderWindow::~RenderWindow()
 	{
 		// Return immediately if there's no actual native window present.
@@ -501,7 +506,11 @@ namespace nap
 
 		// Create SDL window first
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState);
+		mSDLWindow = mExternalHandle == nullptr ?
+			createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState) :
+			mExternalHandle;
+
+		// Ensure window is valid
 		if (mSDLWindow == nullptr)
 			return false;
 
@@ -559,17 +568,14 @@ namespace nap
 		if (!mRenderService->addWindow(*this, errorState))
 			return false;
 
-		// We want to respond to resize events for this window
-		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
-
-		// Show if requestd
+		// Show if requested
 		if (mVisible)
 			this->show();
 
 		return true;
 	}
-    
-    
+
+
 	void RenderWindow::onDestroy()
 	{
 		mRenderService->removeWindow(*this);
@@ -597,14 +603,16 @@ namespace nap
 
 	void RenderWindow::setFullscreen(bool value)
 	{
-		SDL::setFullscreen(mSDLWindow, value);
+		if(!SDL::setFullscreen(mSDLWindow, value))
+			nap::Logger::error(SDL::getSDLError());
 	}
 
 
 	void RenderWindow::toggleFullscreen()
 	{
 		bool cur_state = SDL::getFullscreen(mSDLWindow);
-		setFullscreen(!cur_state);
+		if(!SDL::setFullscreen(mSDLWindow, !cur_state))
+			nap::Logger::error(SDL::getSDLError());
 	}
 
 
@@ -622,14 +630,9 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
-		// Causes the swap chain to be re-created if window size is different.
-		// TODO: This can trigger a resize event that is handled in a new frame. 
-		// causing the swap-chain to be re-created twice. Avoid this by
-		// checking against the swap extent instead of keeping one or multiple flags.
 		if (size != SDL::getWindowSize(mSDLWindow))
 		{
 			SDL::setWindowSize(mSDLWindow, size);
-			mRecreateSwapchain = true;
 		}
 	}
 
@@ -697,15 +700,15 @@ namespace nap
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
 		// Recreate the entire swapchain when the framebuffer (size or format) no longer matches the existing swapchain .
-		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is out of date or when
-		// the window is resized. Sometimes vkAcquireNextImageKHR and vkQueuePresentKHR return false positives (possible with some drivers),
-		// therefore we need to handle both situations explicitly.
+		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is out of date.
 		if (mRecreateSwapchain)
 		{
-			utility::ErrorState errorState;
+ 			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
-				Logger::error("Unable to recreate swapchain: %s", errorState.toString().c_str());
-			return VK_NULL_HANDLE;
+			{
+				Logger::fatal("Unable to recreate swapchain: %s", errorState.toString().c_str());
+				assert(false);
+			}
 		}
 
 		// Check if the current extent has a valid (non-zero) size.
@@ -720,18 +723,19 @@ namespace nap
 			return VK_NULL_HANDLE;
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
-		// This situation is unlikely but could occur when in between frame buffer creation and acquire the window is resized.
+		// This situation occurs when the swapchain dimensions don't match the current extent, ie: window has been resized.
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		assert(mSwapchain != VK_NULL_HANDLE);
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
-		if(result == VK_ERROR_OUT_OF_DATE_KHR)
-        {
-		    mRecreateSwapchain = true;
-		    return VK_NULL_HANDLE;
-        }
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			mRecreateSwapchain = true;
+			return VK_NULL_HANDLE;
+		}
 
 		// We expect to have a working image here, otherwise something is seriously wrong.
-		assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
+		NAP_ASSERT_MSG(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR,
+			"Unable to retrieve the index of the next available presentable image");
 
 		// Reset command buffer for current frame
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
@@ -819,15 +823,6 @@ namespace nap
 			assert(false);
 			break;
 		}
-	}
-
-
-	void RenderWindow::handleEvent(const Event& event)
-	{
-		// Recreate swapchain when window is resized
-		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
-		if (resized_event != nullptr)
-			mRecreateSwapchain = true;
 	}
 
 
@@ -961,22 +956,19 @@ namespace nap
 
 	void RenderWindow::beginRendering()
 	{
-		// Always use actual buffer size, not size of window. 
-		// Window size != buffer size on HighDPI monitors
-		glm::ivec2 buffer_size = getBufferSize();
-
 		// Create information for render pass
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass = mRenderPass;
 		render_pass_info.framebuffer = mSwapChainFramebuffers[mCurrentImageIndex];
 		render_pass_info.renderArea.offset = { 0, 0 };
-		render_pass_info.renderArea.extent = { (uint32_t)buffer_size.x, (uint32_t)buffer_size.y };
+		render_pass_info.renderArea.extent = mSwapchainExtent;
 
 		// Clear color
-		std::array<VkClearValue, 2> clear_values = {};
+		std::array<VkClearValue, 3> clear_values = {};
 		clear_values[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 		clear_values[1].depthStencil = { 1.0f, 0 };
+		clear_values[2].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 		render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
 		render_pass_info.pClearValues = clear_values.data();
 
@@ -987,15 +979,14 @@ namespace nap
 		VkRect2D rect;
 		rect.offset.x = 0;
 		rect.offset.y = 0;
-		rect.extent.width = buffer_size.x;
-		rect.extent.height = buffer_size.y;
+		rect.extent = mSwapchainExtent;
 		vkCmdSetScissor(mCommandBuffers[current_frame], 0, 1, &rect);
 
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = buffer_size.x;
-		viewport.height = buffer_size.y;
+		viewport.width = static_cast<float>(mSwapchainExtent.width);
+		viewport.height = static_cast<float>(mSwapchainExtent.height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mCommandBuffers[current_frame], 0, 1, &viewport);
@@ -1029,28 +1020,20 @@ namespace nap
 			return false;
 
 		// Based on surface capabilities, determine swap image size
-		glm::ivec2 buffer_size = this->getBufferSize();
 		if (mSurfaceCapabilities.currentExtent.width == UINT32_MAX)
 		{
+			glm::ivec2 buffer_size = this->getBufferSize();
 			mSwapchainExtent =
 			{
-				math::clamp<uint32>((uint32)buffer_size.x, mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
-				math::clamp<uint32>((uint32)buffer_size.y, mSurfaceCapabilities.minImageExtent.height, mSurfaceCapabilities.maxImageExtent.height),
+				math::clamp<uint32>(static_cast<uint32>(buffer_size.x), mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
+				math::clamp<uint32>(static_cast<uint32>(buffer_size.y), mSurfaceCapabilities.minImageExtent.height, mSurfaceCapabilities.maxImageExtent.height),
 			};
 		}
 		else
 		{
 			mSwapchainExtent = mSurfaceCapabilities.currentExtent;
 		}
-
-		// Notify if current swapchain extent differs from current buffer size
-		if (mSwapchainExtent.width != buffer_size.x || mSwapchainExtent.height != buffer_size.y)
-			nap::Logger::warn("Swap chain size mismatch: extent of surface (%d:%d) does not match size of buffer (%d:%d)",
-				mSwapchainExtent.width,
-				mSwapchainExtent.height,
-				buffer_size.x,
-				buffer_size.y);
-
 		return true;
 	}
 }
+

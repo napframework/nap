@@ -25,6 +25,8 @@
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
 #endif
 
 #include <sndfile.h>
@@ -84,7 +86,7 @@ dwvw_test (const char *filename, int format, int bit_width)
 
 	file = test_open_file_or_die (filename, SFM_READ, &sfinfo, SF_TRUE, __LINE__) ;
 
-	if ((k = sf_read_int (file, read_buf, BUFFER_SIZE)) != BUFFER_SIZE)
+	if ((k = (int) sf_read_int (file, read_buf, BUFFER_SIZE)) != BUFFER_SIZE)
 	{	printf ("Error (line %d) : Only read %d/%d.frames.\n", __LINE__, k, BUFFER_SIZE) ;
 		exit (1) ;
 		}

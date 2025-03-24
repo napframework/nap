@@ -1,6 +1,10 @@
 #!/bin/sh
 
-prefix=/home/cklosters/dev/SDL2-2.0.12/build/linux/install
+# Get the canonical path of the folder containing this script
+bindir=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
+
+# Calculate the canonical path of the prefix, relative to the folder of this script
+prefix=$(cd -P -- "$bindir/.." && printf '%s\n' "$(pwd -P)")
 exec_prefix=${prefix}
 exec_prefix_set=no
 libdir=${exec_prefix}/lib
@@ -39,7 +43,7 @@ while test $# -gt 0; do
       echo $exec_prefix
       ;;
     --version)
-      echo 2.0.12
+      echo 2.30.7
       ;;
     --cflags)
       echo -I${prefix}/include/SDL2   -D_REENTRANT
@@ -49,7 +53,8 @@ while test $# -gt 0; do
       ;;
 #    --static-libs)
 ##    --libs|--static-libs)
-#      echo -L${exec_prefix}/lib -Wl,-rpath,${libdir} -Wl,--enable-new-dtags -lSDL2  -Wl,--no-undefined -lm -ldl -lpthread -lrt
+#      sdl_static_libs=$(echo "-lSDL2  -lm -ldl -lpthread" | sed -E "s#-lSDL2[ $]#$libdir/libSDL2.a #g")
+#      echo -L${exec_prefix}/lib $sdl_static_libs
 #      ;;
     *)
       echo "${usage}" 1>&2

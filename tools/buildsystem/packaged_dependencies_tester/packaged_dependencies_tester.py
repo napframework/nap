@@ -11,25 +11,25 @@ from multiprocessing import cpu_count
 import os
 from platform import machine
 import re
-from subprocess import call, Popen, PIPE, check_output, TimeoutExpired, run
+from subprocess import Popen, PIPE, TimeoutExpired, run
 import shlex
 import shutil
-import signal
-import sys
 import time
 import sys
 
+# Import utilities
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
+from nap_shared import BuildType
+
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
-WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
-if sys.platform.startswith('linux') and not machine() == 'x86_64':
-    WAIT_SECONDS_FOR_PROCESS_HEALTH = 30
+WAIT_SECONDS_FOR_PROCESS_HEALTH = 10
 
 # Name for app created from template
 TEMPLATE_APP_NAME = 'TemplateApp'
 
 # Build type for build apps
-APP_BUILD_TYPE = 'Release'
+APP_BUILD_TYPE = BuildType.Release.name
 
 # Directory to iterate for testing
 DEFAULT_TESTING_APPS_DIR = 'demos'
@@ -311,6 +311,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxcb-xinerama',
     'libxcb-xkb',
     'libxcb-xfixes',
+    'libxcb-cursor',
     'libxkbcommon',
     'libxkbcommon-x11',
     'libxml2',
@@ -323,7 +324,13 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'nouveau_dri',
     'radeonsi_dri',
     'sun4i-drm_dri',
-    'vc4_dri'
+    'vc4_dri',
+    'libvulkan_virtio',
+    'libvulkan_freedreno',
+    'ld-linux-aarch64',
+    'libmpg123',
+    'libEGL',
+    'libOpenGL'
 ]
 
 # List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
@@ -777,10 +784,7 @@ def regenerate_cwd_app(build_type=APP_BUILD_TYPE):
 
     # Build command
     script = get_platform_scriptpath('regenerate')
-    if is_linux():
-        cmd = f'{script} %s' % build_type
-    else:
-        cmd = f'{script} -ns -np'
+    cmd = f'{script} -ns -np -t %s' % build_type
 
     # Run
     (returncode, stdout, stderr) = call_capturing_output(cmd)
@@ -866,9 +870,7 @@ def package_cwd_app_with_napkin(app_name, root_output_dir, timestamp):
 
     # Build command
     script = get_platform_scriptpath('package')
-    cmd = f'{script} -nz -ns'
-    if not is_linux():
-        cmd = '%s -np' % cmd
+    cmd = f'{script} -nz -ns -np'
 
     # Run
     (returncode, stdout, stderr) = call_capturing_output(cmd)
@@ -1160,9 +1162,7 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
 
     # Build command
     script = get_platform_scriptpath('package')
-    cmd = f'{script} -nn -nz -ns'
-    if not is_linux():
-        cmd = f'{cmd} -np'
+    cmd = f'{script} -nn -nz -ns -np'
 
     # Run
     (returncode, stdout, stderr) = call_capturing_output(cmd)
@@ -2383,7 +2383,7 @@ def perform_test_run(nap_framework_path,
     os.chdir(os.path.join(nap_framework_full_path, testing_apps_dir))
 
     # Configure and build a demo as other build type
-    other_build_type = 'Debug' if APP_BUILD_TYPE.lower() == 'release' else 'Release'
+    other_build_type = BuildType.Debug.name if APP_BUILD_TYPE == BuildType.Release.name else BuildType.Release.name
     phase += 1
     print("============ Phase #%s - Building demo as %s ============" % (phase, other_build_type.lower()))
     os.chdir(os.path.join(nap_framework_full_path, testing_apps_dir))

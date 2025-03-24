@@ -340,7 +340,7 @@ namespace nap
 	template<class T>
 	void TypedBufferBindingNumericInstance<T>::setBuffer(TypedGPUBufferNumeric<T>& buffer)
 	{
-		assert(buffer.getSize() == mDeclaration->mSize);
+		NAP_ASSERT_MSG(mDeclaration->mStride == buffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size");
 		BufferBindingInstance::mBuffer = &buffer;
 		raiseChanged();
 	}
@@ -348,7 +348,7 @@ namespace nap
 	template<class T>
 	void TypedBufferBindingNumericInstance<T>::setBuffer(const TypedBufferBindingNumeric<T>& resource)
 	{
-		assert(resource.mBuffer.getSize() == mDeclaration->mSize);
+		NAP_ASSERT_MSG(mDeclaration->mStride == resource.mBuffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size");
 		BufferBindingInstance::mBuffer = resource.mBuffer.get();
 		raiseChanged();
 	}

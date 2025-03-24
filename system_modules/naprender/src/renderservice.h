@@ -67,7 +67,7 @@ namespace nap
 		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
 		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32							mVulkanVersionMinor = 0;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		uint32							mVulkanVersionMinor = 1;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
 		uint32							mAnisotropicFilterSamples = 8;								///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
 		bool							mEnableHighDPIMode = true;									///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
@@ -846,6 +846,13 @@ namespace nap
 		bool getLargePointsSupported() const										{ return mLargePointsSupported; }
 
 		/**
+		 * Returns if hardware down-sampling is supported for the given texture type
+		 * @param descriptor texture description
+		 * @return if map-map generation is supported for the given texture type
+		 */
+		bool getMipSupport(const SurfaceDescriptor& descriptor) const;
+
+		/**
 		 * Configurable setting.
 		 * When enabled fonts and general scaling is adjusted for high dpi monitors.
 		 * @return if high dpi mode is enabled
@@ -984,7 +991,7 @@ namespace nap
 		 * 2 is therefore a good number, where 3 offers only, in most situations, a slight increase in performance.
 		 * This however greatly depends on the application GPU and CPU load.
 		 */
-		int getMaxFramesInFlight() const											{ return 2; }
+		constexpr int getMaxFramesInFlight() const									{ return 2; }
 
 		/**
 		 * Returns the physical device properties for the requested Vulkan format.
@@ -1024,6 +1031,20 @@ namespace nap
 		 */
 		uint32 getVulkanVersionMinor() const;
 
+		/**
+		 * Initialize the SDL video sub system and render engine -> the service owns the renderer.
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 * Initializes the complete render engine
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		bool initEngine(utility::ErrorState& error);
+		
 		/**
 		 * Initializes GLSL shader compilation and linking.
 		 * Don't call this in your application! Only required by external processes
@@ -1074,13 +1095,6 @@ namespace nap
 		 * Register dependencies, render module depends on scene
 		 */
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-
-		/**
-		 * Initialize the renderer, the service owns the renderer.
-		 * @param errorState contains the error message if the service could not be initialized
-		 * @return if the service has been initialized successfully
-		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * Waits for the device to be idle and deletes queued resources.

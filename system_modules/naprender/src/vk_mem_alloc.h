@@ -3469,6 +3469,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaDestroyImage(
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <cstdio>
 
 /*******************************************************************************
 CONFIGURATION SECTION

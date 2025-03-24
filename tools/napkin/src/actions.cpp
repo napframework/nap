@@ -282,7 +282,7 @@ void SaveFileAsAction::perform()
 	if (ctx.saveDocumentAs(filename))
 	{
 		/// If the saved document is different from current project default, ask to update
-		if (!ctx.documentIsProjectDefault() && setAsProjectDefault(parentWidget(), filename))
+		if (!ctx.documentIsProjectDefault() && setAsProjectDefault(qobject_cast<QWidget*>(parent()), filename))
 		{
 			UpdateDefaultFileAction(nullptr).trigger();
 		}
@@ -333,7 +333,7 @@ void napkin::OpenFileAction::perform()
 	if (ctx.loadDocument(filename) != nullptr)
 	{
 		/// If the saved document is different from current project default, ask to update
-		if (!ctx.documentIsProjectDefault() && setAsProjectDefault(parentWidget(), filename))
+		if (!ctx.documentIsProjectDefault() && setAsProjectDefault(qobject_cast<QWidget*>(parent()), filename))
 		{
 			UpdateDefaultFileAction(nullptr).trigger();
 		}
@@ -723,7 +723,7 @@ void DeleteObjectAction::perform()
 		QString message = "The following properties are still pointing to this object,\n"
 			"your data might end up in a broken state.\n\n"
 			"Do you want to delete anyway?";
-		if (!showPropertyListConfirmDialog(parentWidget(), pointers, "Warning", message))
+		if (!showPropertyListConfirmDialog(qobject_cast<QWidget*>(parent()), pointers, "Warning", message))
 			return;
 	}
     AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
@@ -776,7 +776,7 @@ void napkin::DeleteGroupAction::perform()
 		QString message = "The following properties are still pointing to members in this group,\n"
 			"your data might end up in a broken state.\n\n"
 			"Do you want to delete anyway?";
-		if (!showPropertyListConfirmDialog(parentWidget(), pointers, "Warning", message))
+		if (!showPropertyListConfirmDialog(qobject_cast<QWidget*>(parent()), pointers, "Warning", message))
 			return;
 	}
 	AppContext::get().executeCommand(new DeleteObjectCommand(mGroup));
@@ -796,7 +796,7 @@ void LoadShaderAction::perform()
 	nap::utility::ErrorState error;
 	if (!loadShader(mShader, AppContext::get().getCore(), error))
 	{
-		QMessageBox msg(parentWidget());
+		QMessageBox msg(qobject_cast<QWidget*>(parent()));
 		msg.setText(QString("Failed to (re)load %1").arg(QString::fromStdString(mShader.mID)));
 		msg.setStandardButtons(QMessageBox::Ok);
 		msg.setDefaultButton(QMessageBox::Ok);
@@ -814,7 +814,7 @@ void LoadShaderAction::perform()
 	}
 	else
 	{
-		QMessageBox msg(parentWidget());
+		QMessageBox msg(qobject_cast<QWidget*>(parent()));
 		msg.setWindowTitle("Information");
 		msg.setText(QString("Successfully (re)loaded %1").arg(QString::fromStdString(mShader.mID)));
 		msg.setStandardButtons(QMessageBox::Ok);
@@ -929,7 +929,7 @@ void napkin::SaveServiceConfigurationAs::perform()
 	}
 
 	// Set as project default if saved config is different from project default
-	if(!ctx.getServiceConfig()->isProjectDefault() && setAsProjectDefault(parentWidget(), filename))
+	if(!ctx.getServiceConfig()->isProjectDefault() && setAsProjectDefault(qobject_cast<QWidget*>(parent()), filename))
 	{
 		SetAsDefaultServiceConfigAction(nullptr).trigger();
 	}
@@ -962,7 +962,7 @@ void napkin::OpenServiceConfigAction::perform()
 	if (ctx.getServiceConfig()->load(filename))
 	{
 		// Set as project default if new config is different from project default
-		if (!ctx.getServiceConfig()->isProjectDefault() && setAsProjectDefault(parentWidget(), filename))
+		if (!ctx.getServiceConfig()->isProjectDefault() && setAsProjectDefault(qobject_cast<QWidget*>(parent()), filename))
 		{
 			SetAsDefaultServiceConfigAction(nullptr).trigger();
 		}

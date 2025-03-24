@@ -14,7 +14,7 @@
                             "y": 1.0,
                             "z": 0.0
                         },
-                        "Speed": -0.20000000298023225,
+                        "Speed": -0.20000000298023224,
                         "Offset": 1.0
                     }
                 },
@@ -194,16 +194,16 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "OrbitController",
-                    "MovementSpeed": 0.014999999664723874,
+                    "MovementSpeed": 0.014999999664723873,
                     "RotateSpeed": 0.001500000013038516,
                     "PerspCameraComponent": "./PerspCamera",
+                    "LimitZoomDistance": true,
+                    "MinimumZoomDistance": 1.5,
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    },
-                    "MinimumZoomDistance": 1.5,
-                    "LimitZoomDistance": true
+                    }
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -412,7 +412,7 @@
                     "Color": {
                         "Values": [
                             1.0,
-                            0.20000000298023225,
+                            0.20000000298023224,
                             0.4901960790157318
                         ]
                     },
@@ -490,9 +490,9 @@
                                         "mID": "UniformVec3_11cc25f4xx",
                                         "Name": "specular",
                                         "Value": {
-                                            "x": 0.20000000298023225,
-                                            "y": 0.20000000298023225,
-                                            "z": 0.20000000298023225
+                                            "x": 0.20000000298023224,
+                                            "y": 0.20000000298023224,
+                                            "z": 0.20000000298023224
                                         }
                                     },
                                     {
@@ -701,8 +701,8 @@
                                         "Name": "diffuse",
                                         "Value": {
                                             "x": 1.0,
-                                            "y": 0.20000000298023225,
-                                            "z": 0.49000000953674319
+                                            "y": 0.20000000298023224,
+                                            "z": 0.49000000953674316
                                         }
                                     }
                                 ]
@@ -958,7 +958,7 @@
                             "Value": {
                                 "Values": [
                                     1.0,
-                                    0.20392157137393952,
+                                    0.20392157137393951,
                                     0.4901960790157318
                                 ]
                             }
@@ -1024,7 +1024,7 @@
             "Title": "Light & Shadow Demo",
             "Width": 1280,
             "Height": 720,
-            "Mode": "Mailbox",
+            "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
                     0.0,
@@ -1413,9 +1413,9 @@
                                     "mID": "UniformVec3_62017239",
                                     "Name": "color",
                                     "Value": {
-                                        "x": 0.20000000298023225,
-                                        "y": 0.20000000298023225,
-                                        "z": 0.20000000298023225
+                                        "x": 0.20000000298023224,
+                                        "y": 0.20000000298023224,
+                                        "z": 0.20000000298023224
                                     }
                                 },
                                 {
