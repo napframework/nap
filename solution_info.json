@@ -3,6 +3,6 @@
     "mID": "SolutionInfo",
     "AdditionalTargets": [
         "modules/napappgui",
-        "spits"
+        "apps/spits"
     ]
 }
