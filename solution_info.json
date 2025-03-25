@@ -2,5 +2,7 @@
     "Type": "nap::SolutionInfo",
     "mID": "SolutionInfo",
     "AdditionalTargets": [
+        "modules/napappgui",
+        "spits"
     ]
 }
