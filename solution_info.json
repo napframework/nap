@@ -2,7 +2,8 @@
     "Type": "nap::SolutionInfo",
     "mID": "SolutionInfo",
     "AdditionalTargets": [
+        "apps/spits",
         "modules/napappgui",
-        "apps/spits"
+        "modules/nappjlink"
     ]
 }
