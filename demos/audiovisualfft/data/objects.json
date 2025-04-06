@@ -1237,7 +1237,7 @@
             "Children": []
         },
         {
-            "Type": "nap::RenderTarget",
+            "Type": "nap::ColorDepthRenderTarget",
             "mID": "RenderTarget",
             "ColorTexture": "ColorTexture",
             "DepthTexture": "DepthTexture",
