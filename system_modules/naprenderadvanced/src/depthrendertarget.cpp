@@ -102,7 +102,7 @@ namespace nap
 		VkFramebufferCreateInfo framebuffer_info = {};
 		framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebuffer_info.renderPass = mRenderPass;
-		framebuffer_info.attachmentCount = attachment_count;
+		framebuffer_info.attachmentCount = attachments.size();
 		framebuffer_info.pAttachments = attachments.data();
 		framebuffer_info.width = framebuffer_size.width;
 		framebuffer_info.height = framebuffer_size.height;

@@ -149,7 +149,7 @@ namespace nap
 		clear_values[2].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 		clear_values[3].depthStencil = { mClearDepth, 0 };
 
-		VkRenderPassBeginInfo render_pass_info = {};
+		VkRenderPassBeginInfo renderpass_info = {};
 		renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderpass_info.renderPass = mRenderPass;
 		renderpass_info.framebuffer = mFramebuffer;
