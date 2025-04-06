@@ -418,3 +418,40 @@ namespace nap
 		return rtti_cast<T>(getOrCreateSamplerInternal(resource.mName, &resource));
 	}
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+// Hash functions
+//////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+	/**
+	 * Compute order-dependent hash of shader constant combinations.
+	 * Based on this answer: https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key/12996028#12996028
+	 */
+	template<>
+	struct hash<nap::ShaderStageConstantMap>
+	{
+		uint operator()(nap::ShaderStageConstantMap const& constants) const
+		{
+			size_t count = 0;
+			for (const auto& stage : constants)
+				count += stage.second.size();
+
+			uint seed = static_cast<uint>(count);
+			for (const auto& stage : constants)
+			{
+				for (const auto& entry : stage.second)
+				{
+					uint x = entry.second;
+					x = ((x >> 16) ^ x) * 0x45d9f3b;
+					x = ((x >> 16) ^ x) * 0x45d9f3b;
+					x = (x >> 16) ^ x;
+					seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+				}
+			}
+			return seed;
+		}
+	};
+}
