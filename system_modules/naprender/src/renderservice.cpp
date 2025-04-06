@@ -838,7 +838,7 @@ namespace nap
 		device_features.largePoints = physicalDevice.getFeatures().largePoints;
 		device_features.wideLines = physicalDevice.getFeatures().wideLines;
 		device_features.fillModeNonSolid = physicalDevice.getFeatures().fillModeNonSolid;
-		device_features.multiDrawIndirect = physicalDevice.getFeatures().multiDrawIndirect;
+		//device_features.multiDrawIndirect = physicalDevice.getFeatures().multiDrawIndirect;
 
 		// The device feature 'robustBufferAccess' enables bounds checks on buffers and therefore be a useful debugging tool
 		// We only enable this feature if it is marked true in the render service configuration
