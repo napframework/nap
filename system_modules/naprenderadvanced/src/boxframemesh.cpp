@@ -43,13 +43,13 @@ namespace nap
 		};
 	}
 
-	const static std::vector<glm::vec3> UnitLineBox			= getBoxFrameMeshVertices({ 1, 1, 1 });
-	const static std::vector<glm::vec3> NormalizedLineBox	= getBoxFrameMeshVertices({ 2, 2, 2 });
+	const static std::vector<glm::vec3> sUnitLineBox		= getBoxFrameMeshVertices({1, 1, 1 });
+	const static std::vector<glm::vec3> sNormalizedLineBox	= getBoxFrameMeshVertices({2, 2, 2 });
 
-	constexpr static uint QuadVertCount = 4;	//< Number of vertices per quad
-	constexpr static uint QuadCount = 2;		//< Total number of quad
-	constexpr static uint LineVertCount = 2;	//< Total number of vertices per line
-	constexpr static uint LineCount = 4;		//< Total number of lines
+	constexpr static uint sQuadVertCount = 4;	//< Number of vertices per quad
+	constexpr static uint sQuadCount = 2;		//< Total number of quad
+	constexpr static uint sLineVertCount = 2;	//< Total number of vertices per line
+	constexpr static uint sLineCount = 4;		//< Total number of lines
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ namespace nap
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
 		// Persistent configuration
-		mMeshInstance->setNumVertices(NormalizedLineBox.size());
+		mMeshInstance->setNumVertices(sNormalizedLineBox.size());
 		mMeshInstance->setUsage(mUsage);
 		mMeshInstance->setPolygonMode(EPolygonMode::Line);
 		mMeshInstance->setDrawMode(EDrawMode::Lines);
@@ -85,24 +85,24 @@ namespace nap
 	{
 		// Generate the indices
 		std::vector<uint32> indices;
-		indices.reserve(QuadCount * QuadVertCount * 2 + LineCount * LineVertCount);
+		indices.reserve(sQuadCount * sQuadVertCount * 2 + sLineCount * sLineVertCount);
 
 		// Index offsets to shape a single quad face
 		static const std::vector quad_index_offsets = { 0, 1, 1, 2, 2, 3, 3, 0 };
 
 		//  Repeat twice generating two quads
-		for (uint i = 0; i < QuadCount; i++)
+		for (uint i = 0; i < sQuadCount; i++)
 		{
-			const uint quad_offset = i * QuadVertCount;
+			const uint quad_offset = i * sQuadVertCount;
 			for (uint off : quad_index_offsets)
 				indices.emplace_back(quad_offset + off);
 		}
 
 		// Connect the mirroring edges of the quads
-		for (uint i = 0; i < LineCount; i++)
+		for (uint i = 0; i < sLineCount; i++)
 		{
 			indices.emplace_back(i);
-			indices.emplace_back(i + QuadVertCount);
+			indices.emplace_back(i + sQuadVertCount);
 		}
 
 		// Create attributes
@@ -122,29 +122,29 @@ namespace nap
 	{
 		// Generate the indices
 		std::vector<uint32> indices;
-		indices.reserve(QuadCount * QuadVertCount * 2 + LineCount * LineVertCount);
+		indices.reserve(sQuadCount * sQuadVertCount * 2 + sLineCount * sLineVertCount);
 
 		// Index offsets to shape a single quad face
 		static const std::vector quad_index_offsets = { 0, 1, 1, 2, 2, 3, 3, 0 };
 
 		//  Repeat twice generating two quads
-		for (uint i = 0; i < QuadCount; i++)
+		for (uint i = 0; i < sQuadCount; i++)
 		{
-			const uint quad_offset = i * QuadVertCount;
+			const uint quad_offset = i * sQuadVertCount;
 			for (uint off : quad_index_offsets)
 				indices.emplace_back(quad_offset + off);
 		}
 
 		// Connect the mirroring edges of the quads
-		for (uint i = 0; i < LineCount; i++)
+		for (uint i = 0; i < sLineCount; i++)
 		{
 			indices.emplace_back(i);
-			indices.emplace_back(i + QuadVertCount);
+			indices.emplace_back(i + sQuadVertCount);
 		}
 
 		// Create attributes
 		auto& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-		position_attribute.setData(UnitLineBox);
+		position_attribute.setData(sUnitLineBox);
 
 		// Create the shape
 		auto& shape = mMeshInstance->createShape();
@@ -154,12 +154,12 @@ namespace nap
 
 	const std::vector<glm::vec3>& BoxFrameMesh::getUnitLineBox()
 	{
-		return UnitLineBox;
+		return sUnitLineBox;
 	}
 
 
 	const std::vector<glm::vec3>& BoxFrameMesh::getNormalizedLineBox()
 	{
-		return NormalizedLineBox;
+		return sNormalizedLineBox;
 	}
 }

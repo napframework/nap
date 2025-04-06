@@ -158,20 +158,19 @@ namespace nap
 					i-1, 1, layer, layerCount,
 					aspect);
 
-				// Create blit structure
 				VkImageBlit blit = {};
+				blit.srcOffsets[0] = { 0, 0, 0 };
+				blit.srcOffsets[1] = { mip_width, mip_height, 1 };
 				blit.srcSubresource.aspectMask = aspect;
 				blit.srcSubresource.mipLevel = i-1;
 				blit.srcSubresource.baseArrayLayer = layer;
 				blit.srcSubresource.layerCount = layerCount;
-				blit.srcOffsets[0] = { 0, 0, 0 };
-				blit.srcOffsets[1] = { mip_width, mip_height, 1 };
+				blit.dstOffsets[0] = { 0, 0, 0 };
+				blit.dstOffsets[1] = { mip_width > 1 ? mip_width / 2 : 1, mip_height > 1 ? mip_height / 2 : 1, 1 };
 				blit.dstSubresource.aspectMask = aspect;
 				blit.dstSubresource.mipLevel = i;
 				blit.dstSubresource.baseArrayLayer = layer;
 				blit.dstSubresource.layerCount = layerCount;
-				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = { mip_width > 1 ? mip_width / 2 : 1, mip_height > 1 ? mip_height / 2 : 1, 1 };
 
 				// Blit
 				vkCmdBlitImage(buffer,
