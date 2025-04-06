@@ -435,11 +435,6 @@ namespace nap
 				auto* instance = static_cast<BufferBindingIVec4Instance*>(&bindingInstance);
 				buffer_info.buffer = instance->getBuffer().getBuffer();
 			}
-			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingUVec4Instance))
-			{
-				auto* instance = static_cast<BufferBindingUVec4Instance*>(&bindingInstance);
-				buffer_info.buffer = instance->getBuffer().getBuffer();
-			}
 			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingMat4Instance))
 			{
 				auto* instance = static_cast<BufferBindingMat4Instance*>(&bindingInstance);
