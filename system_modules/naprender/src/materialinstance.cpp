@@ -725,7 +725,7 @@ namespace nap
 				constant_instance = material->findConstant(declaration.mName);
 			}
 
-			// If a constant is overriden
+			// If a constant is overridden
 			if (constant_instance != nullptr)
 			{		
 				auto it = mShaderStageConstantMap.find(constant_instance->mDeclaration.mStage);
