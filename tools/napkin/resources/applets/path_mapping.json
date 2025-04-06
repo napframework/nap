@@ -1,0 +1,10 @@
+{
+    "Type": "nap::PathMapping",
+    "mID": "Win64SourceMapping",
+    "ProjectExeToRoot": "../../..",
+    "ModulePaths": 
+    [
+        "{PROJECT_DIR}"
+    ],
+    "BuildPath": "{PROJECT_DIR}"
+}

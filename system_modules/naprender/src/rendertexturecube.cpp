@@ -19,11 +19,11 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTextureCube, "Cubemap GPU color texture ")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Width",		&nap::RenderTextureCube::mWidth,			nap::rtti::EPropertyMetaData::Required, "Width of a single cube face in texels")
-	RTTI_PROPERTY("Height",		&nap::RenderTextureCube::mHeight,			nap::rtti::EPropertyMetaData::Required, "Height of a single cube face in texels")
-	RTTI_PROPERTY("Format",		&nap::RenderTextureCube::mColorFormat,		nap::rtti::EPropertyMetaData::Required, "Texture color format")
-	RTTI_PROPERTY("ColorSpace", &nap::RenderTextureCube::mColorSpace,		nap::rtti::EPropertyMetaData::Default,	"Texture color space")
-	RTTI_PROPERTY("ClearColor", &nap::RenderTextureCube::mClearColor,		nap::rtti::EPropertyMetaData::Default,	"Initial clear color")
+	RTTI_PROPERTY("Width",			&nap::RenderTextureCube::mWidth,			nap::rtti::EPropertyMetaData::Required, "Width of a single cube face in texels")
+	RTTI_PROPERTY("Height",			&nap::RenderTextureCube::mHeight,			nap::rtti::EPropertyMetaData::Required, "Height of a single cube face in texels")
+	RTTI_PROPERTY("Format",			&nap::RenderTextureCube::mColorFormat,		nap::rtti::EPropertyMetaData::Required, "Texture color format")
+	RTTI_PROPERTY("ColorSpace",		&nap::RenderTextureCube::mColorSpace,		nap::rtti::EPropertyMetaData::Default,	"Texture color space")
+	RTTI_PROPERTY("ClearColor",		&nap::RenderTextureCube::mClearColor,		nap::rtti::EPropertyMetaData::Default,	"Initial clear color")
 RTTI_END_CLASS
 
 RTTI_BEGIN_ENUM(nap::DepthRenderTextureCube::EDepthFormat)

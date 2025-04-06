@@ -10,7 +10,7 @@
 
 namespace nap
 {
-	class ModuleManager;
+	class ModuleCache;
 
 	// Globals
 	namespace projectinfo
@@ -204,7 +204,7 @@ namespace nap
 	class NAPAPI ModuleInfo : public rtti::Object
 	{
 		RTTI_ENABLE(rtti::Object)
-		friend class nap::ModuleManager;
+		friend class nap::ModuleCache;
 	public:
 		std::vector<std::string> mRequiredModules;		///< Property: 'RequiredModules' names of modules this module depends on
 		std::vector<std::string> mLibSearchPaths;		///< Property: 'WindowsDllSearchPaths' additional windows dll search paths

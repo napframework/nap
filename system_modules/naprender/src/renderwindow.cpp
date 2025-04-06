@@ -12,6 +12,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <SDL_vulkan.h>
+#include <SDL_hints.h>
 #include <mathutils.h>
 
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
@@ -49,7 +50,7 @@ namespace nap
 	 * Creates a new SDL window based on the settings provided by the render window
 	 * @return: the create window, nullptr if not successful
 	 */
-	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, nap::utility::ErrorState& errorState)
+	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, utility::ErrorState& error)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
@@ -67,7 +68,7 @@ namespace nap
 			renderWindow.mHeight,
 			options);
 
-		if (!errorState.check(new_window != nullptr, "Failed to create window: %s", SDL::getSDLError().c_str()))
+		if (!error.check(new_window != nullptr, "Failed to create window: %s", SDL::getSDLError().c_str()))
 			return nullptr;
 
 		return new_window;
@@ -85,9 +86,8 @@ namespace nap
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		// Use SDL to create the surface
-		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
-			return false;
-		return true;
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+			"Unable to create Vulkan compatible surface using SDL");
 	}
 
 
@@ -456,6 +456,11 @@ namespace nap
 	{ }
 
 
+	RenderWindow::RenderWindow(Core& core, SDL_Window* windowHandle) :
+		mRenderService(core.getService<RenderService>()), mExternalHandle(windowHandle)
+	{ }
+
+
 	RenderWindow::~RenderWindow()
 	{
 		// Return immediately if there's no actual native window present.
@@ -502,7 +507,11 @@ namespace nap
 
 		// Create SDL window first
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState);
+		mSDLWindow = mExternalHandle == nullptr ?
+			createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState) :
+			mExternalHandle;
+
+		// Ensure window is valid
 		if (mSDLWindow == nullptr)
 			return false;
 
@@ -560,17 +569,14 @@ namespace nap
 		if (!mRenderService->addWindow(*this, errorState))
 			return false;
 
-		// We want to respond to resize events for this window
-		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
-
-		// Show if requestd
+		// Show if requested
 		if (mVisible)
 			show();
 
 		return true;
 	}
-    
-    
+
+
 	void RenderWindow::onDestroy()
 	{
 		mRenderService->removeWindow(*this);
@@ -949,14 +955,6 @@ namespace nap
 	}
 
 
-	void RenderWindow::handleEvent(const Event& event)
-	{
-		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
-		if (resized_event != nullptr)
-			mRecreateSwapchain = true;
-	}
-
-
 	void RenderWindow::beginRendering()
 	{
 		// Create information for render pass
@@ -1039,3 +1037,4 @@ namespace nap
 		return true;
 	}
 }
+

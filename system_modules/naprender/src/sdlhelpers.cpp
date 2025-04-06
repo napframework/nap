@@ -27,6 +27,12 @@ namespace nap
 		}
 
 
+		bool NAPAPI videoInitialized()
+		{
+			return SDL_WasInit(SDL_INIT_VIDEO) > 0;
+		}
+
+
 		void setWindowBordered(SDL_Window* window, bool hasBorders)
 		{
 			SDL_SetWindowBordered(window, (SDL_bool)hasBorders);

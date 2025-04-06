@@ -46,7 +46,7 @@ namespace nap
 		for (uint i = 0; i < vertexCount; i++)
 		{
 			aiVector3D* cid = &(sourceData[i]);
-			targetAttribute->addData(glm::vec3(static_cast<float>(cid->x), static_cast<float>(cid->y), static_cast<float>(cid->z)));
+			targetAttribute->addData({ cid->x, cid->y, cid->z });
 		}
 	}
 
@@ -71,7 +71,7 @@ namespace nap
 		for (uint i = 0; i < vertexCount; i++)
 		{
 			aiColor4D* cid = &(sourceData[i]);
-			targetAttribute->addData(glm::vec4(static_cast<float>(cid->r), static_cast<float>(cid->g), static_cast<float>(cid->b), static_cast<float>(cid->a)));
+			targetAttribute->addData({ cid->r, cid->g, cid->b, cid->a });
 		}
 	}
 
@@ -80,42 +80,33 @@ namespace nap
 	{ }
 
 
-	bool GeometryFromFile::init(utility::ErrorState& errorState)
+	bool GeometryFromFile::load(const std::string& path, std::unique_ptr<MeshInstance>& instance,
+		const ImportSettings& settings, nap::utility::ErrorState& error)
 	{
-		// Load our mesh
-		nap::Logger::info("Loading geometry: %s", mPath.c_str());
-
-		// Create mesh instance
-		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>(*mRenderService);
-
-		// Set the usage and cull mode for the mesh
-		mesh_instance->setUsage(mUsage);
-		mesh_instance->setCullMode(mCullMode);
-		mesh_instance->setDrawMode(EDrawMode::Triangles);
-		mesh_instance->setPolygonMode(mPolygonMode);
-
 		// Create importer
 		Assimp::Importer importer;
 
 		// Setup flags
-		nap::uint flags = aiProcess_Triangulate |
-			aiProcess_SortByPType |
-			aiProcess_JoinIdenticalVertices;
-		flags = mGenerateNormals ? flags | aiProcess_GenSmoothNormals : flags;
-		flags = mCalculateTangents ? flags | aiProcess_CalcTangentSpace : flags;
+		nap::uint flags = aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices;
+		flags = settings.mGenerateNormals  ? flags | aiProcess_GenSmoothNormals : flags;
+		flags = settings.mGenerateTangents ? flags | aiProcess_CalcTangentSpace : flags;
+
+		// Specify max smoothing angle
+		if ((flags & aiProcess_GenSmoothNormals) > 0)
+			importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, settings.mSmoothingAngle);
 
 		// Load file using flags
-		importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, (int)mSmoothingAngle);
-		const aiScene* ai_scene = importer.ReadFile(mPath, flags);
+		const aiScene* ai_scene = importer.ReadFile(path, flags);
 
 		// Ensure the file was read
-		if (!errorState.check(ai_scene != nullptr, "Unable to load %s", mPath.c_str()))
+		if (!error.check(ai_scene != nullptr, "Unable to load '%s', error:\n%s",
+			path.c_str(), importer.GetErrorString()))
 			return false;
 
 		// Used to figure out what data to extract
 		uint uv_channel_count = 0;
 		uint co_channel_count = 0;
-		bool has_normals  = false;
+		bool has_normals = false;
 		bool has_tangents = false;
 
 		// Figure out which and how many attributes to create
@@ -132,7 +123,7 @@ namespace nap
 			// Get unique name for mesh
 			aiMesh* ai_mesh = ai_scene->mMeshes[i];
 			std::string mesh_name = ai_mesh->mName.length == 0 ?
-				utility::stringFormat("%s:%d", utility::getFileNameWithoutExtension(mPath).c_str(), i) :
+				utility::stringFormat("%s:%d", utility::getFileNameWithoutExtension(path).c_str(), i) :
 				ai_mesh->mName.C_Str();
 
 			// Ensure the mesh has vertex data
@@ -158,11 +149,11 @@ namespace nap
 			}
 
 			// Update attribute requirements
-			has_normals  = !has_normals  ? ai_mesh->HasNormals() : true;
+			has_normals = !has_normals ? ai_mesh->HasNormals() : true;
 			has_tangents = !has_tangents ? ai_mesh->HasTangentsAndBitangents() : true;
 			uv_channel_count = ai_mesh->GetNumUVChannels() > uv_channel_count ? ai_mesh->GetNumUVChannels() : uv_channel_count;
 			co_channel_count = ai_mesh->GetNumColorChannels() > co_channel_count ? ai_mesh->GetNumColorChannels() : co_channel_count;
-			
+
 			// Add as valid mesh
 			valid_meshes.emplace_back(ai_mesh);
 			mesh_names.emplace_back(mesh_name);
@@ -170,14 +161,14 @@ namespace nap
 		}
 
 		// Ensure there is geometry
-		if (!errorState.check(!(valid_meshes.empty()), "No valid meshes found in file %s", mPath.c_str()))
+		if (!error.check(!(valid_meshes.empty()), "No valid meshes found in file '%s'", path.c_str()))
 			return false;
 
 		// Create color attributes based on found number of channels
 		std::vector<VertexAttribute<glm::vec4>*> col_attribs(co_channel_count);
 		for (uint i = 0; i < co_channel_count; i++)
 		{
-			col_attribs[i] = &mesh_instance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(i));
+			col_attribs[i] = &instance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(i));
 			col_attribs[i]->reserve(total_vertex_count);
 		}
 
@@ -185,19 +176,19 @@ namespace nap
 		std::vector<VertexAttribute<glm::vec3>*> uvs_attribs(uv_channel_count);
 		for (uint i = 0; i < uv_channel_count; i++)
 		{
-			uvs_attribs[i] = &mesh_instance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(i));
+			uvs_attribs[i] = &instance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(i));
 			uvs_attribs[i]->reserve(total_vertex_count);
 		}
 
 		// Create attributes, position should always be there, others are optional
-		VertexAttribute<glm::vec3>* pos_attribute = &mesh_instance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		VertexAttribute<glm::vec3>* pos_attribute = &instance->getOrCreateAttribute<glm::vec3>(vertexid::position);
 		pos_attribute->reserve(total_vertex_count);
 
 		// Create normal attribute if found on any mesh
 		VertexAttribute<glm::vec3>* nor_attribute = nullptr;
 		if (has_normals)
 		{
-			nor_attribute = &mesh_instance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
+			nor_attribute = &instance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
 			nor_attribute->reserve(total_vertex_count);
 		}
 
@@ -206,9 +197,9 @@ namespace nap
 		VertexAttribute<glm::vec3>* ban_attribute = nullptr;
 		if (has_tangents)
 		{
-			tan_attribute = &mesh_instance->getOrCreateAttribute<glm::vec3>(vertexid::tangent);
+			tan_attribute = &instance->getOrCreateAttribute<glm::vec3>(vertexid::tangent);
 			tan_attribute->reserve(total_vertex_count);
-			ban_attribute = &mesh_instance->getOrCreateAttribute<glm::vec3>(vertexid::bitangent);
+			ban_attribute = &instance->getOrCreateAttribute<glm::vec3>(vertexid::bitangent);
 			ban_attribute->reserve(total_vertex_count);
 		}
 
@@ -221,7 +212,6 @@ namespace nap
 			const std::string& mesh_name = mesh_names[i];
 
 			// Reserve space for attributes to add
-			nap::Logger::info("Loading mesh: %s", mesh_name.c_str());
 			uint ai_vert_count = mesh->mNumVertices;
 
 			// Copy vertex data
@@ -232,7 +222,7 @@ namespace nap
 
 			// Copy tangent data if present
 			copyVec3Data(ai_vert_count, mesh->mTangents, tan_attribute, vertexid::tangent, mesh_name);
-			
+
 			// Copy bitangent data if present
 			copyVec3Data(ai_vert_count, mesh->mBitangents, ban_attribute, vertexid::bitangent, mesh_name);
 
@@ -246,7 +236,7 @@ namespace nap
 
 			// Create new shape and add indices
 			uint face_count = mesh->mNumFaces;
-			MeshShape& shape = mesh_instance->createShape();
+			MeshShape& shape = instance->createShape();
 			std::vector<uint32>& indices = shape.getIndices();
 			indices.reserve(face_count * 3);
 			for (int f = 0; f != face_count; f++)
@@ -254,9 +244,7 @@ namespace nap
 				aiFace& face = mesh->mFaces[f];
 				assert(face.mNumIndices == 3);
 				for (int fi = 0; fi != face.mNumIndices; ++fi)
-				{
 					indices.emplace_back(face.mIndices[fi] + vertex_offset);
-				}
 			}
 
 			// Compute vertex offset, required for next shape
@@ -264,13 +252,41 @@ namespace nap
 		}
 
 		// Set number of vertices and initialize
-		mesh_instance->setNumVertices(pos_attribute->getCount());
+		instance->setNumVertices(pos_attribute->getCount());
+		return true;
+	}
+
+
+	bool GeometryFromFile::init(utility::ErrorState& errorState)
+	{
+		// Ensure we have a path
+		if (!errorState.check(!mPath.empty(), "Unable to load '%s': Path is empty", mID.c_str()))
+			return false;
+
+		// Load settings
+		ImportSettings settings;
+		settings.mGenerateNormals = mGenerateNormals;
+		settings.mSmoothingAngle = mSmoothingAngle;
+		settings.mGenerateTangents = mCalculateTangents;
+
+		// Load mesh into memory
+		nap::Logger::info("Loading geometry: %s", mPath.c_str());
+		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>(*mRenderService);
+		if (!load(mPath, mesh_instance, settings, errorState))
+			return false;
+
+		// Set the usage and cull mode for the mesh
+		mesh_instance->setUsage(mUsage);
+		mesh_instance->setCullMode(mCullMode);
+		mesh_instance->setDrawMode(EDrawMode::Triangles);
+		mesh_instance->setPolygonMode(mPolygonMode);
+
+		// Initialize
 		if (!mesh_instance->init(errorState))
 			return false;
 
-		// Move
+		// Store
 		mMeshInstance = std::move(mesh_instance);
-
 		return true;
 	}
 }

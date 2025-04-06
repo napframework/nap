@@ -533,8 +533,8 @@ namespace nap
 	 */
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
-		// Use SDL to create the surface
-		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL");
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+			"Unable to create Vulkan compatible surface using SDL");
 	}
 
 
@@ -1683,6 +1683,88 @@ namespace nap
 	// Set the currently active renderer
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
+		// Attempt to initialize SDL video subsystem if not yet available
+		// TODO: Try to find a more clean, optimized way of handling this.
+		if (!SDL::videoInitialized())
+		{
+			mSDLInitialized = SDL::initVideo(errorState);
+			if (!errorState.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
+				return false;
+		}
+
+		// Initialize engine
+		return initEngine(errorState);
+	}
+
+
+	bool RenderService::initShaderCompilation(utility::ErrorState& error)
+	{
+		// Initialize shader compilation
+		mShInitialized = ShInitialize() != 0;
+		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
+			return false;
+
+		// Get available debug instance extensions, notify when not all could be found
+		std::vector<std::string> required_instance_extensions;
+		bool is_debug_utils_found = false;
+		if (!error.check(getDebugInstanceExtensions(is_debug_utils_found, required_instance_extensions, error), "Failed to find available debug extension while debug is enabled"))
+			return false;
+
+		// Get available vulkan layer extensions, notify when not all could be found
+		std::vector<std::string> found_layers;
+#ifndef NDEBUG
+		// Get all available vulkan layers
+		const std::vector<std::string>& requested_layers = { "VK_LAYER_KHRONOS_validation" };
+		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
+			return false;
+
+		// Warn when not all requested layers could be found
+		if (found_layers.size() != requested_layers.size())
+			nap::Logger::warn("Not all requested Vulkan layers were found");
+
+		// Print the ones we're enabling
+		for (const auto& layer : found_layers)
+			Logger::info("Applying layer: %s", layer.c_str());
+#endif // NDEBUG
+
+		// Create Vulkan Instance together with required extensions and layers
+		mAPIVersion = VK_API_VERSION_1_0;
+		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
+			return false;
+
+		// Set Vulkan messaging callback based on the available debug messaging extension
+		if (is_debug_utils_found)
+			setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, error);
+		else
+			setupDebugCallback(mInstance, mDebugCallback, error);
+
+		// Get the preferred physical device to select
+		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete);
+
+		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
+		VkQueueFlags req_queue_capabilities = getQueueFlags(false);
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, VK_NULL_HANDLE, req_queue_capabilities, mPhysicalDevice, error))
+			return false;
+
+		// Get extensions that are required for NAP render engine to function.
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
+
+		// Create unique set
+		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
+		for (const auto& ext : required_ext_names)
+			unique_ext_names.emplace(ext);
+
+		// Create a logical device that interfaces with the physical device.
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, false, false, mDevice, error))
+			return false;
+
+		mInitialized = true;
+		return true;
+	}
+
+
+	bool RenderService::initEngine(utility::ErrorState& errorState)
+	{
 		// Get handle to scene service
 		mSceneService = getCore().getService<SceneService>();
 		assert(mSceneService != nullptr);
@@ -1703,7 +1785,7 @@ namespace nap
 		if (mEnableHighDPIMode)
 		{
 			// Make process dpi aware
-			if(!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
+			if (!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
 				"Unable to make process DPI aware"))
 			{
 				return false;
@@ -1715,11 +1797,6 @@ namespace nap
 #if defined(__APPLE__)
 		setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", 1);
 #endif // __APPLE__
-
-		// Initialize SDL video
-		mSDLInitialized = SDL::initVideo(errorState);
-		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
-			return false;
 
 		// Add displays
 		for (int i = 0; i < SDL::getDisplayCount(); i++)
@@ -1740,7 +1817,7 @@ namespace nap
 		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
 		// Allows for easy destruction of previously created and assigned resources when initialization fails.
 		DummyWindow dummy_window;
-		
+
 		// Get available vulkan instance extensions using SDL.
 		// Returns, next to the default VK_KHR_surface, a platform specific extension.
 		// These extensions have to be enabled in order to create a swapchain and a handle to a presentable surface.
@@ -1782,7 +1859,7 @@ namespace nap
 
 		// Warn when not all requested layers could be found
 		if (found_layers.size() != requested_layers.size())
-			nap::Logger::warn("Not all requested layers were found");
+			nap::Logger::warn("Not all requested Vulkan layers were found");
 
 		// Print the ones we're enabling
 		for (const auto& layer : found_layers)
@@ -1799,7 +1876,7 @@ namespace nap
 		{
 			if (is_debug_utils_found)
 				setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, errorState);
-			else 
+			else
 				setupDebugCallback(mInstance, mDebugCallback, errorState);
 		}
 
@@ -1846,7 +1923,7 @@ namespace nap
 
 		// Add additional requests
 		required_ext_names.insert(required_ext_names.end(), render_config->mAdditionalExtensions.begin(), render_config->mAdditionalExtensions.end());
-		
+
 		// Create unique set
 		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
 		for (const auto& ext : required_ext_names)
@@ -1872,8 +1949,8 @@ namespace nap
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
 		allocatorInfo.device = mDevice;
-        allocatorInfo.vulkanApiVersion = mAPIVersion;
-        allocatorInfo.instance = mInstance;
+		allocatorInfo.vulkanApiVersion = mAPIVersion;
+		allocatorInfo.instance = mInstance;
 
 		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
 			return false;
@@ -1884,7 +1961,7 @@ namespace nap
 		// Initialize an empty texture. This texture is used as the default for any samplers that don't have a texture bound to them in the data.
 		if (!initEmptyTextures(errorState))
 			return false;
-		
+
 		mFramesInFlight.resize(getMaxFramesInFlight());
 		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
 		{
@@ -1915,72 +1992,6 @@ namespace nap
 			ini_error.fail("Unable to load: %s", getIniFilePath().c_str());
 			nap::Logger::warn(errorState.toString());
 		}
-
-		mInitialized = true;
-		return true;
-	}
-
-
-	bool RenderService::initShaderCompilation(utility::ErrorState& error)
-	{
-		// Initialize shader compilation
-		mShInitialized = ShInitialize() != 0;
-		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
-			return false;
-
-		// Get available debug instance extensions, notify when not all could be found
-		std::vector<std::string> required_instance_extensions;
-		bool is_debug_utils_found = false;
-		if (!error.check(getDebugInstanceExtensions(is_debug_utils_found, required_instance_extensions, error), "Failed to find available debug extension while debug is enabled"))
-			return false;
-
-		// Get available vulkan layer extensions, notify when not all could be found
-		std::vector<std::string> found_layers;
-#ifndef NDEBUG
-		// Get all available vulkan layers
-		const std::vector<std::string>& requested_layers = { "VK_LAYER_KHRONOS_validation" };
-		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
-			return false;
-
-		// Warn when not all requested layers could be found
-		if (found_layers.size() != requested_layers.size())
-			nap::Logger::warn("Not all requested layers were found");
-
-		// Print the ones we're enabling
-		for (const auto& layer : found_layers)
-			Logger::info("Applying layer: %s", layer.c_str());
-#endif // NDEBUG
-
-		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_API_VERSION_1_0;
-		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
-			return false;
-
-		// Set Vulkan messaging callback based on the available debug messaging extension
-		if (is_debug_utils_found)
-			setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, error);
-		else
-			setupDebugCallback(mInstance, mDebugCallback, error);
-
-		// Get the preferred physical device to select
-		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete);
-
-		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
-		VkQueueFlags req_queue_capabilities = getQueueFlags(false);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, VK_NULL_HANDLE, req_queue_capabilities, mPhysicalDevice, error))
-			return false;
-
-		// Get extensions that are required for NAP render engine to function.
-		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
-
-		// Create unique set
-		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
-		for (const auto& ext : required_ext_names)
-			unique_ext_names.emplace(ext);
-
-		// Create a logical device that interfaces with the physical device.
-		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, false, false, mDevice, error))
-			return false;
 
 		mInitialized = true;
 		return true;

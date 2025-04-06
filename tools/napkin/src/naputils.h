@@ -13,14 +13,16 @@
 #include <rtti/rtti.h>
 #include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
+#include <utility/fileutils.h>
 #include <napqt/qtutils.h>
 #include <shader.h>
+#include <mutex>
 
 namespace napkin
 {
 	/**
-	* An item that displays an RTTI Type
-	*/
+	 * An item that displays an RTTI Type
+	 */
 	class RTTITypeItem : public RTTIItem
 	{
 		Q_OBJECT
@@ -33,13 +35,53 @@ namespace napkin
 
 
 	/**
-	* Flat list of objects
-	*/
+	 * Flat list of objects
+	 */
 	class FlatObjectModel : public QStandardItemModel
 	{
 	public:
 		FlatObjectModel(const std::vector<nap::rtti::Object*> objects);
 	};
+
+
+	/**
+	 * Utility class that changes and locks the current working directory until destroyed.
+	 * On destruction the previous current working directory is unlocked and restored.
+	 *
+	 * This allows different threads to temporarily change the current working directory without running into race conditions.
+	 * For example: When thread B changes the working directory whilst thread A depends on it for loading a set of resources.
+	 *
+	 * TODO: A NAP project should not depend on the cwd to resolve / load relative data!!
+	 * Instead make use of a thread local variable or use the data directory, as resolved by the project on initialization.
+	 */
+	class CWDHandle final
+	{
+	public:
+		/**
+		 * Lock, cache and change working directory to new working directory
+		 * @param newDirectory new temporary working directory
+		 */
+		CWDHandle(const std::string& newDirectory);
+
+		/**
+		 * Restore cached working directory and release lock
+		 */
+		~CWDHandle();
+
+		// Copy is not allowed
+		CWDHandle(CWDHandle&) = delete;
+		CWDHandle& operator=(const CWDHandle&) = delete;
+
+		// Move is allowed
+		CWDHandle(CWDHandle&& other) noexcept;
+		CWDHandle& operator=(CWDHandle&& other) noexcept;
+
+	private:
+		std::string mPrevious;
+		std::unique_lock<std::mutex> mLock;	///< Mutex lock
+		static std::mutex mMutex;			///< Shared mutex
+	};
+
 
 	using TypePredicate = std::function<bool(const rttr::type& type)>;
 

@@ -5,6 +5,7 @@
 // Local Includes
 #include "renderadvancedservice.h"
 #include "cubemapshader.h"
+#include "equirectangularcubemap.h"
 
 // External Includes
 #include <renderservice.h>
@@ -18,9 +19,6 @@
 #include <material.h>
 #include <renderglobals.h>
 #include <sceneservice.h>
-#include <parametervec.h>
-#include <parametercolor.h>
-#include <cubemapfromfile.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
 	RTTI_PROPERTY("ShadowDepthFormat",		&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default, "Shadow texture depth format")
@@ -781,8 +779,8 @@ namespace nap
 	}
 
 
-	void RenderAdvancedService::registerCubeMap(CubeMapFromFile& cubemap)
-	{
+	void RenderAdvancedService::registerEquiRectangularCubeMap(EquiRectangularCubeMap& cubemap)
+{
 		NAP_ASSERT_MSG(mCubeMapTargets.find(&cubemap) == mCubeMapTargets.end(), "Cube map was already registered");		
 
 		// Cube map from file render target
@@ -790,13 +788,14 @@ namespace nap
 		crt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 		crt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 		crt->mSampleShading = cubemap.mSampleShading;
-		crt->mUpdateLODs = cubemap.mGenerateLODs;
+		crt->mUpdateLODs = cubemap.mGenerateLods;
 		crt->mCubeTexture = &cubemap;
 
 		utility::ErrorState error_state;
 		if (!crt->init(error_state))
 		{
-			NAP_ASSERT_MSG(false, utility::stringFormat("%s\n%s: Failed to initialize cube map from file render target", error_state.toString().c_str(), RTTI_OF(RenderAdvancedService).get_name().to_string().c_str()).c_str());
+			NAP_ASSERT_MSG(false, utility::stringFormat("%s\n%s: Failed to initialize cube map from file render target",
+				error_state.toString().c_str(), RTTI_OF(RenderAdvancedService).get_name().to_string().c_str()).c_str());
 			return;
 		}
 		auto entry = mCubeMapTargets.emplace(&cubemap, std::move(crt));
@@ -839,7 +838,7 @@ namespace nap
 	}
 
 
-	void RenderAdvancedService::removeCubeMap(CubeMapFromFile& cubemap)
+	void RenderAdvancedService::removeEquiRectangularCubeMap(EquiRectangularCubeMap& cubemap)
 	{
 		auto found_it = mCubeMapTargets.find(&cubemap);
 		assert(found_it != mCubeMapTargets.end());

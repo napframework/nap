@@ -23,19 +23,6 @@ namespace nap
 
 	namespace qt
 	{
-
-		/**
-		 * Overridden to expose hidden features.
-		 */
-		class FilterTree_ : public QTreeView
-		{
-			Q_OBJECT
-		public:
-			FilterTree_(QWidget *parent = nullptr);
-			QRect visualRectFor(const QItemSelection& selection) const;
-
-		};
-
 		/**
 		 * A tree view composing a QTreeView and a filter text field that allows filtering of the tree.
 		 * This widget keeps an internal filter model, so beware when dealing with QModelIndex instances:
@@ -136,8 +123,21 @@ namespace nap
 			 */
 			QWidget& getCornerWidget();
 
+			/**
+			 * @param index start lookup index 
+			 * @return last visible item index, invalid when no item is visible
+			 */
+			QModelIndex getLastVisibleItemIndex(const QModelIndex& index = QModelIndex()) const;
+
+			/**
+			 * @return current visible rect, including first and last item, invalid when no item is visible
+			 */
+			QRect getVisibleRect() const;
+
 		Q_SIGNALS:
 			void doubleClicked(const QModelIndex& idx);
+			void sortingStarted();
+			void sortingEnded();
 
 		protected:
 			/**

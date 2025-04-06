@@ -82,3 +82,4 @@ namespace nap
 		virtual VkImageLayout getFinalLayout() const = 0;
 	};
 }
+
