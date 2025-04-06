@@ -838,6 +838,8 @@ namespace nap
 		device_features.largePoints = physicalDevice.getFeatures().largePoints;
 		device_features.wideLines = physicalDevice.getFeatures().wideLines;
 		device_features.fillModeNonSolid = physicalDevice.getFeatures().fillModeNonSolid;
+		
+		// Great Vulkan 1.2 feature we may want to support by default at some point
 		//device_features.multiDrawIndirect = physicalDevice.getFeatures().multiDrawIndirect;
 
 		// The device feature 'robustBufferAccess' enables bounds checks on buffers and therefore be a useful debugging tool
