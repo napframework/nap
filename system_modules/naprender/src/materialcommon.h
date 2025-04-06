@@ -68,7 +68,7 @@ namespace nap
 	/**
 	 * Hash value for shader specialization constants
 	 */
-	using ShaderConstantHash = uint;
+	using ShaderConstantHash = size_t;
 
 
 	/**
