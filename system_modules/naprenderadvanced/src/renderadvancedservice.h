@@ -301,8 +301,6 @@ namespace nap
 		std::unique_ptr<MaterialInstance>			mCubeMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		Material*									mCubeMapMaterial = nullptr;			///< Run-time cube map material
 
-		static constexpr const uint mRequiredVulkanVersionMajor = 1;					///< Required Vulkan major version to support the render advanced service
-		static constexpr const uint mRequiredVulkanVersionMinor = 2;					///< Required Vulkan minor version to support the render advanced service
 		static constexpr const uint mMaxLightCount = 8;									///< The maximum number of lights the supported by the render advanced  service light system
 	};
 }

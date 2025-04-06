@@ -91,16 +91,6 @@ namespace nap
 		mRenderService = getCore().getService<RenderService>();
 		assert(mRenderService != nullptr);
 
-		// Ensure the initialized Vulkan API version meets the render advanced service requirement
-		if (mRenderService->getVulkanVersionMajor() <= mRequiredVulkanVersionMajor)
-		{
-			if (mRenderService->getVulkanVersionMajor() < mRequiredVulkanVersionMajor || mRenderService->getVulkanVersionMinor() < mRequiredVulkanVersionMinor)
-			{
-				errorState.fail("%s: Vulkan API Version %d.%d required", this->get_type().get_name().to_string().c_str(), mRequiredVulkanVersionMajor, mRequiredVulkanVersionMinor);
-				return false;
-			}
-		}
-
 		// Get configuration
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 		if (!errorState.check(configuration != nullptr, "Failed to get nap::RenderAdvancedServiceConfiguration"))
