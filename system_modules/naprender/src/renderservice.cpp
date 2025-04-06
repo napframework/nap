@@ -1728,7 +1728,7 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_API_VERSION_1_0;
+		mAPIVersion = VK_MAKE_API_VERSION(0, 1, 2, 0);
 		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
 			return false;
 

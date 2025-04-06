@@ -67,7 +67,7 @@ namespace nap
 		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
 		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32							mVulkanVersionMinor = 1;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		uint32							mVulkanVersionMinor = 2;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
 		uint32							mAnisotropicFilterSamples = 8;								///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
 		bool							mEnableHighDPIMode = true;									///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
@@ -253,11 +253,11 @@ namespace nap
 	 *
 	 * Turn headless rendering on / off using the nap::RenderServiceConfiguration.
 	 *
-	 * The service creates a Vulkan 1.0 instance by default, but applications may use Vulkan 1.1 and 1.2 functionality if required.
+	 * The service creates a Vulkan 1.2 instance by default, but applications may use legacy Vulkan functionality if required.
 	 * Make sure to set the required major and minor Vulkan version accordingly using the RenderServiceConfiguration.
 	 * The application will not start if the device does not support the selected (and therefore required) version of Vulkan.
 	 *
-	 * The following Vulkan device extensions are always required: VK_KHR_MAINTENANCE1_EXTENSION.
+	 * For Vulkan 1.0, the following Vulkan device extensions are always required: VK_KHR_MAINTENANCE1_EXTENSION.
 	 * When rendering to a window, the VK_KHR_SWAPCHAIN_EXTENSION is also required.
 	 * Additional extension can be specified using the nap::RenderServiceConfiguration.
 	 *
