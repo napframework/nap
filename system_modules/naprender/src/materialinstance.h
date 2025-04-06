@@ -216,11 +216,6 @@ namespace nap
 		 * @return Descriptor to be used in vkCmdBindDescriptorSets.
 		 */
 		virtual const DescriptorSet& update();
-
-		/**
-		 * CN edit: update constants after init(), but before pipeline creation!
-		 */
-		bool updateConstants(utility::ErrorState& errorState);
 		
 	protected:
 		friend class RenderableMesh;	// For responding to pipeline state events
