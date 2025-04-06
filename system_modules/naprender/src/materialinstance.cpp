@@ -98,8 +98,8 @@ namespace nap
 
 			if (declaration_type == RTTI_OF(UniformStructArrayInstance))
 			{
-				const UniformStructArrayInstance* struct_array_override = rtti_cast<const UniformStructArrayInstance>(override_uniform);
-				const UniformStructArrayInstance* struct_array_declaration = rtti_cast<const UniformStructArrayInstance>(base_uniform.get());
+				const auto* struct_array_override = rtti_cast<const UniformStructArrayInstance>(override_uniform);
+				const auto* struct_array_declaration = rtti_cast<const UniformStructArrayInstance>(base_uniform.get());
 
 				int resource_index = 0;
 				for (auto& base_element : struct_array_declaration->getElements())
@@ -113,8 +113,8 @@ namespace nap
 			}
 			else if (declaration_type.is_derived_from(RTTI_OF(UniformValueArrayInstance)))
 			{
-				const UniformValueArrayInstance* base_array_uniform = rtti_cast<const UniformValueArrayInstance>(base_uniform.get());
-				const UniformValueArrayInstance* override_array_uniform = rtti_cast<const UniformValueArrayInstance>(override_uniform);
+				const auto* base_array_uniform = rtti_cast<const UniformValueArrayInstance>(base_uniform.get());
+				const auto* override_array_uniform = rtti_cast<const UniformValueArrayInstance>(override_uniform);
 
 				if (override_array_uniform != nullptr)
 					ubo.mUniforms.push_back(override_array_uniform);
@@ -123,15 +123,15 @@ namespace nap
 			}
 			else if (declaration_type == RTTI_OF(UniformStructInstance))
 			{
-				const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(base_uniform.get());
-				const UniformStructInstance* override_struct = rtti_cast<const UniformStructInstance>(override_uniform);
+				const auto* base_struct = rtti_cast<const UniformStructInstance>(base_uniform.get());
+				const auto* override_struct = rtti_cast<const UniformStructInstance>(override_uniform);
 
 				buildUniformBufferObjectRecursive(*base_struct, override_struct, ubo);
 			}
 			else
 			{
-				const UniformValueInstance* base_value = rtti_cast<const UniformValueInstance>(base_uniform.get());
-				const UniformValueInstance* override_value = rtti_cast<const UniformValueInstance>(override_uniform);
+				const auto* base_value = rtti_cast<const UniformValueInstance>(base_uniform.get());
+				const auto* override_value = rtti_cast<const UniformValueInstance>(override_uniform);
 
 				if (override_value != nullptr)
 					ubo.mUniforms.push_back(override_value);
@@ -190,14 +190,13 @@ namespace nap
 			return existing;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const std::vector<BufferObjectDeclaration>& ubo_declarations = getMaterial()->getShader().getUBODeclarations();
+		const auto& ubo_declarations = getMaterial()->getShader().getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			if (ubo_declaration.mName == name)
 			{
 				// At the MaterialInstance level, we always have UBOs at the root, so we create a root struct
-				return &createUniformRootStruct(ubo_declaration,
-					std::bind(&BaseMaterialInstance::onUniformCreated, this));
+				return &createUniformRootStruct(ubo_declaration, std::bind(&BaseMaterialInstance::onUniformCreated, this));
 			}
 		}
 		return nullptr;
@@ -214,9 +213,9 @@ namespace nap
 		BufferBindingInstance* result = nullptr;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const std::vector<BufferObjectDeclaration>& ssbo_declarations = getMaterial()->getShader().getSSBODeclarations();
+		const auto& ssbo_declarations = getMaterial()->getShader().getSSBODeclarations();
 		int ssbo_index = 0;
-		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
+		for (const auto& declaration : ssbo_declarations)
 		{
 			const std::string& binding_name = declaration.mName;
 			if (binding_name == name)
@@ -250,7 +249,7 @@ namespace nap
 		const BaseShader& shader = getMaterial()->getShader();
 		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		int image_start_index = 0;
-		for (const SamplerDeclaration& declaration : sampler_declarations)
+		for (const auto& declaration : sampler_declarations)
 		{
 			if (declaration.mName == name)
 			{
@@ -345,19 +344,19 @@ namespace nap
 
 			if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
 			{
-				Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
+				auto* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(&samplerInstance);
 				assert(imageArrayIndex < sampler_2d_array->getNumElements());
 
-				const Texture2D& texture = sampler_2d_array->getTexture(imageArrayIndex);
+				const auto& texture = sampler_2d_array->getTexture(imageArrayIndex);
 				image_info.imageView = texture.getHandle().getView();
 
 			}
 			else if (samplerInstance.get_type() == RTTI_OF(SamplerCubeArrayInstance))
 			{
-				SamplerCubeArrayInstance* sampler_cube_array = (SamplerCubeArrayInstance*)(&samplerInstance);
+				auto* sampler_cube_array = static_cast<SamplerCubeArrayInstance*>(&samplerInstance);
 				assert(imageArrayIndex < sampler_cube_array->getNumElements());
 
-				const TextureCube& texture = sampler_cube_array->getTexture(imageArrayIndex);
+				const auto& texture = sampler_cube_array->getTexture(imageArrayIndex);
 				image_info.imageView = texture.getHandle().getView();
 			}
 			else
@@ -373,12 +372,12 @@ namespace nap
 
 			if (samplerInstance.get_type() == RTTI_OF(Sampler2DInstance))
 			{
-				Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
+				auto* sampler_2d = static_cast<Sampler2DInstance*>(&samplerInstance);
 				image_info.imageView = sampler_2d->getTexture().getHandle().getView();
 			}
 			else if (samplerInstance.get_type() == RTTI_OF(SamplerCubeInstance))
 			{
-				SamplerCubeInstance* sampler_cube = (SamplerCubeInstance*)(&samplerInstance);
+				auto* sampler_cube = static_cast<SamplerCubeInstance*>(&samplerInstance);
 				image_info.imageView = sampler_cube->getTexture().getHandle().getView();
 			}
 			else
@@ -395,7 +394,7 @@ namespace nap
 		VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[storageBufferIndex];
 		if (bindingInstance.get_type().is_derived_from(RTTI_OF(BufferBindingStructInstance)))
 		{
-			BufferBindingStructInstance* instance = static_cast<BufferBindingStructInstance*>(&bindingInstance);
+			auto* instance = static_cast<BufferBindingStructInstance*>(&bindingInstance);
 			buffer_info.buffer = instance->getBuffer().getBuffer();
 		}
 		else if (bindingInstance.get_type().is_derived_from(RTTI_OF(BufferBindingNumericInstance)))
@@ -452,7 +451,7 @@ namespace nap
 	{
 		ubo.mUniforms.clear();
 
-		const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(getMaterial()->findUniform(ubo.mDeclaration->mName));
+		const auto* base_struct = rtti_cast<const UniformStructInstance>(getMaterial()->findUniform(ubo.mDeclaration->mName));
 		assert(base_struct != nullptr);
 
 		buildUniformBufferObjectRecursive(*base_struct, overrideStruct, ubo);
@@ -478,7 +477,7 @@ namespace nap
 		mStorageWriteDescriptorSets.reserve(ssbo_declarations.size()); // We reserve to ensure that pointers remain consistent during the iteration
 
 		int ssbo_index = 0;
-		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
+		for (const auto& declaration : ssbo_declarations)
 		{
 			// Check if the binding is set as override in the MaterialInstance
 			const BufferBinding* override_resource = findBindingResource(instanceResource.mBuffers, declaration);
@@ -636,7 +635,7 @@ namespace nap
 				{
 				case SamplerDeclaration::EType::Type_2D:
 				{
-					Sampler2DArrayInstance* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(sampler_instance);
+					auto* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(sampler_instance);
 					for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
 					{
 						const auto& tex = sampler_2d_array->hasTexture(index) ? sampler_2d_array->getTexture(index) : mRenderService->getEmptyTexture2D();
@@ -646,7 +645,7 @@ namespace nap
 				}
 				case SamplerDeclaration::EType::Type_Cube:
 				{
-					SamplerCubeArrayInstance* sampler_cube_array = static_cast<SamplerCubeArrayInstance*>(sampler_instance);
+					auto* sampler_cube_array = static_cast<SamplerCubeArrayInstance*>(sampler_instance);
 					for (int index = 0; index < sampler_cube_array->getNumElements(); ++index)
 					{
 						const auto& tex = sampler_cube_array->hasTexture(index) ? sampler_cube_array->getTexture(index) : mRenderService->getEmptyTextureCube();
@@ -666,14 +665,14 @@ namespace nap
 				{
 				case SamplerDeclaration::EType::Type_2D:
 				{
-					Sampler2DInstance* sampler_2d = static_cast<Sampler2DInstance*>(sampler_instance);
+					auto* sampler_2d = static_cast<Sampler2DInstance*>(sampler_instance);
 					const auto& tex = sampler_2d->hasTexture() ? sampler_2d->getTexture() : mRenderService->getEmptyTexture2D();
 					addImageInfo(tex, vk_sampler);
 					break;
 				}
 				case SamplerDeclaration::EType::Type_Cube:
 				{
-					SamplerCubeInstance* sampler_cube = static_cast<SamplerCubeInstance*>(sampler_instance);
+					auto* sampler_cube = static_cast<SamplerCubeInstance*>(sampler_instance);
 					const auto& tex = sampler_cube->hasTexture() ? sampler_cube->getTexture() : mRenderService->getEmptyTextureCube();
 					addImageInfo(tex, vk_sampler);
 					break;
@@ -794,7 +793,7 @@ namespace nap
 		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
-			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(instanceResource.mUniforms, ubo_declaration));
+			const auto* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(instanceResource.mUniforms, ubo_declaration));
 
 			// Pass 1: create hierarchical structure
 			UniformStructInstance* override_struct = nullptr;
