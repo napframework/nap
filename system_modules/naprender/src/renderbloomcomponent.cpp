@@ -9,12 +9,15 @@
 #include "gpubuffer.h"
 #include "renderglobals.h"
 #include "uniforminstance.h"
+#include "renderglobals.h"
 #include "blurshader.h"
 #include "textureutils.h"
 
 // External Includes
 #include <entity.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <entity.h>
+#include <nap/core.h>
 #include <orthocameracomponent.h>
 
 // nap::RenderBloomComponent run time class definition 
@@ -28,8 +31,6 @@ RTTI_END_CLASS
 // nap::RenderBloomComponentInstance run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderBloomComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
-	RTTI_FUNCTION(nap::material::instance::getOrCreateMaterial, &nap::RenderBloomComponentInstance::getOrCreateMaterial)
-	RTTI_FUNCTION("draw", &nap::RenderBloomComponentInstance::draw)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
