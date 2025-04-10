@@ -1042,7 +1042,7 @@ namespace nap
 
 	void RenderWindow::setAlwaysOnTop(bool onTop)
 	{
-		SDL::setAlwaysOnTop(mSDLWindow, onTop);
+		SDL::setWindowAlwaysOnTop(mSDLWindow, onTop);
 	}
 }
 

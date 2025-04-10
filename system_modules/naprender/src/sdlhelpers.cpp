@@ -45,9 +45,15 @@ namespace nap
 		}
 
 
-		void NAPAPI setAlwaysOnTop(SDL_Window* window, bool enabled)
+		void NAPAPI setWindowAlwaysOnTop(SDL_Window* window, bool enabled)
 		{
 			SDL_SetWindowAlwaysOnTop(window, static_cast<SDL_bool>(enabled));
+		}
+
+
+		void NAPAPI setWindowResizable(SDL_Window* window, bool enabled)
+		{
+			SDL_SetWindowResizable(window, static_cast<SDL_bool>(enabled));
 		}
 
 
