@@ -45,6 +45,12 @@ namespace nap
 		}
 
 
+		void NAPAPI setAlwaysOnTop(SDL_Window* window, bool enabled)
+		{
+			SDL_SetWindowAlwaysOnTop(window, static_cast<SDL_bool>(enabled));
+		}
+
+
 		void showWindow(SDL_Window* window, bool show)
 		{
 			if (show)
