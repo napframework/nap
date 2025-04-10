@@ -232,5 +232,11 @@ namespace nap
 		 * @param name the new window name
 		 */
 		void NAPAPI setWindowTitle(SDL_Window* window, const std::string& name);
+
+		/**
+		 * Brings the window to the front and keeps it there
+		 * @param window the window to move to the front and keep on top
+		 */
+		void NAPAPI setAlwaysOnTop(SDL_Window* window, bool enabled);
 	}
 }
