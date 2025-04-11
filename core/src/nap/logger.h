@@ -308,7 +308,7 @@ namespace nap
 	 * Log handler that will print to the console.
 	 * By default, messages with an info level and higher are included.
 	 */
-	class ConsoleLogHandler : public LogHandler
+	class NAPAPI ConsoleLogHandler : public LogHandler
 	{
 	public:
 		ConsoleLogHandler() { setLogLevel(Logger::infoLevel()); }
@@ -330,7 +330,7 @@ namespace nap
 	 * and will remain open for the lifetime of the handler.
 	 * The file writer runs another thread to keep the call site unburdened.
 	 */
-	class FileLogHandler : public LogHandler
+	class NAPAPI FileLogHandler : public LogHandler
 	{
 	public:
 		FileLogHandler(const std::string& mFilename);
