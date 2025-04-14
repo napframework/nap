@@ -390,13 +390,13 @@ namespace nap
     {
         std::lock_guard l(mTimeMutex);
         double time = mTime.load();
-        time += deltaTime * static_cast<double>(mSpeed.load()));
+        time += deltaTime * static_cast<double>(mSpeed.load());
         if(mIsLooping.load())
         {
             if(time < 0.0)
             {
                 time = getDuration() + time;
-            }else if(mTime > getDuration())
+            }else if(time > getDuration())
             {
                 time = fmod(time, getDuration());
             }
