@@ -98,7 +98,7 @@ namespace nap
         {
             if(!was_playing)
             {
-                std::lock_guard l(mMutex);
+                std::lock_guard l(mSequenceMutex);
                 createAdapters();
             }
 
@@ -107,7 +107,7 @@ namespace nap
         } else
         {
             {
-                std::lock_guard l(mMutex);
+                std::lock_guard l(mSequenceMutex);
                 destroyAdapters();
             }
 
@@ -128,7 +128,7 @@ namespace nap
 
     bool SequencePlayer::save(const std::string& name, utility::ErrorState& errorState)
     {
-        std::lock_guard<std::mutex> lock(mMutex);
+        std::lock_guard<std::mutex> lock(mSequenceMutex);
 
         // Ensure the presets directory exists
         const std::string dir = "sequences";
@@ -159,7 +159,7 @@ namespace nap
 
     bool SequencePlayer::load(const std::string& name, utility::ErrorState& errorState)
     {
-        std::lock_guard<std::mutex> lock(mMutex);
+        std::lock_guard<std::mutex> lock(mSequenceMutex);
         rtti::DeserializeResult result;
 
         // destroy adapters if playing
@@ -229,7 +229,7 @@ namespace nap
 
     bool SequencePlayer::loadBinary(const std::vector<nap::uint8>& buffer, utility::ErrorState& errorState)
     {
-        std::lock_guard<std::mutex> lock(mMutex);
+        std::lock_guard<std::mutex> lock(mSequenceMutex);
         rtti::DeserializeResult result;
 
         if (mIsPlaying)
@@ -335,8 +335,11 @@ namespace nap
 
     void SequencePlayer::setPlayerTime(double time)
     {
-        mTime = math::clamp<double>(time, 0.0, getDuration());
-        playerTimeChanged(*this, mTime);
+        {
+            std::lock_guard l(mTimeMutex);
+            mTime.store(math::clamp<double>(time, 0.0, getDuration()));
+        }
+        playerTimeChanged(*this, mTime.load());
     }
 
 
@@ -349,38 +352,59 @@ namespace nap
 
     double SequencePlayer::getPlayerTime() const
     {
-        return mTime;
+        return mTime.load();
     }
 
 
     bool SequencePlayer::getIsPlaying() const
     {
-        return mIsPlaying;
+        return mIsPlaying.load();
     }
 
 
     bool SequencePlayer::getIsPaused() const
     {
-        return mIsPaused;
+        return mIsPaused.load();
     }
 
 
     void SequencePlayer::setIsLooping(bool isLooping)
     {
-        mIsLooping = isLooping;
+        mIsLooping.store(isLooping);
     }
 
 
     bool SequencePlayer::getIsLooping() const
     {
-        return mIsLooping;
+        return mIsLooping.load();
     }
 
 
     float SequencePlayer::getPlaybackSpeed() const
     {
-        return mSpeed;
+        return mSpeed.load();
     }
+
+
+    void SequencePlayer::advanceTime(double deltaTime)
+    {
+        std::lock_guard l(mTimeMutex);
+        mTime.store(mTime + deltaTime * static_cast<double>(mSpeed.load()));
+        if(mIsLooping.load())
+        {
+            if(mTime < 0.0)
+            {
+                mTime.store(getDuration() + mTime);
+            } else if(mTime > getDuration())
+            {
+                mTime.store(fmod(mTime, getDuration()));
+            }
+        } else
+        {
+            mTime.store(math::clamp<double>(mTime, 0.0, getDuration()));
+        }
+    }
+
 
 
     void SequencePlayer::tick(double deltaTime)
@@ -392,28 +416,11 @@ namespace nap
 
             // Update time
             if(!mIsPaused.load())
-            {
-                double time = mTime.load();
-                time += deltaTime * static_cast<double>(mSpeed.load());
-                if(mIsLooping.load())
-                {
-                    if(time < 0.0)
-                    {
-                        time = getDuration() + time;
-                    } else if(time > getDuration())
-                    {
-                        time = fmod(mTime, getDuration());
-                    }
-                } else
-                {
-                    time = math::clamp<double>(time, 0.0, getDuration());
-                }
-                mTime.store(time);
-            }
+               advanceTime(deltaTime);
 
             // Update adapters
             {
-                std::lock_guard l(mMutex);
+                std::lock_guard l(mSequenceMutex);
                 for(auto &adapter: mAdapters)
                     adapter.second->tick(mTime);
             }
@@ -489,7 +496,7 @@ namespace nap
     void SequencePlayer::performEditAction(std::function<void()>& action)
     {
         {
-            std::lock_guard<std::mutex> lock(mMutex);
+            std::lock_guard<std::mutex> lock(mSequenceMutex);
             action();
             mDuration = mSequence->mDuration;
         }

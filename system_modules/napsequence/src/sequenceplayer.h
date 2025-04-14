@@ -271,8 +271,14 @@ namespace nap
          */
         void performEditAction(std::function<void()> &action);
 
+        /**
+         * Advances the time of the sequence player. This is called from the clock
+         * @param deltaTime time since last update
+         */
+        void advanceTime(double deltaTime);
+
         // mutex
-        std::mutex mMutex;
+        std::mutex mSequenceMutex;
 
         // raw pointer to loaded sequence
         Sequence *mSequence = nullptr;
@@ -288,6 +294,9 @@ namespace nap
 
         // speed
         std::atomic<float> mSpeed = 1.0f;
+
+        // mutex for time
+        std::mutex mTimeMutex;
 
         // current time
         std::atomic<double> mTime = 0.0;
