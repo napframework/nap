@@ -428,25 +428,25 @@ namespace std
 	template<>
 	struct hash<nap::ShaderStageConstantMap>
 	{
-		uint operator()(nap::ShaderStageConstantMap const& constants) const
+		size_t operator()(nap::ShaderStageConstantMap const& constants) const
 		{
-			size_t count = 0;
+			nap::uint count = 0;
 			for (const auto& stage : constants)
 				count += stage.second.size();
 
-			uint seed = static_cast<uint>(count);
+			auto seed = static_cast<nap::uint>(count);
 			for (const auto& stage : constants)
 			{
 				for (const auto& entry : stage.second)
 				{
-					uint x = entry.second;
+					nap::uint x = entry.second;
 					x = ((x >> 16) ^ x) * 0x45d9f3b;
 					x = ((x >> 16) ^ x) * 0x45d9f3b;
 					x = (x >> 16) ^ x;
 					seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 				}
 			}
-			return seed;
+			return static_cast<size_t>(seed);
 		}
 	};
 }
