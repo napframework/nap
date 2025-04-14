@@ -107,10 +107,14 @@ static std::array<size_t, 2> swapItems(const PropertyPath& path, size_t oldIndex
 		}
 	} assert(a_idx >= 0 && b_idx >= 0);
 
-	auto child_a = parent.takeChild(a_idx);
-	auto child_b = parent.takeChild(b_idx);
-	parent.setChild(a_idx, child_b);
-	parent.setChild(b_idx, child_a);
+	// Swap items for every column 
+	for (int c = 0; c < parent.columnCount(); c++)
+	{
+		auto child_a = parent.takeChild(a_idx, c);
+		auto child_b = parent.takeChild(b_idx, c);
+		parent.setChild(a_idx, c, child_b);
+		parent.setChild(b_idx, c, child_a);
+	}
 	return { static_cast<size_t>(a_idx), static_cast<size_t>(b_idx) };
 }
 
@@ -461,7 +465,7 @@ int ObjectItem::nameIndex(const ObjectItem& childItem) const
 }
 
 
-void ObjectItem::onPropertyValueChanged(PropertyPath path)
+void ObjectItem::onPropertyValueChanged(const PropertyPath& path)
 {
 	if (path.getObject() == mObject)
 		refresh();

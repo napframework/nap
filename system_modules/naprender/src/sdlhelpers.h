@@ -214,6 +214,12 @@ namespace nap
 		bool NAPAPI initVideo(utility::ErrorState& error);
 
 		/**
+		 * Returns if the video subsystem has been initialized 
+		 * @return if the SDL video subsystem has been initialized
+		 */
+		bool NAPAPI videoInitialized();
+
+		/**
 	 	 * Controls if the window has any borders.
 		 * @param window the window to set
 		 * @param hasBorders if the window should have borders
@@ -226,5 +232,19 @@ namespace nap
 		 * @param name the new window name
 		 */
 		void NAPAPI setWindowTitle(SDL_Window* window, const std::string& name);
+
+		/**
+		 * Brings the window to the front and keeps it there
+		 * @param window the window to move to the front and keep on top
+		 * @param enabled if always on top should be enabled
+		 */
+		void NAPAPI setWindowAlwaysOnTop(SDL_Window* window, bool enabled);
+
+		/**
+		 * Turn resizing of a window by a user on or off.
+		 * @param window the resize window 
+		 * @param enabled resize flag
+		 */
+		void NAPAPI setWindowResizable(SDL_Window* window, bool enabled);
 	}
 }

@@ -46,26 +46,26 @@ void initializeSettings()
 	QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, exeDir);
 	QSettings::setDefaultFormat(QSettings::IniFormat);
 
-	auto userSettingsFilename = QSettings().fileName();
-	if (!QFileInfo::exists(userSettingsFilename))
+	auto user_settings_filename = QSettings().fileName();
+	if (!QFileInfo::exists(user_settings_filename))
 	{
-		auto settingsDir = QFileInfo(userSettingsFilename).dir();
+		auto settingsDir = QFileInfo(user_settings_filename).dir();
 		if (!settingsDir.exists())
 		{
 			settingsDir.mkpath(".");
 		}
 
-		auto defaultSettingsFilename = QString("%1/%2").arg(exeDir, napkin::DEFAULT_SETTINGS_FILE);
-		if (!QFileInfo::exists(defaultSettingsFilename))
+		auto default_settings_filename = QString("%1/%2").arg(exeDir, napkin::DEFAULT_SETTINGS_FILE);
+		if (!QFileInfo::exists(default_settings_filename))
 		{
-			nap::Logger::error("File not found: %s", defaultSettingsFilename.toStdString().c_str());
+			nap::Logger::error("File not found: %s", default_settings_filename.toStdString().c_str());
 		}
 
-		if (!QFile::copy(defaultSettingsFilename, userSettingsFilename))
+		if (!QFile::copy(default_settings_filename, user_settings_filename))
 		{
 			nap::Logger::error("Failed to copy %s to %s", 
-				defaultSettingsFilename.toStdString().c_str(),
-				userSettingsFilename.toStdString().c_str());
+				default_settings_filename.toStdString().c_str(),
+				user_settings_filename.toStdString().c_str());
 		}
 	}
 }
@@ -139,11 +139,16 @@ bool parseCommandline(QApplication& app, napkin::AppContext& context)
  */
 int main(int argc, char* argv[])
 {
+	// Force X11 when running Linux -> required because of NAP applets.
+	// Applets are NAP applications that run inside NAPKIN and use SDL2 which defaults to X11 - not wayland.
+	// X applications executed in a wayland session use XWayland for compatibility.
+	// It is recommended that you use X11 instead of wayland until properly supported by SDL and NVIDIA.
+#ifdef __linux__
+	napkin::setEnv("QT_QPA_PLATFORM", "xcb");
+#endif
+
 	// Start logging to file next to console
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
-
-	// Only log debug messages and higher
-	nap::Logger::setLevel(nap::Logger::debugLevel());
 
     // Construct the app context singleton
     auto& ctx = napkin::AppContext::create();
@@ -183,6 +188,7 @@ int main(int argc, char* argv[])
 	app.setWindowIcon(QIcon(napkin::QRC_ICONS_NAP_ICON));
 	std::unique_ptr<napkin::MainWindow> w = std::make_unique<napkin::MainWindow>();
 	QFont applied_font = w->font();
+	applied_font.setStyleStrategy(QFont::PreferQuality);
 	applied_font.setHintingPreference(QFont::PreferNoHinting);
 	w->setFont(applied_font);
 	w->show();
@@ -210,3 +216,4 @@ int main(int argc, char* argv[])
     napkin::AppContext::destroy();
 	return exit_code;
 }
+

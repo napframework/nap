@@ -41,10 +41,11 @@ RTTI_END_CLASS
 namespace nap
 {
 	// Only here to make sure this cpp is not removed during optimization, which would cause the RTTI definitions to be missing
-	BaseVertexAttribute::BaseVertexAttribute()
-	{
-	}
+	BaseVertexAttribute::BaseVertexAttribute(const nap::rtti::TypeInfo& elementType) : mElementType(elementType)
+	{ }
 
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
 	template<>

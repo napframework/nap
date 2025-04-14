@@ -126,6 +126,7 @@ namespace nap
 		: LogHandler(),  mFilename(mFilename)
 	{
 		// Set the default formatter to use a timestamp
+		setLogLevel(Logger::debugLevel());
 		setFormatter(&timestampLogMessageFormatter);
 
 		// Kick off the writing thread
@@ -144,8 +145,8 @@ namespace nap
 
 	FileLogHandler::~FileLogHandler()
 	{
-		mRunning = false;
 		// Wait for the stream to close
+		mRunning = false;
 		if (mWriteThread->joinable())
 			mWriteThread->join();
 	}

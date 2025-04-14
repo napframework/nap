@@ -76,7 +76,7 @@ namespace nap
 		{
 			if (!fillFromUniformRecursive(descriptor->mElement.get(), data + element_size * idx, element_size, errorState))
 			{
-				errorState.fail(utility::stringFormat("Failed to fill specified data storage", this->mID.c_str()));
+				errorState.fail("Failed to fill specified data storage");
 				return false;
 			}
 		}

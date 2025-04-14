@@ -75,5 +75,11 @@ namespace nap
 		 * @return if sample based shading is enabled
 		 */
 		virtual bool getSampleShadingEnabled() const = 0;
+
+		/**
+		 * @return image layout when render pass ends
+		 */
+		virtual VkImageLayout getFinalLayout() const = 0;
 	};
 }
+

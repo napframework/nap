@@ -135,6 +135,13 @@ namespace nap
 		 */
 		NAPAPI const char* getDescription(const rtti::TypeInfo& type);
 
+		/**
+		 * Returns the NAP module that defines the type, nullptr if the type is not defined in a NAP module (dynamic library).
+		 * @param type type to find associated module for.
+		 * @return the module the type is defined, nullptr if type not defined in a NAP module
+		 */
+		NAPAPI const nap::ModuleDescriptor* getModuleDescription(const rtti::TypeInfo& type);
+
 	} //< End Namespace RTTI
 
 }

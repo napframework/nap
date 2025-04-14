@@ -3,7 +3,6 @@
     "mID": "ModuleInfo",
     "RequiredModules": [
         "naprenderadvanced",
-        "napscene",
         "napcameracontrol",
         "napparameter"
     ],

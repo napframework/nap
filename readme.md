@@ -88,7 +88,7 @@ Other Linux distributions *may* work, but they have not been tested and are not 
 
 #### Display Server
 
-When `Wayland` is configured as the display server, NAP applications will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is fully supported.
+When `Wayland` is configured as the display server, NAP applications and Napkin (the editor) will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is fully supported.
 
 #### Raspberry Pi
 

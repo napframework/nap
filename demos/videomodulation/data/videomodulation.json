@@ -631,7 +631,7 @@
                         {
                             "Type": "nap::RenderTexture2D",
                             "mID": "VideoColorTexture",
-                            "Usage": "Static",
+                            "Usage": "Internal",
                             "Width": 1920,
                             "Height": 1080,
                             "Format": "RGBA8",
@@ -648,7 +648,7 @@
                         {
                             "Type": "nap::RenderTexture2D",
                             "mID": "OutputTexture",
-                            "Usage": "Static",
+                            "Usage": "Internal",
                             "Width": 1920,
                             "Height": 1080,
                             "Format": "RGBA8",

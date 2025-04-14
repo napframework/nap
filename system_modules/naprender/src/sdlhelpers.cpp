@@ -27,6 +27,12 @@ namespace nap
 		}
 
 
+		bool NAPAPI videoInitialized()
+		{
+			return SDL_WasInit(SDL_INIT_VIDEO) > 0;
+		}
+
+
 		void setWindowBordered(SDL_Window* window, bool hasBorders)
 		{
 			SDL_SetWindowBordered(window, (SDL_bool)hasBorders);
@@ -36,6 +42,18 @@ namespace nap
 		void setWindowTitle(SDL_Window* window, const std::string& name)
 		{
 			SDL_SetWindowTitle(window, name.c_str());
+		}
+
+
+		void NAPAPI setWindowAlwaysOnTop(SDL_Window* window, bool enabled)
+		{
+			SDL_SetWindowAlwaysOnTop(window, static_cast<SDL_bool>(enabled));
+		}
+
+
+		void NAPAPI setWindowResizable(SDL_Window* window, bool enabled)
+		{
+			SDL_SetWindowResizable(window, static_cast<SDL_bool>(enabled));
 		}
 
 

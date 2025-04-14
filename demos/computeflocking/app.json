@@ -8,8 +8,6 @@
     "RequiredModules": [
         "napcomputeflocking",
         "napapp",
-        "napcameracontrol",
-        "napimgui",
         "napparametergui"
     ]
 }
