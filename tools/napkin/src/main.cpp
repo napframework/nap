@@ -188,6 +188,7 @@ int main(int argc, char* argv[])
 	app.setWindowIcon(QIcon(napkin::QRC_ICONS_NAP_ICON));
 	std::unique_ptr<napkin::MainWindow> w = std::make_unique<napkin::MainWindow>();
 	QFont applied_font = w->font();
+	applied_font.setStyleStrategy(QFont::PreferQuality);
 	applied_font.setHintingPreference(QFont::PreferNoHinting);
 	w->setFont(applied_font);
 	w->show();
