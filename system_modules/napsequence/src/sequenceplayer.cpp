@@ -389,20 +389,22 @@ namespace nap
     void SequencePlayer::advanceTime(double deltaTime)
     {
         std::lock_guard l(mTimeMutex);
-        mTime.store(mTime + deltaTime * static_cast<double>(mSpeed.load()));
+        double time = mTime.load();
+        time += deltaTime * static_cast<double>(mSpeed.load()));
         if(mIsLooping.load())
         {
-            if(mTime < 0.0)
+            if(time < 0.0)
             {
-                mTime.store(getDuration() + mTime);
-            } else if(mTime > getDuration())
+                time = getDuration() + time;
+            }else if(mTime > getDuration())
             {
-                mTime.store(fmod(mTime, getDuration()));
+                time = fmod(time, getDuration());
             }
         } else
         {
-            mTime.store(math::clamp<double>(mTime, 0.0, getDuration()));
+            time = math::clamp<double>(time, 0.0, getDuration());
         }
+        mTime.store(time);
     }
 
 
