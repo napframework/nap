@@ -413,7 +413,7 @@ namespace nap
     {
         if(mIsPlaying.load())
         {
-            // notify lister, so data model of sequence and data of player can be modified by listeners to this signal
+            // notify listener, so data model of sequence and data of player can be modified by listeners to this signal
             preTick.trigger(*this);
 
             // Update time
