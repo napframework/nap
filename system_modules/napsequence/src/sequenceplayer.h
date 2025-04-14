@@ -242,6 +242,10 @@ namespace nap
          */
         bool createAdapter(const std::string& objectID, const std::string& trackID);
 
+        /**
+         * updates the sequence player, this is called from the clock, can be called from any thread
+         * @param deltaTime time since last update
+         */
         void tick(double deltaTime);
 
         // read objects from sequence
@@ -274,19 +278,22 @@ namespace nap
         Sequence *mSequence = nullptr;
 
         // is playing
-        bool mIsPlaying = false;
+        std::atomic_bool mIsPlaying = false;
 
         // is paused
-        bool mIsPaused = false;
+        std::atomic_bool mIsPaused = false;
 
         // is looping
-        bool mIsLooping = false;
+        std::atomic_bool mIsLooping = false;
 
         // speed
-        float mSpeed = 1.0f;
+        std::atomic<float> mSpeed = 1.0f;
 
         // current time
-        double mTime = 0.0;
+        std::atomic<double> mTime = 0.0;
+
+        // duration of sequence
+        double mDuration = 0.0;
 
         // list of instantiated adapters
         std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
