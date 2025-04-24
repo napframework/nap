@@ -103,7 +103,7 @@ namespace nap
 		const MaterialInstance& getMaterialInstance() const				{ return mMaterialInstance; }
 
 		/**
-		 * Renders the effect directly to texture using a custom material, without having to define a render target or mesh.
+		 * Renders directly to the window using a custom material, without having to define a mesh.
 		 * Call this in your application render() call -> the result is rendered into the given window.
 		 * This call starts and stops the render operation, you can't render anything else to the window after it's done.
 		 * Alternatively, you can use the render service to render this component, see onDraw()
