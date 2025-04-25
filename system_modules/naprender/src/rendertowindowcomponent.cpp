@@ -205,14 +205,23 @@ namespace nap
 		switch (mMode)
 		{
 			case RenderToWindowComponent::EScaleMode::Window:
+			{
 				return mWindow->getSize();
+			}
 			case RenderToWindowComponent::EScaleMode::Square:
+			{
 				static const glm::vec2 sr = { 1.0f, 1.0f };
 				return sr;
+			}
 			case RenderToWindowComponent::EScaleMode::Custom:
+			{
 				return mRatio;
+			}
 			default:
-				assert(false); return mWindow->getSize();
+			{
+				assert(false);
+				return mWindow->getSize();
+			}
 		}
 	}
 
