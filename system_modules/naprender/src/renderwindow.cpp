@@ -27,6 +27,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderWindow, "Desktop render windo
 	RTTI_PROPERTY("Borderless",				&nap::RenderWindow::mBorderless,		nap::rtti::EPropertyMetaData::Default,	"If the window has borders")
 	RTTI_PROPERTY("Resizable",				&nap::RenderWindow::mResizable,			nap::rtti::EPropertyMetaData::Default,	"If the window is resizable")
 	RTTI_PROPERTY("Visible",				&nap::RenderWindow::mVisible,			nap::rtti::EPropertyMetaData::Default,	"If the window is visible")
+	RTTI_PROPERTY("AlwaysOnTop",			&nap::RenderWindow::mAlwaysOnTop,		nap::rtti::EPropertyMetaData::Default,	"Bring the window to the front and keep it above the rest")
 	RTTI_PROPERTY("SampleShading",			&nap::RenderWindow::mSampleShading,		nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
 	RTTI_PROPERTY("Title",					&nap::RenderWindow::mTitle,				nap::rtti::EPropertyMetaData::Default,	"Window display title")
 	RTTI_PROPERTY("Width",					&nap::RenderWindow::mWidth,				nap::rtti::EPropertyMetaData::Default,	"Horizontal resolution")
@@ -54,13 +55,15 @@ namespace nap
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
-		options = renderWindow.mResizable  ? options | SDL_WINDOW_RESIZABLE : options;
-		options = renderWindow.mBorderless ? options | SDL_WINDOW_BORDERLESS : options;
-		options = allowHighDPI ? options | SDL_WINDOW_ALLOW_HIGHDPI : options;
+		options |= renderWindow.mResizable  ? SDL_WINDOW_RESIZABLE  : 0x0U;
+		options |= renderWindow.mBorderless ? SDL_WINDOW_BORDERLESS : 0x0U;
+		options |= renderWindow.mAlwaysOnTop ? SDL_WINDOW_ALWAYS_ON_TOP : 0x0U;
+		options |= allowHighDPI ? SDL_WINDOW_ALLOW_HIGHDPI : 0x0U;
 
 		// Always hide window until added and configured by render service
-		options = options | SDL_WINDOW_HIDDEN;
+		options |= SDL_WINDOW_HIDDEN;
 
+		// Create window
 		SDL_Window* new_window = SDL_CreateWindow(renderWindow.mTitle.c_str(),
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
@@ -1035,6 +1038,12 @@ namespace nap
 			mSwapchainExtent = mSurfaceCapabilities.currentExtent;
 		}
 		return true;
+	}
+
+
+	void RenderWindow::setAlwaysOnTop(bool onTop)
+	{
+		SDL::setWindowAlwaysOnTop(mSDLWindow, onTop);
 	}
 }
 

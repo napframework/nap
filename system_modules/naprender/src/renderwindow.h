@@ -205,6 +205,12 @@ namespace nap
 		const glm::ivec2 getPosition() const;
 
 		/**
+		 * Moves the window to the front and keeps it there
+		 * @param if the window is moved to the front and kept there.
+		 */
+		void setAlwaysOnTop(bool onTop);
+
+		/**
 		 * @return the hardware window handle, nullptr if undefined
 		 */
 		SDL_Window* getNativeWindow() const;
@@ -284,6 +290,7 @@ namespace nap
 		bool					mBorderless			= false;							///< Property: 'Borderless' if the window has any borders
 		bool					mResizable			= true;								///< Property: 'Resizable' if the window is resizable
 		bool					mVisible			= true;								///< Property: 'Visible' if the render window is visible on screen
+		bool					mAlwaysOnTop		= false;							///< Property: 'AlwaysOnTop' Brings the window to the front and keeps it above the rest
 		EPresentationMode		mMode				= EPresentationMode::Immediate;		///< Property: 'Mode' the image presentation mode to use
 		std::string				mTitle				= "";								///< Property: 'Title' window title
 		RGBAColorFloat			mClearColor			= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
