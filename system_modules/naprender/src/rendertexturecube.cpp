@@ -8,22 +8,22 @@
 
 
 RTTI_BEGIN_ENUM(nap::RenderTextureCube::EFormat)
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA8, "RGBA8"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::BGRA8, "BGRA8"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R8, "R8"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA16, "RGBA16"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R16, "R16"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA32, "RGBA32"),
-	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R32, "R32")
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA8,		"RGBA8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::BGRA8,		"BGRA8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R8,		"R8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA16,	"RGBA16"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R16,		"R16"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA32,	"RGBA32"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R32,		"R32")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTextureCube, "Cubemap GPU color texture ")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Width",		&nap::RenderTextureCube::mWidth,			nap::rtti::EPropertyMetaData::Required, "Width of a single cube face in texels")
-	RTTI_PROPERTY("Height",		&nap::RenderTextureCube::mHeight,			nap::rtti::EPropertyMetaData::Required, "Height of a single cube face in texels")
-	RTTI_PROPERTY("Format",		&nap::RenderTextureCube::mColorFormat,		nap::rtti::EPropertyMetaData::Required, "Texture color format")
-	RTTI_PROPERTY("ColorSpace", &nap::RenderTextureCube::mColorSpace,		nap::rtti::EPropertyMetaData::Default,	"Texture color space")
-	RTTI_PROPERTY("ClearColor", &nap::RenderTextureCube::mClearColor,		nap::rtti::EPropertyMetaData::Default,	"Initial clear color")
+	RTTI_PROPERTY("Width",			&nap::RenderTextureCube::mWidth,			nap::rtti::EPropertyMetaData::Required, "Width of a single cube face in texels")
+	RTTI_PROPERTY("Height",			&nap::RenderTextureCube::mHeight,			nap::rtti::EPropertyMetaData::Required, "Height of a single cube face in texels")
+	RTTI_PROPERTY("Format",			&nap::RenderTextureCube::mColorFormat,		nap::rtti::EPropertyMetaData::Required, "Texture color format")
+	RTTI_PROPERTY("ColorSpace",		&nap::RenderTextureCube::mColorSpace,		nap::rtti::EPropertyMetaData::Default,	"Texture color space")
+	RTTI_PROPERTY("ClearColor",		&nap::RenderTextureCube::mClearColor,		nap::rtti::EPropertyMetaData::Default,	"Initial clear color")
 RTTI_END_CLASS
 
 RTTI_BEGIN_ENUM(nap::DepthRenderTextureCube::EDepthFormat)
@@ -51,8 +51,15 @@ namespace nap
 		TextureCube(core)
 	{ }
 
+
 	// Initializes Cube texture. 
 	bool RenderTextureCube::init(utility::ErrorState& errorState)
+	{
+		return init(false, errorState);
+	}
+
+
+	bool RenderTextureCube::init(bool enableMips, utility::ErrorState& errorState)
 	{
 		SurfaceDescriptor settings;
 		settings.mWidth = mWidth;
@@ -111,11 +118,17 @@ namespace nap
 			}
 		}
 
+		// Ensure mip-mapping is supported when requested
+		if (!errorState.check(!enableMips || mRenderService.getMipSupport(settings),
+			"%s: hardware mipmap generation not supported", mID.c_str()))
+			return false;
+
 		// Ensure texture can be used as an attachment for a render pass
 		VkImageUsageFlags required_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		// Create render texture
-		return TextureCube::init(settings, mGenerateLODs, mClearColor.toVec4(), required_flags, errorState);
+		int lvl = enableMips ? utility::computeMipLevel(settings) : 1;
+		return TextureCube::init(settings, lvl, mClearColor.toVec4(), required_flags, errorState);
 	}
 
 
@@ -147,12 +160,12 @@ namespace nap
 			case DepthRenderTextureCube::EDepthFormat::D16:
 			{
 				settings.mDataType = ESurfaceDataType::USHORT;
-				return TextureCube::init(settings, false, clear_color, required_flags, errorState);
+				return TextureCube::init(settings, 1, clear_color, required_flags, errorState);
 			}
 			case DepthRenderTextureCube::EDepthFormat::D32:
 			{
 				settings.mDataType = ESurfaceDataType::FLOAT;
-				return TextureCube::init(settings, false, clear_color, required_flags, errorState);
+				return TextureCube::init(settings, 1, clear_color, required_flags, errorState);
 			}
 			default:
 			{

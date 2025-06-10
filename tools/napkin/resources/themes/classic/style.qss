@@ -1,10 +1,6 @@
-QMainWindow
-{
-    background-color: @background2;
-}
-
 QWidget
 {
+    background-color: @background2;
     font-family: "@regularFont";
     font-size: 13px;
     font-weight: 500;
@@ -87,7 +83,6 @@ QDockWidget {
     font-size: 15px;
     titlebar-close-icon:url(:/icons/icon_close_nap.png);
     titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
-    /*padding: 10px;*/
 }
 
 QDockWidget::close-button,QDockWidget::float-button{
@@ -101,11 +96,11 @@ QDockWidget::close-button,QDockWidget::float-button{
   border:none;
 }
 
-QDockWidget::close-button{
+QDockWidget::float-button {
   right:3px;
 }
 
-QDockWidget::float-button{
+QDockWidget::close-button {
   right:18px;
 }
 
@@ -198,7 +193,7 @@ QTabBar:tab::!selected {
 }
 
 QStatusBar {
-    color: @front3;
+    color: @front4;
     background: @status;
     font-family: "@monoFont";
 }
@@ -296,4 +291,9 @@ QDoubleSpinBox::down-button
     width: 12px;
     margin-right: 2px;
     border-image: url(:/icons/spin_down.png);
+}
+
+QSizeGrip 
+{
+    background: @status;
 }

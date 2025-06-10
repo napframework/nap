@@ -305,12 +305,13 @@ namespace nap
 
 
 	/**
-	 * Log handler that will print to the console
+	 * Log handler that will print to the console.
+	 * By default, messages with an info level and higher are included.
 	 */
-	class ConsoleLogHandler : public LogHandler
+	class NAPAPI ConsoleLogHandler : public LogHandler
 	{
 	public:
-		ConsoleLogHandler() = default;
+		ConsoleLogHandler() { setLogLevel(Logger::infoLevel()); }
 
 		/**
 		 * Write the contents to the outputstream
@@ -324,15 +325,16 @@ namespace nap
 
 	/**
 	 * Log handler that will write log messages to a file.
+	 * By default, messages with a debug level and higher are included.
 	 * Upon construction, it will open a file stream to write to
 	 * and will remain open for the lifetime of the handler.
-	 * The file writer runs another thread to keep the call site unburdened
+	 * The file writer runs another thread to keep the call site unburdened.
 	 */
-	class FileLogHandler : public LogHandler
+	class NAPAPI FileLogHandler : public LogHandler
 	{
 	public:
 		FileLogHandler(const std::string& mFilename);
-		~FileLogHandler();
+		~FileLogHandler() override;
 
 		/**
 		 * Write a message to the provided file

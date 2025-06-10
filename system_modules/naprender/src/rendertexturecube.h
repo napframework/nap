@@ -51,23 +51,29 @@ namespace nap
 			R32				///< 32 bit float, 1 component
 		};
 
+		// Constructor
 		RenderTextureCube(Core& core);
 
 		/**
-		 * Creates the texture on the GPU.
+		 * Creates the texture on the GPU without mip-maps.
 		 * @param errorState Contains error state if the function fails.
 		 * @return if the texture was created successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		int					mWidth = 0;										///< Property: 'Width' width of a cube face texture in texels
-		int					mHeight = 0;									///< Property: 'Height' of a cube face texture in texels
+		/**
+		 * Creates the texture on the GPU with or without mip-maps.
+		 * @param enableMips if mip-maps should be generated
+		 * @param errorState Contains error state if the function fails.
+		 * @return if the texture was created successfully
+		 */
+		virtual bool init(bool enableMips, utility::ErrorState& errorState);
+
+		int					mWidth = 1024;									///< Property: 'Width' width of a cube face texture in texels
+		int					mHeight = 1024;									///< Property: 'Height' of a cube face texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mColorFormat = EFormat::RGBA8;					///< Property: 'ColorFormat' color texture format
 		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
-
-	protected:
-		bool				mGenerateLODs = false;
 	};
 
 
@@ -111,11 +117,10 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		int					mWidth = 0;										///< Property: 'Width' width of a cube face texture in texels
-		int					mHeight = 0;									///< Property: 'Height' of a cube face texture in texels
+		int					mWidth = 1024;									///< Property: 'Width' width of a cube face texture in texels
+		int					mHeight = 1024;									///< Property: 'Height' of a cube face texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EDepthFormat		mDepthFormat = EDepthFormat::D16;				///< Property: 'DepthFormat' depth texture format
 		float				mClearValue = 1.0f;								///< Property: 'ClearValue' value selection used for clearing the texture
-		bool				mFill = false;									///< Property: 'Fill' if the texture is initialized to black when usage is static
 	};
 }

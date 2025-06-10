@@ -11,7 +11,7 @@
 #include "renderglobals.h"
 
 // External Includes
-#include <utility/dllexport.h>
+#include <box.h>
 
 namespace nap
 {
@@ -55,26 +55,55 @@ namespace nap
 		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices);
 
 		/**
-		* Computes the bounding box of a mesh using its associated position data.
+		* Computes the bounding box of a mesh using its associated position data of type T.
 		* Note that indices are not considered. This call loops over all available
 		* points regardless of whether if they're drawn or not
-		* @tparam the data type of the position attribute
+		* @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
 		* @param mesh the mesh to get the bounding box for
 		* @param outBox the computed bounding box
 		*/
-		template <typename T>
+		template<typename T>
 		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox);
 
 		/**
-		* Computes the bounding box of a single shape within a mesh using its associated position data.
+		 * Computes the bounding box of a mesh using its associated position data of type T.
+		 * Note that indices are not considered. This call loops over all available
+		 * points regardless of whether if they're drawn or not
+		 * @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
+		 * @param mesh the mesh to get the bounding box for
+		 * @return the bounding box
+		 */
+		template<typename T>
+		math::Box computeBoundingBox(const MeshInstance& mesh);
+		 
+		/**
+		* Computes the bounding box of a single shape within a mesh using its associated position data of type T.
 		* Note that the given shape must be part of the mesh.
-		* @tparam the data type of the position attribute
+		* @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
 		* @param mesh the mesh that contains position data
 		* @param shape the shape to compute the bounding box for
 		* @param outBox the computed bounding box
 		*/
-		template <typename T>
+		template<typename T>
 		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox);
+
+	   /**
+		* Computes the bounding box of a single shape within a mesh using its associated position data of type T.
+		* Note that the given shape must be part of the mesh.
+		* @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
+		* @param mesh the mesh that contains position data
+		* @param shape the shape to compute the bounding box for
+		* @return outBox the computed bounding box
+		*/
+		template<typename T>
+		math::Box computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape);
+
+		/**
+		 * Computes the radius of a sphere to fit the given bounding box.
+		 * @param box the bounding box
+		 * @return sphere radius
+		 */
+		float NAPAPI computeBoundingSphere(const math::Box& box);
 
 		/**
 		* Automatically re-computes all the normals of a mesh
@@ -151,6 +180,22 @@ namespace nap
 		glm::vec3 NAPAPI computeBarycentric(const glm::vec3& point, const TriangleData<glm::vec3>& triangle);
 
 		/**
+		 * Compute camera distance to fit given plane.
+		 * @param planeDimensions the dimensions of the plane
+		 * @param cameraFOV perspective camera field of view, (angle) in degrees
+		 * @return required distance of camera to fit plane
+		 */
+		float NAPAPI computeCameraDistance(const glm::vec2& planeDimensions, float cameraFOV);
+
+		/**
+		 * Compute camera distance to fit sphere with given radius.
+		 * @param radius the radius of the sphere
+		 * @param cameraFOV perspective camera field of view, (angle) in degrees
+		 * @return required distance of camera to fit sphere
+		 */
+		float NAPAPI computeCameraDistance(float radius, float cameraFOV);
+
+		/**
 		* Interpolates triangle vertex values based on barycentric u and v coordinates
 		* @param vertexValues the values associated with the triangle vertices
 		* @param barycentricCoordinates the triangle barycentric coordinates (u,v,w)
@@ -170,7 +215,7 @@ namespace nap
 			return (vertexValues.first() * (1.0f - coords.x - coords.y)) + (vertexValues.second() * coords.x) + (vertexValues.third() * coords.y);
 		}
 
-		template <typename T>
+		template<typename T>
 		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox)
 		{
 			glm::vec3 min(math::max<float>());
@@ -190,7 +235,15 @@ namespace nap
 			outBox.mMaxCoordinates = max;
 		}
 
-		template <typename T>
+		template<typename T>
+		nap::math::Box computeBoundingBox(const MeshInstance& mesh)
+		{
+			math::Box mesh_bounds;
+			computeBoundingBox<T>(mesh, mesh_bounds);
+			return mesh_bounds;
+		}
+
+		template<typename T>
 		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox)
 		{
 			glm::vec3 min(math::max<float>());
@@ -209,6 +262,14 @@ namespace nap
 			}
 			outBox.mMinCoordinates = min;
 			outBox.mMaxCoordinates = max;
+		}
+
+		template<typename T>
+		math::Box computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape)
+		{
+			math::Box box;
+			computeBoundingBox<T>(mesh, shape);
+			return box;
 		}
 	}
 }

@@ -47,7 +47,7 @@ namespace nap
 		/**
 		 * @return if, for any day of the week, an item is currently active.
 		 */
-		bool isOperational();
+		bool isOperational() const;
 
 		bool mAllowFailure = true;			///< Property: 'AllowLoadFailure' If initialization continues when loading a calendar from disk fails. In that case resource defaults are used.
 		CalendarItem::Point mMonday;		///< Property: 'Monday' Monday operational hours

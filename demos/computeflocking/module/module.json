@@ -2,10 +2,9 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "naprender",
-        "napscene",
-        "napmath",
-        "naprenderadvanced"
+        "naprenderadvanced",
+        "napparameter",
+        "napcameracontrol"
     ],
     "WindowsDllSearchPaths": []
 }

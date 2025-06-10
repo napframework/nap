@@ -54,7 +54,7 @@ namespace nap
 	}
 
 
-	bool OperationalCalendar::isOperational()
+	bool OperationalCalendar::isOperational() const
 	{
 		assert(mInstance != nullptr);
 		SystemTimeStamp current_time = getCurrentTime();

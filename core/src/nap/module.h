@@ -18,11 +18,12 @@ namespace nap
 	/**
 	 * Platform-wrapper function to load a shared library
 	 * @param modInfo The moduleInfo, used to add additional dll search paths
-	 * @param modulePath The path to the shared library to load
-	 * @param errorString If the module failed to load, the error string
+	 * @param library The name of the library to load, including extension
+	 * @param outLocation the location the loaded module, if loading succeeds
+	 * @param error Holds the error if loading fails
 	 * @return Handle to the loaded module
 	 */
-	NAPAPI void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString);
+	NAPAPI void* loadModule(const nap::ModuleInfo& modInfo, const std::string& library, std::string& outLocation, std::string& error);
 
 	/**
 	 * Platform-wrapper function to unload a shared library
