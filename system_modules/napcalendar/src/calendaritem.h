@@ -50,17 +50,8 @@ namespace nap
 			static Time fromString(const std::string& time);
 
 			// Comparison operators
-			bool operator == (const Time &c) const
-			{
-				if (mHour == c.mHour && mMinute == c.mMinute)
-					return true;
-				return false;
-			}
-
-			bool operator != (const Time &c) const
-			{
-				return !(*this == c);
-			}
+			bool operator == (const Time& c) const { return mHour == c.mHour && mMinute == c.mMinute; }
+			bool operator != (const Time &c) const { return !(*this == c); }
 		};
 
 		/**
@@ -71,22 +62,13 @@ namespace nap
 		{
 			Point() = default;
 			Point(Time time, Time duration);
-			Time mTime;							///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
-			Time mDuration;						///< Property: 'Duration' length of event: hours (0-X) & minutes (0-59). Duration of 0 = never
-			bool valid() const;  				///< Returns if time is valid
+			Time mTime;								///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
+			Time mDuration;							///< Property: 'Duration' length of event: hours (0-X) & minutes (0-59). Duration of 0 = never
+			bool valid() const;  					///< Returns if time is valid
 
 			// Comparison operators
-			bool operator == (const Point &c) const
-			{
-				if (mTime == c.mTime && mDuration == c.mDuration)
-					return true;
-				return false;
-			}
-
-			bool operator != (const Point &c) const
-			{
-				return !(*this == c);
-			}
+			bool operator == (const Point& c) const { return mTime == c.mTime && mDuration == c.mDuration; }
+			bool operator != (const Point &c) const	{ return !(*this == c); }
 		};
 
 		// Default Constructor
