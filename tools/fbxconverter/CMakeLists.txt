@@ -69,7 +69,7 @@ if (WIN32)
     # TODO Update to find the libraries then install locating them via TARGET_FILE
     install(FILES ${NAP_ROOT}/system_modules/naprender/thirdparty/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll
                   ${THIRDPARTY_DIR}/rttr/msvc/x86_64/bin/rttr_core.dll
-                  ${NAP_ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/x86_64/lib/SDL2.dll
+                  ${NAP_ROOT}/system_modules/naprender/thirdparty/sdl/msvc/x86_64/lib/SDL3.dll
                   ${NAP_ROOT}/system_modules/napfont/thirdparty/freetype/msvc/x86_64/lib/Release/freetype.dll
                   ${PYTHON_DLLS}
                   ${ASSIMP_DLLS}

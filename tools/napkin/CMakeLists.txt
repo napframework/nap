@@ -123,9 +123,9 @@ if(MSVC)
     find_package(freeimage REQUIRED)
     copy_freeimage_dll()
 
-    # SDL2
-    find_sdl2()
-    copy_files_to_target_file_dir(${SDL2_DIR}/msvc/x86_64/lib/SDL2.dll)
+    # SDL
+    find_sdl()
+    copy_files_to_target_file_dir(${SDL_DIR}/msvc/x86_64/lib/SDL3.dll)
 
     # Assimp
     set(assimp_parent ${NAP_ROOT}/system_modules/naprender/thirdparty/assimp)
