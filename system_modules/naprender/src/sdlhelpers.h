@@ -126,7 +126,7 @@ namespace nap
 		 * @param ddpi a pointer filled in with the diagonal DPI of the display; may be nullptr
 		 * @param hdpi a pointer filled in with the horizontal DPI of the display; may be nullptr
 		 * @param vdpi a pointer filled in with the vertical DPI of the display; may be nullptr
-		 * @return 0 on success or a negative error code on failure
+		 * @return true on success, false on failure
 		 */
 		bool NAPAPI getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi);
 
@@ -136,7 +136,7 @@ namespace nap
 		 * @param ddpi a pointer filled in with the diagonal DPI of the display; may be nullptr
 		 * @param hdpi a pointer filled in with the horizontal DPI of the display; may be nullptr
 		 * @param vdpi a pointer filled in with the vertical DPI of the display; may be nullptr
-		 * @return 0 on success or a negative error code on failure
+		 * @return true on success, false on failure
 		 */
 		bool NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi);
 

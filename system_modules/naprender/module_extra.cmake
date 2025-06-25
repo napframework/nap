@@ -82,7 +82,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         copy_freeimage_dll()
 
         # Copy SDL DLLs to build directory
-        copy_files_to_bin(${SDL_DIR}/msvc/x86_64/lib/SDL3.dll)
+        copy_files_to_bin(${SDL_DIR}/msvc/lib/x86_64/SDL3.dll)
 
         # Copy over Assimp to build directory
         copy_assimp_dll()

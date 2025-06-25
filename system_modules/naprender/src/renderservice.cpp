@@ -513,16 +513,15 @@ namespace nap
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
 		unsigned int ext_count = 0;
-		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, nullptr) == SDL_TRUE, "Unable to find any valid SDL Vulkan instance extensions, is the Vulkan driver installed?"))
-			return false;
+		auto ext_names = SDL_Vulkan_GetInstanceExtensions(&ext_count);
 
-		// Use the amount of extensions queried before to retrieve the names of the extensions
-		std::vector<const char*> ext_names(ext_count);
-		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()) == SDL_TRUE, "Unable to get the number of SDL Vulkan extension names"))
+		// Bail if query failed
+		if(!errorState.check(ext_names != nullptr,
+			"Unable to find any valid SDL Vulkan instance extensions, is the Vulkan driver installed?"))
 			return false;
 
 		// Store
-		for (unsigned int i = 0; i < ext_count; i++)
+		for (auto i = 0; i < ext_count; i++)
 			outExtensions.emplace_back(ext_names[i]);
 		return true;
 	}
@@ -533,7 +532,8 @@ namespace nap
 	 */
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
-		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+		// TODO: Use system allocator
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, NULL, &outSurface),
 			"Unable to create Vulkan compatible surface using SDL");
 	}
 
@@ -1825,7 +1825,7 @@ namespace nap
 		if (!mHeadless)
 		{
 			// Create dummy window and verify creation
-			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			dummy_window.mWindow = SDL_CreateWindow("Dummy", 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
 			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
 				return false;
 

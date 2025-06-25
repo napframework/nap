@@ -36,37 +36,31 @@ namespace nap
 	void SDLAppEventHandler::process()
 	{
 		SDL_Event event;
-		while (SDL_PollEvent(&event) > 0)
+		while (SDL_PollEvent(&event))
 		{
 			// Check if we are dealing with an input event (mouse / keyboard)
 			if (mEventConverter->isInputEvent(event))
 			{
 				nap::InputEventPtr input_event = mEventConverter->translateInputEvent(event);
 				if (input_event != nullptr)
-				{
 					getApp<App>().inputMessageReceived(std::move(input_event));
-				}
 			}
 
 			// Check if we're dealing with a window event
 			else if (mEventConverter->isWindowEvent(event))
 			{
 				// Quit when request to close
-				if (event.window.event == SDL_WINDOWEVENT_CLOSE && getApp<App>().shutdownRequested())
-				{
+				if (event.window.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && getApp<App>().shutdownRequested())
 					getApp<App>().quit();
-				}
 
 				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
 				if (window_event != nullptr)
-				{
 					getApp<App>().windowMessageReceived(std::move(window_event));
-				}
 			}
 
 			// Check if we need to quit the app from running
 			// -1 signals a quit cancellation
-			else if (event.type == SDL_QUIT && getApp<App>().shutdownRequested())
+			else if (event.type == SDL_EVENT_QUIT && getApp<App>().shutdownRequested())
 			{
 				getApp<App>().quit();
 			}
@@ -82,7 +76,6 @@ namespace nap
 
 	bool SDLAppEventHandler::setTouchGeneratesMouseEvents(bool value)
 	{
-		return SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0",
-			SDL_HintPriority::SDL_HINT_OVERRIDE) > 0;
+		return SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0", SDL_HintPriority::SDL_HINT_OVERRIDE);
 	}
 }

@@ -57,15 +57,14 @@ namespace nap
 		options |= renderWindow.mResizable  ? SDL_WINDOW_RESIZABLE  : 0x0U;
 		options |= renderWindow.mBorderless ? SDL_WINDOW_BORDERLESS : 0x0U;
 		options |= renderWindow.mAlwaysOnTop ? SDL_WINDOW_ALWAYS_ON_TOP : 0x0U;
-		options |= allowHighDPI ? SDL_WINDOW_ALLOW_HIGHDPI : 0x0U;
+		options |= allowHighDPI ? SDL_WINDOW_HIGH_PIXEL_DENSITY : 0x0U;				// TODO: Is this correct?
 
 		// Always hide window until added and configured by render service
 		options |= SDL_WINDOW_HIDDEN;
 
 		// Create window
+		// TODO: Where is the center option?
 		SDL_Window* new_window = SDL_CreateWindow(renderWindow.mTitle.c_str(),
-			SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED,
 			renderWindow.mWidth,
 			renderWindow.mHeight,
 			options);
@@ -88,7 +87,8 @@ namespace nap
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		// Use SDL to create the surface
-		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+		// TODO: Pass our own allocator instead of using system default
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, NULL, &outSurface),
 			"Unable to create Vulkan compatible surface using SDL");
 	}
 

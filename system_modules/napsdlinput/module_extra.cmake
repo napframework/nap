@@ -2,7 +2,7 @@ find_sdl()
 
 if(NAP_BUILD_CONTEXT MATCHES "source")
     target_include_directories(${PROJECT_NAME} PUBLIC ${SDL_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME} ${SDL_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} SDL3::SDL3)
 else()
     add_include_to_interface_target(napsdlinput ${SDL_INCLUDE_DIR})
 
