@@ -128,7 +128,7 @@ namespace nap
 		 * @param vdpi a pointer filled in with the vertical DPI of the display; may be nullptr
 		 * @return 0 on success or a negative error code on failure
 		 */
-		int NAPAPI getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi);
+		bool NAPAPI getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi);
 
 		/**
 		 * Get the dots/pixels-per-inch of the display that holds the given window
@@ -138,7 +138,7 @@ namespace nap
 		 * @param vdpi a pointer filled in with the vertical DPI of the display; may be nullptr
 		 * @return 0 on success or a negative error code on failure
 		 */
-		int NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi);
+		bool NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi);
 
 		/**
 		 * @param displayIndex index of display to get name for
@@ -180,14 +180,14 @@ namespace nap
 		 * Returns the mouse cursor position relative to the focus window.
 		 * @return cursor position relative to the focus window
 		 */
-		glm::ivec2 NAPAPI getCursorPosition();
+		glm::vec2 NAPAPI getCursorPosition();
 
 		/**
 		 * Get the position of the cursor, in relation to the desktop.
 		 * This works just like getCursorPosition(), but the coordinates will be reported relative to the top-left of the desktop.
 		 * Current position of the cursor, in relation to the desktop
 		 */
-		glm::ivec2 NAPAPI getGlobalCursorPosition();
+		glm::vec2 NAPAPI getGlobalCursorPosition();
 
 		/**
 		 * Get the current state of the mouse relative to the focus window.
@@ -195,7 +195,7 @@ namespace nap
 		 * @param y the current y coordinate. Can be nullptr
 		 * @return The current button state as a bitmask, which can be tested using the SDL_BUTTON(X) macros.
 		 */
-		uint32 NAPAPI getMouseState(int* x, int* y);
+		uint32 NAPAPI getMouseState(float* x, float* y);
 
 		/**
 		 * Get the current state of the mouse, in relation to the desktop.
@@ -204,7 +204,7 @@ namespace nap
 		 * @param y the current y coordinate, relative to the desktop. Can be nullptr
 		 * @return The current button state as a bitmask, which can be tested using the SDL_BUTTON(X) macros.
 		 */
-		uint32 NAPAPI getGlobalMouseState(int* x, int* y);
+		uint32 NAPAPI getGlobalMouseState(float* x, float* y);
 
 		/**
 		 * Initializes SDL video system.

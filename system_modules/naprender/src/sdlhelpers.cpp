@@ -35,7 +35,7 @@ namespace nap
 
 		void setWindowBordered(SDL_Window* window, bool hasBorders)
 		{
-			SDL_SetWindowBordered(window, (SDL_bool)hasBorders);
+			SDL_SetWindowBordered(window, hasBorders);
 		}
 
 
@@ -47,13 +47,13 @@ namespace nap
 
 		void NAPAPI setWindowAlwaysOnTop(SDL_Window* window, bool enabled)
 		{
-			SDL_SetWindowAlwaysOnTop(window, static_cast<SDL_bool>(enabled));
+			SDL_SetWindowAlwaysOnTop(window, enabled);
 		}
 
 
 		void NAPAPI setWindowResizable(SDL_Window* window, bool enabled)
 		{
-			SDL_SetWindowResizable(window, static_cast<SDL_bool>(enabled));
+			SDL_SetWindowResizable(window, enabled);
 		}
 
 
@@ -77,8 +77,7 @@ namespace nap
 		bool setFullscreen(SDL_Window* window, bool value)
 		{
 			// Otherwise set
-			uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
-			return SDL_SetWindowFullscreen(window, value ? full_screen_flag : 0) == 0;
+			return SDL_SetWindowFullscreen(window, true);
 		}
 
 
@@ -98,9 +97,8 @@ namespace nap
 
 		glm::ivec2 getScreenSize(int screenIndex)
 		{
-			SDL_DisplayMode mode;
-			int v = SDL_GetDesktopDisplayMode(screenIndex, &mode);
-			return v == 0 ? glm::ivec2(mode.w, mode.h) : glm::ivec2(-1, -1);
+			const auto* mode = SDL_GetDesktopDisplayMode(static_cast<SDL_DisplayID>(screenIndex));
+			return mode != nullptr ? glm::ivec2(mode->w, mode->h) : glm::ivec2(-1, -1);
 		}
 
 
@@ -113,7 +111,7 @@ namespace nap
 		glm::ivec2 getDrawableWindowSize(SDL_Window* window)
 		{
 			int x, y;
-			SDL_Vulkan_GetDrawableSize(window, &x, &y);
+			SDL_GetWindowSizeInPixels(window, &x, &y);
 			return{ x, y };
 		}
 
@@ -159,23 +157,33 @@ namespace nap
 
 		int getDisplayCount()
 		{
-			return SDL_GetNumVideoDisplays();
+			int count; SDL_GetDisplays(&count);
+			return count;
 		}
 
 
-		int NAPAPI getDisplayIndex(SDL_Window* window)
+		int getDisplayIndex(SDL_Window* window)
 		{
-			return SDL_GetWindowDisplayIndex(window);
+			return static_cast<int>(SDL_GetDisplayForWindow(window));
 		}
 
 
-		int NAPAPI getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi)
+		bool getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi)
 		{
-			return SDL_GetDisplayDPI(displayIndex, ddpi, hdpi, vdpi);
+			// This is an approximation because this function wasn't consistently correct across platforms and devices.
+			const auto* dm = SDL_GetDesktopDisplayMode(static_cast<SDL_DisplayID>(displayIndex));
+
+			// Compute DPI
+			float dpi = dm != nullptr ? 96.0f * dm->pixel_density : 96.0f;
+			*ddpi = dpi;
+			*hdpi = dpi;
+			*vdpi = dpi;
+
+			return dm != nullptr;
 		}
 
 
-		int NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi)
+		bool getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi)
 		{
 			int idx = getDisplayIndex(window);
 			return idx >= 0 ? getDisplayDPI(idx, ddpi, hdpi, vdpi) : idx;
@@ -184,7 +192,7 @@ namespace nap
 
 		bool getDisplayName(int displayIndex, std::string& outName)
 		{
-			const char* display_name = SDL_GetDisplayName(displayIndex);
+			const char* display_name = SDL_GetDisplayName(static_cast<SDL_DisplayID>(displayIndex));
 			outName = display_name != nullptr ? display_name : "";
 			return display_name != nullptr;
 		}
@@ -202,19 +210,19 @@ namespace nap
 
 		void hideCursor()
 		{
-			SDL_ShowCursor(SDL_DISABLE);
+			SDL_HideCursor();
 		}
 
 
 		void showCursor()
 		{
-			SDL_ShowCursor(SDL_ENABLE);
+			SDL_ShowCursor();
 		}
 
 
 		bool cursorVisible()
 		{
-			return SDL_ShowCursor(SDL_QUERY) > 0;
+			return SDL_CursorVisible();
 		}
 
 
@@ -224,29 +232,29 @@ namespace nap
 		}
 
 
-		glm::ivec2 getCursorPosition()
+		glm::vec2 getCursorPosition()
 		{
-			glm::ivec2 pos;
+			glm::vec2 pos;
 			SDL_GetMouseState(&pos.x, &pos.y);
 			return pos;
 		}
 
 
-		uint32 getMouseState(int* x, int* y)
+		uint32 getMouseState(float* x, float* y)
 		{
 			return SDL_GetMouseState(x, y);
 		}
 
 
-		glm::ivec2 getGlobalCursorPosition()
+		glm::vec2 getGlobalCursorPosition()
 		{
-			glm::ivec2 pos;
+			glm::vec2 pos;
 			SDL_GetGlobalMouseState(&pos.x, &pos.y);
 			return pos;
 		}
 
 
-		uint32 getGlobalMouseState(int* x, int* y)
+		uint32 getGlobalMouseState(float* x, float* y)
 		{
 			return SDL_GetGlobalMouseState(x, y);
 		}
@@ -255,7 +263,7 @@ namespace nap
 		bool getFullscreen(SDL_Window* window)
 		{
 			uint32 flags = SDL_GetWindowFlags(window);
-			return flags & SDL_WINDOW_FULLSCREEN_DESKTOP;
+			return flags & SDL_WINDOW_FULLSCREEN;
 		}
 	}
 }
