@@ -128,23 +128,23 @@ namespace nap
 
 		/**
 		 * Get he dots/pixels-per-inch for a display.
+		 * Note that this function is an approximation, using the current display content scale.
+		 *
 		 * @param displayIndex The index of the display from which DPI information should be queried
-		 * @param ddpi a pointer filled in with the diagonal DPI of the display; may be nullptr
-		 * @param hdpi a pointer filled in with the horizontal DPI of the display; may be nullptr
-		 * @param vdpi a pointer filled in with the vertical DPI of the display; may be nullptr
+		 * @param dpi value pointer
 		 * @return true on success, false on failure
 		 */
-		bool NAPAPI getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi);
+		bool NAPAPI getDisplayDPI(int displayIndex, float* dpi);
 
 		/**
-		 * Get the dots/pixels-per-inch of the display that holds the given window
+		 * Return the dots/pixels-per-inch of the display that holds the given window.
+		 * Note that this function is an approximation, using the current display content scale.
+		 * 
 		 * @param window the window to get the dpi for
-		 * @param ddpi a pointer filled in with the diagonal DPI of the display; may be nullptr
-		 * @param hdpi a pointer filled in with the horizontal DPI of the display; may be nullptr
-		 * @param vdpi a pointer filled in with the vertical DPI of the display; may be nullptr
+		 * @param dpi value pointer
 		 * @return true on success, false on failure
 		 */
-		bool NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi);
+		bool NAPAPI getDisplayDPI(SDL_Window* window, float* dpi);
 
 		/**
 		 * @param displayIndex index of display to get name for

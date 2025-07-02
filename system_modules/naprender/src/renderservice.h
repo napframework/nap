@@ -161,19 +161,19 @@ namespace nap
 		 * Returns diagonal dots per inch. 0 if diagonal DPI not available.
 		 * @return diagonal dots per inch. 0 if diagonal DPI not available.
 		 */
-		float getDiagonalDPI() const { return mDDPI; }
+		float getDiagonalDPI() const { return mDPI; }
 
 		/**
 		 * Returns horizontal dots per inch. 0 if horizontal DPI not available.
 		 * @return horizontal dots per inch. 0 if horizontal DPI not available.
 		 */
-		float getHorizontalDPI() const { return mHDPI; }
+		float getHorizontalDPI() const { return mDPI; }
 
 		/**
 		 * Returns vertical dots per inch. 0 if vertical DPI not available.
 		 * @return vertical dots per inch. 0 if vertical DPI not available.
 		 */
-		float getVerticalDPI() const { return mVDPI; }
+		float getVerticalDPI() const { return mDPI; }
 
 		/**
 		 * Returns display name, empty if not available.
@@ -220,9 +220,7 @@ namespace nap
 	private:
 		std::string mName;						///< Display name
 		int mIndex = -1;						///< Display index
-		float mDDPI = 96.0f;					///< Diagonal DPI
-		float mHDPI = 96.0f;					///< Horizontal DPI
-		float mVDPI = 96.0f;					///< Vertical DPI
+		float mDPI = 96.0f;						///< Display DPI
 		glm::ivec2 mMin = { 0, 0 };				///< Min display bound position
 		glm::ivec2 mMax = { 0, 0 };				///< Max display bound position
 		bool mValid = false;					///< If valid after construction

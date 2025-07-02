@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <SDL.h>
 #include <SDL_vulkan.h>
+#include <mathutils.h>
 
 namespace nap
 {
@@ -183,22 +184,19 @@ namespace nap
 		}
 
 
-		bool getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi)
+		bool getDisplayDPI(int displayIndex, float* dpi)
 		{
 			// This is an approximation because this function wasn't consistently correct across platforms and devices.
-			const auto* dm = SDL_GetDesktopDisplayMode(static_cast<SDL_DisplayID>(displayIndex));
-
-			// Compute DPI
-			float dpi = dm != nullptr ? 96.0f * dm->pixel_density : 96.0f;
-			*ddpi = dpi; *hdpi = dpi; *vdpi = dpi;
-			return dm != nullptr;
+			auto cscale = SDL_GetDisplayContentScale(static_cast<SDL_DisplayID>(displayIndex));
+			*dpi = 96.0f * cscale;
+			return cscale > nap::math::epsilon<float>();
 		}
 
 
-		bool getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi)
+		bool getDisplayDPI(SDL_Window* window, float* dpi)
 		{
 			int idx = getDisplayIndex(window);
-			return idx >= 0 ? getDisplayDPI(idx, ddpi, hdpi, vdpi) : false;
+			return idx >= 0 ? getDisplayDPI(idx, dpi) : false;
 		}
 
 

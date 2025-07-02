@@ -2919,7 +2919,7 @@ namespace nap
 
 	nap::Display::Display(int index) : mIndex(index)
 	{
-		SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
+		SDL::getDisplayDPI(index, &mDPI);
 		SDL::getDisplayName(index, mName);
 		mValid = SDL::getDisplayBounds(index, mMin, mMax);
 	}
@@ -2929,10 +2929,10 @@ namespace nap
 	{
 		return utility::stringFormat
 		(
-			"Display: %d, %s, ddpi: %.1f, hdpi: %.1f, vdpi: %.1f, min: %d-%d, max: %d-%d",
+			"Display: %d, %s, dpi: %.1f, min: %d-%d, max: %d-%d",
 			mIndex,
 			mName.c_str(),
-			mDDPI, mHDPI, mVDPI,
+			mDPI,
 			mMin.x, mMin.y,
 			mMax.x, mMax.y
 		);
