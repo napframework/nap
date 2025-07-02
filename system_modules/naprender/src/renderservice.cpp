@@ -1798,9 +1798,16 @@ namespace nap
 #endif // __APPLE__
 
 		// Add displays
-		for (int i = 0; i < SDL::getDisplayCount(); i++)
+		auto ids = SDL::getDisplayIDs();
+		if (!errorState.check(ids != nullptr, "Unable to get display list"))
 		{
-			auto it = mDisplays.emplace_back(Display(i));
+			errorState.fail(SDL::getSDLError());
+			return false;
+		}
+
+		for (auto id : *ids)
+		{
+			auto it = mDisplays.emplace_back(Display(id));
 			nap::Logger::info(it.toString());
 			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
 			{
@@ -2912,10 +2919,9 @@ namespace nap
 
 	nap::Display::Display(int index) : mIndex(index)
 	{
-		assert(index < SDL::getDisplayCount());
 		SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
 		SDL::getDisplayName(index, mName);
-		mValid = SDL::getDisplayBounds(index, mMin, mMax) == 0;
+		mValid = SDL::getDisplayBounds(index, mMin, mMax);
 	}
 
 

@@ -14,7 +14,7 @@
 #include <nap/core.h>
 #include <color.h>
 #include <SDL_clipboard.h>
-#include <SDL_syswm.h>
+#include <SDL_properties.h>
 #include <SDL_mouse.h>
 #include <SDL_keyboard.h>
 #include <nap/logger.h>
@@ -296,11 +296,9 @@ namespace nap
 	static void setGuiWindow(SDL_Window* window)
 	{
 #ifdef _WIN32
+		auto hwnd = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 		ImGuiIO& io = ImGui::GetIO();
-		SDL_SysWMinfo wmInfo;
-		SDL_VERSION(&wmInfo.version);
-		SDL_GetWindowWMInfo(window, &wmInfo);
-		io.ImeWindowHandle = wmInfo.info.win.window;
+		io.ImeWindowHandle = hwnd;
 #else
 		(void)window;
 #endif
@@ -850,7 +848,7 @@ namespace nap
 			// This is required because the user can release the button outside of SDL window bounds, in which case no release event is generated.
 			bool released = context.mMouseRelease[i];
 			if (!released && io.MouseDown[i] && context.mPointerID[i] == gui::pointerMouseID)
-				released = (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON(i + 1)) == 0;
+				released = (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON_MASK(i + 1)) == 0;
 
 			// If the mouse button was released this frame -> disable the press for next frame.
 			// This ensures that buttons that are pressed and released within the same frame are always registered.

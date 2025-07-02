@@ -109,14 +109,20 @@ namespace nap
 
 		/**
 		 * Get the number of available video displays.
-		 * @return A number >= 1, negative error code on failure;
+		 * @return Number of unique displays, negative value on failure;
 		 */
 		int NAPAPI getDisplayCount();
 
 		/**
-		 * Get the index of the display associated with a window.
+		 * Returns list of unique display ids, nullptr on failure 
+		 * @return array of unique display ids, nullptr on failure
+		 */
+		std::unique_ptr<std::vector<int>> getDisplayIDs();
+
+		/**
+		 * Get the unique index of the display associated with a window.
 		 * @param window the window to get the display index for
-		 * @return The index of the display containing the center of the window on success or a negative error code
+		 * @return The unique display index on success, negative on failure.
 		 */
 		int NAPAPI getDisplayIndex(SDL_Window* window);
 
@@ -151,9 +157,9 @@ namespace nap
 		 * @param displayIndex index of the display to get the bounds for
 		 * @param outMin min position of desktop area represented by a display, with the primary display located at 0,0
 		 * @param outMax max position of desktop area represented by a display, with the primary display located at 0,0
-		 * @return 0 on success or a negative error code on failure
+		 * @return true on success, false on failure
 		 */
-		int NAPAPI getDisplayBounds(int displayIndex, glm::ivec2& outMin, glm::ivec2& outMax);
+		bool NAPAPI getDisplayBounds(int displayIndex, glm::ivec2& outMin, glm::ivec2& outMax);
 
 		/**
 		 * Hides the mouse cursor

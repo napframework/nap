@@ -18,7 +18,7 @@ namespace nap
 		bool initVideo(utility::ErrorState& error)
 		{
 			// Initialize SDL's Video subsystem
-			if (SDL_Init(SDL_INIT_VIDEO) < 0)
+			if (!SDL_Init(SDL_INIT_VIDEO))
 			{
 				error.fail(SDL_GetError());
 				return false;
@@ -157,14 +157,29 @@ namespace nap
 
 		int getDisplayCount()
 		{
-			int count; SDL_GetDisplays(&count);
-			return count;
+			auto ids = getDisplayIDs();
+			return ids != nullptr ? ids->size() : -1;
+		}
+
+
+		std::unique_ptr<std::vector<int>> getDisplayIDs()
+		{
+			// Get unique display id
+			int count; int* displays = reinterpret_cast<int*>(SDL_GetDisplays(&count));
+			if (displays == nullptr)
+				return nullptr;
+
+			// Copy into unique ptr
+			std::vector<int> ids(displays, displays + count);
+			SDL_free(displays);
+			return std::make_unique<std::vector<int>>(std::move(ids));
 		}
 
 
 		int getDisplayIndex(SDL_Window* window)
 		{
-			return static_cast<int>(SDL_GetDisplayForWindow(window));
+			auto idx = SDL_GetDisplayForWindow(window);
+			return idx == 0 ? -1 : idx;
 		}
 
 
@@ -175,10 +190,7 @@ namespace nap
 
 			// Compute DPI
 			float dpi = dm != nullptr ? 96.0f * dm->pixel_density : 96.0f;
-			*ddpi = dpi;
-			*hdpi = dpi;
-			*vdpi = dpi;
-
+			*ddpi = dpi; *hdpi = dpi; *vdpi = dpi;
 			return dm != nullptr;
 		}
 
@@ -186,7 +198,7 @@ namespace nap
 		bool getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi)
 		{
 			int idx = getDisplayIndex(window);
-			return idx >= 0 ? getDisplayDPI(idx, ddpi, hdpi, vdpi) : idx;
+			return idx >= 0 ? getDisplayDPI(idx, ddpi, hdpi, vdpi) : false;
 		}
 
 
@@ -198,13 +210,16 @@ namespace nap
 		}
 
 
-		int getDisplayBounds(int displayIndex, glm::ivec2& outMin, glm::ivec2& outMax)
+		bool getDisplayBounds(int displayIndex, glm::ivec2& outMin, glm::ivec2& outMax)
 		{
 			SDL_Rect sdl_bounds;
-			int r = SDL_GetDisplayBounds(displayIndex, &sdl_bounds);
-			outMin = { sdl_bounds.x, sdl_bounds.y };
-			outMax = { sdl_bounds.x + sdl_bounds.w, sdl_bounds.y + sdl_bounds.h };
-			return r;
+			if (SDL_GetDisplayBounds(displayIndex, &sdl_bounds))
+			{
+				outMin = { sdl_bounds.x, sdl_bounds.y };
+				outMax = { sdl_bounds.x + sdl_bounds.w, sdl_bounds.y + sdl_bounds.h };
+				return true;
+			}
+			return false;
 		}
 
 

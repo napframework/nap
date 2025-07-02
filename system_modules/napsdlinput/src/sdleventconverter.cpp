@@ -10,8 +10,6 @@
 #include <SDL_joystick.h>
 #include <SDL_gamepad.h>
 #include <SDL_keycode.h>
-#include <SDL_video.h>
-#include <SDL_events.h>
 
 namespace nap
 {
