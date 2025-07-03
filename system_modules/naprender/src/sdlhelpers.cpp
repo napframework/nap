@@ -186,10 +186,9 @@ namespace nap
 
 		bool getDisplayDPI(int displayIndex, float* dpi)
 		{
-			// This is an approximation because this function wasn't consistently correct across platforms and devices.
-			auto cscale = SDL_GetDisplayContentScale(static_cast<SDL_DisplayID>(displayIndex));
-			*dpi = 96.0f * cscale;
-			return cscale > nap::math::epsilon<float>();
+			bool valid = getDisplayContentScale(displayIndex, dpi);
+			*dpi *= 96.0f;
+			return valid;
 		}
 
 
@@ -197,6 +196,39 @@ namespace nap
 		{
 			int idx = getDisplayIndex(window);
 			return idx >= 0 ? getDisplayDPI(idx, dpi) : false;
+		}
+
+
+		bool getDisplayContentScale(int displayIndex, float* scale)
+		{
+			*scale = SDL_GetDisplayContentScale(static_cast<SDL_DisplayID>(displayIndex));
+			return *scale > nap::math::epsilon<float>();
+		}
+
+
+		bool getDisplayContentScale(SDL_Window* window, float* scale)
+		{
+			auto idx = getDisplayIndex(window);
+			if (idx < 0)
+			{
+				*scale = 0.0f;
+				return false;
+			}
+			return getDisplayContentScale(idx, scale);
+		}
+
+
+		bool getWindowPixelDensity(SDL_Window* window, float* density)
+		{
+			*density = SDL_GetWindowPixelDensity(window);
+			return *density > nap::math::epsilon<float>();
+		}
+
+
+		bool getWindowDisplayScale(SDL_Window* window, float* scale)
+		{
+			*scale = SDL_GetWindowDisplayScale(window);
+			return *scale > nap::math::epsilon<float>();
 		}
 
 

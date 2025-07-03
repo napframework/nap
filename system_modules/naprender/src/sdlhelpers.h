@@ -162,6 +162,68 @@ namespace nap
 		bool NAPAPI getDisplayBounds(int displayIndex, glm::ivec2& outMin, glm::ivec2& outMax);
 
 		/**
+		 * Get the content scale of a display.
+		 * 
+		 * The content scale is the expected scale for content based on the DPI settings of the display.
+		 * For example, a 4K display might have a 2.0 (200%) display scale,
+		 * which means that the user expects UI elements to be twice as big on this display, to aid in readability.
+		 *
+		 * SDL_GetWindowDisplayScale() should be used to query the content scale factor for individual windows,
+		 * instead of querying the display for a window and calling this function, as the per-window content scale factor may differ from the base value of the display it is on,
+		 * particularly on high-DPI and/or multi-monitor desktop configurations.
+		 * 
+		 * @param displayIndex The index of the display
+		 * @param scale the returned scale, 0.0 if call fails
+		 * @return if the call succeeded
+		 */
+		bool NAPAPI getDisplayContentScale(int displayIndex, float* scale);
+
+		/**
+		 * Get the content scale of a display.
+		 * 
+		 * The content scale is the expected scale for content based on the DPI settings of the display.
+		 * For example, a 4K display might have a 2.0 (200%) display scale,
+		 * which means that the user expects UI elements to be twice as big on this display, to aid in readability.
+		 *
+		 * SDL_GetWindowDisplayScale() should be used to query the content scale factor for individual windows,
+		 * instead of querying the display for a window and calling this function, as the per-window content scale factor may differ from the base value of the display it is on,
+		 * particularly on high-DPI and/or multi-monitor desktop configurations.
+		 * 
+		 * @param window the window to get the content scale for
+		 * @param scale the display content scaling factor, 0.0 if call fails
+		 * @return if the call succeeded
+		 */
+		bool NAPAPI getDisplayContentScale(SDL_Window* window, float* scale);
+
+		/**
+		 * Get the pixel density of a window, this is a ratio of pixel size to window size.
+		 * 
+		 * For example, if the window is 1920x1080 and it has a high density back buffer of 3840x2160 pixels,
+		 * it would have a pixel density of 2.0.
+		 *
+		 * @param window the window to get the pixel density for
+		 * @param density the window pixel density, 0.0 if call fails
+		 * @return if call succeeded
+		 */
+		bool NAPAPI getWindowPixelDensity(SDL_Window* window, float* density);
+
+		/**
+		 * Get the content display scale relative to a window's pixel size.
+		 * 
+		 * This is a combination of the window pixel density and the display content scale, and is the expected scale for displaying content in this window.
+		 * For example, if a 3840x2160 window had a display scale of 2.0, the user expects the content to take twice as many pixels and
+		 * be the same physical size as if it were being displayed in a 1920x1080 window with a display scale of 1.0.
+		 *
+		 * Conceptually this value corresponds to the scale display setting, and is updated when that setting is changed,
+		 * or the window moves to a display with a different scale setting.
+		 *
+		 * @param window the window to get the content scale for
+		 * @param scale the window content scale, 0.0 if call fails
+		 * @return if call succeeded
+		 */
+		bool NAPAPI getWindowDisplayScale(SDL_Window* window, float* scale);
+
+		/**
 		 * Hides the mouse cursor
 		 */
 		void NAPAPI hideCursor();
