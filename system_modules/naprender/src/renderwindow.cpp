@@ -14,6 +14,7 @@
 #include <SDL_vulkan.h>
 #include <SDL_hints.h>
 #include <mathutils.h>
+#include <bitmap.h>
 
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
 	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate,	"Immediate"),
@@ -568,8 +569,7 @@ namespace nap
 			return false;
 
 		// Add window to render service
-		if (!mRenderService->addWindow(*this, errorState))
-			return false;
+		mRenderService->addWindow(*this);
 
 		// Show if requested
 		if (mVisible)

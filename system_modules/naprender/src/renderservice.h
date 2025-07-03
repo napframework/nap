@@ -19,6 +19,7 @@
 #include <rect.h>
 #include <color.h>
 
+struct SDL_Surface;
 namespace nap
 {
 	// Forward Declares
@@ -555,7 +556,8 @@ namespace nap
 		 * @param window the window to add as a valid render target
 		 * @param errorState contains the error message if the window could not be added
 		 */
-		bool addWindow(RenderWindow& window, utility::ErrorState& errorState);
+		void addWindow(RenderWindow& window);
+
 		/**
 		 * Remove a window as a valid target from the render engine.
 		 * @param window the window to remove from the render service
@@ -1377,6 +1379,7 @@ namespace nap
 		bool									mHeadless = false;
 
 		UniqueMaterialCache						mMaterials;
+		SDL_Surface*							mWindowIcon = nullptr;
 
 		// Render command queues
 		std::vector<RenderCommand>				mHeadlessCommandQueue;
