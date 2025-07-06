@@ -11,6 +11,7 @@
 #include <rtti/object.h>
 #include <utility/dllexport.h>
 #include <nap/device.h>
+#include <nap/core.h>
 
 namespace nap
 {
@@ -23,8 +24,7 @@ namespace nap
     {
         RTTI_ENABLE(Device)
     public:
-		MidiInputPort() = default;
-        MidiInputPort(MidiService& service);
+		MidiInputPort(Core& core);
 
         /**
          * Starts the midi input port.
