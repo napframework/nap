@@ -9,14 +9,15 @@
 // External Includes
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS(nap::MidiOutputPort, "Opens a midi output port")
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiOutputPort, "Opens a midi output port")
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("AllowFailure",	&nap::MidiOutputPort::mAllowFailure,	nap::rtti::EPropertyMetaData::Default, "If opening the port is allowed to fail on initialization")
     RTTI_PROPERTY("Port",			&nap::MidiOutputPort::mPortName,		nap::rtti::EPropertyMetaData::Required, "Name of the port to open")
 RTTI_END_CLASS
 
 namespace nap
 {   
-    MidiOutputPort::MidiOutputPort(MidiService& service) : mService(&service)
+    MidiOutputPort::MidiOutputPort(Core& core) : mService(core.getService<MidiService>())
     {
 		mMidiOut = std::make_unique<RtMidiOut>();
     }

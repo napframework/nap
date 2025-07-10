@@ -9,7 +9,8 @@
 // External Includes
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS(nap::MidiInputPort, "Opens one or more midi input ports")
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiInputPort, "Opens one or more midi input ports")
+	RTTI_CONSTRUCTOR(nap::Core&)
     RTTI_PROPERTY("Ports", &nap::MidiInputPort::mPortNames, nap::rtti::EPropertyMetaData::Default, "Names of the ports to open and monitor, empty = all ports")
     RTTI_PROPERTY("EnableDebugOutput", &nap::MidiInputPort::mDebugOutput, nap::rtti::EPropertyMetaData::Default, "Log incoming messages for debug purposes")
 RTTI_END_CLASS
@@ -29,8 +30,8 @@ namespace nap
     }
     
     
-    MidiInputPort::MidiInputPort(MidiService& service) :
-		mService(&service)
+    MidiInputPort::MidiInputPort(Core& core) :
+		mService(core.getService<MidiService>())
     { }
 
 
