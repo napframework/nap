@@ -758,19 +758,19 @@ namespace nap
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
 		VkSubmitInfo submit_info = {};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		VkSemaphore swap_image_semaphore[] = { mImageAvailableSemaphores[current_frame] };
+		VkSemaphore image_available_semaphore[] = { mImageAvailableSemaphores[current_frame] };
 		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitSemaphores = swap_image_semaphore;
+		submit_info.pWaitSemaphores = image_available_semaphore;
 		submit_info.pWaitDstStageMask = wait_stages;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCommandBuffers[current_frame];
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
-		VkSemaphore render_semaphore[] = { mRenderFinishedSemaphores[mPresentIndex] };
+		VkSemaphore render_finished_semaphore[] = { mRenderFinishedSemaphores[mPresentIndex] };
 		submit_info.signalSemaphoreCount = 1;
-		submit_info.pSignalSemaphores = render_semaphore;
+		submit_info.pSignalSemaphores = render_finished_semaphore;
 
 		// Submit the queue for rendering
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
@@ -784,7 +784,7 @@ namespace nap
 		VkPresentInfoKHR present_info = {};
 		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		present_info.waitSemaphoreCount = 1;
-		present_info.pWaitSemaphores = render_semaphore;
+		present_info.pWaitSemaphores = render_finished_semaphore;
 		present_info.swapchainCount = 1;						// Await only the render finished semaphore
 		present_info.pSwapchains = swap_chains;
 		present_info.pImageIndices = &mPresentIndex;
