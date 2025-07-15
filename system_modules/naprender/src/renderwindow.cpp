@@ -727,7 +727,7 @@ namespace nap
 		// On which the renderer waits to become available when the queue is submitted in RenderWindow::endRecording().
 		int	current_frame = mRenderService->getCurrentFrameIndex(); 
 		assert(mSwapchain != VK_NULL_HANDLE);
-		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mSwapIndex);
+		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mPresentIndex);
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
 		// This situation occurs when the swapchain dimensions don't match the current extent, ie: window has been resized.
@@ -757,27 +757,16 @@ namespace nap
 
 	void RenderWindow::endRecording()
 	{
+		// Stop recording command buffer
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		VkCommandBuffer command_buffer = mCommandBuffers[current_frame];
-
 		if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) 
 			throw std::runtime_error("failed to record command buffer!");
 
-		// The present engine may give us images out of order. If we receive an image index that was already in flight, we need to wait for it to complete.
-		// We only need to do this right before VkQueueSubmit, to avoid having multiple submits that are waiting on the same image to be returned from the
-		// presentation engine. By waiting until right before the submit, we maximize parallelism with the GPU.
-		if (mFramesInFlight[mSwapIndex] != -1)
-			mRenderService->waitForFence(mFramesInFlight[mSwapIndex]);
-
-		// Keep track of the fact that the current image index is in use by the current frame. This ensures we can wait for the frame to
-		// finish if we encounter this image index again in the future.
-		mFramesInFlight[mSwapIndex] = current_frame;
-
-		VkSubmitInfo submit_info = {};
-		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		VkSemaphore swap_image_semaphore[] = { mImageAvailableSemaphores[current_frame] };
 		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submit_info.waitSemaphoreCount = 1;
@@ -788,7 +777,7 @@ namespace nap
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
-		VkSemaphore render_semaphore[] = { mRenderFinishedSemaphores[mSwapIndex] };
+		VkSemaphore render_semaphore[] = { mRenderFinishedSemaphores[mPresentIndex] };
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = render_semaphore;
 
@@ -807,7 +796,7 @@ namespace nap
 		present_info.pWaitSemaphores = render_semaphore;
 		present_info.swapchainCount = 1;						// Await only the render finished semaphore
 		present_info.pSwapchains = swap_chains;
-		present_info.pImageIndices = &mSwapIndex;
+		present_info.pImageIndices = &mPresentIndex;
 
 		// According to the spec, vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
@@ -902,7 +891,6 @@ namespace nap
 		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
 
-		mFramesInFlight.resize(chain_images.size(), -1);
 		return true;
 	}
 
@@ -920,9 +908,6 @@ namespace nap
 			vkFreeCommandBuffers(mDevice, mRenderService->getCommandPool(), static_cast<uint32>(mCommandBuffers.size()), mCommandBuffers.data());
 			mCommandBuffers.clear();
 		}
-
-		// Reset image tracking
-		mFramesInFlight.clear();
 
 		// Destroy render pass if present
 		if (mRenderPass != VK_NULL_HANDLE)
@@ -962,7 +947,7 @@ namespace nap
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass = mRenderPass;
-		render_pass_info.framebuffer = mSwapChainFramebuffers[mSwapIndex];
+		render_pass_info.framebuffer = mSwapChainFramebuffers[mPresentIndex];
 		render_pass_info.renderArea.offset = { 0, 0 };
 		render_pass_info.renderArea.extent = mSwapchainExtent;
 

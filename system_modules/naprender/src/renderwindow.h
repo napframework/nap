@@ -314,12 +314,11 @@ namespace nap
 		std::vector<VkCommandBuffer>	mCommandBuffers;
 		std::vector<VkSemaphore>		mImageAvailableSemaphores;
 		std::vector<VkSemaphore>		mRenderFinishedSemaphores;
-		std::vector<int>				mFramesInFlight;
 		VkPresentModeKHR				mPresentationMode = VK_PRESENT_MODE_MAILBOX_KHR;
 		ImageData						mDepthImage;
 		ImageData						mColorImage;
 		bool							mSampleShadingEnabled = false;
-		uint32							mSwapIndex = 0;
+		uint32							mPresentIndex = 0;
 		uint32							mSwapChainImageCount = 0;
 		bool							mRecreateSwapchain = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
