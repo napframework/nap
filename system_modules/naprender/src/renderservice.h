@@ -463,7 +463,6 @@ namespace nap
 		/**
 		 * Add a new window as target to the render engine.
 		 * @param window the window to add as a valid render target
-		 * @param errorState contains the error message if the window could not be added
 		 */
 		void addWindow(RenderWindow& window);
 

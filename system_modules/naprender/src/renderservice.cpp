@@ -1374,23 +1374,26 @@ namespace nap
 
 	void RenderService::addWindow(RenderWindow& window)
 	{
-		// Create icon if it doesn't exist
-		utility::ErrorState error;
-		if (mWindowIcon == nullptr && !createWindowIcon(getModule(), &mWindowIcon, error))
+		if (!window.isEmbedded())
 		{
-			nap::Logger::warn("Unable to create window icon: %s",
-				error.toString().c_str());
-		}
+			// Attempt to create default window icon
+			utility::ErrorState error;
+			if (mWindowIcon == nullptr && !createWindowIcon(getModule(), &mWindowIcon, error))
+			{
+				nap::Logger::warn("Unable to create window icon: %s",
+					error.toString().c_str());
+			}
 
-		// Assign if it does
-		if (mWindowIcon != nullptr && !SDL_SetWindowIcon(window.mSDLWindow, mWindowIcon))
-		{
-			nap::Logger::warn("Unable to set window icon: %s",
-				SDL::getSDLError().c_str());
-		}
+			// Assign if it does
+			if (mWindowIcon != nullptr && !SDL_SetWindowIcon(window.mSDLWindow, mWindowIcon))
+			{
+				nap::Logger::warn("Unable to set window icon: %s",
+					SDL::getSDLError().c_str());
+			}
 
-		// Attempt to restore cached settings
-		restoreWindow(window);
+			// Attempt to restore cached settings
+			restoreWindow(window);
+		}
 
 		// Add and notify listeners
 		mWindows.emplace_back(&window);

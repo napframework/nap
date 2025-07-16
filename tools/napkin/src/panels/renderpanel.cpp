@@ -45,16 +45,39 @@ namespace napkin
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
 
-		// Create an SDL window from QT handle ID
-		auto id = container->winId(); assert(id != 0);
-		if (SDL_SetHintWithPriority(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, "1", SDL_HINT_OVERRIDE) == SDL_FALSE)
-			nap::Logger::warn("Unable to enable '%s'", SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN);
+		// Create window properties
+		SDL_PropertiesID props = SDL_CreateProperties();
+		if(!error.check(props != 0, "Unable to create window properties, '%s'", SDL_GetError()))
+			return nullptr;
 
-		// TODO: Perform correct nullptr check (0 != nullptr)
-		auto sdl_window = SDL_CreateWindowFrom((void*)id);
-		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", nap::SDL::getSDLError().c_str()))
+		// Enable vulkan compatibility
+		bool vset = SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, true);
+		if (!error.check(vset == true,
+			"Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, SDL_GetError()))
 		{
-			container->setParent(nullptr);
+			delete container;
+			return nullptr;
+		}
+
+#ifdef WIN32
+		// Enable from handle
+		auto id = container->winId(); assert(id != 0);
+		bool hset = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, (void*)id);
+		if (!error.check(hset == true,
+			"Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetError()))
+		{
+			delete container;
+			return nullptr;
+		}
+#else
+		assert(false);
+		error.fail("Unsupported platform");
+		return nullptr;
+#endif // WIN32
+
+		auto sdl_window = SDL_CreateWindowWithProperties(props);
+		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", SDL_GetError()))
+		{
 			delete container;
 			return nullptr;
 		}

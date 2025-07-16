@@ -48,6 +48,7 @@ namespace napkin
 		}
 
 		// Disable interfering events
+		/*
 		SDL_EventState(SDL_DISPLAYEVENT, SDL_IGNORE);
 		SDL_EventState(SDL_WINDOWEVENT, SDL_IGNORE);
 		SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
@@ -57,6 +58,7 @@ namespace napkin
 		SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_IGNORE);
 		SDL_EventState(SDL_MOUSEBUTTONUP, SDL_IGNORE);
 		SDL_EventState(SDL_MOUSEWHEEL, SDL_IGNORE);
+		*/
 	}
 
 	
@@ -71,6 +73,6 @@ namespace napkin
 	{
 		// Flush everything -> events are forward by the individual render panels
 		// TODO: Remove SDL when using applets
-		SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+		SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
 	}
 }

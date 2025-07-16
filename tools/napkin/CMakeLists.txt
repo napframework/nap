@@ -125,7 +125,7 @@ if(MSVC)
 
     # SDL
     find_sdl()
-    copy_files_to_target_file_dir(${SDL_DIR}/msvc/x86_64/lib/SDL3.dll)
+    copy_files_to_target_file_dir(${SDL_DIR}/msvc/lib/x86_64/SDL3.dll)
 
     # Assimp
     set(assimp_parent ${NAP_ROOT}/system_modules/naprender/thirdparty/assimp)

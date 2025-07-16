@@ -235,6 +235,11 @@ namespace nap
 		SDL_Window* getNativeWindow() const;
 
 		/**
+		 * @return if this window is embedded into another application
+		 */
+		bool isEmbedded() const													{ return mExternalHandle != nullptr; }
+
+		/**
 		 *	@return the hardware window number
 		 */
 		virtual uint getNumber() const override;
