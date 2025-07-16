@@ -11,6 +11,7 @@
 // Nap includes
 #include <nap/device.h>
 #include <utility/dllexport.h>
+#include <nap/core.h>
 
 namespace nap
 {
@@ -24,8 +25,7 @@ namespace nap
     {
         RTTI_ENABLE(Device)
     public:
-        MidiOutputPort() = default;
-        MidiOutputPort(MidiService& service);
+        MidiOutputPort(Core& core);
 		virtual ~MidiOutputPort() override;
 
         /**
