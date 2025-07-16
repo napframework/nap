@@ -716,9 +716,9 @@ namespace nap
 
 		// Figure out which swapchain image to draw to next, the semaphore is triggered when the image becomes available.
 		// On which the renderer waits to become available when the queue is submitted in RenderWindow::endRecording().
-		int	current_frame = mRenderService->getCurrentFrameIndex(); 
+		int	frame_index = mRenderService->getCurrentFrameIndex(); 
 		assert(mSwapchain != VK_NULL_HANDLE);
-		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mAcquireSemaphores[current_frame], VK_NULL_HANDLE, &mImageIndex);
+		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mAcquireSemaphores[frame_index], VK_NULL_HANDLE, &mImageIndex);
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
 		// This situation occurs when the swapchain dimensions don't match the current extent, ie: window has been resized.
@@ -733,7 +733,7 @@ namespace nap
 			"Unable to retrieve the index of the next available presentable image");
 
 		// Reset command buffer for current frame
-		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
+		VkCommandBuffer commandBuffer = mCommandBuffers[frame_index];
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		// Start recording commands
