@@ -1026,5 +1026,21 @@ namespace nap
 	{
 		SDL::setWindowAlwaysOnTop(mSDLWindow, onTop);
 	}
+
+
+	float RenderWindow::getDisplayScale() const
+	{
+		float scale;
+		SDL::getWindowDisplayScale(mSDLWindow, &scale);
+		return scale;
+	}
+
+
+	float RenderWindow::getPixelDensity() const
+	{
+		float density;
+		SDL::getWindowPixelDensity(mSDLWindow, &density);
+		return density;
+	}
 }
 

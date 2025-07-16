@@ -2995,32 +2995,4 @@ namespace nap
 	{
 		vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
 	}
-
-
-	nap::Display::Display(int index) : mIndex(index)
-	{
-		SDL::getDisplayDPI(index, &mDPI);
-		SDL::getDisplayName(index, mName);
-		mValid = SDL::getDisplayBounds(index, mMin, mMax);
-	}
-
-
-	std::string nap::Display::toString() const
-	{
-		return utility::stringFormat
-		(
-			"Display: %d, %s, dpi: %.1f, min: %d-%d, max: %d-%d",
-			mIndex,
-			mName.c_str(),
-			mDPI,
-			mMin.x, mMin.y,
-			mMax.x, mMax.y
-		);
-	}
-
-
-	nap::math::Rect nap::Display::getBounds() const
-	{
-		return { glm::vec2(mMin), glm::vec2(mMax) };
-	}
 }

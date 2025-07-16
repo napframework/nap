@@ -205,6 +205,25 @@ namespace nap
 		const glm::ivec2 getPosition() const;
 
 		/**
+		 * Get the current pixel density, this is a ratio of pixel size to window size.
+		 *
+		 * For example, if the window is 1920x1080 and it has a high density back buffer of 3840x2160 pixels,
+		 * it would have a pixel density of 2.0.
+		 */
+		float getPixelDensity() const;
+
+		/**
+		 * Get the current content display scale relative to a window's pixel size.
+		 * 
+		 * This is a combination of the window pixel density and the display content scale, and is the expected scale for displaying content in this window.
+		 * For example, if a 3840x2160 window had a display scale of 2.0, the user expects the content to take twice as many pixels and
+		 * be the same physical size as if it were being displayed in a 1920x1080 window with a display scale of 1.0.
+		 * 
+		 * @return window display scale, 0.0f if call fails
+		 */
+		float getDisplayScale() const;
+
+		/**
 		 * Moves the window to the front and keeps it there
 		 * @param if the window is moved to the front and kept there.
 		 */
@@ -246,7 +265,7 @@ namespace nap
 
 		/**
 		 * Ends a render pass. Always call this after beginRendering().
-		 */
+		 */ 
 		virtual void endRendering() override;
 
 		/**

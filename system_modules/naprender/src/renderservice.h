@@ -10,6 +10,7 @@
 #include "renderutils.h"
 #include "imagedata.h"
 #include "rendertag.h"
+#include "display.h"
 
 // External Includes
 #include <nap/service.h>
@@ -135,98 +136,6 @@ namespace nap
 		VkQueueFlags				mQueueCapabilities;					///< Capabilities of the selected queue
 		int							mQueueIndex = -1;					///< Queue index
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Display
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Groups together important display information
-	 */
-	class NAPAPI Display final
-	{
-	public:
-		/**
-		 * Extracts display information. Index must be >= 0 && < SDL::getDisplayCount()
-		 * @param index display index
-		 */
-		Display(int index);
-
-		/**
-		 * @return display index
-		 */
-		int getIndex() const { return mIndex; }
-
-		/**
-		 * Returns diagonal dots per inch. 0 if diagonal DPI not available.
-		 * @return diagonal dots per inch. 0 if diagonal DPI not available.
-		 */
-		float getDiagonalDPI() const { return mDPI; }
-
-		/**
-		 * Returns horizontal dots per inch. 0 if horizontal DPI not available.
-		 * @return horizontal dots per inch. 0 if horizontal DPI not available.
-		 */
-		float getHorizontalDPI() const { return mDPI; }
-
-		/**
-		 * Returns vertical dots per inch. 0 if vertical DPI not available.
-		 * @return vertical dots per inch. 0 if vertical DPI not available.
-		 */
-		float getVerticalDPI() const { return mDPI; }
-
-		/**
-		 * Returns display name, empty if not available.
-		 * @return display name, empty if not available.
-		 */
-		const std::string& getName() const { return mName; }
-
-		/**
-		 * @return min location of desktop area of this display, with the primary display located at 0,0
-		 */
-		const glm::ivec2& getMin()	const { return mMin; }
-
-		/**
-		 * @return max location of desktop area of this display, with the primary display located at 0,0
-		 */
-		const glm::ivec2& getMax() const { return mMax; }
-
-		/**
-		 * @return desktop area of this display, with the primary display located at 0,0
-		 */
-		math::Rect getBounds() const;
-
-		/**
-		 * Returns if this display has valid bounds.
-		 * @return if this display has valid bounds.
-		 */
-		bool isValid() const { return mValid; }
-
-		/**
-		 * @return human readable string
-		 */
-		std::string toString() const;
-
-		/**
-		 * @return if two displays are the same based on hardware index.
-		 */
-		bool operator== (const Display& rhs) const							{ return rhs.getIndex() == this->getIndex(); }
-
-		/**
-		 * @return if two displays values are not the same based on hardware index
-		 */
-		bool operator!=(const Display& rhs) const							{ return !(rhs == *this); }
-
-	private:
-		std::string mName;						///< Display name
-		int mIndex = -1;						///< Display index
-		float mDPI = 96.0f;						///< Display DPI
-		glm::ivec2 mMin = { 0, 0 };				///< Min display bound position
-		glm::ivec2 mMax = { 0, 0 };				///< Max display bound position
-		bool mValid = false;					///< If valid after construction
-	};
-	using DisplayList = std::vector<Display>;
 
 
 	//////////////////////////////////////////////////////////////////////////

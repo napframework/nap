@@ -78,7 +78,7 @@ namespace nap
 		bool setFullscreen(SDL_Window* window, bool value)
 		{
 			// Otherwise set
-			return SDL_SetWindowFullscreen(window, true);
+			return SDL_SetWindowFullscreen(window, value);
 		}
 
 
