@@ -50,8 +50,8 @@ namespace nap
 		{
 			for (const auto& display : mRenderService->getDisplays())
 			{
-				float dscale = display.getDPI() / font::dpi;
-				fscale = dscale > fscale ? dscale : fscale;
+				fscale = display.getContentScale() > fscale ?
+					display.getContentScale() : fscale;
 			}
 		}
 
@@ -147,7 +147,7 @@ namespace nap
 		{
 			auto* display = mRenderService->findDisplay(*cur_window);
 			assert(display != nullptr);
-			dpi_scale = (1.0f / getDPIScale()) * (math::max<float>(display->getDPI(), font::dpi) / font::dpi);
+			dpi_scale = display->getContentScale() / getDPIScale();
 		}
 
 		// Get object space position based on orientation of text

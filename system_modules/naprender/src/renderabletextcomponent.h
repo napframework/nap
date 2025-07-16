@@ -179,7 +179,7 @@ namespace nap
 		 * Returns the font dpi scaling factor
 		 * @return font dpi scaling factor
 		 */
-		float getDPIScale() const											{ return mDPIScale; }
+		float getDPIScale() const										{ return mContentScale; }
 
 	protected:
 		/**
@@ -216,7 +216,7 @@ namespace nap
 
 	private:
 		int mIndex = 0;													///< Current line index to update or draw
-		float mDPIScale = 1.0f;											///< Font DPI scaling factor
+		float mContentScale = 1.0f;										///< Font DPI scaling factor
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform

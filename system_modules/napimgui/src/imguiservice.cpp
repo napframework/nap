@@ -687,14 +687,14 @@ namespace nap
 			{
 				for (const auto& display : mRenderService->getDisplays())
 				{
-					float dpi_scale = math::max<float>(display.getDPI(), gui::dpi) / gui::dpi;
-					mDPIScale = dpi_scale > mDPIScale ? dpi_scale : mDPIScale;
+					mContentScale = display.getContentScale() > mContentScale ?
+						display.getContentScale() : mContentScale;
 				}
 			}
 
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
-			float font_size = mConfiguration->mFontSize * mDPIScale * mGuiScale;
+			float font_size = mConfiguration->mFontSize * mContentScale * mGuiScale;
 			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
@@ -908,8 +908,8 @@ namespace nap
 		{
 			// Compute overall Gui and font scaling factor
 			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
-			float gscale = mGuiScale * (math::max<float>(display.getDPI(), gui::dpi) / gui::dpi);
-			float fscale = math::max<float>(display.getDPI(), gui::dpi) / (mDPIScale * gui::dpi);
+			float gscale = mGuiScale * display.getContentScale();
+			float fscale = display.getContentScale() / mContentScale;
 
 			// Push scaling for window and font based on new display
 			// We must push the original style first before we can scale

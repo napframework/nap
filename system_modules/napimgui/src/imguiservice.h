@@ -398,8 +398,8 @@ namespace nap
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
-		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
-		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
+		float mGuiScale = 1.0f;			///< Overall GUI scaling factor
+		float mContentScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 
 		// Selected colour palette and style
 		IMGuiServiceConfiguration* mConfiguration = nullptr;

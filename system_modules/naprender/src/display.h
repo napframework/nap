@@ -45,14 +45,6 @@ namespace nap
 		int getIndex() const { return mIndex; }
 
 		/**
-		 * Return the dots/pixels-per-inch of the display that holds the given window.
-		 * Note that this function is an approximation, using the current display content scale.
-		 *
-		 * @return display dpi
-		 */
-		float getDPI() const { return mDPI; }
-
-		/**
 		 * Returns display name, empty if not available.
 		 * @return display name, empty if not available.
 		 */
@@ -81,7 +73,7 @@ namespace nap
 		 * which means that the user expects UI elements to be twice as big on this display, to aid in readability.
 		 * @return content scale of the display
 		 */
-		bool getDisplayContentScale(float& scale) const { return mScale; }
+		float getContentScale() const { return mScale; }
 
 		/**
 		 * Returns if this display has valid bounds.
