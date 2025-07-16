@@ -468,10 +468,10 @@ namespace nap
 		destroySwapChainResources();
 
 		// Destroy all other  vulkan resources if present
-		for (VkSemaphore semaphore : mImageAvailableSemaphores)
+		for (VkSemaphore semaphore : mAcquireSemaphores)
 			vkDestroySemaphore(mDevice, semaphore, nullptr);
 
-		for (VkSemaphore semaphore : mRenderFinishedSemaphores)
+		for (VkSemaphore semaphore : mSubmitSemaphores)
 			vkDestroySemaphore(mDevice, semaphore, nullptr);
 
 		// Destroy window surface
@@ -546,11 +546,11 @@ namespace nap
 			return false;
 
 		// Create image render sync primitives.
-		if (!createSyncPrimitives(mDevice, mImageAvailableSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
+		if (!createSyncPrimitives(mDevice, mAcquireSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
 
 		// Create presentation sync primitives
-		if (!createSyncPrimitives(mDevice, mRenderFinishedSemaphores, mSwapChainImageCount, errorState))
+		if (!createSyncPrimitives(mDevice, mSubmitSemaphores, mSwapChainImageCount, errorState))
 			return false;
 
 		// Add window to render service
@@ -718,7 +718,7 @@ namespace nap
 		// On which the renderer waits to become available when the queue is submitted in RenderWindow::endRecording().
 		int	current_frame = mRenderService->getCurrentFrameIndex(); 
 		assert(mSwapchain != VK_NULL_HANDLE);
-		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mPresentIndex);
+		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mAcquireSemaphores[current_frame], VK_NULL_HANDLE, &mImageIndex);
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
 		// This situation occurs when the swapchain dimensions don't match the current extent, ie: window has been resized.
@@ -749,8 +749,8 @@ namespace nap
 	void RenderWindow::endRecording()
 	{
 		// Stop recording command buffer
-		int	current_frame = mRenderService->getCurrentFrameIndex();
-		VkCommandBuffer command_buffer = mCommandBuffers[current_frame];
+		int	frame_index = mRenderService->getCurrentFrameIndex();
+		VkCommandBuffer command_buffer = mCommandBuffers[frame_index];
 		if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) 
 			throw std::runtime_error("failed to record command buffer!");
 
@@ -758,36 +758,34 @@ namespace nap
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
 		VkSubmitInfo submit_info = {};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		VkSemaphore image_available_semaphore[] = { mImageAvailableSemaphores[current_frame] };
 		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitSemaphores = image_available_semaphore;
+		submit_info.pWaitSemaphores = &mAcquireSemaphores[frame_index];
 		submit_info.pWaitDstStageMask = wait_stages;
 		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers = &mCommandBuffers[current_frame];
+		submit_info.pCommandBuffers = &mCommandBuffers[frame_index];
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
-		VkSemaphore render_finished_semaphore[] = { mRenderFinishedSemaphores[mPresentIndex] };
+		VkSemaphore submit_semaphore = mSubmitSemaphores[mImageIndex];
 		submit_info.signalSemaphoreCount = 1;
-		submit_info.pSignalSemaphores = render_finished_semaphore;
+		submit_info.pSignalSemaphores = &submit_semaphore;
 
 		// Submit the queue for rendering
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
 		// Set the rendering bit of queue submit ops of the current frame
-		mRenderService->mFramesInFlight[current_frame].mQueueSubmitOps |= RenderService::EQueueSubmitOp::Rendering;
+		mRenderService->mFramesInFlight[frame_index].mQueueSubmitOps |= RenderService::EQueueSubmitOp::Rendering;
 
 		// Create presentation information -> wait for the render finished semaphore to be signalled before presenting
-		VkSwapchainKHR swap_chains[] = { mSwapchain };
 		VkPresentInfoKHR present_info = {};
 		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		present_info.waitSemaphoreCount = 1;
-		present_info.pWaitSemaphores = render_finished_semaphore;
+		present_info.pWaitSemaphores = &submit_semaphore;
 		present_info.swapchainCount = 1;						// Await only the render finished semaphore
-		present_info.pSwapchains = swap_chains;
-		present_info.pImageIndices = &mPresentIndex;
+		present_info.pSwapchains = &mSwapchain;
+		present_info.pImageIndices = &mImageIndex;
 
 		// According to the spec, vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
@@ -946,7 +944,7 @@ namespace nap
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass = mRenderPass;
-		render_pass_info.framebuffer = mSwapChainFramebuffers[mPresentIndex];
+		render_pass_info.framebuffer = mSwapChainFramebuffers[mImageIndex];
 		render_pass_info.renderArea.offset = { 0, 0 };
 		render_pass_info.renderArea.extent = mSwapchainExtent;
 
