@@ -683,14 +683,9 @@ namespace nap
 		if (mFontAtlas == nullptr)
 		{
 			// Calculate max dpi scale if high dpi rendering is enabled
+			// TODO: This needs to happen on the fly
 			if (mRenderService->getHighDPIEnabled())
-			{
-				for (const auto& display : mRenderService->getDisplays())
-				{
-					mContentScale = display.getContentScale() > mContentScale ?
-						display.getContentScale() : mContentScale;
-				}
-			}
+				mContentScale = window.getDisplayScale();
 
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
@@ -908,8 +903,8 @@ namespace nap
 		{
 			// Compute overall Gui and font scaling factor
 			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
-			float gscale = mGuiScale * display.getContentScale();
-			float fscale = display.getContentScale() / mContentScale;
+			float gscale = mGuiScale * mContentScale;
+			float fscale = 1.0f;
 
 			// Push scaling for window and font based on new display
 			// We must push the original style first before we can scale

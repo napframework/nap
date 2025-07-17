@@ -38,6 +38,7 @@
 #include <rtti/jsonreader.h>
 #include <rtti/defaultlinkresolver.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <SDL_hints.h>
 
 // Required to enbale high dpi rendering on windows
 #ifdef _WIN32
@@ -1766,6 +1767,10 @@ namespace nap
 		// TODO: Try to find a more clean, optimized way of handling this.
 		if (!SDL::videoInitialized())
 		{
+#ifdef __linux__
+			// TODO: Make driver a configuration option!
+			SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
+#endif
 			mSDLInitialized = SDL::initVideo(errorState);
 			if (!errorState.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
 				return false;

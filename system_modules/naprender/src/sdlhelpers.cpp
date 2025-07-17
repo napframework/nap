@@ -310,5 +310,21 @@ namespace nap
 			uint32 flags = SDL_GetWindowFlags(window);
 			return flags & SDL_WINDOW_FULLSCREEN;
 		}
+
+
+		std::vector<std::string> getVideoDrivers()
+		{
+			int count = SDL_GetNumVideoDrivers();
+			std::vector<std::string> drivers; drivers.reserve(count);
+			for (auto i = 0; i < count; i++)
+				drivers.emplace_back(SDL_GetVideoDriver(i));
+			return drivers;
+		}
+
+
+		std::string getCurrentVideoDriver()
+		{
+			return SDL_GetCurrentVideoDriver();
+		}
 	}
 }

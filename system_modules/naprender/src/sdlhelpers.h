@@ -294,5 +294,17 @@ namespace nap
 		 * @param enabled resize flag
 		 */
 		void NAPAPI setWindowResizable(SDL_Window* window, bool enabled);
+
+		/**
+		 * Get all available video drivers.
+		 * @return all available video drivers
+		 */
+		NAPAPI std::vector<std::string> getVideoDrivers();
+
+		/**
+		 * Get current video driver
+		 * @return current video driver
+		 */
+		NAPAPI std::string getCurrentVideoDriver();
 	}
 }
