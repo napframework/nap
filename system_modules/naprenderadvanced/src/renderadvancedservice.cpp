@@ -91,16 +91,6 @@ namespace nap
 		mRenderService = getCore().getService<RenderService>();
 		assert(mRenderService != nullptr);
 
-		// Ensure the initialized Vulkan API version meets the render advanced service requirement
-		if (mRenderService->getVulkanVersionMajor() <= mRequiredVulkanVersionMajor)
-		{
-			if (mRenderService->getVulkanVersionMajor() < mRequiredVulkanVersionMajor || mRenderService->getVulkanVersionMinor() < mRequiredVulkanVersionMinor)
-			{
-				errorState.fail("%s: Vulkan API Version %d.%d required", this->get_type().get_name().to_string().c_str(), mRequiredVulkanVersionMajor, mRequiredVulkanVersionMinor);
-				return false;
-			}
-		}
-
 		// Get configuration
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 		if (!errorState.check(configuration != nullptr, "Failed to get nap::RenderAdvancedServiceConfiguration"))
@@ -146,7 +136,6 @@ namespace nap
 		mShadowTextureDummy->mDepthFormat = configuration->mDepthFormat;
 		mShadowTextureDummy->mColorSpace = EColorSpace::Linear;
 		mShadowTextureDummy->mClearValue = 1.0f;
-		mShadowTextureDummy->mFill = true;
 		if (!mShadowTextureDummy->init(errorState))
 		{
 			errorState.fail("%s: Failed to create shadow texture dummy", this->get_type().get_name().to_string().c_str());
@@ -650,7 +639,6 @@ namespace nap
 				shadow_map->mUsage = Texture2D::EUsage::Internal;
 				shadow_map->mColorSpace = EColorSpace::Linear;
 				shadow_map->mClearValue = 1.0f;
-				shadow_map->mFill = true;
 
 				if (!shadow_map->init(errorState))
 				{

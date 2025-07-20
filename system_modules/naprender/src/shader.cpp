@@ -331,9 +331,15 @@ static std::unique_ptr<glslang::TShader> parseShader(VkDevice device, nap::uint3
 	glslang::EShTargetLanguageVersion target_language_version;
 
 	// The client/language version must match with the Vulkan device's version
-	if (vulkanVersion >= VK_API_VERSION_1_1)
+	if (vulkanVersion >= VK_API_VERSION_1_2)
 	{
-		// For version 1.1 or higher, use Vulkan 1.1 with SPV 1.3
+		// For version 1.2 or higher, use Vulkan 1.2 with SPV 1.5
+		target_client_version = glslang::EShTargetVulkan_1_2;
+		target_language_version = glslang::EShTargetSpv_1_5;
+	}
+	else if (vulkanVersion >= VK_API_VERSION_1_1)
+	{
+		// For version 1.1, use Vulkan 1.1 with SPV 1.3
 		target_client_version = glslang::EShTargetVulkan_1_1;
 		target_language_version = glslang::EShTargetSpv_1_3;
 	}

@@ -60,7 +60,6 @@ namespace nap
 		const std::vector<glm::vec3>& getNormalizedLineBox();
 
 		EMemoryUsage mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated
-		bool mUnit = false;									///< Property: 'Extent' Extent of the box (0.5)
 
 	protected:
 		/**
@@ -74,6 +73,6 @@ namespace nap
 		std::unique_ptr<MeshInstance> mMeshInstance;
 
 	private:
-		bool mIsSetup = false;
+		bool mIsSetupManually = false;
 	};
 }

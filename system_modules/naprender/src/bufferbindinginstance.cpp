@@ -39,10 +39,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingIVec4Instance)
 	RTTI_CONSTRUCTOR(const std::string&, const nap::ShaderVariableValueArrayDeclaration&, const nap::BufferBindingChangedCallback&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingUVec4Instance)
-	RTTI_CONSTRUCTOR(const std::string&, const nap::ShaderVariableValueArrayDeclaration&, const nap::BufferBindingChangedCallback&)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingMat4Instance)
 	RTTI_CONSTRUCTOR(const std::string&, const nap::ShaderVariableValueArrayDeclaration&, const nap::BufferBindingChangedCallback&)
 RTTI_END_CLASS
@@ -177,11 +173,6 @@ namespace nap
 				return createBufferBindingInstance<BufferBindingIVec4Instance, BufferBindingIVec4, ShaderVariableValueArrayDeclaration>(
 					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::UVec4)
-			{
-				return createBufferBindingInstance<BufferBindingUVec4Instance, BufferBindingUVec4, ShaderVariableValueArrayDeclaration>(
-					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
-			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Mat4)
 			{
 				return createBufferBindingInstance<BufferBindingMat4Instance, BufferBindingMat4, ShaderVariableValueArrayDeclaration>(
@@ -194,22 +185,26 @@ namespace nap
 		// values or structs are declared inside a storage buffer block. Notify the user and return false.
 		else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration) || declaration_type == RTTI_OF(ShaderVariableValueDeclaration))
 		{
-			NAP_ASSERT_MSG(false, "Individual values (or structs) not supported for buffer bindings.");
+			NAP_ASSERT_MSG(false, "Individual values (or structs) not supported for buffer bindings.")
 		}
 		else if (declaration_type == RTTI_OF(ShaderVariableStructArrayDeclaration))
 		{
 			NAP_ASSERT_MSG(false, "Declaration type 'ShaderVariableStructArrayDeclaration' is not supported for buffer bindings. Use 'ShaderVariableStructBufferDeclaration' instead.");
 		}
 		
-		NAP_ASSERT_MSG(false, "Unsupported shader variable declaration");
+		NAP_ASSERT_MSG(false, "Unsupported shader variable declaration")
 		return nullptr;
 	}
 
 
 	void BufferBindingStructInstance::setBuffer(StructBuffer& buffer)
 	{
-		NAP_ASSERT_MSG(mDeclaration->mStride == buffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size");
-		BufferBindingInstance::mBuffer = &buffer;
+		NAP_ASSERT_MSG(mDeclaration->mStride == buffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size")
+		if (mBuffer != nullptr)
+			mBuffer->bufferChanged.disconnect(mBufferChangedSlot);
+
+		mBuffer = &buffer;
+		mBuffer->bufferChanged.connect(mBufferChangedSlot);
 		raiseChanged();
 	}
 
@@ -217,8 +212,12 @@ namespace nap
 	void BufferBindingStructInstance::setBuffer(const BufferBindingStruct& resource)
 	{
 		assert(resource.mBuffer != nullptr);
-		NAP_ASSERT_MSG(mDeclaration->mStride == resource.mBuffer->getElementSize(), "Buffer declaration stride is not equal to buffer element size");
-		BufferBindingInstance::mBuffer = resource.mBuffer.get();
+		NAP_ASSERT_MSG(mDeclaration->mStride == resource.mBuffer->getElementSize(), "Buffer declaration stride is not equal to buffer element size")
+		if (mBuffer != nullptr)
+			mBuffer->bufferChanged.disconnect(mBufferChangedSlot);
+
+		mBuffer = resource.mBuffer.get();
+		mBuffer->bufferChanged.connect(mBufferChangedSlot);
 		raiseChanged();
 	}
 }

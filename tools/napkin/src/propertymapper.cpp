@@ -706,7 +706,6 @@ namespace napkin
 				{ nap::EShaderVariableValueType::Vec3,	RTTI_OF(nap::BufferBindingVec3)		},
 				{ nap::EShaderVariableValueType::Vec4,	RTTI_OF(nap::BufferBindingVec4)		},
 				{ nap::EShaderVariableValueType::IVec4,	RTTI_OF(nap::BufferBindingIVec4)	},
-				{ nap::EShaderVariableValueType::UVec4,	RTTI_OF(nap::BufferBindingUVec4)	},
 				{ nap::EShaderVariableValueType::Mat4,	RTTI_OF(nap::BufferBindingMat4)		}
 			};
 

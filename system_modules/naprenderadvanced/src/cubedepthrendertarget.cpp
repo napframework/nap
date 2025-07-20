@@ -5,6 +5,7 @@
 // Local Includes
 #include "cubedepthrendertarget.h"
 #include "cuberendertarget.h"
+#include "renderadvancedutils.h"
 
 // Nap includes
 #include <perspcameracomponent.h>
@@ -21,7 +22,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeDepthRenderTarget, "Depth textu
 	RTTI_PROPERTY("SampleShading",			&nap::CubeDepthRenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
 	RTTI_PROPERTY("Samples",				&nap::CubeDepthRenderTarget::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default,	"The number of MSAA samples to use")
 	RTTI_PROPERTY("ClearValue",				&nap::CubeDepthRenderTarget::mClearValue,				nap::rtti::EPropertyMetaData::Default,	"Depth target initial clear value")
-
 RTTI_END_CLASS
 
 namespace nap
@@ -56,7 +56,7 @@ namespace nap
 
 		// Assign clear color
 		float clear_value = std::clamp(mClearValue, 0.0f, 1.0f);
-		mClearColor = { mClearValue, mClearValue, mClearValue, mClearValue };
+		mClearColor = { clear_value, clear_value, clear_value, clear_value };
 
 		// Set size
 		mSize = { mCubeDepthTexture->getWidth(), mCubeDepthTexture->getHeight() };
@@ -73,7 +73,7 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createDepthOnlyRenderPass(mRenderService->getDevice(), mCubeDepthTexture->getFormat(), mRenderPass, errorState))
+		if (!createDepthOnlyRenderPass(mRenderService->getDevice(), mCubeDepthTexture->getFormat(), getSampleCount(), getFinalLayout(), mRenderPass, errorState))
 			return false;
 
 		const auto& tex = static_cast<const DepthRenderTextureCube&>(*mCubeDepthTexture);
@@ -179,8 +179,6 @@ namespace nap
 			}
 			endRendering();
 		}
-
-		mIsFirstPass = false;
 	}
 
 

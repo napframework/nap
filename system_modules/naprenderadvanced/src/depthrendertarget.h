@@ -6,7 +6,6 @@
 
 // Local Includes
 #include "irendertarget.h"
-#include "rendertexture2d.h"
 #include "texturelink.h"
 
 // External Includes
@@ -17,12 +16,14 @@
 namespace nap
 {
 	// Forward Declares
-	class RenderTexture2D;
+	class DepthRenderTexture2D;
 	class RenderService;
 
 	/**
-	 * A resource that is used to render one or multiple objects to a nap::RenderTexture2D instead of a nap::RenderWindow.
-	 * This objects requires a link to a nap::RenderTexture2D to store the result of the render pass.
+	 * A resource that is used to render one or multiple objects to nap::DepthRenderTexture2D exclusively.
+	 * Usage of this target creates a graphics pipeline that skips the fragment shader stage of all material instances. 
+	 * 
+	 * This objects requires a link to a nap::DepthRenderTexture2D to store the result of the render pass.
 	 * Only render to a render target within a headless recording pass, failure to do so will result in undefined behavior.
 	 * Make sure to call beginRendering() to start the render pass and endRendering() to end the render pass.
 	 * Always call RenderService::endHeadlessRecording after having recorded all off-screen render operations.
@@ -44,8 +45,9 @@ namespace nap
 	 *		}
 	 *		mRenderService->endFrame();
 	 * ~~~~~
+	 *
 	 */
-	class NAPAPI RenderTarget : public Resource, public IRenderTarget
+	class NAPAPI DepthRenderTarget : public Resource, public IRenderTarget
 	{
 		RTTI_ENABLE(Resource)
 	public:
@@ -53,12 +55,12 @@ namespace nap
 		 * Every render target requires a reference to core.
 		 * @param core link to a nap core instance
 		 */
-		RenderTarget(Core& core);
+		DepthRenderTarget(Core& core);
 		
 		/**
 		 * Destroys allocated render resources
 		 */
-		~RenderTarget();
+		~DepthRenderTarget();
 
 		/**
 		 * Initializes the render target, including all the required resources.
@@ -112,10 +114,10 @@ namespace nap
 		virtual const glm::ivec2 getBufferSize() const override;
 
 		/**
-		 * Updates the render target clear color.
-		 * @param color the new clear color to use.
+		 * Updates the render target clear value. Stores the red component of `color` as the clear value.
+		 * @param color the new clear value to use.
 		 */
-		virtual void setClearColor(const RGBAColorFloat& color) override		{ mClearColor = color; }
+		virtual void setClearColor(const RGBAColorFloat& color) override		{ mClearValue = color.getRed(); }
 		
 		/**
 		 * @return the currently used render target clear color.
@@ -133,14 +135,19 @@ namespace nap
 		virtual VkRenderPass getRenderPass() const override						{ return mRenderPass; }
 
 		/**
-		 * @return the texture that holds the result of the render pass.
+		 * @return used number of samples when rendering to the target.
 		 */
-		RenderTexture2D& getColorTexture();
+		virtual VkSampleCountFlagBits getSampleCount() const override			{ return mRasterizationSamples; }
 
 		/**
-		 * @return render target color format. This is the format of the linked in color texture.
+		 * @return if sample based shading is enabled when rendering to the target.
 		 */
-		virtual VkFormat getColorFormat() const override;
+		virtual bool getSampleShadingEnabled() const override					{ return false; };
+
+		/**
+		 * @return VK_FORMAT_UNDEFINED as the depth render target has no color attachment.
+		 */
+		virtual VkFormat getColorFormat() const override						{ return VK_FORMAT_UNDEFINED; }
 
 		/**
 		 * @return render target depth format
@@ -148,34 +155,28 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override;
 
 		/**
-		 * @return used number of samples when rendering to the target.
+		 * @return layout of the depth texture when render pass ends
 		 */
-		virtual VkSampleCountFlagBits getSampleCount() const override;
-		
-		/**
-		 * @return if sample based shading is enabled when rendering to the target.
-		 */
-		virtual bool getSampleShadingEnabled() const override;
+		virtual VkImageLayout getFinalLayout() const override					{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
 
 		/**
-		 * @return layout of the texture when render pass ends
+		 * @return the texture that holds the result of the render pass.
 		 */
-		virtual VkImageLayout getFinalLayout() const override									{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+		DepthRenderTexture2D& getDepthTexture();
 
-	public:	
-		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		RGBAColorFloat						mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
-		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		ResourcePtr<RenderTexture2D>		mColorTexture;										///< Property: 'ColorTexture' texture to render to
-        bool                                mClear = true;                                      ///< Property: 'Clear' whether to clear the render target at the start of each render pass
+	public:
+		float									mClearValue = 1.0f;									///< Property: 'ClearValue' value selection used for clearing the render target
+		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
+		ResourcePtr<DepthRenderTexture2D>		mDepthTexture;										///< Property: 'DepthTexture' depth texture to render to
 
 	private:
-		RenderService*						mRenderService;
-		VkFramebuffer						mFramebuffer = VK_NULL_HANDLE;
-		VkRenderPass						mRenderPass = VK_NULL_HANDLE;
-		VkSampleCountFlagBits				mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-		ImageData							mDepthImage;
-		ImageData							mColorImage;
-		Texture2DTargetLink					mTextureLink;
+		RenderService*							mRenderService;
+		VkFramebuffer							mFramebuffer = VK_NULL_HANDLE;
+		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
+		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		ImageData								mDepthImage;
+		RGBAColorFloat							mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		Texture2DTargetLink						mTextureTargetLink;
 	};
 }

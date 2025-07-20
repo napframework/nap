@@ -838,6 +838,9 @@ namespace nap
 		device_features.largePoints = physicalDevice.getFeatures().largePoints;
 		device_features.wideLines = physicalDevice.getFeatures().wideLines;
 		device_features.fillModeNonSolid = physicalDevice.getFeatures().fillModeNonSolid;
+		
+		// Great Vulkan 1.2 feature we may want to support by default at some point
+		//device_features.multiDrawIndirect = physicalDevice.getFeatures().multiDrawIndirect;
 
 		// The device feature 'robustBufferAccess' enables bounds checks on buffers and therefore be a useful debugging tool
 		// We only enable this feature if it is marked true in the render service configuration
@@ -1727,7 +1730,7 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_API_VERSION_1_0;
+		mAPIVersion = VK_MAKE_API_VERSION(0, 1, 2, 0);
 		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
 			return false;
 
@@ -1827,8 +1830,11 @@ namespace nap
 			// Create dummy window and verify creation
 			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
 			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
+			{
+				errorState.fail(SDL_GetError());
 				return false;
-
+			}
+			
 			// Get all available vulkan instance extensions, required to create a presentable surface.
 			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
 			if (!getSurfaceInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))

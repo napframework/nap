@@ -486,7 +486,7 @@ namespace nap
 		// The vkCmdFillBuffer/clear command is treated as a TRANSFER operation
 		// Clear commands are recorded to the upload command buffer and always happen at the beginning of a frame
 		// Therefore, no initial memory barrier is required
-		vkCmdFillBuffer(commandBuffer, mRenderBuffers[0].mBuffer, 0, VK_WHOLE_SIZE, 0);
+		vkCmdFillBuffer(commandBuffer, mRenderBuffers[mCurrentRenderBufferIndex].mBuffer, 0, VK_WHOLE_SIZE, 0);
 
 		// Determine dest access flags for memory barrier
 		VkBufferUsageFlags usage = getBufferUsageFlags();
@@ -502,7 +502,7 @@ namespace nap
 		dst_stage |= (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT || usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) ? VK_PIPELINE_STAGE_VERTEX_SHADER_BIT : 0;
 
 		// Memory barrier
-		memoryBarrier(commandBuffer, mRenderBuffers[0].mBuffer, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage);
+		memoryBarrier(commandBuffer, mRenderBuffers[mCurrentRenderBufferIndex].mBuffer, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage);
 	}
 
 
