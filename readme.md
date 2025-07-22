@@ -224,15 +224,15 @@ More options for packaging can be queried by adding the flag `--help` when runni
 
 ### main
 
-The current stable, production-ready [branch](https://github.com/napframework/nap/tree/main). It generally reflects the latest release, plus a few critical bug-fixes.
+The current [stable branch](https://github.com/napframework/nap/tree/main): It generally reflects the latest release, plus a few critical bug-fixes.
 
 ### 0.8
 
-Although considered stable, it is the bleeding edge: [0.8](https://github.com/napframework/nap/tree/0.8) introduces many new features, improvements and portential fixes that are scheduled for a new official release.
+The bleeding edge: [0.8](https://github.com/napframework/nap/tree/0.8) introduces many new features, improvements and portential fixes that are scheduled for a new official release.
 
 ### build
 
-An alternative [build-system](https://github.com/napframework/nap/tree/build-system) actively in development by [Stijn van Beek](https://github.com/stijnvanbeek), including support for macOS and simplified CMAKE interface.
+An [alternative build system](https://github.com/napframework/nap/tree/build-system): Including support for macOS and a simplified CMAKE interface, developed by [Stijn van Beek](https://github.com/stijnvanbeek).
 
 # Contributing
 
