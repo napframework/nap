@@ -343,7 +343,6 @@ namespace nap
 		ImageData						mColorImage;
 		bool							mSampleShadingEnabled = false;
 		uint32							mImageIndex = 0;
-		uint32							mSwapChainImageCount = 0;
 		bool							mRecreateSwapchain = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};

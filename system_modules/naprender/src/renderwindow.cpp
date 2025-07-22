@@ -351,7 +351,7 @@ namespace nap
 	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, VkImageView colorImageView, VkImageView depthImageView, std::vector<VkImageView>& swapChainImageViews, VkRenderPass renderPass, VkExtent2D extent, VkSampleCountFlagBits samples, utility::ErrorState& errorState)
 	{
 		// Create a frame buffer for every view in the swapchain.
-		framebuffers.resize(swapChainImageViews.size());
+		framebuffers.resize(swapChainImageViews.size(), VK_NULL_HANDLE);
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
 			std::array<VkImageView, 3> attachments = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
@@ -383,23 +383,22 @@ namespace nap
 	}
 
 
-	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int inNumCommandBuffers, utility::ErrorState& errorState)
+	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int count, utility::ErrorState& errorState)
 	{
-		commandBuffers.resize(inNumCommandBuffers);
-
+		commandBuffers.resize(count, VK_NULL_HANDLE);
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-		return errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to alocate command buffers");
+		return errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to allocate command buffers");
 	}
 
 
 	static bool createSyncPrimitives(VkDevice device, std::vector<VkSemaphore>& semaphores, int count, utility::ErrorState& errorState)
 	{
-		semaphores.resize(count);
+		semaphores.resize(count, VK_NULL_HANDLE);
 		VkSemaphoreCreateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -476,13 +475,6 @@ namespace nap
 		// Destroy resources associated with swapchain
 		destroySwapChainResources();
 
-		// Destroy all other  vulkan resources if present
-		for (VkSemaphore semaphore : mAcquireSemaphores)
-			vkDestroySemaphore(mDevice, semaphore, nullptr);
-
-		for (VkSemaphore semaphore : mSubmitSemaphores)
-			vkDestroySemaphore(mDevice, semaphore, nullptr);
-
 		// Destroy window surface
 		if (mSurface != VK_NULL_HANDLE)
 		{
@@ -556,14 +548,6 @@ namespace nap
 
 		// Create swapchain based on current window properties
 		if (!createSwapChainResources(errorState))
-			return false;
-
-		// Create image render sync primitives.
-		if (!createSyncPrimitives(mDevice, mAcquireSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
-			return false;
-
-		// Create presentation sync primitives
-		if (!createSyncPrimitives(mDevice, mSubmitSemaphores, mSwapChainImageCount, errorState))
 			return false;
 
 		// Add window to render service
@@ -727,6 +711,7 @@ namespace nap
 		// On which the renderer waits to become available when the queue is submitted in RenderWindow::endRecording().
 		int	frame_index = mRenderService->getCurrentFrameIndex(); 
 		assert(mSwapchain != VK_NULL_HANDLE);
+		assert(frame_index < mAcquireSemaphores.size());
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mAcquireSemaphores[frame_index], VK_NULL_HANDLE, &mImageIndex);
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
@@ -759,6 +744,7 @@ namespace nap
 	{
 		// Stop recording command buffer
 		int	frame_index = mRenderService->getCurrentFrameIndex();
+		assert(frame_index < mCommandBuffers.size());
 		VkCommandBuffer command_buffer = mCommandBuffers[frame_index];
 		if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) 
 			throw std::runtime_error("failed to record command buffer!");
@@ -776,6 +762,7 @@ namespace nap
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
+		assert(mImageIndex < mSubmitSemaphores.size());
 		VkSemaphore submit_semaphore = mSubmitSemaphores[mImageIndex];
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = &submit_semaphore;
@@ -844,15 +831,15 @@ namespace nap
 	{
 		// Check if number of requested images is supported based on queried abilities
 		// When maxImageCount == 0 there is no theoretical limit, otherwise it has to fall within the range of min-max
-		mSwapChainImageCount = mSurfaceCapabilities.minImageCount + mAddedSwapImages;
-		if (mSurfaceCapabilities.maxImageCount != 0 && mSwapChainImageCount > mSurfaceCapabilities.maxImageCount)
+		int min_image_count = mSurfaceCapabilities.minImageCount + mAddedSwapImages;
+		if (min_image_count > mSurfaceCapabilities.maxImageCount && mSurfaceCapabilities.maxImageCount != 0)
 		{
-			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), mSwapChainImageCount, mSurfaceCapabilities.maxImageCount);
-			mSwapChainImageCount = mSurfaceCapabilities.maxImageCount;
+			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), min_image_count, mSurfaceCapabilities.maxImageCount);
+			min_image_count = mSurfaceCapabilities.maxImageCount;
 		}
 
 		// Create swapchain, allowing us to acquire images to render to.
-		if (!createSwapChain(mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, mSurfaceCapabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
+		if (!createSwapChain(mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, min_image_count, mSurfaceCapabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -861,6 +848,7 @@ namespace nap
 			return false;
 
 		// Create image view for every image in swapchain
+		nap::Logger::debug("%s: Created swapchain with %d swap chain images", mID.c_str(), chain_images.size());
 		if (!createSwapchainImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
@@ -869,24 +857,40 @@ namespace nap
         if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, mRenderPass, errorState))
             return false;
 
-		if (mRasterizationSamples == VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT)
+		// Create attachment resources
+		switch (mRasterizationSamples)
 		{
-			if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
-				return false;
-		}
-		else
-		{
-			if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
-				return false;
+			case VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT:
+			{
+				if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
+					return false;
+				break;
+			}
+			default:
+			{
+				if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
+					return false;
 
-			if (!createColorResource(*mRenderService, mSwapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
-				return false;
+				if (!createColorResource(*mRenderService, mSwapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
+					return false;
+				break;
+			}
 		}
 
+		// Create swapchain frame-buffers
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.getView(), mDepthImage.getView(), mSwapChainImageViews, mRenderPass, mSwapchainExtent, mRasterizationSamples, errorState))
 			return false;
 
+		// Create command buffers
 		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
+			return false;
+
+		// Create frame sync primitives
+		if (!createSyncPrimitives(mDevice, mAcquireSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
+			return false;
+
+		// Create queue submit primitives -> same size as swap-chain image count
+		if (!createSyncPrimitives(mDevice, mSubmitSemaphores, static_cast<int>(chain_images.size()), errorState))
 			return false;
 
 		return true;
@@ -895,13 +899,32 @@ namespace nap
 
 	void RenderWindow::destroySwapChainResources()
 	{
+		// Destroy queue submission semaphores
+		for (VkSemaphore semaphore : mSubmitSemaphores)
+		{
+			if (semaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(mDevice, semaphore, nullptr);
+		}
+		mSubmitSemaphores.clear();
+
+		// Destroy frame-related semaphores
+		for (VkSemaphore semaphore : mAcquireSemaphores)
+		{
+			if (semaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(mDevice, semaphore, nullptr);
+		}
+		mAcquireSemaphores.clear();
+
 		// Destroy all frame buffers
 		for (VkFramebuffer frame_buffer : mSwapChainFramebuffers)
-			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
+		{
+			if (frame_buffer != VK_NULL_HANDLE)
+				vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
+		}
 		mSwapChainFramebuffers.clear();
 
 		// Free command buffers
-		if(!mCommandBuffers.empty())
+		if (!mCommandBuffers.empty())
 		{
 			vkFreeCommandBuffers(mDevice, mRenderService->getCommandPool(), static_cast<uint32>(mCommandBuffers.size()), mCommandBuffers.data());
 			mCommandBuffers.clear();
@@ -915,8 +938,11 @@ namespace nap
 		}
 
 		// Destroy swapchain image views if present
-		for (VkImageView& view : mSwapChainImageViews)
-			vkDestroyImageView(mDevice, view, nullptr);
+		for (VkImageView view : mSwapChainImageViews)
+		{
+			if (view != VK_NULL_HANDLE)
+				vkDestroyImageView(mDevice, view, nullptr);
+		}
 		mSwapChainImageViews.clear();
 
 		// Destroy depth and color image
