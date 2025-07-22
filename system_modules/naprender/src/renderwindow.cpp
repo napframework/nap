@@ -350,7 +350,7 @@ namespace nap
 	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, VkImageView colorImageView, VkImageView depthImageView, std::vector<VkImageView>& swapChainImageViews, VkRenderPass renderPass, VkExtent2D extent, VkSampleCountFlagBits samples, utility::ErrorState& errorState)
 	{
 		// Create a frame buffer for every view in the swapchain.
-		framebuffers.resize(swapChainImageViews.size());
+		framebuffers.resize(swapChainImageViews.size(), VK_NULL_HANDLE);
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
 			std::array<VkImageView, 3> attachments = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
@@ -382,10 +382,9 @@ namespace nap
 	}
 
 
-	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int inNumCommandBuffers, utility::ErrorState& errorState)
+	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int count, utility::ErrorState& errorState)
 	{
-		commandBuffers.resize(inNumCommandBuffers);
-
+		commandBuffers.resize(count, VK_NULL_HANDLE);
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = commandPool;
@@ -398,7 +397,7 @@ namespace nap
 
 	static bool createSyncPrimitives(VkDevice device, std::vector<VkSemaphore>& semaphores, int count, utility::ErrorState& errorState)
 	{
-		semaphores.resize(count);
+		semaphores.resize(count, VK_NULL_HANDLE);
 		VkSemaphoreCreateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
