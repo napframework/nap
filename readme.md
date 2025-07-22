@@ -230,6 +230,10 @@ The current stable, production-ready [branch](https://github.com/napframework/na
 
 Although considered stable, it is the bleeding edge: [0.8](https://github.com/napframework/nap/tree/0.8) introduces many new features, improvements and portential fixes that are scheduled for a new official release. Go ahead and give it a try! If you run into any issues, make sure to let us know so we can fix them ahead of release.
 
+### build
+
+A new [build-system](https://github.com/napframework/nap/tree/build-system) actively in development by [Stijn van Beek](https://github.com/stijnvanbeek), including support for macOS and simplified CMAKE interface.
+
 # Contributing
 
 We welcome contributions and potential bug fixes. But before you submit any code for review make sure to read and follow our [C++ styleguide](styleguide/styleguide.md). Also take into consideration that reviewing code takes time: Be as thorough and explicit as possible. 
