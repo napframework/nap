@@ -901,8 +901,8 @@ namespace nap
 	void RenderWindow::destroySwapChainResources()
 	{
 		// Destroy queue submission semaphores
-		for (VkSemaphore semahore : mSubmitSemaphores)
-			vkDestroySemaphore(mDevice, semahore, nullptr);
+		for (VkSemaphore semaphore : mSubmitSemaphores)
+			vkDestroySemaphore(mDevice, semaphore, nullptr);
 		mSubmitSemaphores.clear();
 
 		// Destroy frame-related semaphores
