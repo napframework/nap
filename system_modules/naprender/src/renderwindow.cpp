@@ -893,21 +893,30 @@ namespace nap
 	{
 		// Destroy queue submission semaphores
 		for (VkSemaphore semaphore : mSubmitSemaphores)
-			vkDestroySemaphore(mDevice, semaphore, nullptr);
+		{
+			if (semaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(mDevice, semaphore, nullptr);
+		}
 		mSubmitSemaphores.clear();
 
 		// Destroy frame-related semaphores
 		for (VkSemaphore semaphore : mAcquireSemaphores)
-			vkDestroySemaphore(mDevice, semaphore, nullptr);
+		{
+			if (semaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(mDevice, semaphore, nullptr);
+		}
 		mAcquireSemaphores.clear();
 
 		// Destroy all frame buffers
 		for (VkFramebuffer frame_buffer : mSwapChainFramebuffers)
-			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
+		{
+			if (frame_buffer != VK_NULL_HANDLE)
+				vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
+		}
 		mSwapChainFramebuffers.clear();
 
 		// Free command buffers
-		if(!mCommandBuffers.empty())
+		if (!mCommandBuffers.empty())
 		{
 			vkFreeCommandBuffers(mDevice, mRenderService->getCommandPool(), static_cast<uint32>(mCommandBuffers.size()), mCommandBuffers.data());
 			mCommandBuffers.clear();
@@ -921,8 +930,11 @@ namespace nap
 		}
 
 		// Destroy swapchain image views if present
-		for (VkImageView& view : mSwapChainImageViews)
-			vkDestroyImageView(mDevice, view, nullptr);
+		for (VkImageView view : mSwapChainImageViews)
+		{
+			if (view != VK_NULL_HANDLE)
+				vkDestroyImageView(mDevice, view, nullptr);
+		}
 		mSwapChainImageViews.clear();
 
 		// Destroy depth and color image
