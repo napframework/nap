@@ -10,25 +10,61 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 #include <mathutils.h>
+#include <rtti/typeinfo.h>
 
 namespace nap
 {
 	namespace SDL
 	{
-		// Initializes SDL's video subsystem
 		bool initVideo(utility::ErrorState& error)
 		{
-			// Initialize SDL's Video subsystem
-			if (!SDL_Init(SDL_INIT_VIDEO))
-			{
-				error.fail(SDL_GetError());
-				return false;
-			}
-			return true;
+			return error.check(SDL_Init(SDL_INIT_VIDEO), SDL_GetError());
 		}
 
 
-		bool NAPAPI videoInitialized()
+		bool initVideo(EVideoDriver driver, utility::ErrorState& error)
+		{
+			// Use current selected default
+			if (driver == EVideoDriver::Default)
+			{
+				// Reset if video selection is active
+				if (SDL_GetHint(SDL_HINT_VIDEO_DRIVER) && !SDL_ResetHint(SDL_HINT_VIDEO_DRIVER))
+				{
+					error.fail("Unable to reset video driver to system default, error: ",
+						SDL_GetError());
+					return false;
+				}
+				return initVideo(error);
+			}
+
+			// Convert enum to driver name
+			auto stype = RTTI_OF(EVideoDriver).get_enumeration(); assert(stype.is_valid());
+			auto sname = utility::toLower(stype.value_to_name(driver).to_string());
+
+			// Find compatible video driver
+			auto vnames = getVideoDrivers();
+			const auto& fname = std::find_if(vnames.begin(), vnames.end(), [&sname](const auto& vname)
+				{
+					return vname == sname;
+				});
+
+			// Make sure the selected driver is supported on the current platform
+			if(!error.check(fname != vnames.end(),
+				"Selected video driver '%s' not supported", sname.c_str()))
+				return false;
+
+			// Select it
+			bool selected = SDL_SetHint(SDL_HINT_VIDEO_DRIVER, sname.c_str());
+			if (!error.check(selected, "Unable to select '%s' video driver, error: '%s'",
+				sname.c_str(), SDL_GetError()))
+				return false;
+
+			// Initialize video
+			return initVideo(error);
+		}
+
+
+		bool videoInitialized()
 		{
 			return SDL_WasInit(SDL_INIT_VIDEO) > 0;
 		}
@@ -46,13 +82,13 @@ namespace nap
 		}
 
 
-		void NAPAPI setWindowAlwaysOnTop(SDL_Window* window, bool enabled)
+		void setWindowAlwaysOnTop(SDL_Window* window, bool enabled)
 		{
 			SDL_SetWindowAlwaysOnTop(window, enabled);
 		}
 
 
-		void NAPAPI setWindowResizable(SDL_Window* window, bool enabled)
+		void setWindowResizable(SDL_Window* window, bool enabled)
 		{
 			SDL_SetWindowResizable(window, enabled);
 		}
@@ -90,7 +126,7 @@ namespace nap
 		}
 
 
-		uint32 NAPAPI getWindowFlags(SDL_Window* window)
+		uint32 getWindowFlags(SDL_Window* window)
 		{
 			return SDL_GetWindowFlags(window);
 		}

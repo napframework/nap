@@ -4,12 +4,15 @@
 
 #pragma once
 
+// Local includes
+#include "videodriver.h"
+
 // External Includes
 #include <string>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
-#include <nap/numeric.h>
 #include <utility/errorstate.h>
+#include <SDL_hints.h>
 
 // SDL Forward declares
 struct SDL_Window;
@@ -255,11 +258,31 @@ namespace nap
 		uint32 NAPAPI getGlobalMouseState(float* x, float* y);
 
 		/**
+		 * Get all available video drivers.
+		 * @return all available video drivers
+		 */
+		NAPAPI std::vector<std::string> getVideoDrivers();
+
+		/**
+		 * Get current video driver.
+		 * @return current video driver
+		 */
+		NAPAPI std::string getCurrentVideoDriver();
+
+		/**
 		 * Initializes SDL video system.
 		 * Call this before creating any windows or render contexts!
 		 * @return if the system initialized correctly or not
 		 */
 		bool NAPAPI initVideo(utility::ErrorState& error);
+
+		/**
+		 * Initializes the SDL video system using the given driver.
+		 * Call this before creating any windows or render contexts!
+		 * @param driver video back-end driver, call fails if driver is not available.
+		 * @return if the system initialized using the selected driver.
+		 */
+		bool NAPAPI initVideo(EVideoDriver driver, utility::ErrorState& error);
 
 		/**
 		 * Returns if the video subsystem has been initialized 
@@ -294,17 +317,5 @@ namespace nap
 		 * @param enabled resize flag
 		 */
 		void NAPAPI setWindowResizable(SDL_Window* window, bool enabled);
-
-		/**
-		 * Get all available video drivers.
-		 * @return all available video drivers
-		 */
-		NAPAPI std::vector<std::string> getVideoDrivers();
-
-		/**
-		 * Get current video driver
-		 * @return current video driver
-		 */
-		NAPAPI std::string getCurrentVideoDriver();
 	}
 }

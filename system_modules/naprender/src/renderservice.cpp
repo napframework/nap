@@ -17,10 +17,10 @@
 #include "texture.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
-#include "sdlhelpers.h"
 #include "shaderconstant.h"
 #include "renderlayer.h"
 #include "bitmap.h"
+#include "sdlhelpers.h"
 
 // External Includes
 #include <nap/core.h>
@@ -38,7 +38,6 @@
 #include <rtti/jsonreader.h>
 #include <rtti/defaultlinkresolver.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <SDL_hints.h>
 
 // Required to enbale high dpi rendering on windows
 #ifdef _WIN32
@@ -98,6 +97,7 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration, "Render service configuration")
 	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default, "Render without a window, turning this on `forbids` the use of a nap::RenderWindow")
+	RTTI_PROPERTY("VideoDriver",				&nap::RenderServiceConfiguration::mVideoDriver,					nap::rtti::EPropertyMetaData::Default, "The video back-end to use, defaults to system preference")
 	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default, "The preferred GPU type, when unavailable the fastest option is selected")
 	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default, "Vulkan layers the engine tries to load in Debug mode, layers are disabled in release mode.")
 	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default, "Additional required Vulkan device extensions")
@@ -1767,13 +1767,13 @@ namespace nap
 		// TODO: Try to find a more clean, optimized way of handling this.
 		if (!SDL::videoInitialized())
 		{
-#ifdef __linux__
-			// TODO: Make driver a configuration option!
-			SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
-#endif
-			mSDLInitialized = SDL::initVideo(errorState);
-			if (!errorState.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
+			auto* config = getConfiguration<RenderServiceConfiguration>();
+			mSDLInitialized = SDL::initVideo(config->mVideoDriver, errorState);
+			if (!errorState.check(mSDLInitialized, "Failed to init video subsystem"))
 				return false;
+
+			nap::Logger::info("Video backend: %s", 
+				SDL::getCurrentVideoDriver().c_str());
 		}
 
 		// Initialize engine
