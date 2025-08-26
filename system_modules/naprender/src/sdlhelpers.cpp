@@ -4,6 +4,7 @@
 
 // Local Includes
 #include "sdlhelpers.h"
+#include "bitmap.h"
 
 // External Includes
 #include <assert.h>
@@ -11,6 +12,7 @@
 #include <SDL_vulkan.h>
 #include <mathutils.h>
 #include <rtti/typeinfo.h>
+#include <utility/fileutils.h>
 
 namespace nap
 {
@@ -91,6 +93,65 @@ namespace nap
 		void setWindowResizable(SDL_Window* window, bool enabled)
 		{
 			SDL_SetWindowResizable(window, enabled);
+		}
+
+
+		SDL_Surface* createSurface(const std::string& imagePath, utility::ErrorState& error)
+		{
+			// Ensure file exists
+			if (!error.check(utility::fileExists(imagePath),
+				"File '%s' doesn't exist", imagePath.c_str()))
+				return nullptr;
+
+			// Load as bitmap
+			BitmapFromFile bitmap;
+			bitmap.mPath = imagePath;
+			if (!bitmap.init(error))
+				return nullptr;
+
+			// Cache some conversion variables
+			auto src_color = bitmap.makePixel(); RGBAColor8 dst_color;
+			auto cchannels = math::min<int>(src_color->getNumberOfChannels(), dst_color.getNumberOfChannels());
+			auto usepalpha = dst_color.getNumberOfChannels() == 4;
+
+			// Pre-load conversion function -> prevents unnecessary table lookups
+			auto converter = src_color->getConverter(dst_color);
+			if (!error.check(converter != nullptr, "Unable to find compatible color converter"))
+				return nullptr;
+
+			// Create SDL surface
+			auto w = bitmap.getWidth(); auto h = bitmap.getHeight();
+			auto s = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888);
+			if (!error.check(s != nullptr && w == s->w && h == s->h,
+				"Unable to create icon surface"))
+				return nullptr;
+
+			// Convert and copy into place
+			for (auto x = 0; x < w; x++)
+			{
+				for (auto y = 0; y < h; y++)
+				{
+					// Sample pixel and convert to target
+					bitmap.getPixel(x, y, *src_color);
+					for (auto i = 0; i < cchannels; i++)
+						converter(*src_color, dst_color, i);
+
+					// Write
+					if (!SDL_WriteSurfacePixel(s, x, y,
+						dst_color[0],
+						dst_color[1],
+						dst_color[2],
+						usepalpha ? dst_color[3] : math::max<uint8>()))
+					{
+						error.fail("Pixel write failed, %s", SDL::getSDLError().c_str());
+						SDL_free(s); 
+						return nullptr;
+					}
+				}
+			}
+
+			// Store handle and return
+			return s;
 		}
 
 

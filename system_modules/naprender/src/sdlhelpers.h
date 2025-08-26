@@ -13,6 +13,7 @@
 #include <utility/dllexport.h>
 #include <utility/errorstate.h>
 #include <SDL_hints.h>
+#include <SDL_surface.h>
 
 // SDL Forward declares
 struct SDL_Window;
@@ -317,5 +318,14 @@ namespace nap
 		 * @param enabled resize flag
 		 */
 		void NAPAPI setWindowResizable(SDL_Window* window, bool enabled);
+
+		/**
+		 * Create a 4 channel (RGBA) pixel surface from image on disk.
+		 * RGB images are converted to RGBA, where the alpha channel is initialized to '255'. 
+		 * @param imagePath absolute path to image on disk
+		 * @param error the error if creation fails
+		 * @return surface created from image, nullptr if creation failed
+		 */
+		NAPAPI SDL_Surface* createSurface(const std::string& imagePath, utility::ErrorState& error);
 	}
 }

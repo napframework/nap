@@ -125,70 +125,6 @@ RTTI_END_CLASS
 namespace nap
 {
 	/**
-	 * @return Create window icon
-	 */
-	static bool createWindowIcon(const nap::Module& module, SDL_Surface** surface, utility::ErrorState& error)
-	{
-		// Fetch NAP window icon
-		*surface = nullptr;
-		static constexpr const char* icon_name = "nap_icon.png";
-		auto asset_path = module.findAsset(icon_name);
-		if (!error.check(!asset_path.empty(), "Unable to find '%s'", icon_name))
-			return false;
-
-		// Load as bitmap
-		BitmapFromFile bitmap;
-		bitmap.mPath = asset_path;
-		if (!bitmap.init(error))
-			return false;
-
-		// Create SDL surface
-		auto w = bitmap.getWidth(); auto h = bitmap.getHeight();
-		auto s = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888);
-		if (!error.check(s != nullptr && w == s->w && h == s->h,
-			"Unable to create icon surface"))
-			return false;
-
-		// Cache some conversion variables
-		auto src_color = bitmap.makePixel(); RGBAColor8 dst_color;
-		auto cchannels = math::min<int>(src_color->getNumberOfChannels(), dst_color.getNumberOfChannels());
-		auto usepalpha = dst_color.getNumberOfChannels() == 4;
-
-		// Pre-load conversion function -> prevents unnecessary table lookups
-		auto converter = src_color->getConverter(dst_color);
-		if (!error.check(converter != nullptr, "Unable to find compatible color converter"))
-			return false;
-
-		// Convert and copy into place
-		for (auto x = 0; x < w; x++)
-		{
-			for (auto y = 0; y < h; y++)
-			{
-				// Sample pixel and convert to target
-				bitmap.getPixel(x, y, *src_color);
-				for (auto i = 0; i < cchannels; i++)
-					converter(*src_color, dst_color, i);
-
-				// Write
-				if (!SDL_WriteSurfacePixel(s, x, y, 
-					dst_color[0],
-					dst_color[1],
-					dst_color[2],
-					usepalpha ? dst_color[3] : math::max<uint8>()))
-				{
-					error.fail("Pixel write failed, %s", SDL::getSDLError().c_str());
-					SDL_free(s);
-					return false;
-				}
-			}
-		}
-
-		// Store handle and return
-		*surface = s; return true;
-	}
-
-
-	/**
 	 * @return VK physical device type
 	 */
 	static VkPhysicalDeviceType getPhysicalDeviceType(RenderServiceConfiguration::EPhysicalDeviceType devType)
@@ -1377,16 +1313,9 @@ namespace nap
 	{
 		if (!window.isEmbedded())
 		{
-			// Attempt to create default window icon
-			utility::ErrorState error;
-			if (mWindowIcon == nullptr && !createWindowIcon(getModule(), &mWindowIcon, error))
-			{
-				nap::Logger::warn("Unable to create window icon: %s",
-					error.toString().c_str());
-			}
-
-			// Assign if it does
-			if (mWindowIcon != nullptr && !SDL_SetWindowIcon(window.mSDLWindow, mWindowIcon))
+			// Set default window icon
+			auto* window_icon = getOrCreateDefaultWindowIcon();
+			if (window_icon != nullptr && !SDL_SetWindowIcon(window.mSDLWindow, mWindowIcon))
 			{
 				nap::Logger::warn("Unable to set window icon: %s",
 					SDL::getSDLError().c_str());
@@ -2984,6 +2913,28 @@ namespace nap
 		VkFormatProperties properties;
 		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), utility::getTextureFormat(descriptor), &properties);
 		return (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) > 0;
+	}
+
+
+	SDL_Surface* RenderService::getOrCreateDefaultWindowIcon()
+	{
+		// Only attempt to create icon once
+		static bool tried = false;
+		if (!tried)
+		{
+			static constexpr const char* icon_name = "nap_icon.png";
+			tried = true; utility::ErrorState error;
+
+			// Try to create the surface
+			auto asset_path = getModule().findAsset(icon_name);
+			if (error.check(!asset_path.empty(), "Unable to find '%s'", icon_name))
+				mWindowIcon = SDL::createSurface(asset_path, error);
+
+			// Log errors if creation failed
+			if (error.hasErrors())
+				nap::Logger::warn(error.toString());
+		}
+		return mWindowIcon;
 	}
 
 

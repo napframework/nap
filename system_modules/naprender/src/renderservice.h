@@ -1289,7 +1289,6 @@ namespace nap
 		bool									mHeadless = false;
 
 		UniqueMaterialCache						mMaterials;
-		SDL_Surface*							mWindowIcon = nullptr;
 
 		// Render command queues
 		std::vector<RenderCommand>				mHeadlessCommandQueue;
@@ -1303,5 +1302,9 @@ namespace nap
 
 		// Render chains
 		std::vector<const RenderChain*> mRenderChains;
+
+		// Get or create default window icon
+		SDL_Surface* mWindowIcon = nullptr;
+		SDL_Surface* getOrCreateDefaultWindowIcon();
 	};
 } // nap
