@@ -1704,7 +1704,7 @@ namespace nap
 			if (!errorState.check(mSDLInitialized, "Failed to init video subsystem"))
 				return false;
 
-			nap::Logger::info("Video backend: %s", 
+			Logger::info("Video backend: %s",
 				SDL::getCurrentVideoDriver().c_str());
 		}
 

@@ -265,8 +265,9 @@ namespace nap
 		NAPAPI std::vector<std::string> getVideoDrivers();
 
 		/**
-		 * Get current video driver.
-		 * @return current video driver
+		 * Get the current SDL video driver.
+		 * Note that the name of an SDL video driver is always lower-case, without capitals.
+		 * @return current SDL video driver
 		 */
 		NAPAPI std::string getCurrentVideoDriver();
 

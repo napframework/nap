@@ -49,7 +49,7 @@ namespace nap
 
 		// Align windows next to each other on primary (first) display
 		auto* display = mRenderService->findDisplay(*mRenderWindowOne);
-		if(display != nullptr)
+		if (display != nullptr && SDL::getCurrentVideoDriver() != utility::toLower(toString(EVideoDriver::Wayland)))
 		{
 			// Calculate window size
 			constexpr float eoff = 200.0f * 2.0f;

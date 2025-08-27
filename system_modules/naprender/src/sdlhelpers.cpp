@@ -434,7 +434,8 @@ namespace nap
 
 		std::string getCurrentVideoDriver()
 		{
-			return SDL_GetCurrentVideoDriver();
+			const auto* sdl_driver = SDL_GetCurrentVideoDriver();
+			return sdl_driver != nullptr ? sdl_driver : std::string();
 		}
 	}
 }

@@ -14,3 +14,11 @@ RTTI_BEGIN_ENUM(nap::EVideoDriver)
 	RTTI_ENUM_VALUE(nap::EVideoDriver::X11,			"X11"),
 	RTTI_ENUM_VALUE(nap::EVideoDriver::Wayland,		"Wayland")
 RTTI_END_ENUM
+
+namespace  nap
+{
+	std::string toString(EVideoDriver driver)
+	{
+		return RTTI_OF(EVideoDriver).get_enumeration().value_to_name(driver).to_string();
+	}
+}
