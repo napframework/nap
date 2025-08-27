@@ -70,7 +70,6 @@ namespace napkin
 			return nullptr;
 		}
 #else
-		assert(false);
 		error.fail("Unsupported platform");
 		return nullptr;
 #endif // WIN32

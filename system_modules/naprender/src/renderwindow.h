@@ -185,24 +185,24 @@ namespace nap
 		 * Sets the window clear color.
 		 * @param color the new clear color
 		 */
-		virtual void setClearColor(const RGBAColorFloat& color) override;
+		void setClearColor(const RGBAColorFloat& color) override;
 
 		/**
 		 * Returns the window clear color.
 		 * @return the window clear color.
 		 */
-		virtual const RGBAColorFloat& getClearColor() const override;
+		const RGBAColorFloat& getClearColor() const override;
 
 		/**
 		 * Sets the position of the window on screen
 		 * @param position the new screen position in pixel coordinates
 		 */
-		void setPosition(const glm::ivec2& position);
+		void setPosition(const glm::ivec2& position) const;
 
 		/**
 		 * @return the window position in pixel coordinates
 		 */
-		const glm::ivec2 getPosition() const;
+		glm::ivec2 getPosition() const;
 
 		/**
 		 * Get the current pixel density, this is a ratio of pixel size to window size.
@@ -276,37 +276,37 @@ namespace nap
 		/**
 		 * @return swapchain format used to render to window.
 		 */
-		virtual VkFormat getColorFormat() const override							{ return mSwapchainFormat; }
+		VkFormat getColorFormat() const override							{ return mSwapchainFormat; }
 
 		/**
 		 * @return depth format used by window.
 		 */
-		virtual VkFormat getDepthFormat() const override;
+		VkFormat getDepthFormat() const override;
 		
 		/**
 		 * @return used number of samples when rendering to the window.
 		 */
-		virtual VkSampleCountFlagBits getSampleCount() const override				{ return mRasterizationSamples; }
+		VkSampleCountFlagBits getSampleCount() const override				{ return mRasterizationSamples; }
 		
 		/**
 		 * @return if sample based shading is enabled when rendering to the window.
 		 */
-		virtual bool getSampleShadingEnabled() const override						{ return mSampleShadingEnabled; }
+		bool getSampleShadingEnabled() const override						{ return mSampleShadingEnabled; }
 
 		/**
 		 * @return polygon winding order
 		 */
-		virtual ECullWindingOrder getWindingOrder() const override;
+		ECullWindingOrder getWindingOrder() const override;
 
 		/**
 		 * @return render pass associated with this window.
 		 */
-		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
+		VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
 		/**
 		 * @return layout of the texture when render pass ends
 		 */
-		virtual VkImageLayout getFinalLayout() const override						{ return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
+		VkImageLayout getFinalLayout() const override						{ return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
 
 		bool					mSampleShading		= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth				= 512;								///< Property: 'Width' window horizontal resolution

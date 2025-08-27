@@ -93,7 +93,7 @@ namespace nap
 		 * @param window the window to set the position for
 		 * @param position the window location in pixels
 		 */
-		void NAPAPI setWindowPosition(SDL_Window* window, const glm::ivec2& position);
+		bool NAPAPI setWindowPosition(SDL_Window* window, const glm::ivec2& position);
 
 		/**
 		 * Shutdown SDL

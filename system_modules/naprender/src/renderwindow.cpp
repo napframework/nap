@@ -646,13 +646,17 @@ namespace nap
 	}
 
 
-	void RenderWindow::setPosition(const glm::ivec2& position)
+	void RenderWindow::setPosition(const glm::ivec2& position) const
 	{
-		SDL::setWindowPosition(mSDLWindow, position);
+		if (!SDL::setWindowPosition(mSDLWindow, position))
+		{
+			Logger::error("Window '%s' position update failed: '%s'",
+				mID.c_str(), SDL::getSDLError().c_str());
+		}
 	}
 
 
-	const glm::ivec2 RenderWindow::getPosition() const
+	glm::ivec2 RenderWindow::getPosition() const
 	{
 		return SDL::getWindowPosition(mSDLWindow);
 	}

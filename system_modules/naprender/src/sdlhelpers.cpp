@@ -234,14 +234,15 @@ namespace nap
 		}
 
 
-		void setWindowPosition(SDL_Window* window, const glm::ivec2& position)
+		bool setWindowPosition(SDL_Window* window, const glm::ivec2& position)
 		{
 			// Ensure position is not the same
 			glm::ivec2 wpos = getWindowPosition(window);
 			if (position == wpos)
-				return;
+				return true;
+
 			// Update position
-			SDL_SetWindowPosition(window, position.x, position.y);
+			return SDL_SetWindowPosition(window, position.x, position.y);
 		}
 
 
