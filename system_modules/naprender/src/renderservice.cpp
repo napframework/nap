@@ -2918,14 +2918,11 @@ namespace nap
 
 	SDL_Surface* RenderService::getOrCreateDefaultWindowIcon()
 	{
-		// Only attempt to create icon once
-		static bool tried = false;
-		if (!tried)
+		if (mWindowIcon == nullptr)
 		{
-			static constexpr const char* icon_name = "nap_icon.png";
-			tried = true; utility::ErrorState error;
-
 			// Try to create the surface
+			utility::ErrorState error;
+			static constexpr const char* icon_name = "nap_icon.png";
 			auto asset_path = getModule().findAsset(icon_name);
 			if (error.check(!asset_path.empty(), "Unable to find '%s'", icon_name))
 				mWindowIcon = SDL::createSurface(asset_path, error);
