@@ -20,7 +20,6 @@ namespace nap
 		Default		= 0,	//< Most reasonable, first available video back-end.
 		Windows		= 1,	//< Windows windowing system
 		X11			= 2,	//< Linux X11 windowing system
-		Wayland		= 3,	//< Linux Wayland windowing system
-		XWayland	= 4		//< Linux X11 compatibility layer for Wayland
+		Wayland		= 3		//< Linux Wayland windowing system
 	};
 }

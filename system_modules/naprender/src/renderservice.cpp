@@ -1317,7 +1317,7 @@ namespace nap
 			auto* window_icon = getOrCreateDefaultWindowIcon();
 			if (window_icon != nullptr && !SDL_SetWindowIcon(window.mSDLWindow, mWindowIcon))
 			{
-				nap::Logger::warn("Unable to set window icon: %s",
+				nap::Logger::error("Unable to set window icon: %s",
 					SDL::getSDLError().c_str());
 			}
 
@@ -2932,7 +2932,7 @@ namespace nap
 
 			// Log errors if creation failed
 			if (error.hasErrors())
-				nap::Logger::warn(error.toString());
+				Logger::error(error.toString());
 		}
 		return mWindowIcon;
 	}

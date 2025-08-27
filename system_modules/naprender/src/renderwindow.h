@@ -71,17 +71,17 @@ namespace nap
 		/**
 		 * Destroys all render resources
 		 */
-		virtual ~RenderWindow() override;
+		~RenderWindow() override;
 
 		/**
 		 * Creates window, connects to resize event.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Called when the window is destroyed.
 		 */
-		virtual void onDestroy() override;
+		void onDestroy() override;
 
 		/**
 		 * Returns the width and height of this window, in screen coordinates.
@@ -242,7 +242,7 @@ namespace nap
 		/**
 		 *	@return the hardware window number
 		 */
-		virtual uint getNumber() const override;
+		uint getNumber() const override;
 
 		/**
 		 * Creates a rectangle based on the current width and height of the render window.
@@ -266,12 +266,12 @@ namespace nap
 		/**
 		 * Starts a render pass. Only call this when recording is enabled.
 		 */
-		virtual void beginRendering() override;
+		void beginRendering() override;
 
 		/**
 		 * Ends a render pass. Always call this after beginRendering().
 		 */ 
-		virtual void endRendering() override;
+		void endRendering() override;
 
 		/**
 		 * @return swapchain format used to render to window.
