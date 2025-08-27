@@ -488,7 +488,8 @@ namespace nap
 		else
 		{
 			// File doesn't exist or can't be deserialized
-			nap::Logger::warn(deserialize_error.toString().c_str());
+			deserialize_error.fail("Service config '%s' de-serialization failed", mProjectInfo->mServiceConfigFilename.c_str());
+			Logger::error(deserialize_error.toString().c_str());
 		}
 		return true;
 	}
