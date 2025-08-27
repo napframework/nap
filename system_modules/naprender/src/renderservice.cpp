@@ -1321,6 +1321,9 @@ namespace nap
 					SDL::getSDLError().c_str());
 			}
 
+			// Enable text input
+			SDL::enableTextInput(window.getNativeWindow());
+
 			// Attempt to restore cached settings
 			restoreWindow(window);
 		}

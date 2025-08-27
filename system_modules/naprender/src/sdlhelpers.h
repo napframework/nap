@@ -327,5 +327,17 @@ namespace nap
 		 * @return surface created from image, nullptr if creation failed
 		 */
 		NAPAPI SDL_Surface* createSurface(const std::string& imagePath, utility::ErrorState& error);
+
+		/**
+		 * Start accepting Unicode text input events in a window.
+		 * @param window the window to enable text input from
+		 */
+		bool NAPAPI enableTextInput(SDL_Window* window);
+
+		/**
+		 * Stop accepting Unicode text input events in a window.
+		 * @param window the window to enable text input from
+		 */
+		bool NAPAPI disableTextInput(SDL_Window* window);
 	}
 }

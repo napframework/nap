@@ -155,6 +155,18 @@ namespace nap
 		}
 
 
+		bool NAPAPI enableTextInput(SDL_Window* window)
+		{
+			return SDL_StartTextInput(window);
+		}
+
+
+		bool NAPAPI disableTextInput(SDL_Window* window)
+		{
+			return SDL_StopTextInput(window);
+		}
+
+
 		void showWindow(SDL_Window* window, bool show)
 		{
 			if (show)
