@@ -9,6 +9,7 @@
 #include <nap/numeric.h>
 #include <QTimer>
 #include <sdleventconverter.h>
+#include <videodriver.h>
 
 // Local Includes
 #include "appletrunner.h"
@@ -34,8 +35,9 @@ namespace napkin
 		/**
 		 * Initializes the video subsystem and creates the SDL event sink
 		 * @param event flush frequency (hz)
+		 * @param driver SDL video driver
 		 */
-		AppletSDLEventSink(nap::uint frequency);
+		AppletSDLEventSink(nap::uint frequency, nap::EVideoDriver driver);
 
 		/**
 		 * Shuts down the event loop and closes video subsystem

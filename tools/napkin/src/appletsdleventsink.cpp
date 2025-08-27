@@ -17,7 +17,7 @@
 
 namespace napkin
 {
-	AppletSDLEventSink::AppletSDLEventSink(nap::uint frequency) :
+	AppletSDLEventSink::AppletSDLEventSink(nap::uint frequency, nap::EVideoDriver driver) :
 		mFrequency(nap::math::min<nap::uint>(frequency, 1))
 	{
 		// SDL event loop must run on the QT GUI thread
@@ -30,13 +30,7 @@ namespace napkin
 
 		// Initialize SDL video subsystem
 		nap::utility::ErrorState error;
-		if (!nap::SDL::initVideo(error))
-		{
-			nap::Logger::error(error.toString());
-			return;
-		}
-
-		if (nap::SDL::initVideo(error))
+		if (nap::SDL::initVideo(driver, error))
 		{
 			connect(&mTimer, &QTimer::timeout, this, &AppletSDLEventSink::flushEvents);
 			int ms_poll = static_cast<int>(1000.0 / static_cast<double>(frequency));
