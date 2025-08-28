@@ -580,7 +580,7 @@ namespace nap
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
 
 		// Global GUI & DPI scale
-		mGuiScale = math::max<float>(mConfiguration->mScale, 0.05f);
+		mGuiScale = math::max<float>(mConfiguration->mScale, math::epsilon<float>());
 
 		// Get palette associated with scheme
 		nap::gui::registerCustomPalette(mConfiguration->mCustomColors);
@@ -682,14 +682,16 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
-			// Calculate max dpi scale if high dpi rendering is enabled
-			// TODO: This needs to happen on the fly
+			// Calculate reference scaling factor based on reference display
+			// TODO: a different font atlas should be created for every variation in scale,
+			// TODO: and dynamically bound every frame, based on active window scaling factor.
 			if (mRenderService->getHighDPIEnabled())
-				mContentScale = window.getDisplayScale();
+				mReferenceScale = math::max<float>(window.getDisplayScale(),
+					math::epsilon<float>());
 
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
-			float font_size = mConfiguration->mFontSize * mContentScale * mGuiScale;
+			float font_size = mConfiguration->mFontSize * mReferenceScale * mGuiScale;
 			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
@@ -713,7 +715,7 @@ namespace nap
 		auto it = mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context, mStyle.get())));
 		const auto* display = mRenderService->findDisplay(window);
 		assert(display != nullptr);
-		pushScale(*it.first->second, *display);
+		pushScale(*it.first->second, window, *display);
 
 		// Connect so we can listen to window events such as move
 		window.mWindowEvent.connect(mWindowEventSlot);
@@ -756,7 +758,7 @@ namespace nap
 			{
 				// Display Changed!
 				//nap::Logger::info("Display changed from: %d to %d", cached_display.getIndex(), display->getIndex());
-				pushScale(*it->second, *display);
+				pushScale(*it->second, *window, *display);
 			}
 		}
 	}
@@ -893,7 +895,7 @@ namespace nap
 	}
 
 
-	void IMGuiService::pushScale(GUIContext& context, const Display& display)
+	void IMGuiService::pushScale(GUIContext& context, const nap::RenderWindow& window, const Display& display)
 	{
 		// Store display
 		context.mDisplay = &display;
@@ -903,8 +905,8 @@ namespace nap
 		{
 			// Compute overall Gui and font scaling factor
 			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
-			float gscale = mGuiScale * mContentScale;
-			float fscale = 1.0f;
+			float gscale = mGuiScale * window.getDisplayScale();
+			float fscale = window.getDisplayScale() / mReferenceScale;
 
 			// Push scaling for window and font based on new display
 			// We must push the original style first before we can scale

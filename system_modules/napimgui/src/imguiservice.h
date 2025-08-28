@@ -376,7 +376,7 @@ namespace nap
 		/**
 		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
 		 */
-		void pushScale(GUIContext& context, const Display& display);
+		void pushScale(GUIContext& context, const nap::RenderWindow& window, const Display& display);
 
 		/**
 		 * Add key event to given context
@@ -399,7 +399,7 @@ namespace nap
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
 		float mGuiScale = 1.0f;			///< Overall GUI scaling factor
-		float mContentScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
+		float mReferenceScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 
 		// Selected colour palette and style
 		IMGuiServiceConfiguration* mConfiguration = nullptr;
