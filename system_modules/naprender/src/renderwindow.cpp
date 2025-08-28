@@ -1072,5 +1072,12 @@ namespace nap
 		SDL::getWindowPixelDensity(mSDLWindow, &density);
 		return density;
 	}
+
+
+	int RenderWindow::getDisplayIndex() const
+	{
+		return mSDLWindow != nullptr ?
+			SDL::getDisplayIndex(mSDLWindow) : -1;
+	}
 }
 

@@ -333,7 +333,7 @@ namespace nap
 			glm::ivec2 mMousePosition						= { 0, 0 };						///< Last known mouse position
 			float mMouseWheel								= 0.0f;							///< Mouse wheel
 			float mScale									= 1.0f;							///< GUI Scale
-			const Display* mDisplay							= nullptr;						///< Current display
+			int mDisplayIndex								= -1;							///< Current display
 			ImGuiContext* mContext							= nullptr;						///< Associated ImGUI context
 			ImGuiContext* mPreviousContext					= nullptr;						///< Context active before this one
 			ImGuiStyle* mStyle								= nullptr;						///< Style of context
@@ -376,7 +376,7 @@ namespace nap
 		/**
 		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
 		 */
-		void pushScale(GUIContext& context, const nap::RenderWindow& window, const Display& display);
+		void pushScale(GUIContext& context, const nap::RenderWindow& window);
 
 		/**
 		 * Add key event to given context

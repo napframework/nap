@@ -308,6 +308,11 @@ namespace nap
 		 */
 		VkImageLayout getFinalLayout() const override						{ return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
 
+		/**
+		 * @return display index
+		 */
+		int getDisplayIndex() const;
+
 		bool					mSampleShading		= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth				= 512;								///< Property: 'Width' window horizontal resolution
 		int						mHeight				= 512;								///< Property: 'Height' window vertical resolution

@@ -713,9 +713,7 @@ namespace nap
 
 		// Add context, set display index & push scale accordingly
 		auto it = mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context, mStyle.get())));
-		const auto* display = mRenderService->findDisplay(window);
-		assert(display != nullptr);
-		pushScale(*it.first->second, window, *display);
+		pushScale(*it.first->second, window);
 
 		// Connect so we can listen to window events such as move
 		window.mWindowEvent.connect(mWindowEventSlot);
@@ -742,23 +740,20 @@ namespace nap
 		if (windowEvent.get_type().is_derived_from(RTTI_OF(nap::WindowMovedEvent)))
 		{
 			// Get display
-			nap::RenderWindow* window = mRenderService->findWindow(windowEvent.mWindow);
-			assert(window != nullptr);
-			const Display* display = mRenderService->findDisplay(*window);
-			assert(display != nullptr);
+			nap::RenderWindow* window = mRenderService->findWindow(windowEvent.mWindow); assert(window != nullptr);
+			auto display_index = window->getDisplayIndex(); assert(display_index >= 0);
 
 			// Get cached display
 			auto it = mContexts.find(window);
 			assert(it != mContexts.end());
-			assert(it->second->mDisplay != nullptr);
-			const auto& cached_display = *it->second->mDisplay;
+			const auto& gui_ctx = *it->second;
 
 			// Check if changed, if so update (push) scale
-			if (cached_display != *display)
+			if (gui_ctx.mDisplayIndex != display_index)
 			{
 				// Display Changed!
-				//nap::Logger::info("Display changed from: %d to %d", cached_display.getIndex(), display->getIndex());
-				pushScale(*it->second, *window, *display);
+				nap::Logger::info("Display changed from: %d to %d", gui_ctx.mDisplayIndex, display_index);
+				pushScale(*it->second, *window);
 			}
 		}
 	}
@@ -895,10 +890,10 @@ namespace nap
 	}
 
 
-	void IMGuiService::pushScale(GUIContext& context, const nap::RenderWindow& window, const Display& display)
+	void IMGuiService::pushScale(GUIContext& context, const nap::RenderWindow& window)
 	{
-		// Store display
-		context.mDisplay = &display;
+		// Store display index
+		context.mDisplayIndex = window.getDisplayIndex();
 
 		// Don't scale if high dpi rendering is disabled
 		if (mRenderService->getHighDPIEnabled())
@@ -1111,7 +1106,6 @@ namespace nap
 	{
 		ImGui::DestroyContext(mContext);
 		mStyle = nullptr;
-		mDisplay = nullptr;
 	}
 
 
