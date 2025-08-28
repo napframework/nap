@@ -144,11 +144,7 @@ namespace nap
 		// Compute dpi scaling factor, based on highest dpi scaling value, always < 1
 		// Note that current window is unavailable when rendering headless
 		if (mDPIAware && cur_window != nullptr)
-		{
-			auto* display = mRenderService->findDisplay(*cur_window);
-			assert(display != nullptr);
-			dpi_scale = display->getContentScale() / getDPIScale();
-		}
+			dpi_scale = cur_window->getDisplayScale() / getDPIScale();
 
 		// Get object space position based on orientation of text
 		glm::ivec2 pos = getTextPosition(dpi_scale);

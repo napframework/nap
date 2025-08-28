@@ -16,7 +16,6 @@ namespace nap
 {
 	/**
 	 * Extracts display information for the display at the given index.
-	 * 
 	 * Note that the information provided by this interface isn't required to remain valid.
 	 * When a display is re-connected, or even turned on/off, the index is re-assigned and this object becomes invalid.
 	 */
@@ -24,17 +23,15 @@ namespace nap
 	{
 	public:
 		/**
-		 * Construct display information.
-		 * Index must be >= 0 && < SDL::getDisplayCount().
+		 * Construct a default, invalid display
+		 */
+		Display() = default;
+
+		/**
+		 * Construct display information, index must be >= 0.
 		 * @param index display index
 		 */
 		Display(int index);
-
-		/**
-		 * Construct display information for the display associated with the given window.
-		 * @param window the window to get display information for.
-		 */
-		Display(SDL_Window* window);
 
 		/**
 		 * Current display index, as given on construction.
@@ -105,7 +102,6 @@ namespace nap
 		glm::ivec2 mMax = { 0, 0 };				///< Max display bound position
 		bool mValid = false;					///< If valid after construction
 	};
-	using DisplayList = std::vector<Display>;
 }
 
 

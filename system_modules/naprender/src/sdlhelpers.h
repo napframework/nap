@@ -6,6 +6,7 @@
 
 // Local includes
 #include "videodriver.h"
+#include "display.h"
 
 // External Includes
 #include <string>
@@ -118,10 +119,16 @@ namespace nap
 		int NAPAPI getDisplayCount();
 
 		/**
-		 * Returns list of unique display ids, nullptr on failure 
-		 * @return array of unique display ids, nullptr on failure
+		 * Returns list of unique display ids, 0 on failure 
+		 * @return array of unique display ids, 0 on failure
 		 */
-		std::unique_ptr<std::vector<int>> getDisplayIDs();
+		NAPAPI std::vector<int> getDisplayIDs();
+
+		/**
+		 * Returns a list of currently attached displays.
+		 * @return a list of currently attached displays
+		 */
+		NAPAPI std::vector<nap::Display> getDisplays();
 
 		/**
 		 * Get the unique index of the display associated with a window.

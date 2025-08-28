@@ -489,30 +489,28 @@ namespace nap
 		RenderWindow* findWindow(uint id) const;
 
 		/**
-		 * Returns the total number of displays.
-		 * Note that changes to display configuration are not considered when application is running.
+		 * Returns the total number of connected displays.
 		 * @return total number of displays
 		 */
 		int getDisplayCount() const;
 
 		/**
-		 * Find a display based on the index provided.
-		 * Note that changes to display configuration are not considered when application is running.
+		 * Find a display based on the provided display index.
 		 * @param index the number of the display to find
-		 * @return the display, nullptr if not found
+		 * @return the display, invalid display when not found
 		 */
-		const Display* findDisplay(int index) const;
+		Display findDisplay(int index) const;
 
 		/**
 		 * Returns the display that contains the center of the window.
-		 * @return display that contains the center of the window, nullptr if not found
+		 * @return the display, invalid display when not found
 		 */
-		const Display* findDisplay(const nap::RenderWindow& window) const;
+		Display findDisplay(const nap::RenderWindow& window) const;
 
 		/**
 		 * @return all available displays
 		 */
-		const DisplayList& getDisplays() const;
+		std::vector<Display> getDisplays() const;
 
 		/**
 		 * Add a window event that is processed later, ownership is transferred here.
@@ -1238,7 +1236,6 @@ namespace nap
 		bool									mNonSolidFillModeSupported = false;
 		uint32									mAnisotropicSamples = 1;
 		WindowList								mWindows;
-		DisplayList								mDisplays;
 		SceneService*							mSceneService = nullptr;
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;

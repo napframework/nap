@@ -268,22 +268,31 @@ namespace nap
 
 		int getDisplayCount()
 		{
-			auto ids = getDisplayIDs();
-			return ids != nullptr ? ids->size() : -1;
+			return getDisplayIDs().size();
 		}
 
 
-		std::unique_ptr<std::vector<int>> getDisplayIDs()
+		std::vector<int> getDisplayIDs()
 		{
 			// Get unique display id
 			int count; int* displays = reinterpret_cast<int*>(SDL_GetDisplays(&count));
-			if (displays == nullptr)
-				return nullptr;
+			if (displays == nullptr || count == 0)
+				return {};
 
-			// Copy into unique ptr
+			// Create copy and free previous list
 			std::vector<int> ids(displays, displays + count);
 			SDL_free(displays);
-			return std::make_unique<std::vector<int>>(std::move(ids));
+			return ids;
+		}
+
+
+		std::vector<nap::Display> getDisplays()
+		{
+			auto ids = getDisplayIDs();
+			std::vector<nap::Display> dl; dl.reserve(ids.size());
+			for (const auto& id : ids)
+				dl.emplace_back(nap::Display(id));
+			return dl;
 		}
 
 

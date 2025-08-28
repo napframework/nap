@@ -10,7 +10,8 @@ namespace nap
 {
 	Display::Display(int index) : mIndex(index)
 	{
-		if (!SDL::getDisplayName(index, mName))
+		assert(index >= 0);
+		if (!SDL::getDisplayName(index, mName)) 
 			return;
 
 		if (!SDL::getDisplayBounds(index, mMin, mMax))
@@ -22,10 +23,6 @@ namespace nap
 		mDPI = mScale * 96.0f;
 		mValid = true;
 	}
-
-
-	Display::Display(SDL_Window* window) : Display(SDL::getDisplayIndex(window))
-	{ }
 
 
 	std::string nap::Display::toString() const

@@ -1366,31 +1366,21 @@ namespace nap
 	}
 
 
-	const nap::Display* RenderService::findDisplay(int index) const
+	Display RenderService::findDisplay(int index) const
 	{
-		auto found_it = std::find_if(mDisplays.begin(), mDisplays.end(), [&](const auto& it)
-		{
-			return it.getIndex() == index;
-		});
-		return found_it == mDisplays.end() ? nullptr : &(*found_it);
+		return index >= 0 ? Display(index) : Display();
 	}
 
 
-	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window) const
+	Display RenderService::findDisplay(const nap::RenderWindow& window) const
 	{
 		return findDisplay(SDL::getDisplayIndex(window.getNativeWindow()));
 	}
 
 
-	const nap::DisplayList& RenderService::getDisplays() const
-	{
-		return mDisplays;
-	}
-
-
 	int RenderService::getDisplayCount() const
 	{
-		return mDisplays.size();
+		return SDL::getDisplayCount();
 	}
 
 
@@ -1815,21 +1805,11 @@ namespace nap
 #endif // __APPLE__
 
 		// Add displays
-		auto ids = SDL::getDisplayIDs();
-		if (!errorState.check(ids != nullptr, "Unable to get display list"))
+		for (const auto& display : SDL::getDisplays())
 		{
-			errorState.fail(SDL::getSDLError());
-			return false;
-		}
-
-		for (auto id : *ids)
-		{
-			auto it = mDisplays.emplace_back(Display(id));
-			nap::Logger::info(it.toString());
-			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
-			{
+			if (!errorState.check(display.isValid(), "Display: %d, unable to extract required information"))
 				return false;
-			}
+			nap::Logger::info(display.toString());
 		}
 
 		// Initialize shader compilation
@@ -2123,7 +2103,7 @@ namespace nap
 
 			// If ID matches, ensure the window doesn't fall out of display bounds.
 			// If window falls within bounds, restore.
-			for (const auto& display : mDisplays)
+			for (const auto& display : getDisplays())
 			{
 				auto& min = display.getMin();
 				auto& max = display.getMax();
@@ -2935,6 +2915,12 @@ namespace nap
 				Logger::error(error.toString());
 		}
 		return mWindowIcon;
+	}
+
+
+	std::vector<Display> RenderService::getDisplays() const
+	{
+		return SDL::getDisplays();
 	}
 
 
