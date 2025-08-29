@@ -9,14 +9,11 @@
 
 #include <QStandardItem>
 #include <QFileInfo>
-
-#include <rtti/rtti.h>
-#include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
-#include <utility/fileutils.h>
 #include <napqt/qtutils.h>
 #include <shader.h>
 #include <mutex>
+#include <videodriver.h>
 
 namespace napkin
 {
@@ -258,7 +255,6 @@ namespace napkin
 	 */
 	bool isNumber(const std::string& s);
 
-
 	/**
 	 * Split a "string:234" into its name "string" and index 234
 	 * @return true if both are found, false if there's only a string part
@@ -271,4 +267,9 @@ namespace napkin
 	 */
 	nap::Entity* findChild(nap::Entity& parent, const std::string& name, int index=-1);
 
+	/**
+	 * Attempts to figure out the napkin video back-end, returns default when platform is not supported
+	 * @return Current napkin video back-end, Default when platform is not supported
+	 */
+	nap::EVideoDriver getVideoDriver();
 }

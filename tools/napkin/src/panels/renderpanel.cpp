@@ -52,27 +52,42 @@ namespace napkin
 
 		// Enable vulkan compatibility
 		bool vset = SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, true);
-		if (!error.check(vset == true,
-			"Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, SDL_GetError()))
+		if (!error.check(vset, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, SDL_GetError()))
 		{
 			delete container;
 			return nullptr;
 		}
 
-#ifdef WIN32
-		// Enable from handle
-		auto id = container->winId(); assert(id != 0);
-		bool hset = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, (void*)id);
-		if (!error.check(hset == true,
-			"Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetError()))
+		switch (getVideoDriver())
+		{
+			case nap::EVideoDriver::Windows:
+			{
+				auto id = container->winId(); assert(id != 0);
+				auto setup = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, (void*)id);
+				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetError());
+				break;
+			}
+			case nap::EVideoDriver::X11:
+			{
+				auto id = container->winId();
+				auto setup = SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, id);
+				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, SDL_GetError());
+				break;
+			}
+			default:
+			{
+				error.fail("Unsupported applet video-platform: %s",
+					QApplication::platformName().toStdString().c_str());
+				break;
+			}
+		}
+
+		// Ensure platform specific window setup succeeded
+		if (error.hasErrors())
 		{
 			delete container;
 			return nullptr;
 		}
-#else
-		error.fail("Unsupported platform");
-		return nullptr;
-#endif // WIN32
 
 		auto sdl_window = SDL_CreateWindowWithProperties(props);
 		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", SDL_GetError()))
@@ -84,7 +99,7 @@ namespace napkin
 		// Make sure that the applet window is created using the given handle
 		nap::Core& app_core = applet.getCore();
 		auto& factory = app_core.getResourceManager()->getFactory();
-		auto obj_creator = std::make_unique<napkin::AppletWindowObjectCreator>(app_core, sdl_window);
+		auto obj_creator = std::make_unique<AppletWindowObjectCreator>(app_core, sdl_window);
 		factory.addObjectCreator(std::move(obj_creator));
 
 		// Create and return the new panel
@@ -143,9 +158,18 @@ namespace napkin
 						static_cast<int>(static_cast<float>(resize_event->size().height()) * ratio),
 					};
 
-				// TODO: This explicit resize call is only required on Linux X11
+				// TODO: This explicit resize call is only required with async window systems (ie: X11 Linux etc.)
 				// TODO: Create an event instead and forward that to the running application
-				nap::SDL::setWindowSize(mWindow, sdl_size);
+				if (SDL_SetWindowSize(mWindow, sdl_size.x, sdl_size.y))
+				{
+					if (!SDL_SyncWindow(mWindow))
+						nap::Logger::error(SDL_GetError());
+				}
+				else {
+					nap::Logger::error(SDL_GetError());
+				}
+
+				// Handled
 				return true;
 			}
 			case QEvent::Move:
