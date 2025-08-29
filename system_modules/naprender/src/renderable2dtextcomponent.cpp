@@ -47,7 +47,7 @@ namespace nap
 		mDPIAware = resource->mDPIAware && mService->getHighDPIEnabled();
 
 		// Init base class (setting up the plane glyph plane etc.)
-		if (!setup(1.0f, errorState))
+		if (!setup(mDisplayScale, errorState))
 			return false;
 		
 		// Copy flags
@@ -57,6 +57,15 @@ namespace nap
 		mIgnoreTransform = resource->mIgnoreTransform;
 
 		return true;
+	}
+
+
+	void Renderable2DTextComponentInstance::update(double deltaTime)
+	{
+		// Re-compute glyph cache if last display scaling factor exceeds known dpi scaling factor.
+		// This ensures that the text is always crisp on every display, independent of platform.
+		if (mDisplayScale > getDPIScale())
+			setDPIScale(mDisplayScale);
 	}
 
 
@@ -129,20 +138,20 @@ namespace nap
 
 	void Renderable2DTextComponentInstance::computeTextModelMatrix(glm::mat4x4& outMatrix)
 	{
-		float dpi_scale = 1.0f;
+		// Compute text scaling factor, based on display dpi.
+		float ms = 1.0f; 
 		auto* cur_window = mRenderService->getCurrentRenderWindow();
-
-		// Compute dpi scaling factor, based on highest dpi scaling value, always < 1
-		// Note that current window is unavailable when rendering headless
 		if (mDPIAware && cur_window != nullptr)
 		{
-			dpi_scale = cur_window->getDisplayScale();
+			auto cs = cur_window->getDisplayScale();
+			ms = cs / getDPIScale();
+			mDisplayScale = cs > mDisplayScale ? cs : mDisplayScale;
 		}
 
 		// Get object space position based on orientation of text
-		glm::ivec2 pos = getTextPosition(dpi_scale);
+		glm::ivec2 pos = getTextPosition(ms);
 		outMatrix = glm::translate(glm::mat4(), { (float)pos.x, (float)pos.y, 0.0f });
-		outMatrix = glm::scale(outMatrix, { dpi_scale, dpi_scale, 1.0f });
+		outMatrix = glm::scale(outMatrix, { ms, ms, 1.0f });
 	}
 
 

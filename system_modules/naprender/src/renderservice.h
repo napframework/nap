@@ -513,6 +513,11 @@ namespace nap
 		std::vector<Display> getDisplays() const;
 
 		/**
+		 * @return all available windows
+		 */
+		std::vector<RenderWindow*> getWindows() const;
+
+		/**
 		 * Add a window event that is processed later, ownership is transferred here.
 		 * The window number in the event is used to find the right render window to forward the event to.
 		 * @param windowEvent the window event to add.
@@ -765,7 +770,7 @@ namespace nap
 		 * When enabled fonts and general scaling is adjusted for high dpi monitors.
 		 * @return if high dpi mode is enabled
 		 */
-		bool getHighDPIEnabled() const												{ return mEnableHighDPIMode; }
+		bool getHighDPIEnabled() const												{ return true; }
 
 		/**
 		 * Returns the (system default) number of anisotropic filter samples.

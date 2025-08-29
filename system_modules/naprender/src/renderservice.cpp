@@ -2924,6 +2924,12 @@ namespace nap
 	}
 
 
+	std::vector<RenderWindow*> RenderService::getWindows() const
+	{
+		return mWindows;
+	}
+
+
 	RenderService::UniqueMaterial::UniqueMaterial(std::unique_ptr<Shader> shader, std::unique_ptr<Material> material) :
 		mShader(std::move(shader)), mMaterial(std::move(material))
 	{ }

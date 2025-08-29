@@ -686,8 +686,7 @@ namespace nap
 			// TODO: a different font atlas should be created for every variation in scale,
 			// TODO: and dynamically bound every frame, based on active window scaling factor.
 			if (mRenderService->getHighDPIEnabled())
-				mReferenceScale = math::max<float>(window.getDisplayScale(),
-					math::epsilon<float>());
+				mReferenceScale = math::max<float>(window.getDisplayScale(), 1.0f);
 
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
