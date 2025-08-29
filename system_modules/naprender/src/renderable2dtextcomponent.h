@@ -226,10 +226,10 @@ namespace nap
 		 */
 		void computeTextModelMatrix(glm::mat4x4& outMatrix);
 
-		glm::ivec2		mLocation = { 0,0 };		///< Text location in pixel coordinates
+		glm::ivec2		mLocation = { 0,0 };	///< Text location in pixel coordinates
 		RenderService*	mService = nullptr;			///< Render service
 		bool			mIgnoreTransform = true;	///< If transform should be ignored when present
 		bool			mDPIAware = true;			///< If the text is scaled according to display dpi
-		float			mDisplayScale = 1.0f;		///< Current display scale
+		float			mDisplayScale = 1.0f;		///< Current content display scale
 	};
 }

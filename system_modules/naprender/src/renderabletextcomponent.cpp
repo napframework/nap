@@ -360,23 +360,22 @@ namespace nap
 		NAP_ASSERT_MSG(!mRenderService->isRenderingFrame(), "Can't change dpi scale when rendering a frame");
 
 		// Get scale margins 
-		float dmin = mScale - math::epsilon<float>();
-		float dmax = mScale + math::epsilon<float>();
+		float dmin = mScale - 0.001f;
+		float dmax = mScale + 0.001f;
 
 		// Compute when out of bounds
 		if (scale < dmin || scale > dmax)
 		{
 			auto cache = mLinesCache;  clear();
-			utility::ErrorState error;
+			mScale = scale; utility::ErrorState error;
 			for (const auto& line : cache)
 			{
 				if (!addLine(line, error))
 				{
-					nap::Logger::error(error.toString());
+					Logger::error(error.toString());
 					break;
 				}
 			}
-			mScale = scale;
 		}
 	}
 

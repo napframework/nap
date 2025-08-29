@@ -2572,7 +2572,7 @@ namespace nap
 	}
 
 
-	void RenderService::endFrame()	
+	void RenderService::endFrame()
 	{
 		// Acquire current frame
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
@@ -2651,7 +2651,7 @@ namespace nap
 	bool RenderService::beginRecording(RenderWindow& renderWindow)
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
-		assert(mCurrentRenderWindow  == VK_NULL_HANDLE);
+		assert(mCurrentRenderWindow  == nullptr);
 
 		// Ask the window to begin recording commands.
 		mCurrentCommandBuffer = renderWindow.beginRecording();
@@ -2666,12 +2666,12 @@ namespace nap
 	void RenderService::endRecording()
 	{
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
-		assert(mCurrentRenderWindow  != VK_NULL_HANDLE);
+		assert(mCurrentRenderWindow  != nullptr);
 		
 		// Stop recording, submit queue and ask for presentation
 		mCurrentRenderWindow->endRecording();
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
-		mCurrentRenderWindow  = VK_NULL_HANDLE;
+		mCurrentRenderWindow  = nullptr;
 	}
 
 
@@ -2727,7 +2727,7 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
-		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
+		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
  		assert(result == VK_SUCCESS);
 
 		// Set the compute bit of queue submit ops of the current frame

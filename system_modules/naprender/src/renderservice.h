@@ -657,7 +657,7 @@ namespace nap
 		 * successfull call to: RenderService::beginRecording() and RenderService::endRecording().
 		 * @return the window currently being rendered to, nullptr if not set.
 		 */
-		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != VK_NULL_HANDLE); return mCurrentRenderWindow; }
+		RenderWindow* getCurrentRenderWindow()										{ return mCurrentRenderWindow; }
 
 		/**
 		 * Returns the Vulkan runtime instance.

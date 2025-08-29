@@ -138,20 +138,28 @@ namespace nap
 
 	void Renderable2DTextComponentInstance::computeTextModelMatrix(glm::mat4x4& outMatrix)
 	{
-		// Compute text scaling factor, based on display dpi.
-		float ms = 1.0f; 
-		auto* cur_window = mRenderService->getCurrentRenderWindow();
-		if (mDPIAware && cur_window != nullptr)
+		// Calculate the text scaling factor using the active window's content scaling.
+		// This involves retrieving the window's content scale (e.g., 1.0, 1.5, etc.)
+		// and applying it to scale the text (model) matrix accordingly.
+
+		// If the window's content scale exceeds the current DPI (text) scaling factor,
+		// the text may appear blurry. To fix this, we recompute the glyph cache in
+		// update() using the now-known maximum content scaling factor. This ensures
+		// that the next frame's text renders sharply, as the glyphs will be generated
+		// according to the requested window content scaling factor.
+		float text_scale = 1.0f;
+		auto* window = mRenderService->getCurrentRenderWindow();
+		if (mDPIAware && window != nullptr)
 		{
-			auto cs = cur_window->getDisplayScale();
-			ms = cs / getDPIScale();
+			auto cs = window->getDisplayScale();
+			text_scale = cs / getDPIScale();
 			mDisplayScale = cs > mDisplayScale ? cs : mDisplayScale;
 		}
 
 		// Get object space position based on orientation of text
-		glm::ivec2 pos = getTextPosition(ms);
+		glm::ivec2 pos = getTextPosition(text_scale);
 		outMatrix = glm::translate(glm::mat4(), { (float)pos.x, (float)pos.y, 0.0f });
-		outMatrix = glm::scale(outMatrix, { ms, ms, 1.0f });
+		outMatrix = glm::scale(outMatrix, { text_scale, text_scale, 1.0f });
 	}
 
 
