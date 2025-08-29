@@ -288,10 +288,17 @@ namespace nap
 
 		std::vector<nap::Display> getDisplays()
 		{
-			auto ids = getDisplayIDs();
-			std::vector<nap::Display> dl; dl.reserve(ids.size());
-			for (const auto& id : ids)
-				dl.emplace_back(nap::Display(id));
+			// Get unique display id
+			int count; int* ids = reinterpret_cast<int*>(SDL_GetDisplays(&count));
+			if (ids == nullptr || count == 0)
+				return {};
+
+			// Create display list
+			std::vector<nap::Display> dl; dl.reserve(count);
+			for (auto i = 0; i < count; i++)
+				dl.emplace_back(nap::Display(ids[i]));
+
+			SDL_free(ids);
 			return dl;
 		}
 

@@ -45,18 +45,9 @@ namespace nap
 		// Compute max font scaling factor based on highest display DPI value
 		Renderable2DTextComponent* resource = getComponent<Renderable2DTextComponent>();
 		mDPIAware = resource->mDPIAware && mService->getHighDPIEnabled();
-		float fscale = 1.0f;
-		if (mDPIAware)
-		{
-			for (const auto& display : mRenderService->getDisplays())
-			{
-				fscale = display.getContentScale() > fscale ?
-					display.getContentScale() : fscale;
-			}
-		}
 
 		// Init base class (setting up the plane glyph plane etc.)
-		if (!setup(fscale, errorState))
+		if (!setup(1.0f, errorState))
 			return false;
 		
 		// Copy flags
@@ -144,7 +135,9 @@ namespace nap
 		// Compute dpi scaling factor, based on highest dpi scaling value, always < 1
 		// Note that current window is unavailable when rendering headless
 		if (mDPIAware && cur_window != nullptr)
-			dpi_scale = cur_window->getDisplayScale() / getDPIScale();
+		{
+			dpi_scale = cur_window->getDisplayScale();
+		}
 
 		// Get object space position based on orientation of text
 		glm::ivec2 pos = getTextPosition(dpi_scale);
