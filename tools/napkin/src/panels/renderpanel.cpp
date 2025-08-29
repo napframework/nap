@@ -36,8 +36,10 @@ namespace napkin
 		native_window->setSurfaceType(QSurface::VulkanSurface);
 
 		// Create QWidget window container (without parent)
-		auto* container = QWidget::createWindowContainer(native_window, parent,
-			Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
+		auto container = std::unique_ptr<QWidget>(QWidget::createWindowContainer(native_window, parent,
+			Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint));
+
+		// Set it up
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
 		container->setMinimumSize({ 256,256 });
@@ -53,10 +55,7 @@ namespace napkin
 		// Enable vulkan compatibility
 		bool vset = SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, true);
 		if (!error.check(vset, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, SDL_GetError()))
-		{
-			delete container;
 			return nullptr;
-		}
 
 		switch (getVideoDriver())
 		{
@@ -84,17 +83,11 @@ namespace napkin
 
 		// Ensure platform specific window setup succeeded
 		if (error.hasErrors())
-		{
-			delete container;
 			return nullptr;
-		}
 
 		auto sdl_window = SDL_CreateWindowWithProperties(props);
 		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", SDL_GetError()))
-		{
-			delete container;
 			return nullptr;
-		}
 
 		// Make sure that the applet window is created using the given handle
 		nap::Core& app_core = applet.getCore();
@@ -103,7 +96,7 @@ namespace napkin
 		factory.addObjectCreator(std::move(obj_creator));
 
 		// Create and return the new panel
-		return new RenderPanel(container, sdl_window, parent, applet);
+		return new RenderPanel(container.release(), sdl_window, parent, applet);
 	}
 
 

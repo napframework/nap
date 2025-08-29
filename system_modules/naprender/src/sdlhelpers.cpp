@@ -20,7 +20,8 @@ namespace nap
 	{
 		bool initVideo(utility::ErrorState& error)
 		{
-			return error.check(SDL_Init(SDL_INIT_VIDEO), SDL_GetError());
+			bool initialized = SDL_Init(SDL_INIT_VIDEO);
+			return error.check(initialized, SDL_GetError());
 		}
 
 
