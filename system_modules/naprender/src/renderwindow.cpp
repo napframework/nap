@@ -58,7 +58,7 @@ namespace nap
 		options |= renderWindow.mResizable  ? SDL_WINDOW_RESIZABLE  : 0x0U;
 		options |= renderWindow.mBorderless ? SDL_WINDOW_BORDERLESS : 0x0U;
 		options |= renderWindow.mAlwaysOnTop ? SDL_WINDOW_ALWAYS_ON_TOP : 0x0U;
-		options |= allowHighDPI ? SDL_WINDOW_HIGH_PIXEL_DENSITY : 0x0U;				// TODO: Is this correct?
+		//options |= allowHighDPI ? SDL_WINDOW_HIGH_PIXEL_DENSITY : 0x0U;				// TODO: Is this correct?
 
 		// Always hide window until added and configured by render service
 		options |= SDL_WINDOW_HIDDEN;
@@ -1037,7 +1037,7 @@ namespace nap
 		// Based on surface capabilities, determine swap image size
 		if (mSurfaceCapabilities.currentExtent.width == UINT32_MAX)
 		{
-			glm::ivec2 buffer_size = this->getBufferSize();
+			glm::ivec2 buffer_size = getBufferSize();
 			mSwapchainExtent =
 			{
 				math::clamp<uint32>(static_cast<uint32>(buffer_size.x), mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),

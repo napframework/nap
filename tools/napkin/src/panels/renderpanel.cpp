@@ -17,6 +17,7 @@
 #include <SDL_hints.h>
 #include <sdlhelpers.h>
 #include <QThread>
+#include <qpa/qplatformnativeinterface.h>
 
 namespace napkin
 {
@@ -34,18 +35,23 @@ namespace napkin
 		format.setColorSpace(QColorSpace(QColorSpace::SRgb));
 		native_window->setFormat(format);
 		native_window->setSurfaceType(QSurface::VulkanSurface);
+		native_window->setGeometry(0,0,512,512);
+		native_window->setFlags(Qt::FramelessWindowHint);
+		native_window->show();
 
 		// Create QWidget window container (without parent)
-		auto container = std::unique_ptr<QWidget>(QWidget::createWindowContainer(native_window, parent,
-			Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint));
+		//auto container = std::unique_ptr<QWidget>(QWidget::createWindowContainer(native_window, parent,
+		//	Qt::Widget | Qt::FramelessWindowHint));
+		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
 
 		// Set it up
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
-		container->setMinimumSize({ 256,256 });
+		container->setGeometry({0,0, 512,512 });
 		container->setAutoFillBackground(false);
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
+		container->activateWindow();
 
 		// Create window properties
 		SDL_PropertiesID props = SDL_CreateProperties();
@@ -73,6 +79,19 @@ namespace napkin
 				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, SDL_GetError());
 				break;
 			}
+			case nap::EVideoDriver::Wayland:
+				{
+					// Get the native wl_surface backing resource for the window
+					QPlatformNativeInterface* qt_native = qGuiApp->platformNativeInterface(); assert(qt_native != nullptr);
+					auto* surface = qt_native->nativeResourceForWindow("surface", native_window);
+					if (error.check(surface != nullptr, "Unable to get native wayland backing resource"))
+					{
+						auto setup = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, surface);
+						error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, SDL_GetError());
+						break;
+					}
+					break;
+				}
 			default:
 			{
 				error.fail("Unsupported applet video-platform: %s",
@@ -89,6 +108,9 @@ namespace napkin
 		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", SDL_GetError()))
 			return nullptr;
 
+		// Push window size
+		SDL_SetWindowSize(sdl_window, 768, 768);
+
 		// Make sure that the applet window is created using the given handle
 		nap::Core& app_core = applet.getCore();
 		auto& factory = app_core.getResourceManager()->getFactory();
@@ -96,12 +118,12 @@ namespace napkin
 		factory.addObjectCreator(std::move(obj_creator));
 
 		// Create and return the new panel
-		return new RenderPanel(container.release(), sdl_window, parent, applet);
+		return new RenderPanel(container.release(), sdl_window, native_window, applet);
 	}
 
 
-	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet) :
-		mContainer(container), mWindow(window), mApplet(applet), mConverter(window, container->windowHandle())
+	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWindow* surface, AppletRunner& applet) :
+		mContainer(container), mWindow(window), mApplet(applet), mConverter(window, surface)
 	{
 		mContainer->installEventFilter(this);
 	}
@@ -153,6 +175,7 @@ namespace napkin
 
 				// TODO: This explicit resize call is only required with async window systems (ie: X11 Linux etc.)
 				// TODO: Create an event instead and forward that to the running application
+					/*
 				if (SDL_SetWindowSize(mWindow, sdl_size.x, sdl_size.y))
 				{
 					if (!SDL_SyncWindow(mWindow))
@@ -161,6 +184,7 @@ namespace napkin
 				else {
 					nap::Logger::error(SDL_GetError());
 				}
+				*/
 
 				// Handled
 				return true;
@@ -192,4 +216,3 @@ namespace napkin
 		return false;
 	}
 }
-
