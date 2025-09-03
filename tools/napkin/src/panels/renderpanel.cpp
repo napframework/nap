@@ -64,13 +64,13 @@ namespace napkin
 			}
 			case nap::EVideoDriver::Wayland:
 			{
-					// I can't get an embedded widget to work, only a standalone (non-embedded) QWindow, which is of no use.
-					// QT reports: 'The cached device pixel ratio value was stale on window expose.  Please file a QTBUG which explains how to reproduce.'
-					// This occurs when using QWidget::createWindowContainer().
-					// I am pinning this on QT (for now) and will investigate / try again later, access to the private gui
-					// library is also required to acquire the wl surface handle, which is something we should try to avoid.
-					//
-					// TODO: Implement embedded applets in wayland (QT)
+				// I can't get an embedded widget to work, only a standalone (non-embedded) QWindow, which is of no use.
+				// QT reports: 'The cached device pixel ratio value was stale on window expose.  Please file a QTBUG which explains how to reproduce.'
+				// This occurs when using QWidget::createWindowContainer().
+				// I am pinning this on QT (for now) and will investigate / try again later, access to the private gui
+				// library is also required to acquire the wl surface handle, which is something we should try to avoid.
+				//
+				// TODO: Implement embedded applets in wayland (QT)
 				error.fail("Wayland video driver currently not supported, use 'xcb' instead");
 				break;
 			}

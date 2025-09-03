@@ -35,6 +35,7 @@ namespace napkin
 		// same wl_display object, see: https://wiki.libsdl.org/SDL3/README-wayland
 		switch (driver)
 		{
+#ifdef __linux__
 		case nap::EVideoDriver::Wayland:
 			{
 				auto* wl_app = app.nativeInterface<QNativeInterface::QWaylandApplication>();
@@ -57,6 +58,7 @@ namespace napkin
 				// Handle set -> continue to default initialization
 				[[fallthrough]];
 			}
+#endif
 		default:
 			{
 				// Initialize SDL video subsystem
