@@ -26,11 +26,12 @@ namespace napkin
 			"SDL event loop must be created and running on the QT GUI thread");
 
 		// Create QWidget window container
+		static constexpr int sDefaultSize = 256;
 		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
-		container->setGeometry({0,0, 256,256 });
-		container->setMinimumSize(256,256);
+		container->setGeometry({0,0, sDefaultSize,sDefaultSize });
+		container->setMinimumSize(sDefaultSize, sDefaultSize);
 		container->setAutoFillBackground(false);
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
@@ -120,7 +121,7 @@ namespace napkin
 			case QEvent::Show:
 			{
 				mApplet.run();
-				return false;
+				return true;
 			}
 			case QEvent::Hide:
 			{
@@ -128,7 +129,7 @@ namespace napkin
 				auto future_suspend = mApplet.suspend();
 				if (future_suspend.valid())
 					future_suspend.wait_for(nap::Seconds(5));
-				return false;
+				return true;
 			}
 			case QEvent::MouseButtonPress:
 			case QEvent::MouseButtonRelease:
@@ -141,7 +142,7 @@ namespace napkin
 				assert(ptr != nullptr);
 				mApplet.sendEvent(std::move(ptr));
 				event->accept();
-				return false;
+				return true;
 			}
 			case QEvent::Resize:
 			{
@@ -163,7 +164,7 @@ namespace napkin
 				else {
 					nap::Logger::error(SDL_GetError());
 				}
-				return false;
+				return true;
 			}
 			case QEvent::Move:
 			{
@@ -171,7 +172,18 @@ namespace napkin
 				assert(ptr != nullptr);
 				mApplet.sendEvent(std::move(ptr));
 				event->accept();
-				return false;
+				return true;
+			}
+			case QEvent::FocusIn:
+			case QEvent::FocusOut:
+			case QEvent::Paint:
+			case QEvent::ParentChange:
+			case QEvent::WindowActivate:
+			case QEvent::WindowDeactivate:
+			case QEvent::ShowToParent:
+			case QEvent::HideToParent:
+			{
+				return true;
 			}
 			default:
 			{
