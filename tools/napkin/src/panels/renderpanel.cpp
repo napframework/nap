@@ -102,6 +102,7 @@ namespace napkin
 		if (error.hasErrors())
 			return nullptr;
 
+		// Create SDL window from QWindow
 		auto sdl_window = SDL_CreateWindowWithProperties(props);
 		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", SDL_GetError()))
 			return nullptr;
@@ -112,17 +113,13 @@ namespace napkin
 		auto obj_creator = std::make_unique<AppletWindowObjectCreator>(app_core, sdl_window);
 		factory.addObjectCreator(std::move(obj_creator));
 
-		// Ensure the window is embedded
-		if (!error.check(container->windowHandle() != nullptr, "Unable to attach window to widget"))
-			return nullptr;
-
 		// Create and return the new panel
-		return new RenderPanel(container.release(), sdl_window, container->windowHandle(), applet);
+		return new RenderPanel(container.release(), sdl_window, applet);
 	}
 
 
-	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWindow* surface, AppletRunner& applet) :
-		mContainer(container), mWindow(window), mApplet(applet), mConverter(window, surface)
+	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, AppletRunner& applet) :
+		mContainer(container), mWindow(window), mApplet(applet), mConverter(window, container)
 	{
 		mContainer->installEventFilter(this);
 	}

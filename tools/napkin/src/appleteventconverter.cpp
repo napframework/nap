@@ -482,6 +482,6 @@ namespace napkin
 
 	float AppletEventConverter::getPixelRatio() const
 	{
-		return static_cast<float>(mQWindow->devicePixelRatio());
+		return static_cast<float>(mContainer->devicePixelRatio());
 	}
 }
