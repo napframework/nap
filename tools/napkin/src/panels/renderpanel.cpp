@@ -25,22 +25,8 @@ namespace napkin
 		NAP_ASSERT_MSG(QThread::currentThread() == QCoreApplication::instance()->thread(),
 			"SDL event loop must be created and running on the QT GUI thread");
 
-		// Create native window
-		QWindow* native_window = new QWindow();
-
-		// Setup QT format (TODO: Use system preferences)
-		QSurfaceFormat format;
-		format.setColorSpace(QColorSpace(QColorSpace::SRgb));
-		native_window->setFormat(format);
-		native_window->setSurfaceType(QSurface::VulkanSurface);
-		native_window->setGeometry(0,0,256,256);
-		native_window->setFlags(Qt::FramelessWindowHint);
-
-		// Create QWidget window container (without parent)
-		auto container = std::unique_ptr<QWidget>(QWidget::createWindowContainer(native_window, parent,
-			Qt::Widget | Qt::FramelessWindowHint));
-
-		// Set it up
+		// Create QWidget window container
+		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
 		container->setGeometry({0,0, 256,256 });
@@ -131,12 +117,11 @@ namespace napkin
 		assert(obj == mContainer);
 		switch (event->type())
 		{
-			// TODO: Figure out why we need to handle these events explicitly ->
 			// Without the window is available but drawn (composited) incorrect in Qt (White background)
 			case QEvent::Show:
 			{
 				mApplet.run();
-				return true;	
+				return false;
 			}
 			case QEvent::Hide:
 			{
@@ -144,7 +129,7 @@ namespace napkin
 				auto future_suspend = mApplet.suspend();
 				if (future_suspend.valid())
 					future_suspend.wait_for(nap::Seconds(5));
-				return true;
+				return false;
 			}
 			case QEvent::MouseButtonPress:
 			case QEvent::MouseButtonRelease:
@@ -157,7 +142,7 @@ namespace napkin
 				assert(ptr != nullptr);
 				mApplet.sendEvent(std::move(ptr));
 				event->accept();
-				return true;
+				return false;
 			}
 			case QEvent::Resize:
 			{
@@ -179,9 +164,7 @@ namespace napkin
 				else {
 					nap::Logger::error(SDL_GetError());
 				}
-
-				// Handled
-				return true;
+				return false;
 			}
 			case QEvent::Move:
 			{
@@ -189,18 +172,7 @@ namespace napkin
 				assert(ptr != nullptr);
 				mApplet.sendEvent(std::move(ptr));
 				event->accept();
-				return true;
-			}
-			case QEvent::FocusIn:
-			case QEvent::FocusOut:
-			case QEvent::Paint:
-			case QEvent::ParentChange:
-			case QEvent::WindowActivate:
-			case QEvent::WindowDeactivate:
-			case QEvent::ShowToParent:
-			case QEvent::HideToParent:
-			{
-				return true;
+				return false;
 			}
 			default:
 			{
