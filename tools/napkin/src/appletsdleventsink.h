@@ -37,12 +37,12 @@ namespace napkin
 		 * @param event flush frequency (hz)
 		 * @param driver SDL video driver
 		 */
-		AppletSDLEventSink(nap::uint frequency, nap::EVideoDriver driver);
+		AppletSDLEventSink(nap::uint frequency, nap::EVideoDriver driver, const QApplication& qapp);
 
 		/**
 		 * Shuts down the event loop and closes video subsystem
 		 */
-		virtual ~AppletSDLEventSink();
+		~AppletSDLEventSink() override;
 
 	private:
 		nap::uint mFrequency = 60;

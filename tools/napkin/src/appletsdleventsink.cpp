@@ -15,9 +15,11 @@
 #include <mathutils.h>
 #include <SDL_events.h>
 
+#include "appcontext.h"
+
 namespace napkin
 {
-	AppletSDLEventSink::AppletSDLEventSink(nap::uint frequency, nap::EVideoDriver driver) :
+	AppletSDLEventSink::AppletSDLEventSink(nap::uint frequency, nap::EVideoDriver driver, const QApplication& app) :
 		mFrequency(nap::math::min<nap::uint>(frequency, 1))
 	{
 		// SDL event loop must run on the QT GUI thread
@@ -28,34 +30,52 @@ namespace napkin
 		NAP_ASSERT_MSG(!nap::SDL::videoInitialized(),
 			"Video subsystem already initialized");
 
-		// Initialize SDL video subsystem
-		nap::utility::ErrorState error;
-		if (nap::SDL::initVideo(driver, error))
+		// Wayland windows and surfaces are more intrinsically tied to the client library than other windowing systems,
+		// therefore, when importing surfaces, it is necessary for both SDL and the application or toolkit to use the
+		// same wl_display object, see: https://wiki.libsdl.org/SDL3/README-wayland
+		switch (driver)
 		{
-			nap::Logger::info("Video backend: %s",
-				RTTI_OF(nap::EVideoDriver).get_enumeration().value_to_name(driver).to_string().c_str());
+		case nap::EVideoDriver::Wayland:
+			{
+				auto* wl_app = app.nativeInterface<QNativeInterface::QWaylandApplication>();
+				assert(wl_app != nullptr);
+				auto* wl_display = wl_app->display();
+				if (wl_display == nullptr)
+				{
+					nap::Logger::error("Unable to get wayland display handle");
+					break;
+				}
 
-			connect(&mTimer, &QTimer::timeout, this, &AppletSDLEventSink::flushEvents);
-			int ms_poll = static_cast<int>(1000.0 / static_cast<double>(frequency));
-			mTimer.start(ms_poll);
-		}
-		else
-		{
-			nap::Logger::error(error.toString());
-		}
+				// Set wayland video display pointer for SDL
+				if (!SDL_SetPointerProperty(SDL_GetGlobalProperties(),
+					SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, wl_display))
+				{
+					nap::Logger::error("Unable to set wayland display handle");
+					break;
+				}
 
-		// Disable interfering events
-		/*
-		SDL_EventState(SDL_DISPLAYEVENT, SDL_IGNORE);
-		SDL_EventState(SDL_WINDOWEVENT, SDL_IGNORE);
-		SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
-		SDL_EventState(SDL_KEYDOWN, SDL_IGNORE);
-		SDL_EventState(SDL_KEYUP, SDL_IGNORE);
-		SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
-		SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_IGNORE);
-		SDL_EventState(SDL_MOUSEBUTTONUP, SDL_IGNORE);
-		SDL_EventState(SDL_MOUSEWHEEL, SDL_IGNORE);
-		*/
+				// Handle set -> continue to default initialization
+				[[fallthrough]];
+			}
+		default:
+			{
+				// Initialize SDL video subsystem
+				nap::utility::ErrorState error;
+				if (nap::SDL::initVideo(driver, error))
+				{
+					nap::Logger::info("Video backend: %s",
+						RTTI_OF(nap::EVideoDriver).get_enumeration().value_to_name(driver).to_string().c_str());
+
+					connect(&mTimer, &QTimer::timeout, this, &AppletSDLEventSink::flushEvents);
+					int ms_poll = static_cast<int>(1000.0 / static_cast<double>(frequency));
+					mTimer.start(ms_poll);
+				}
+				else
+				{
+					nap::Logger::error(error.toString());
+				}
+			}
+		}
 	}
 
 	

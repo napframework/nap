@@ -7,14 +7,12 @@
 #include "renderutils.h"
 #include "imagedata.h"
 
-#include <windowevent.h>
 #include <renderservice.h>
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <SDL_vulkan.h>
 #include <SDL_hints.h>
 #include <mathutils.h>
-#include <bitmap.h>
 
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
 	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::Immediate,	"Immediate"),
@@ -58,7 +56,7 @@ namespace nap
 		options |= renderWindow.mResizable  ? SDL_WINDOW_RESIZABLE  : 0x0U;
 		options |= renderWindow.mBorderless ? SDL_WINDOW_BORDERLESS : 0x0U;
 		options |= renderWindow.mAlwaysOnTop ? SDL_WINDOW_ALWAYS_ON_TOP : 0x0U;
-		options |= allowHighDPI ? SDL_WINDOW_HIGH_PIXEL_DENSITY : 0x0U;				// TODO: Is this correct?
+		options |= allowHighDPI ? SDL_WINDOW_HIGH_PIXEL_DENSITY : 0x0U;
 
 		// Always hide window until added and configured by render service
 		options |= SDL_WINDOW_HIDDEN;
@@ -711,6 +709,17 @@ namespace nap
 		if ((SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0)
 			return VK_NULL_HANDLE;
 
+		// Under a wayland session vkAcquireNextImageKHR doesn't signal the swap-chain image doesn't match current surface.
+		if (SDL::getCurrentVideoDriver() == "wayland")
+		{
+			glm::vec2 diff = getBufferSize() - glm::ivec2(mSwapchainExtent.width, mSwapchainExtent.height);
+			if (glm::length(diff) > 2)
+			{
+				mRecreateSwapchain = true;
+				return VK_NULL_HANDLE;
+			}
+		}
+
 		// Figure out which swapchain image to draw to next, the semaphore is triggered when the image becomes available.
 		// On which the renderer waits to become available when the queue is submitted in RenderWindow::endRecording().
 		int	frame_index = mRenderService->getCurrentFrameIndex(); 
@@ -1037,7 +1046,7 @@ namespace nap
 		// Based on surface capabilities, determine swap image size
 		if (mSurfaceCapabilities.currentExtent.width == UINT32_MAX)
 		{
-			glm::ivec2 buffer_size = this->getBufferSize();
+			glm::ivec2 buffer_size = getBufferSize();
 			mSwapchainExtent =
 			{
 				math::clamp<uint32>(static_cast<uint32>(buffer_size.x), mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),

@@ -54,7 +54,7 @@ namespace napkin
 
 	private:
 		// Private constructor, call create instead
-		RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet);
+		RenderPanel(QWidget* container, SDL_Window* window, AppletRunner& applet);
 
 		QVBoxLayout				mLayout;
 		QWidget*				mContainer = nullptr;

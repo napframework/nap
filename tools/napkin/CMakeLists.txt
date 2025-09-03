@@ -205,7 +205,7 @@ install(FILES ${NAP_ROOT}/tools/buildsystem/path_mappings/applet/framework_relea
 
 # Install module dependencies
 module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
-set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtGuiPrivate QtWidgets QtOpenGL)
 set(PATH_TO_THIRDPARTY "../../thirdparty")
 
 if(APPLE)

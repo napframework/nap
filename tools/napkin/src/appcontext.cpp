@@ -160,7 +160,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	// Create and start SDL app event handler for NAP applets
-	mAppletEventLoop = std::make_unique<AppletSDLEventSink>(1, getVideoDriver());
+	mAppletEventLoop = std::make_unique<AppletSDLEventSink>(1, getVideoDriver(), *getQApplication());
 
 	// Load document (data file)
 	addRecentlyOpenedProject(project_file_name);

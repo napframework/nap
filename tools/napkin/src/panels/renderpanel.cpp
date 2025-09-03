@@ -10,7 +10,6 @@
 // External includes
 #include <qcolorspace.h>
 #include <QSurfaceFormat>
-#include <QLayout>
 #include <QResizeEvent>
 #include <rtti/factory.h>
 #include <SDL_render.h>
@@ -26,23 +25,13 @@ namespace napkin
 		NAP_ASSERT_MSG(QThread::currentThread() == QCoreApplication::instance()->thread(),
 			"SDL event loop must be created and running on the QT GUI thread");
 
-		// Create native window
-		QWindow* native_window = new QWindow();
-
-		// Setup QT format (TODO: Use system preferences)
-		QSurfaceFormat format;
-		format.setColorSpace(QColorSpace(QColorSpace::SRgb));
-		native_window->setFormat(format);
-		native_window->setSurfaceType(QSurface::VulkanSurface);
-
-		// Create QWidget window container (without parent)
-		auto container = std::unique_ptr<QWidget>(QWidget::createWindowContainer(native_window, parent,
-			Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint));
-
-		// Set it up
+		// Create QWidget window container
+		static constexpr int sDefaultSize = 256;
+		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
-		container->setMinimumSize({ 256,256 });
+		container->setGeometry({0,0, sDefaultSize,sDefaultSize });
+		container->setMinimumSize(sDefaultSize, sDefaultSize);
 		container->setAutoFillBackground(false);
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
@@ -73,10 +62,24 @@ namespace napkin
 				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, SDL_GetError());
 				break;
 			}
+			case nap::EVideoDriver::Wayland:
+			{
+				// QWidget::createWindowContainer() doesn't work properly (QT6) when the display protocol is wayland.
+				// The handle returned from QWidget::windowHandle() is NULL (always) and I have no idea what happens to the wayland surface created prior?
+				// Not embedding the window in a widget does work, but is of no use to us.
+				//
+				// QT Also reports: 'The cached device pixel ratio value was stale on window expose.  Please file a QTBUG which explains how to reproduce.'
+				// I am pinning this on QT (for now) and will investigate / try again later, access to the private gui
+				// library is also required to acquire the wl surface handle, which is something we should try to avoid.
+				//
+				// TODO: Fix embedded applets in wayland (QT)
+				error.fail("Wayland video driver currently not supported, use 'xcb' instead");
+				break;
+			}
 			default:
 			{
 				error.fail("Unsupported applet video-platform: %s",
-					QApplication::platformName().toStdString().c_str());
+				           QApplication::platformName().toStdString().c_str());
 				break;
 			}
 		}
@@ -85,6 +88,7 @@ namespace napkin
 		if (error.hasErrors())
 			return nullptr;
 
+		// Create SDL window from QWindow
 		auto sdl_window = SDL_CreateWindowWithProperties(props);
 		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", SDL_GetError()))
 			return nullptr;
@@ -96,12 +100,12 @@ namespace napkin
 		factory.addObjectCreator(std::move(obj_creator));
 
 		// Create and return the new panel
-		return new RenderPanel(container.release(), sdl_window, parent, applet);
+		return new RenderPanel(container.release(), sdl_window, applet);
 	}
 
 
-	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet) :
-		mContainer(container), mWindow(window), mApplet(applet), mConverter(window, container->windowHandle())
+	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, AppletRunner& applet) :
+		mContainer(container), mWindow(window), mApplet(applet), mConverter(window, container)
 	{
 		mContainer->installEventFilter(this);
 	}
@@ -113,12 +117,11 @@ namespace napkin
 		assert(obj == mContainer);
 		switch (event->type())
 		{
-			// TODO: Figure out why we need to handle these events explicitly ->
 			// Without the window is available but drawn (composited) incorrect in Qt (White background)
 			case QEvent::Show:
 			{
 				mApplet.run();
-				return true;	
+				return true;
 			}
 			case QEvent::Hide:
 			{
@@ -161,8 +164,6 @@ namespace napkin
 				else {
 					nap::Logger::error(SDL_GetError());
 				}
-
-				// Handled
 				return true;
 			}
 			case QEvent::Move:
@@ -192,4 +193,3 @@ namespace napkin
 		return false;
 	}
 }
-

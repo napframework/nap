@@ -9,6 +9,7 @@
 #include <inputevent.h>
 #include <windowevent.h>
 #include <QPoint>
+#include <QWidget>
 #include <QWindow>
 #include <sdlhelpers.h>
 
@@ -21,8 +22,8 @@ namespace napkin
 	{
 	public:
 		// Default constructor
-		AppletEventConverter(SDL_Window* window, QWindow* qWindow) :
-			mWindow(window), mQWindow(qWindow) { }
+		AppletEventConverter(SDL_Window* window, QWidget* container) :
+			mWindow(window), mContainer(container) { }
 
 		// Default destructor
 		virtual ~AppletEventConverter() = default;
@@ -109,7 +110,7 @@ namespace napkin
 
 	private:
 		SDL_Window* mWindow = nullptr;		///< SDL window handle
-		QWindow* mQWindow = nullptr;		///< QWindow handle
+		QWidget* mContainer = nullptr;		///< QWidget handle
 		QPoint mLocation = { -1, -1 };		///< Previous mouse location
 
 		nap::InputEvent* translateQtKeyEvent(const QEvent& qtEvent, const nap::rtti::TypeInfo& eventType) const;
