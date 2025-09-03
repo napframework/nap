@@ -34,7 +34,6 @@ namespace napkin
 		container->setAutoFillBackground(false);
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
-		container->activateWindow();
 
 		// Create window properties
 		SDL_PropertiesID props = SDL_CreateProperties();
