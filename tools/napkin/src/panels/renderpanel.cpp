@@ -27,7 +27,8 @@ namespace napkin
 
 		// Create QWidget window container
 		static constexpr int sDefaultSize = 256;
-		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
+		auto container = std::make_unique<QWidget>(parent,
+			Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
 		container->setGeometry({0,0, sDefaultSize,sDefaultSize });
@@ -35,6 +36,8 @@ namespace napkin
 		container->setAutoFillBackground(false);
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
+		container->setAttribute(Qt::WA_NativeWindow, true);
+		container->setAttribute(Qt::WA_DontCreateNativeAncestors, true);
 
 		// Create window properties
 		SDL_PropertiesID props = SDL_CreateProperties();
