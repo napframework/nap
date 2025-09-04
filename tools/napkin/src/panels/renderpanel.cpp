@@ -37,7 +37,6 @@ namespace napkin
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
 		container->setAttribute(Qt::WA_NativeWindow, true);
-		container->setAttribute(Qt::WA_DontCreateNativeAncestors, true);
 
 		// Create window properties
 		SDL_PropertiesID props = SDL_CreateProperties();
@@ -121,6 +120,7 @@ namespace napkin
 			case QEvent::Paint:
 			{
 				// Override paint
+				assert(false);
 				return true;
 			}
 			case QEvent::Show:
