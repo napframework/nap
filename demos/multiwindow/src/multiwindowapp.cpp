@@ -48,8 +48,9 @@ namespace nap
 		mRenderWindowThree = mResourceManager->findObject<nap::RenderWindow>("Window2");
 
 		// Align windows next to each other on primary (first) display
+		// Windows can't be positioned programmatically in Wayland -> job of the compositor.
 		auto display = mRenderService->findDisplay(*mRenderWindowOne);
-		if (display.isValid() && SDL::getCurrentVideoDriver() != utility::toLower(toString(EVideoDriver::Wayland)))
+		if (display.isValid() && mRenderService->getVideoDriver() != EVideoDriver::Wayland)
 		{
 			// Calculate window size
 			constexpr float eoff = 200.0f * 2.0f;
