@@ -37,7 +37,6 @@ namespace napkin
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
 		container->setAttribute(Qt::WA_NativeWindow, true);
-		container->setAttribute(Qt::WA_DontCreateNativeAncestors, true);
 
 		// Create window properties
 		SDL_PropertiesID props = SDL_CreateProperties();
@@ -53,6 +52,7 @@ namespace napkin
 		{
 			case nap::EVideoDriver::Windows:
 			{
+				container->setAttribute(Qt::WA_DontCreateNativeAncestors);
 				auto id = container->winId(); assert(id != 0);
 				auto setup = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, (void*)id);
 				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetError());
@@ -69,11 +69,12 @@ namespace napkin
 			{
 				// I can't get an embedded widget to work, only a standalone (non-embedded) QWindow, which is of no use.
 				// QT reports: 'The cached device pixel ratio value was stale on window expose.  Please file a QTBUG which explains how to reproduce.'
+				// 
 				// This occurs when using QWidget::createWindowContainer().
 				// I am pinning this on QT (for now) and will investigate / try again later, access to the private gui
 				// library is also required to acquire the wl surface handle, which is something we should try to avoid.
 				//
-				// TODO: Implement embedded applets in wayland (QT)
+				// TODO: Add support for embedded applets in wayland (QT)
 				error.fail("Wayland video driver currently not supported, use 'xcb' instead");
 				break;
 			}
@@ -118,11 +119,17 @@ namespace napkin
 		assert(obj == mContainer);
 		switch (event->type())
 		{
-			// Without the window is available but drawn (composited) incorrect in Qt (White background)
+			case QEvent::Paint:
+			{
+				// Override paint
+				assert(false);
+				return true;
+			}
 			case QEvent::Show:
 			{
+				// Run applet when made visible
 				mApplet.run();
-				return true;
+				return false;
 			}
 			case QEvent::Hide:
 			{
@@ -130,7 +137,7 @@ namespace napkin
 				auto future_suspend = mApplet.suspend();
 				if (future_suspend.valid())
 					future_suspend.wait_for(nap::Seconds(5));
-				return true;
+				return false;
 			}
 			case QEvent::MouseButtonPress:
 			case QEvent::MouseButtonRelease:
@@ -147,25 +154,23 @@ namespace napkin
 			}
 			case QEvent::Resize:
 			{
-				// Resize window
-				auto* resize_event = static_cast<QResizeEvent*>(event);
-				float ratio = mConverter.getPixelRatio();
-				glm::ivec2 sdl_size = {
-						static_cast<int>(static_cast<float>(resize_event->size().width())  * ratio),
-						static_cast<int>(static_cast<float>(resize_event->size().height()) * ratio),
+				// Explicitly sync window under X11, not required on Windows.
+				// TODO: Create an event instead and forward that to the running application
+				if (getVideoDriver() == nap::EVideoDriver::X11)
+				{
+					auto* resize_event = static_cast<QResizeEvent*>(event);
+					float ratio = mConverter.getPixelRatio();
+					glm::ivec2 sdl_size =
+					{
+							static_cast<int>(static_cast<float>(resize_event->size().width()) * ratio),
+							static_cast<int>(static_cast<float>(resize_event->size().height()) * ratio),
 					};
 
-				// TODO: This explicit resize call is only required with async window systems (ie: X11 Linux etc.)
-				// TODO: Create an event instead and forward that to the running application
-				if (SDL_SetWindowSize(mWindow, sdl_size.x, sdl_size.y))
-				{
-					if (!SDL_SyncWindow(mWindow))
+					// Sync window size
+					if (!(SDL_SetWindowSize(mWindow, sdl_size.x, sdl_size.y) && SDL_SyncWindow(mWindow)))
 						nap::Logger::error(SDL_GetError());
 				}
-				else {
-					nap::Logger::error(SDL_GetError());
-				}
-				return true;
+				return false;
 			}
 			case QEvent::Move:
 			{
@@ -173,18 +178,7 @@ namespace napkin
 				assert(ptr != nullptr);
 				mApplet.sendEvent(std::move(ptr));
 				event->accept();
-				return true;
-			}
-			case QEvent::FocusIn:
-			case QEvent::FocusOut:
-			case QEvent::Paint:
-			case QEvent::ParentChange:
-			case QEvent::WindowActivate:
-			case QEvent::WindowDeactivate:
-			case QEvent::ShowToParent:
-			case QEvent::HideToParent:
-			{
-				return true;
+				return false;
 			}
 			default:
 			{
