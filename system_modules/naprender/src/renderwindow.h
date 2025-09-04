@@ -240,6 +240,11 @@ namespace nap
 		bool isEmbedded() const													{ return mExternalHandle != nullptr; }
 
 		/**
+		 * @return if the window is minimized
+		 */
+		bool isMinimized() const;
+
+		/**
 		 *	@return the hardware window number
 		 */
 		uint getNumber() const override;

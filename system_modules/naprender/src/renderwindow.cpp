@@ -698,22 +698,20 @@ namespace nap
 			}
 		}
 
-		// Check if the current extent has a valid (non-zero) size.
-		if (!validSwapchainExtent())
-			return VK_NULL_HANDLE;
-
 		// The swapchain extent can have a valid (higher than zero) size when the window is minimized.
 		// However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
 		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		if ((SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0)
+		if (!validSwapchainExtent() || isMinimized())
 			return VK_NULL_HANDLE;
 
-		// Under a wayland session vkAcquireNextImageKHR doesn't signal the swap-chain image doesn't match current surface.
-		if (SDL::getCurrentVideoDriver() == "wayland")
+		// Under a wayland session, 'vkAcquireNextImageKHR' doesn't fail when the active swap chain extent doesn't match the surface.
+		// This path ensures that, under wayland, the swapchain is re-created when the buffer / swap delta exceeds 4 texels.
+		// I don't like this to be the default, because the `vkAcquireNextImageKHR` should  inform us about this.
+		if (mRenderService->getVideoDriver() == EVideoDriver::Wayland)
 		{
 			glm::vec2 diff = getBufferSize() - glm::ivec2(mSwapchainExtent.width, mSwapchainExtent.height);
-			if (glm::length(diff) > 2)
+			if (glm::length(diff) > 4.0f)
 			{
 				mRecreateSwapchain = true;
 				return VK_NULL_HANDLE;
@@ -1087,6 +1085,12 @@ namespace nap
 	{
 		return mSDLWindow != nullptr ?
 			SDL::getDisplayIndex(mSDLWindow) : -1;
+	}
+
+
+	bool RenderWindow::isMinimized() const
+	{
+		return (SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0;
 	}
 }
 
