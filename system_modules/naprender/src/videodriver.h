@@ -19,15 +19,22 @@ namespace nap
 	 */
 	enum class EVideoDriver : int8
 	{
-		Default		= 0,	//< Most reasonable, first available video back-end.
-		Windows		= 1,	//< Windows windowing system
-		X11			= 2,	//< Linux X11 windowing system
-		Wayland		= 3,	//< Linux Wayland windowing system
+		Default		= 0,	///< Property: 'Default' Most reasonable, first available video back-end.
+		Windows		= 1,	///< Property: 'Windows' windowing system
+		X11			= 2,	///< Property: 'X11' Linux windowing system
+		Wayland		= 3,	///< Property: 'Wayland' Linux windowing system 
+		Unknown		= 4		///< Unsupported video driver [NOT EXPOSED]
 	};
 
 	/**
-	 * Returns video driver name
-	 * @return video driver name
+	 * Returns video back-end name for driver
+	 * @return video back-end name for driver
 	 */
 	NAPAPI std::string toString(EVideoDriver driver);
+
+	/**
+	 * Return video driver for given driver name (case-insensitive), invalid if driver is not supported.
+	 * @return matching video driver, invalid if driver is unsupported
+	 */
+	NAPAPI EVideoDriver fromString(const std::string& driverName);
 }

@@ -7,6 +7,8 @@
 
 // External includes
 #include <rtti/typeinfo.h>
+#include <utility/stringutils.h>
+#include <assert.h>
 
 RTTI_BEGIN_ENUM(nap::EVideoDriver)
 	RTTI_ENUM_VALUE(nap::EVideoDriver::Default,		"System Default"),
@@ -19,6 +21,25 @@ namespace  nap
 {
 	std::string toString(EVideoDriver driver)
 	{
-		return RTTI_OF(EVideoDriver).get_enumeration().value_to_name(driver).to_string();
+		return driver == EVideoDriver::Unknown ? "Unknown" : 
+			RTTI_OF(EVideoDriver).get_enumeration().value_to_name(driver).to_string();
+	}
+
+
+	EVideoDriver fromString(const std::string& driverName)
+	{
+		auto videos_enum = RTTI_OF(nap::EVideoDriver).get_enumeration();
+		auto driver_name = utility::toLower(driverName);
+
+		for (const auto& option : videos_enum.get_values())
+		{
+			auto option_name =  utility::toLower(videos_enum.value_to_name(option).to_string());
+			if (option_name == driver_name)
+			{
+				auto driver = option.get_value<EVideoDriver>();
+				return driver;
+			}
+		}
+		return EVideoDriver::Unknown;
 	}
 }

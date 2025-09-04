@@ -66,7 +66,7 @@ namespace nap
 		};
 
 		bool							mHeadless = false;											///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
-		EVideoDriver					mVideoDriver = EVideoDriver::Default;					///< Property: 'VideoDriver' The video back-end to use, defaults to system preference.
+		EVideoDriver					mVideoDriver = EVideoDriver::Default;						///< Property: 'VideoDriver' The video back-end to use, defaults to system preference.
 		EPhysicalDeviceType				mPreferredGPU = EPhysicalDeviceType::Discrete;				///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable the fastest GPU  option is selected.
 		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
@@ -945,6 +945,12 @@ namespace nap
 		uint32 getVulkanVersionMinor() const;
 
 		/**
+		 * Selected video backend, ie: X11, Wayland, Windows etc.
+		 * @return selected video backend, ie: X11, Wayland, Windows etc.
+		 */
+		EVideoDriver getVideoDriver() const { return mVideoDriver; }
+
+		/**
 		 * Initialize the SDL video sub system and render engine -> the service owns the renderer.
 		 * @param errorState contains the error message if the service could not be initialized
 		 * @return if the service has been initialized successfully
@@ -1308,5 +1314,6 @@ namespace nap
 		// Get or create default window icon
 		SDL_Surface* mWindowIcon = nullptr;
 		SDL_Surface* getOrCreateDefaultWindowIcon();
+		EVideoDriver mVideoDriver = EVideoDriver::Unknown;
 	};
 } // nap

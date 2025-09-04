@@ -1693,10 +1693,11 @@ namespace nap
 			mSDLInitialized = SDL::initVideo(config->mVideoDriver, errorState);
 			if (!errorState.check(mSDLInitialized, "Failed to init video subsystem"))
 				return false;
-
-			Logger::info("Video backend: %s",
-				SDL::getCurrentVideoDriver().c_str());
 		}
+
+		// Store selected video back-end
+		mVideoDriver = fromString(SDL::getCurrentVideoDriver());
+		Logger::info("Video backend: %s", toString(mVideoDriver).c_str());
 
 		// Initialize engine
 		return initEngine(errorState);

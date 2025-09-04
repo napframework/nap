@@ -42,7 +42,7 @@ namespace nap
 
 			// Convert enum to driver name
 			auto stype = RTTI_OF(EVideoDriver).get_enumeration(); assert(stype.is_valid());
-			auto sname = utility::toLower(stype.value_to_name(driver).to_string());
+			auto sname = utility::toLower(toString(driver));
 
 			// Find compatible video driver
 			auto vnames = getVideoDrivers();

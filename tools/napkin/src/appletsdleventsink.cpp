@@ -65,9 +65,6 @@ namespace napkin
 				nap::utility::ErrorState error;
 				if (nap::SDL::initVideo(driver, error))
 				{
-					nap::Logger::info("Video backend: %s",
-						RTTI_OF(nap::EVideoDriver).get_enumeration().value_to_name(driver).to_string().c_str());
-
 					connect(&mTimer, &QTimer::timeout, this, &AppletSDLEventSink::flushEvents);
 					int ms_poll = static_cast<int>(1000.0 / static_cast<double>(frequency));
 					mTimer.start(ms_poll);
