@@ -96,7 +96,7 @@ namespace napkin
 		/**
 		* Utility function to translate a Qt event into a NAP window event.
 		* This call assumes that the given Qt event can be translated into a NAP window event!
-		* Use isMouseEvent() to verify if the events are compatible.
+		* Use isWindowEvent() to verify if the events are compatible.
 		* @param qtEvent the qt window event to translate
 		* @return a nap pointer event, nullptr if the event could not be translated
 		*/

@@ -27,14 +27,12 @@ namespace napkin
 
 		// Create QWidget window container
 		static constexpr int sDefaultSize = 256;
-		auto container = std::make_unique<QWidget>(parent,
-			Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
+		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
 		container->setGeometry({0,0, sDefaultSize,sDefaultSize });
 		container->setMinimumSize(sDefaultSize, sDefaultSize);
 		container->setAutoFillBackground(false);
-		container->setAttribute(Qt::WA_NoSystemBackground, true);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
 		container->setAttribute(Qt::WA_NativeWindow, true);
 
@@ -52,7 +50,6 @@ namespace napkin
 		{
 			case nap::EVideoDriver::Windows:
 			{
-				container->setAttribute(Qt::WA_DontCreateNativeAncestors);
 				auto id = container->winId(); assert(id != 0);
 				auto setup = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, (void*)id);
 				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetError());
@@ -129,31 +126,28 @@ namespace napkin
 			{
 				// Run applet when made visible
 				mApplet.run();
+				auto ptr = mConverter.translateWindowEvent(*event); assert(ptr != nullptr);
+				mApplet.sendEvent(std::move(ptr));
 				return false;
 			}
 			case QEvent::Hide:
 			{
+				// Send hide event
+				auto ptr = mConverter.translateWindowEvent(*event); assert(ptr != nullptr);
+				mApplet.sendEvent(std::move(ptr));
+
 				// Wait for the applet to pause before hiding (and potentially destroying) the window
 				auto future_suspend = mApplet.suspend();
 				if (future_suspend.valid())
 					future_suspend.wait_for(nap::Seconds(5));
 				return false;
 			}
-			case QEvent::MouseButtonPress:
-			case QEvent::MouseButtonRelease:
-			case QEvent::MouseMove:
-			case QEvent::Wheel:
-			case QEvent::KeyPress:
-			case QEvent::KeyRelease:
-			{
-				auto ptr = mConverter.translateInputEvent(*event);
-				assert(ptr != nullptr);
-				mApplet.sendEvent(std::move(ptr));
-				event->accept();
-				return true;
-			}
 			case QEvent::Resize:
 			{
+				// Send hide event
+				auto ptr = mConverter.translateWindowEvent(*event); assert(ptr != nullptr);
+				mApplet.sendEvent(std::move(ptr));
+
 				// Explicitly sync window under X11, not required on Windows.
 				// TODO: Create an event instead and forward that to the running application
 				if (getVideoDriver() == nap::EVideoDriver::X11)
@@ -174,11 +168,21 @@ namespace napkin
 			}
 			case QEvent::Move:
 			{
-				auto ptr = mConverter.translateWindowEvent(*event);
-				assert(ptr != nullptr);
+				auto ptr = mConverter.translateWindowEvent(*event); assert(ptr != nullptr);
+				mApplet.sendEvent(std::move(ptr));
+				return false;
+			}
+			case QEvent::MouseButtonPress:
+			case QEvent::MouseButtonRelease:
+			case QEvent::MouseMove:
+			case QEvent::Wheel:
+			case QEvent::KeyPress:
+			case QEvent::KeyRelease:
+			{
+				auto ptr = mConverter.translateInputEvent(*event); assert(ptr != nullptr);
 				mApplet.sendEvent(std::move(ptr));
 				event->accept();
-				return false;
+				return true;
 			}
 			default:
 			{
