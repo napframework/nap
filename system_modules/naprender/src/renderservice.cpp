@@ -1316,8 +1316,8 @@ namespace nap
 			auto* window_icon = getOrCreateDefaultWindowIcon();
 			if (window_icon != nullptr && !SDL_SetWindowIcon(window.mSDLWindow, mWindowIcon))
 			{
-				nap::Logger::error("Unable to set window icon: %s",
-					SDL::getSDLError().c_str());
+				Logger::error("Unable to set '%s' icon: %s",
+					window.mID.c_str(), SDL::getSDLError().c_str());
 			}
 
 			// Enable text input

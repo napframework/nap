@@ -650,7 +650,7 @@ namespace nap
 	{
 		if (!SDL::setWindowPosition(mSDLWindow, position))
 		{
-			Logger::error("Window '%s' position update failed: '%s'",
+			Logger::error("Unable to set '%s' position: '%s'",
 				mID.c_str(), SDL::getSDLError().c_str());
 		}
 	}
@@ -708,12 +708,12 @@ namespace nap
 			return VK_NULL_HANDLE;
 
 		// Under a wayland session, 'vkAcquireNextImageKHR' doesn't fail when the active swap chain extent doesn't match the surface.
-		// This path ensures that, under wayland, the swapchain is re-created when the buffer / swap delta exceeds 4 texels.
+		// This path ensures that, under wayland, the swapchain is re-created when the buffer / swap delta exceeds 2 texels.
 		// I don't like this to be the default, because the `vkAcquireNextImageKHR` should  inform us about this.
 		if (mRenderService->getVideoDriver() == EVideoDriver::Wayland)
 		{
-			glm::vec2 diff = getBufferSize() - glm::ivec2(mSwapchainExtent.width, mSwapchainExtent.height);
-			if (glm::length(diff) > 4.0f)
+			auto diff = glm::abs(getBufferSize() - glm::ivec2(mSwapchainExtent.width, mSwapchainExtent.height));
+			if (diff.x + diff.y > 2)
 			{
 				mRecreateSwapchain = true;
 				return VK_NULL_HANDLE;
