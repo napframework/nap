@@ -21,6 +21,7 @@ namespace nap
 			return;
 
 		mDPI *= mScale;
+		mOrientation = SDL::getDisplayOrientation(index);
 		mValid = true;
 	}
 

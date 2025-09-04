@@ -488,15 +488,15 @@ namespace nap
 		RenderWindow* findWindow(uint id) const;
 
 		/**
-		 * Returns the total number of connected displays.
+		 * Returns the total number of current connected displays.
 		 * @return total number of displays
 		 */
 		int getDisplayCount() const;
 
 		/**
-		 * Find a display based on the provided display index.
+		 * Find the display associated with the given index.
 		 * @param index the number of the display to find
-		 * @return the display, invalid display when not found
+		 * @return the display, invalid display when not available
 		 */
 		Display findDisplay(int index) const;
 
@@ -507,6 +507,7 @@ namespace nap
 		Display findDisplay(const nap::RenderWindow& window) const;
 
 		/**
+		 * Returns a list of currently connected displays.
 		 * @return all available displays
 		 */
 		std::vector<Display> getDisplays() const;

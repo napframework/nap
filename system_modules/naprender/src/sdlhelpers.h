@@ -187,6 +187,11 @@ namespace nap
 		bool NAPAPI getDisplayContentScale(SDL_Window* window, float* scale);
 
 		/**
+		 *  @reutn the way a display is rotated.
+		 */
+		Display::EOrientation NAPAPI getDisplayOrientation(int displayIndex);
+
+		/**
 		 * Get the pixel density of a window, this is a ratio of pixel size to window size.
 		 * 
 		 * For example, if the window is 1920x1080 and it has a high density back buffer of 3840x2160 pixels,

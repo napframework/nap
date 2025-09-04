@@ -8,6 +8,7 @@
 #include <string>
 #include <rect.h>
 #include <utility/dllexport.h>
+#include <nap/numeric.h>
 
 // Forward declares
 struct SDL_Window;
@@ -24,6 +25,18 @@ namespace nap
 	{
 	public:
 		/**
+		 * Display orientation modes
+		 */
+		enum class EOrientation : int8
+		{
+			Unknown				= 0,
+			Landscape			= 1,
+			LandscapeFlipped	= 2,
+			Portrait			= 3,
+			PortraitFlipped		= 4
+		};
+
+		/**
 		 * Construct a default, invalid display
 		 */
 		Display() = default;
@@ -33,6 +46,12 @@ namespace nap
 		 * @param index display index
 		 */
 		Display(int index);
+
+		/**
+		 * If information is available.
+		 * @return if information is available.
+		 */
+		bool isValid() const { return mValid; }
 
 		/**
 		 * Current display index, as given on construction.
@@ -74,16 +93,15 @@ namespace nap
 		float getContentScale() const { return mScale; }
 
 		/**
-		 * Returns if this display has valid bounds.
-		 * @return if this display has valid bounds.
-		 */
-		bool isValid() const { return mValid; }
-
-		/**
 		 * Returns the approximated display DPI: 96 * 'display content scale'
 		 * @return Approximated display DPI.
 		 */
 		float getDPI() const { return mDPI; }
+
+		/**
+		 * @return display orientation
+		 */
+		EOrientation getOrientation() const { return mOrientation; }
 
 		/**
 		 * Deprecated: use Display::getDPI() instead.
@@ -128,6 +146,7 @@ namespace nap
 		float mScale = 1.0f;					///< Display content scale
 		glm::ivec2 mMin = { 0, 0 };				///< Min display bound position
 		glm::ivec2 mMax = { 0, 0 };				///< Max display bound position
+		EOrientation mOrientation;				///< Display orientation
 		bool mValid = false;					///< If valid after construction
 	};
 }

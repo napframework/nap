@@ -345,6 +345,28 @@ namespace nap
 		}
 
 
+		Display::EOrientation getDisplayOrientation(int displayIndex)
+		{
+			switch (SDL_GetCurrentDisplayOrientation(displayIndex))
+			{
+			case SDL_ORIENTATION_UNKNOWN:
+				return Display::EOrientation::Unknown;
+			case SDL_ORIENTATION_LANDSCAPE:
+				return Display::EOrientation::Landscape;
+			case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+				return Display::EOrientation::LandscapeFlipped;
+			case SDL_ORIENTATION_PORTRAIT:
+				return Display::EOrientation::Portrait;
+			case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+				return Display::EOrientation::PortraitFlipped;
+			default:
+				assert(false);
+				break;
+			}
+			return Display::EOrientation::Unknown;
+		}
+
+
 		bool getWindowPixelDensity(SDL_Window* window, float* density)
 		{
 			*density = SDL_GetWindowPixelDensity(window);
