@@ -46,17 +46,18 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Creates a new SDL window based on the settings provided by the render window
+	 * Creates a new SDL window based on the settings provided by the render window.
+	 * This call should only be used to create a top level, non embedded, window.
 	 * @return: the create window, nullptr if not successful
 	 */
-	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, utility::ErrorState& error)
+	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, utility::ErrorState& error)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
+		options |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
 		options |= renderWindow.mResizable  ? SDL_WINDOW_RESIZABLE  : 0x0U;
 		options |= renderWindow.mBorderless ? SDL_WINDOW_BORDERLESS : 0x0U;
 		options |= renderWindow.mAlwaysOnTop ? SDL_WINDOW_ALWAYS_ON_TOP : 0x0U;
-		options |= allowHighDPI ? SDL_WINDOW_HIGH_PIXEL_DENSITY : 0x0U;
 
 		// Always hide window until added and configured by render service
 		options |= SDL_WINDOW_HIDDEN;
@@ -493,11 +494,12 @@ namespace nap
 		if (!errorState.check(!mRenderService->isHeadless(), "Can't create window, headless rendering is enabled"))
 			return false;
 
-		// Create SDL window first
+		// Create new top-level SDL window if there is no external handle available.
+		// An external handle is provided by an external environment, when the window is embedded.
+		// Standalone nap applications have no handle, applets generally do.
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = mExternalHandle == nullptr ?
-			createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState) :
-			mExternalHandle;
+		mSDLWindow = mExternalHandle != nullptr ? mExternalHandle :
+			createSDLWindow(*this, errorState);
 
 		// Ensure window is valid
 		if (mSDLWindow == nullptr)

@@ -20,7 +20,7 @@ namespace nap
 		if (!SDL::getDisplayContentScale(index, &mScale))
 			return;
 
-		mDPI = mScale * 96.0f;
+		mDPI *= mScale;
 		mValid = true;
 	}
 

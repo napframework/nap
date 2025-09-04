@@ -104,7 +104,6 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration, "Render service configuration"
 	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default, "The major required vulkan API instance version")
 	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default, "The minor required vulkan API instance version")
 	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default, "Default max number of anisotropic filter samples, can be overridden by a sampler if required")
-	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default, "Enable high DPI scaling and rendering")
 	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mEnableCompute,				nap::rtti::EPropertyMetaData::Default, "Ensures Vulkan compute is supported")
 	RTTI_PROPERTY("EnableCaching",				&nap::RenderServiceConfiguration::mEnableCaching,				nap::rtti::EPropertyMetaData::Default, "Saves state between sessions, including window size & position")
 	RTTI_PROPERTY("EnableDebug",				&nap::RenderServiceConfiguration::mEnableDebug,					nap::rtti::EPropertyMetaData::Default, "Load debug extension for printing Vulkan debug messages")
@@ -1783,20 +1782,18 @@ namespace nap
 		mHeadless = render_config->mHeadless;
 
 		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
-		mEnableHighDPIMode = render_config->mEnableHighDPIMode && !mHeadless;
+		mEnableHighDPIMode = true;
 
 		// Check if we need to cache state between sessions
 		mEnableCaching = render_config->mEnableCaching;
 
 #ifdef _WIN32
-		if (mEnableHighDPIMode)
+
+		// Make process dpi aware
+		if (!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
+			"Unable to make process DPI aware"))
 		{
-			// Make process dpi aware
-			if (!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
-				"Unable to make process DPI aware"))
-			{
-				return false;
-			}
+			return false;
 		}
 #endif // _WIN32
 

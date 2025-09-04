@@ -44,7 +44,7 @@ namespace nap
 
 		// Compute max font scaling factor based on highest display DPI value
 		Renderable2DTextComponent* resource = getComponent<Renderable2DTextComponent>();
-		mDPIAware = resource->mDPIAware && mService->getHighDPIEnabled();
+		mDPIAware = resource->mDPIAware;
 
 		// Init base class (setting up the plane glyph plane etc.)
 		if (!setup(mDisplayScale, errorState))

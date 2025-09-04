@@ -685,8 +685,7 @@ namespace nap
 			// Calculate reference scaling factor based on reference display
 			// TODO: a different font atlas should be created for every variation in scale,
 			// TODO: and dynamically bound every frame, based on active window scaling factor.
-			if (mRenderService->getHighDPIEnabled())
-				mReferenceScale = math::max<float>(window.getDisplayScale(), 1.0f);
+			mReferenceScale = math::max<float>(window.getDisplayScale(), 1.0f);
 
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
@@ -823,12 +822,10 @@ namespace nap
 			static_cast<float>(window.getHeight() - 1 - context.mMousePosition.y)
 		};
 
-		// Scale mouse coordinates when high dpi rendering is enabled
-		if (mRenderService->getHighDPIEnabled())
-		{
-			io.MousePos.x *= static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth());
-			io.MousePos.y *= static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight());
-		}
+		// Compensate for pixel density
+		auto pixel_density = window.getPixelDensity();
+		io.MousePos.x *= pixel_density;
+		io.MousePos.y *= pixel_density;
 
 		// Tell the system which mouse buttons are pressed
 		for (auto i = 0; i < context.mMousePressed.size(); i++)
@@ -894,35 +891,21 @@ namespace nap
 		// Store display index
 		context.mDisplayIndex = window.getDisplayIndex();
 
-		// Don't scale if high dpi rendering is disabled
-		if (mRenderService->getHighDPIEnabled())
-		{
-			// Compute overall Gui and font scaling factor
-			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
-			float gscale = mGuiScale * window.getDisplayScale();
-			float fscale = window.getDisplayScale() / mReferenceScale;
+		// Compute overall Gui and font scaling factor
+		// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
+		float gscale = mGuiScale * window.getDisplayScale();
+		float fscale = window.getDisplayScale() / mReferenceScale;
 
-			// Push scaling for window and font based on new display
-			// We must push the original style first before we can scale
-			context.activate();
-			ImGui::GetStyle() = *context.mStyle;
-			ImGui::GetStyle().ScaleAllSizes(gscale);
-			ImGui::GetIO().FontGlobalScale = fscale;
-			context.deactivate();
+		// Push scaling for window and font based on new display
+		// We must push the original style first before we can scale
+		context.activate();
+		ImGui::GetStyle() = *context.mStyle;
+		ImGui::GetStyle().ScaleAllSizes(gscale);
+		ImGui::GetIO().FontGlobalScale = fscale;
+		context.deactivate();
 
-			// Store scale, ensures custom widgets can scale accordingly
-			context.mScale = gscale;
-		}
-		else
-		{
-			context.activate();
-			ImGui::GetStyle() = *context.mStyle;
-			ImGui::GetStyle().ScaleAllSizes(mGuiScale);
-			context.deactivate();
-
-			// Store scale, ensures custom widgets can scale accordingly
-			context.mScale = mGuiScale;
-		}
+		// Store scale, ensures custom widgets can scale accordingly
+		context.mScale = gscale;
 	}
 
 

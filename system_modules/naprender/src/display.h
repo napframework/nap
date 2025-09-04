@@ -15,8 +15,9 @@ struct SDL_Window;
 namespace nap
 {
 	/**
-	 * Extracts display information for the display at the given index.
-	 * Note that the information provided by this interface isn't required to remain valid.
+	 * Display information.
+	 *
+	 * The information provided by this interface isn't required to remain valid.
 	 * When a display is re-connected, or even turned on/off, the index is re-assigned and this object becomes invalid.
 	 */
 	class NAPAPI Display final
@@ -77,6 +78,33 @@ namespace nap
 		 * @return if this display has valid bounds.
 		 */
 		bool isValid() const { return mValid; }
+
+		/**
+		 * Returns the approximated display DPI: 96 * 'display content scale'
+		 * @return Approximated display DPI.
+		 */
+		float getDPI() const { return mDPI; }
+
+		/**
+		 * Deprecated: use Display::getDPI() instead.
+		 * @return dpi
+		 */
+		[[deprecated]]
+		float getDiagonalDPI() const { return mDPI; }
+
+		/**
+		 * Deprecated: use Display::getDPI() instead.
+		 * @return dpi
+		 */
+		[[deprecated]]
+		float getHorizontalDPI() const { return mDPI; }
+
+		/**
+		 * Deprecated: use Display::getDPI() instead.
+		 * @return dpi
+		 */
+		[[deprecated]]
+		float getVerticalDPI() const { return mDPI; }
 
 		/**
 		 * @return display information as human readable string

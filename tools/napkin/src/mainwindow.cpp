@@ -517,3 +517,4 @@ QDockWidget* MainWindow::addDock(const QString& name, QWidget* widget, Qt::DockW
 	addDockWidget(area, dock_widget);
 	return dock_widget;
 }
+

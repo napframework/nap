@@ -73,7 +73,6 @@ namespace nap
 		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.
 		uint32							mVulkanVersionMinor = 1;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
 		uint32							mAnisotropicFilterSamples = 8;								///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		bool							mEnableHighDPIMode = true;									///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
 		bool							mEnableCaching = true;										///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
 		bool							mEnableDebug = true;										///< Property: 'EnableDebug' Loads debug extension for printing Vulkan debug messages.
@@ -766,10 +765,11 @@ namespace nap
 		bool getMipSupport(const SurfaceDescriptor& descriptor) const;
 
 		/**
-		 * Configurable setting.
-		 * When enabled fonts and general scaling is adjusted for high dpi monitors.
-		 * @return if high dpi mode is enabled
+		 * Deprecated: All nap applications are dpi-aware and scale content accordingly.
+		 * This call is therefore no longer required and always returns true.
+		 * @return true
 		 */
+		[[deprecated]]
 		bool getHighDPIEnabled() const												{ return true; }
 
 		/**
