@@ -118,11 +118,16 @@ namespace napkin
 		assert(obj == mContainer);
 		switch (event->type())
 		{
-			// Without the window is available but drawn (composited) incorrect in Qt (White background)
+			case QEvent::Paint:
+			{
+				// Override paint
+				return true;
+			}
 			case QEvent::Show:
 			{
+				// Run applet when made visible
 				mApplet.run();
-				return true;
+				return false;
 			}
 			case QEvent::Hide:
 			{
@@ -130,7 +135,7 @@ namespace napkin
 				auto future_suspend = mApplet.suspend();
 				if (future_suspend.valid())
 					future_suspend.wait_for(nap::Seconds(5));
-				return true;
+				return false;
 			}
 			case QEvent::MouseButtonPress:
 			case QEvent::MouseButtonRelease:
@@ -147,25 +152,23 @@ namespace napkin
 			}
 			case QEvent::Resize:
 			{
-				// Resize window
-				auto* resize_event = static_cast<QResizeEvent*>(event);
-				float ratio = mConverter.getPixelRatio();
-				glm::ivec2 sdl_size = {
-						static_cast<int>(static_cast<float>(resize_event->size().width())  * ratio),
-						static_cast<int>(static_cast<float>(resize_event->size().height()) * ratio),
+				// Explicitly sync window under X11, not required on Windows.
+				// TODO: Create an event instead and forward that to the running application
+				if (getVideoDriver() == nap::EVideoDriver::X11)
+				{
+					auto* resize_event = static_cast<QResizeEvent*>(event);
+					float ratio = mConverter.getPixelRatio();
+					glm::ivec2 sdl_size =
+					{
+							static_cast<int>(static_cast<float>(resize_event->size().width()) * ratio),
+							static_cast<int>(static_cast<float>(resize_event->size().height()) * ratio),
 					};
 
-				// TODO: This explicit resize call is only required with async window systems (ie: X11 Linux etc.)
-				// TODO: Create an event instead and forward that to the running application
-				if (SDL_SetWindowSize(mWindow, sdl_size.x, sdl_size.y))
-				{
-					if (!SDL_SyncWindow(mWindow))
+					// Sync window size
+					if (!(SDL_SetWindowSize(mWindow, sdl_size.x, sdl_size.y) && SDL_SyncWindow(mWindow)))
 						nap::Logger::error(SDL_GetError());
 				}
-				else {
-					nap::Logger::error(SDL_GetError());
-				}
-				return true;
+				return false;
 			}
 			case QEvent::Move:
 			{
@@ -173,18 +176,7 @@ namespace napkin
 				assert(ptr != nullptr);
 				mApplet.sendEvent(std::move(ptr));
 				event->accept();
-				return true;
-			}
-			case QEvent::FocusIn:
-			case QEvent::FocusOut:
-			case QEvent::Paint:
-			case QEvent::ParentChange:
-			case QEvent::WindowActivate:
-			case QEvent::WindowDeactivate:
-			case QEvent::ShowToParent:
-			case QEvent::HideToParent:
-			{
-				return true;
+				return false;
 			}
 			default:
 			{
