@@ -52,6 +52,7 @@ namespace napkin
 		{
 			case nap::EVideoDriver::Windows:
 			{
+				container->setAttribute(Qt::WA_DontCreateNativeAncestors);
 				auto id = container->winId(); assert(id != 0);
 				auto setup = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, (void*)id);
 				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetError());
@@ -68,11 +69,12 @@ namespace napkin
 			{
 				// I can't get an embedded widget to work, only a standalone (non-embedded) QWindow, which is of no use.
 				// QT reports: 'The cached device pixel ratio value was stale on window expose.  Please file a QTBUG which explains how to reproduce.'
+				// 
 				// This occurs when using QWidget::createWindowContainer().
 				// I am pinning this on QT (for now) and will investigate / try again later, access to the private gui
 				// library is also required to acquire the wl surface handle, which is something we should try to avoid.
 				//
-				// TODO: Implement embedded applets in wayland (QT)
+				// TODO: Add support for embedded applets in wayland (QT)
 				error.fail("Wayland video driver currently not supported, use 'xcb' instead");
 				break;
 			}
