@@ -83,10 +83,15 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
 endif()
 
 #TODO Remove explicit SDL3 reference, should be implicit
-target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES} SDL3::SDL3-shared)
+target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES})
 if(NAP_ENABLE_PYTHON)
     target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARIES})
 endif()
+
+# Explicitly link in SDL
+# TODO: Remove explicit SDL3 reference, should be implicit
+find_sdl()
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3-shared)
 
 # Include any extra app CMake logic
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/app_extra.cmake)
