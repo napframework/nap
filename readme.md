@@ -78,10 +78,10 @@ The default `CMake` generator is Visual Studio 2019 or 2022.
 
 ### Linux
 
-| arch   | os                | version      | compiler    |
-|--------|-------------------|--------------|-------------|
-| x86-64 | Ubuntu            | 22.04, 24.04 | gcc         |
-| arm64  | Raspberry Pi OS   | 12           | gcc         |
+| arch   | os                | version | compiler    |
+|--------|-------------------|---------|-------------|
+| x86-64 | Ubuntu            | 24.04   | gcc         |
+| arm64  | Raspberry Pi OS   | 12      | gcc         |
 
 The default `CMake` generator is `Make`. 
 
@@ -243,7 +243,7 @@ Use the github [issues](https://github.com/napframework/nap/issues) page for bug
 New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://github.com/orgs/napframework/discussions) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
 MSVC, Platform Toolset v142 on Windows 10
-GCC <= 11 on Ubuntu LTS 22.04
+GCC <= 13.3.0 on Ubuntu LTS 24.04
 ```
 
 # License
