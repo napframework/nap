@@ -82,7 +82,8 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
     endforeach()
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES} ${SDL2_LIBRARY})
+#TODO Remove explicit SDL3 reference, should be implicit
+target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES} SDL3::SDL3-shared)
 if(NAP_ENABLE_PYTHON)
     target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARIES})
 endif()

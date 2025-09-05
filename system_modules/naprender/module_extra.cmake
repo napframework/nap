@@ -104,7 +104,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     install(DIRECTORY ${FREEIMAGE_DIR} DESTINATION ${thirdparty_module_dest}/FreeImage/${NAP_THIRDPARTY_PLATFORM_DIR})
 
     # SDL3
-    install(DIRECTORY ${SDL_DIR}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH} DESTINATION ${thirdparty_module_dest}/sdl/${NAP_THIRDPARTY_PLATFORM_DIR})
+    install(DIRECTORY ${SDL_DIR}/${NAP_THIRDPARTY_PLATFORM_DIR}/ DESTINATION ${thirdparty_module_dest}/sdl/${NAP_THIRDPARTY_PLATFORM_DIR})
     install(FILES ${SDL_LICENSE_FILES} DESTINATION ${thirdparty_module_dest}/sdl)
 
     # Vulkan SDK
@@ -138,6 +138,10 @@ else()
     endif()
     add_include_to_interface_target(naprender ${FREEIMAGE_INCLUDE_DIR})
 
+    # SDL
+    add_include_to_interface_target(naprender ${SDL_INCLUDE_DIR})
+    add_include_to_interface_target(naprender ${SDL_INCLUDE_DIR}/..)
+
     # Add Vulkan library
     set(MODULE_EXTRA_LIBS ${VULKANSDK_LIBS})
 
@@ -149,7 +153,7 @@ else()
                 PATTERN "pkgconfig" EXCLUDE
                 PATTERN "*.a" EXCLUDE)
 
-        # Package SDL2 into packaged project on *nix
+        # Package SDL3 into packaged project on *nix
         install(DIRECTORY ${SDL_LIBS_DIR}/
                 DESTINATION lib
                 PATTERN "cmake" EXCLUDE
