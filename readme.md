@@ -11,13 +11,14 @@
 *	[Where to Start](#where-to-start)
 	* [System Compatibility](#system-compatibility)
 	* [Binary Packages](#binary-packages)
-	* [Raspberry Pi](#raspberry-pi)
+	* [Raspberry Pi](#raspberry-pi) 
 *	[Compilation](#compilation)
 	*	[Dependencies](#dependencies)
 	*	[Create the Solution](#create-the-solution)
 	*	[Run a Demo](#run-a-demo)
 	*	[Work Against Source](#work-against-source)
 	*	[Package](#build-distributable-nap-package)
+ 	*	[Branches](#branches) 
 *	[Contributing](#contributing)
 *	[License](#license)
 	
@@ -218,6 +219,20 @@ Some other useful flags:
 * `-ds`: include debug symbols. On Windows .pdb files are also packaged.
 
 More options for packaging can be queried by adding the flag `--help` when running the script.
+
+## Branches
+
+### main
+
+The current [stable branch](https://github.com/napframework/nap/tree/main): It generally reflects the latest release, plus a few critical bug-fixes.
+
+### 0.8
+
+The bleeding edge: [0.8](https://github.com/napframework/nap/tree/0.8) introduces many new features, improvements and portential fixes that are scheduled for a new official release.
+
+### build
+
+An [alternative build system](https://github.com/napframework/nap/tree/build-system): Including support for macOS and a simplified CMAKE interface, developed by [Stijn van Beek](https://github.com/stijnvanbeek).
 
 # Contributing
 
