@@ -5,6 +5,6 @@ libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
 libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \ 
 libwayland-dev libdecor-0-dev liburing-dev libdecor-0-dev
 
-cmake -S . -B build -DSDL_AUDIO=OFF -DSDL_RENDER=OFF -SDL_SENSOR=OFF
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 sudo cmake --install build --prefix /home/....
