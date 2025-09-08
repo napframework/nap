@@ -50,7 +50,6 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     # Add libraries
     set(LIBRARIES
         ${VULKANSDK_LIBS}
-        ${SDL_LIBRARY}
         ${FREEIMAGE_LIBRARIES}
         SDL3::SDL3)
 

@@ -91,7 +91,7 @@ endif()
 # Explicitly link in SDL
 # TODO: Remove explicit SDL3 reference, should be implicit
 find_sdl()
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3-shared)
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3)
 
 # Include any extra app CMake logic
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/app_extra.cmake)
