@@ -12,7 +12,7 @@ else()
         add_custom_command(
             TARGET ${PROJECT_NAME}
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL_DIR}/msvc/lib/x86_64/SDL3.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL_BIN_DIR}/SDL3.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
        )
     endif()
 endif()
