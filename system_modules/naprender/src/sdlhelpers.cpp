@@ -97,7 +97,7 @@ namespace nap
 		}
 
 
-		SDL_Surface* createSurface(const std::string& imagePath, utility::ErrorState& error)
+		SurfacePtr createSurface(const std::string& imagePath, utility::ErrorState& error)
 		{
 			// Ensure file exists
 			if (!error.check(utility::fileExists(imagePath),
@@ -122,12 +122,17 @@ namespace nap
 
 			// Create SDL surface
 			auto w = bitmap.getWidth(); auto h = bitmap.getHeight();
-			auto s = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888);
-			if (!error.check(s != nullptr && w == s->w && h == s->h,
-				"Unable to create icon surface"))
+			auto s = SurfacePtr(SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888), [](SDL_Surface* surface)
+				{
+					SDL_DestroySurface(surface);
+				});
+
+			// Ensure it exists
+			if (!error.check(s != nullptr, "Unable to create icon surface: %s", SDL_GetError()))
 				return nullptr;
 
 			// Convert and copy into place
+			assert(s->w == w && s->h == h);
 			for (auto x = 0; x < w; x++)
 			{
 				for (auto y = 0; y < h; y++)
@@ -138,21 +143,20 @@ namespace nap
 						converter(*src_color, dst_color, i);
 
 					// Write
-					if (!SDL_WriteSurfacePixel(s, x, y,
+					if (!SDL_WriteSurfacePixel(s.get(), x, y,
 						dst_color[0],
 						dst_color[1],
 						dst_color[2],
 						usepalpha ? dst_color[3] : math::max<uint8>()))
 					{
 						error.fail("Pixel write failed, %s", SDL::getSDLError().c_str());
-						SDL_free(s); 
 						return nullptr;
 					}
 				}
 			}
 
 			// Store handle and return
-			return s;
+			return std::move(s);
 		}
 
 

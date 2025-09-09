@@ -339,7 +339,8 @@ namespace nap
 		 * @param error the error if creation fails
 		 * @return surface created from image, nullptr if creation failed
 		 */
-		NAPAPI SDL_Surface* createSurface(const std::string& imagePath, utility::ErrorState& error);
+		using SurfacePtr = std::unique_ptr<SDL_Surface, std::function<void(SDL_Surface*)>>;
+		NAPAPI SurfacePtr createSurface(const std::string& imagePath, utility::ErrorState& error);
 
 		/**
 		 * Start accepting Unicode text input events in a window.

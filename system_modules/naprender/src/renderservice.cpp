@@ -1291,6 +1291,33 @@ namespace nap
 	}
 
 
+	/**
+	 * Get or create default nap window icon, thread safe.
+	 * @return window icon if found and loaded, nullptr otherwise.
+	 */
+	static SDL_Surface* getOrCreateDefaultWindowIcon(const nap::Module& renderModule)
+	{
+		static SDL::SurfacePtr windowIcon = nullptr; std::once_flag created;
+		std::call_once(created, [&renderModule]
+			{
+				// Get icon asset path
+				static constexpr const char* icon_name = "nap_icon.png";
+				auto asset_path = renderModule.findAsset(icon_name);
+
+				// Create icon if image exists
+				utility::ErrorState error;
+				if (error.check(!asset_path.empty(), "Unable to find '%s'", icon_name))
+					windowIcon = SDL::createSurface(asset_path, error);
+
+				// Log all errors
+				if (error.hasErrors())
+					Logger::error(error.toString());
+			}
+		);
+		return windowIcon.get();
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service
 	//////////////////////////////////////////////////////////////////////////
@@ -1313,7 +1340,7 @@ namespace nap
 		if (!window.isEmbedded())
 		{
 			// Set default window icon
-			auto* window_icon = getOrCreateDefaultWindowIcon();
+			auto* window_icon = getOrCreateDefaultWindowIcon(getModule());
 			if (window_icon != nullptr && !SDL_SetWindowIcon(window.getNativeWindow(), window_icon))
 			{
 				Logger::error("Unable to set '%s' icon: %s",
@@ -2410,9 +2437,6 @@ namespace nap
 			mSDLInitialized = false;
 		}
 
-		if (mWindowIcon != nullptr)
-			SDL_free(mWindowIcon);
-
 		mInitialized = false;
 	}
 	
@@ -2894,25 +2918,6 @@ namespace nap
 		VkFormatProperties properties;
 		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), utility::getTextureFormat(descriptor), &properties);
 		return (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) > 0;
-	}
-
-
-	SDL_Surface* RenderService::getOrCreateDefaultWindowIcon()
-	{
-		if (mWindowIcon == nullptr)
-		{
-			// Try to create the surface
-			utility::ErrorState error;
-			static constexpr const char* icon_name = "nap_icon.png";
-			auto asset_path = getModule().findAsset(icon_name);
-			if (error.check(!asset_path.empty(), "Unable to find '%s'", icon_name))
-				mWindowIcon = SDL::createSurface(asset_path, error);
-
-			// Log errors if creation failed
-			if (error.hasErrors())
-				Logger::error(error.toString());
-		}
-		return mWindowIcon;
 	}
 
 

@@ -21,7 +21,6 @@
 #include <rect.h>
 #include <color.h>
 
-struct SDL_Surface;
 namespace nap
 {
 	// Forward Declares
@@ -1312,9 +1311,7 @@ namespace nap
 		// Render chains
 		std::vector<const RenderChain*> mRenderChains;
 
-		// Get or create default window icon
-		SDL_Surface* mWindowIcon = nullptr;
-		SDL_Surface* getOrCreateDefaultWindowIcon();
+		// Video backend driver
 		EVideoDriver mVideoDriver = EVideoDriver::Unknown;
 	};
 } // nap
