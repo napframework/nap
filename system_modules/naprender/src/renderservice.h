@@ -1238,7 +1238,6 @@ namespace nap
 			bool valid() const;
 		};
 
-		bool									mEnableHighDPIMode = true;
 		bool									mEnableCaching = true;
 		bool									mSampleShadingSupported = false;
 		bool									mAnisotropicFilteringSupported = false;

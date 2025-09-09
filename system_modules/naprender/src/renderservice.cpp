@@ -1808,9 +1808,6 @@ namespace nap
 		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
 		mHeadless = render_config->mHeadless;
 
-		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
-		mEnableHighDPIMode = true;
-
 		// Check if we need to cache state between sessions
 		mEnableCaching = render_config->mEnableCaching;
 
