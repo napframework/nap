@@ -62,7 +62,7 @@ set(LIBS
     napcore
     napqt
     ${NAP_MODULES_DEPENDENCIES}
-    Qt6::Widgets Qt6::Core Qt6::Gui
+    Qt6::Widgets Qt6::Core Qt6::Gui Qt6::GuiPrivate
     )
 
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${QT_LIBS})

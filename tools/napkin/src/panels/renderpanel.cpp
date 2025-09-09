@@ -16,6 +16,7 @@
 #include <SDL_hints.h>
 #include <sdlhelpers.h>
 #include <QThread>
+#include <qpa/qplatformnativeinterface.h>
 
 namespace napkin
 {
@@ -26,8 +27,8 @@ namespace napkin
 			"SDL event loop must be created and running on the QT GUI thread");
 
 		// Create QWidget window container
-		static constexpr int sDefaultSize = 256;
-		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint);
+		static constexpr int sDefaultSize = 720;
+		auto container = std::make_unique<QWidget>(nullptr, Qt::Widget);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
 		container->setGeometry({0,0, sDefaultSize,sDefaultSize });
@@ -53,14 +54,14 @@ namespace napkin
 			{
 				auto id = container->winId(); assert(id != 0);
 				auto setup = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, (void*)id);
-				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetError());
+				error.check(setup, "Unable to set '%s', error: %s", SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetError());
 				break;
 			}
 			case nap::EVideoDriver::X11:
 			{
 				auto id = container->winId();
 				auto setup = SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, id);
-				error.check(setup, "Unable to enable '%s', error: %s", SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, SDL_GetError());
+				error.check(setup, "Unable to set '%s', error: %s", SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, SDL_GetError());
 				break;
 			}
 			case nap::EVideoDriver::Wayland:
@@ -73,7 +74,15 @@ namespace napkin
 				// library is also required to acquire the wl surface handle, which is something we should try to avoid.
 				//
 				// TODO: Add support for embedded applets in wayland (QT)
-				error.fail("Wayland video driver currently not supported, use 'xcb' instead");
+				container->show();
+				auto* window = container->windowHandle(); assert(window != nullptr);
+				QPlatformNativeInterface* native = QGuiApplication::platformNativeInterface();
+				auto* wl_surface = static_cast<struct wl_surface*>(native->nativeResourceForWindow("surface", window)); assert(wl_surface != nullptr);
+				bool setup  = SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, wl_surface);
+				SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, window->size().width());
+				SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, window->size().height());
+				error.check(setup, "Unable to set '%s'", SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER);
+				//error.fail("Wayland video driver currently not supported, use 'xcb' instead");
 				break;
 			}
 			default:
@@ -151,7 +160,7 @@ namespace napkin
 
 				// Explicitly sync window under X11, not required on Windows.
 				// TODO: Create an event instead and forward that to the running application
-				if (getVideoDriver() == nap::EVideoDriver::X11)
+				if (getVideoDriver() != nap::EVideoDriver::Windows)
 				{
 					auto* resize_event = static_cast<QResizeEvent*>(event);
 					float ratio = mConverter.getPixelRatio();

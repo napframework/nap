@@ -67,13 +67,16 @@ namespace napkin
 				assert(layout() == nullptr);
 				mLayout.setContentsMargins(0, 0, 0, 0);
 				mLayout.addWidget(&mPanel->getWidget());
-				setLayout(&mLayout);
+				//setLayout(&mLayout);
 
 				// Listen to property changes
 				connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &TexturePreviewPanel::propertyValueChanged);
 				connect(&AppContext::get(), &AppContext::objectRemoved, this, &TexturePreviewPanel::objectRemoved);
 				connect(&AppContext::get(), &AppContext::documentClosing, this, &TexturePreviewPanel::documentClosing);
 				connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &TexturePreviewPanel::themeChanged);
+
+				// Explicit run!
+				mRunner.run();
 			});
 	}
 
