@@ -140,7 +140,7 @@ namespace nap
 			return false;
 
 		// Set text, needs to succeed on initialization
-		mDPIScale = scale;
+		mScale = scale;
 		if (!addLine(resource->mText, errorState))
 			return false;
 
@@ -172,7 +172,7 @@ namespace nap
 		for (const auto& letter : text)
 		{
 			// Fetch glyph.
-			RenderableGlyph* glyph = getRenderableGlyph(mFont->getGlyphIndex(letter), mDPIScale, error);
+			RenderableGlyph* glyph = getRenderableGlyph(mFont->getGlyphIndex(letter), mScale, error);
 			if (!error.check(glyph != nullptr, "%s: unsupported character: %d, %s", mID.c_str(), letter, error.toString().c_str()))
 			{
 				success = false;
@@ -184,7 +184,7 @@ namespace nap
 
 		// Set text and compute bounding box
 		mLinesCache[mIndex]  = text;
-		mFont->getBoundingBox(text, mDPIScale, mTextBounds[mIndex]);
+		mFont->getBoundingBox(text, mScale, mTextBounds[mIndex]);
 		return success;
 	}
 
@@ -353,14 +353,41 @@ namespace nap
 	}
 
 
-	const std::string& RenderableTextComponentInstance::getText()
+	void RenderableTextComponentInstance::setDPIScale(float scale)
+	{
+		// Adding / changing text is not allowed during frame capture
+		// This is because new characters might be uploaded
+		NAP_ASSERT_MSG(!mRenderService->isRenderingFrame(), "Can't change dpi scale when rendering a frame");
+
+		// Get scale margins 
+		float dmin = mScale - 0.001f;
+		float dmax = mScale + 0.001f;
+
+		// Compute when out of bounds
+		if (scale < dmin || scale > dmax)
+		{
+			auto cache = mLinesCache;  clear();
+			mScale = scale; utility::ErrorState error;
+			for (const auto& line : cache)
+			{
+				if (!addLine(line, error))
+				{
+					Logger::error(error.toString());
+					break;
+				}
+			}
+		}
+	}
+
+
+	const std::string& RenderableTextComponentInstance::getText() const
 	{
 		const static std::string empty;
 		return mIndex < mLinesCache.size() ? mLinesCache[mIndex] : empty;
 	}
 
 
-	const std::string& RenderableTextComponentInstance::getText(int index)
+	const std::string& RenderableTextComponentInstance::getText(int index) const
 	{
 		assert(index < mLinesCache.size());
 		return mLinesCache[index];

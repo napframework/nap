@@ -71,17 +71,17 @@ namespace nap
 		/**
 		 * Destroys all render resources
 		 */
-		virtual ~RenderWindow() override;
+		~RenderWindow() override;
 
 		/**
 		 * Creates window, connects to resize event.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Called when the window is destroyed.
 		 */
-		virtual void onDestroy() override;
+		void onDestroy() override;
 
 		/**
 		 * Returns the width and height of this window, in screen coordinates.
@@ -185,24 +185,43 @@ namespace nap
 		 * Sets the window clear color.
 		 * @param color the new clear color
 		 */
-		virtual void setClearColor(const RGBAColorFloat& color) override;
+		void setClearColor(const RGBAColorFloat& color) override;
 
 		/**
 		 * Returns the window clear color.
 		 * @return the window clear color.
 		 */
-		virtual const RGBAColorFloat& getClearColor() const override;
+		const RGBAColorFloat& getClearColor() const override;
 
 		/**
 		 * Sets the position of the window on screen
 		 * @param position the new screen position in pixel coordinates
 		 */
-		void setPosition(const glm::ivec2& position);
+		void setPosition(const glm::ivec2& position) const;
 
 		/**
 		 * @return the window position in pixel coordinates
 		 */
-		const glm::ivec2 getPosition() const;
+		glm::ivec2 getPosition() const;
+
+		/**
+		 * Get the current pixel density, this is a ratio of pixel size to window size.
+		 *
+		 * For example, if the window is 1920x1080 and it has a high density back buffer of 3840x2160 pixels,
+		 * it would have a pixel density of 2.0.
+		 */
+		float getPixelDensity() const;
+
+		/**
+		 * Get the current content display scale relative to a window's pixel size.
+		 * 
+		 * This is a combination of the window pixel density and the display content scale, and is the expected scale for displaying content in this window.
+		 * For example, if a 3840x2160 window had a display scale of 2.0, the user expects the content to take twice as many pixels and
+		 * be the same physical size as if it were being displayed in a 1920x1080 window with a display scale of 1.0.
+		 * 
+		 * @return window display scale, 0.0f if call fails
+		 */
+		float getDisplayScale() const;
 
 		/**
 		 * Moves the window to the front and keeps it there
@@ -216,9 +235,19 @@ namespace nap
 		SDL_Window* getNativeWindow() const;
 
 		/**
+		 * @return if this window is embedded into another application
+		 */
+		bool isEmbedded() const													{ return mExternalHandle != nullptr; }
+
+		/**
+		 * @return if the window is minimized
+		 */
+		bool isMinimized() const;
+
+		/**
 		 *	@return the hardware window number
 		 */
-		virtual uint getNumber() const override;
+		uint getNumber() const override;
 
 		/**
 		 * Creates a rectangle based on the current width and height of the render window.
@@ -242,47 +271,52 @@ namespace nap
 		/**
 		 * Starts a render pass. Only call this when recording is enabled.
 		 */
-		virtual void beginRendering() override;
+		void beginRendering() override;
 
 		/**
 		 * Ends a render pass. Always call this after beginRendering().
-		 */
-		virtual void endRendering() override;
+		 */ 
+		void endRendering() override;
 
 		/**
 		 * @return swapchain format used to render to window.
 		 */
-		virtual VkFormat getColorFormat() const override							{ return mSwapchainFormat; }
+		VkFormat getColorFormat() const override							{ return mSwapchainFormat; }
 
 		/**
 		 * @return depth format used by window.
 		 */
-		virtual VkFormat getDepthFormat() const override;
+		VkFormat getDepthFormat() const override;
 		
 		/**
 		 * @return used number of samples when rendering to the window.
 		 */
-		virtual VkSampleCountFlagBits getSampleCount() const override				{ return mRasterizationSamples; }
+		VkSampleCountFlagBits getSampleCount() const override				{ return mRasterizationSamples; }
 		
 		/**
 		 * @return if sample based shading is enabled when rendering to the window.
 		 */
-		virtual bool getSampleShadingEnabled() const override						{ return mSampleShadingEnabled; }
+		bool getSampleShadingEnabled() const override						{ return mSampleShadingEnabled; }
 
 		/**
 		 * @return polygon winding order
 		 */
-		virtual ECullWindingOrder getWindingOrder() const override;
+		ECullWindingOrder getWindingOrder() const override;
 
 		/**
 		 * @return render pass associated with this window.
 		 */
-		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
+		VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
 		/**
 		 * @return layout of the texture when render pass ends
 		 */
-		virtual VkImageLayout getFinalLayout() const override						{ return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
+		VkImageLayout getFinalLayout() const override						{ return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; }
+
+		/**
+		 * @return display index
+		 */
+		int getDisplayIndex() const;
 
 		bool					mSampleShading		= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth				= 512;								///< Property: 'Width' window horizontal resolution

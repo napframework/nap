@@ -17,9 +17,10 @@
 #include "texture.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
-#include "sdlhelpers.h"
 #include "shaderconstant.h"
 #include "renderlayer.h"
+#include "bitmap.h"
+#include "sdlhelpers.h"
 
 // External Includes
 #include <nap/core.h>
@@ -96,13 +97,13 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration, "Render service configuration")
 	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default, "Render without a window, turning this on `forbids` the use of a nap::RenderWindow")
+	RTTI_PROPERTY("VideoDriver",				&nap::RenderServiceConfiguration::mVideoDriver,					nap::rtti::EPropertyMetaData::Default, "The video back-end to use, defaults to system preference")
 	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default, "The preferred GPU type, when unavailable the fastest option is selected")
 	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default, "Vulkan layers the engine tries to load in Debug mode, layers are disabled in release mode.")
 	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default, "Additional required Vulkan device extensions")
 	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default, "The major required vulkan API instance version")
 	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default, "The minor required vulkan API instance version")
 	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default, "Default max number of anisotropic filter samples, can be overridden by a sampler if required")
-	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default, "Enable high DPI scaling and rendering")
 	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mEnableCompute,				nap::rtti::EPropertyMetaData::Default, "Ensures Vulkan compute is supported")
 	RTTI_PROPERTY("EnableCaching",				&nap::RenderServiceConfiguration::mEnableCaching,				nap::rtti::EPropertyMetaData::Default, "Saves state between sessions, including window size & position")
 	RTTI_PROPERTY("EnableDebug",				&nap::RenderServiceConfiguration::mEnableDebug,					nap::rtti::EPropertyMetaData::Default, "Load debug extension for printing Vulkan debug messages")
@@ -513,16 +514,15 @@ namespace nap
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
 		unsigned int ext_count = 0;
-		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, nullptr) == SDL_TRUE, "Unable to find any valid SDL Vulkan instance extensions, is the Vulkan driver installed?"))
-			return false;
+		auto ext_names = SDL_Vulkan_GetInstanceExtensions(&ext_count);
 
-		// Use the amount of extensions queried before to retrieve the names of the extensions
-		std::vector<const char*> ext_names(ext_count);
-		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()) == SDL_TRUE, "Unable to get the number of SDL Vulkan extension names"))
+		// Bail if query failed
+		if(!errorState.check(ext_names != nullptr,
+			"Unable to find any valid SDL Vulkan instance extensions, is the Vulkan driver installed?"))
 			return false;
 
 		// Store
-		for (unsigned int i = 0; i < ext_count; i++)
+		for (auto i = 0; i < ext_count; i++)
 			outExtensions.emplace_back(ext_names[i]);
 		return true;
 	}
@@ -533,7 +533,8 @@ namespace nap
 	 */
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
-		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+		// TODO: Use system allocator
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, NULL, &outSurface),
 			"Unable to create Vulkan compatible surface using SDL");
 	}
 
@@ -1290,6 +1291,33 @@ namespace nap
 	}
 
 
+	/**
+	 * Get or create default nap window icon, thread safe.
+	 * @return window icon if found and loaded, nullptr otherwise.
+	 */
+	static SDL_Surface* getOrCreateDefaultWindowIcon(const nap::Module& renderModule)
+	{
+		static SDL::SurfacePtr windowIcon = nullptr; std::once_flag created;
+		std::call_once(created, [&renderModule]
+			{
+				// Get icon asset path
+				static constexpr const char* icon_name = "nap_icon.png";
+				auto asset_path = renderModule.findAsset(icon_name);
+
+				// Create icon if image exists
+				utility::ErrorState error;
+				if (error.check(!asset_path.empty(), "Unable to find '%s'", icon_name))
+					windowIcon = SDL::createSurface(asset_path, error);
+
+				// Log all errors
+				if (error.hasErrors())
+					Logger::error(error.toString());
+			}
+		);
+		return windowIcon.get();
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service
 	//////////////////////////////////////////////////////////////////////////
@@ -1307,17 +1335,28 @@ namespace nap
 	}
 
 
-	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
+	void RenderService::addWindow(RenderWindow& window)
 	{
-		// Attempt to restore cached settings
-		if (mEnableCaching)
+		if (!window.isEmbedded())
+		{
+			// Set default window icon
+			auto* window_icon = getOrCreateDefaultWindowIcon(getModule());
+			if (window_icon != nullptr && !SDL_SetWindowIcon(window.getNativeWindow(), window_icon))
+			{
+				Logger::error("Unable to set '%s' icon: %s",
+					window.mID.c_str(), SDL::getSDLError().c_str());
+			}
+
+			// Enable text input
+			SDL::enableTextInput(window.getNativeWindow());
+
+			// Attempt to restore cached settings
 			restoreWindow(window);
+		}
 
 		// Add and notify listeners
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
-
-		return true;
 	}
 
 
@@ -1353,31 +1392,21 @@ namespace nap
 	}
 
 
-	const nap::Display* RenderService::findDisplay(int index) const
+	Display RenderService::findDisplay(int index) const
 	{
-		auto found_it = std::find_if(mDisplays.begin(), mDisplays.end(), [&](const auto& it)
-		{
-			return it.getIndex() == index;
-		});
-		return found_it == mDisplays.end() ? nullptr : &(*found_it);
+		return index >= 0 ? Display(index) : Display();
 	}
 
 
-	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window) const
+	Display RenderService::findDisplay(const nap::RenderWindow& window) const
 	{
 		return findDisplay(SDL::getDisplayIndex(window.getNativeWindow()));
 	}
 
 
-	const nap::DisplayList& RenderService::getDisplays() const
-	{
-		return mDisplays;
-	}
-
-
 	int RenderService::getDisplayCount() const
 	{
-		return mDisplays.size();
+		return SDL::getDisplayCount();
 	}
 
 
@@ -1686,10 +1715,15 @@ namespace nap
 		// TODO: Try to find a more clean, optimized way of handling this.
 		if (!SDL::videoInitialized())
 		{
-			mSDLInitialized = SDL::initVideo(errorState);
-			if (!errorState.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
+			auto* config = getConfiguration<RenderServiceConfiguration>();
+			mSDLInitialized = SDL::initVideo(config->mVideoDriver, errorState);
+			if (!errorState.check(mSDLInitialized, "Failed to init video subsystem"))
 				return false;
 		}
+
+		// Store selected video back-end
+		mVideoDriver = fromString(SDL::getCurrentVideoDriver());
+		Logger::info("Video backend: %s", toString(mVideoDriver).c_str());
 
 		// Initialize engine
 		return initEngine(errorState);
@@ -1774,21 +1808,16 @@ namespace nap
 		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
 		mHeadless = render_config->mHeadless;
 
-		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
-		mEnableHighDPIMode = render_config->mEnableHighDPIMode && !mHeadless;
-
 		// Check if we need to cache state between sessions
 		mEnableCaching = render_config->mEnableCaching;
 
 #ifdef _WIN32
-		if (mEnableHighDPIMode)
+
+		// Make process dpi aware
+		if (!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
+			"Unable to make process DPI aware"))
 		{
-			// Make process dpi aware
-			if (!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
-				"Unable to make process DPI aware"))
-			{
-				return false;
-			}
+			return false;
 		}
 #endif // _WIN32
 
@@ -1798,14 +1827,11 @@ namespace nap
 #endif // __APPLE__
 
 		// Add displays
-		for (int i = 0; i < SDL::getDisplayCount(); i++)
+		for (const auto& display : SDL::getDisplays())
 		{
-			auto it = mDisplays.emplace_back(Display(i));
-			nap::Logger::info(it.toString());
-			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
-			{
+			if (!errorState.check(display.isValid(), "Display: %d, unable to extract required information"))
 				return false;
-			}
+			nap::Logger::info(display.toString());
 		}
 
 		// Initialize shader compilation
@@ -1825,7 +1851,7 @@ namespace nap
 		if (!mHeadless)
 		{
 			// Create dummy window and verify creation
-			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			dummy_window.mWindow = SDL_CreateWindow("Dummy", 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
 			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
 				return false;
 
@@ -2099,7 +2125,7 @@ namespace nap
 
 			// If ID matches, ensure the window doesn't fall out of display bounds.
 			// If window falls within bounds, restore.
-			for (const auto& display : mDisplays)
+			for (const auto& display : getDisplays())
 			{
 				auto& min = display.getMin();
 				auto& max = display.getMax();
@@ -2565,7 +2591,7 @@ namespace nap
 	}
 
 
-	void RenderService::endFrame()	
+	void RenderService::endFrame()
 	{
 		// Acquire current frame
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
@@ -2644,7 +2670,7 @@ namespace nap
 	bool RenderService::beginRecording(RenderWindow& renderWindow)
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
-		assert(mCurrentRenderWindow  == VK_NULL_HANDLE);
+		assert(mCurrentRenderWindow  == nullptr);
 
 		// Ask the window to begin recording commands.
 		mCurrentCommandBuffer = renderWindow.beginRecording();
@@ -2659,12 +2685,12 @@ namespace nap
 	void RenderService::endRecording()
 	{
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
-		assert(mCurrentRenderWindow  != VK_NULL_HANDLE);
+		assert(mCurrentRenderWindow  != nullptr);
 		
 		// Stop recording, submit queue and ask for presentation
 		mCurrentRenderWindow->endRecording();
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
-		mCurrentRenderWindow  = VK_NULL_HANDLE;
+		mCurrentRenderWindow  = nullptr;
 	}
 
 
@@ -2720,7 +2746,7 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
-		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
+		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
  		assert(result == VK_SUCCESS);
 
 		// Set the compute bit of queue submit ops of the current frame
@@ -2892,6 +2918,18 @@ namespace nap
 	}
 
 
+	std::vector<Display> RenderService::getDisplays() const
+	{
+		return SDL::getDisplays();
+	}
+
+
+	std::vector<RenderWindow*> RenderService::getWindows() const
+	{
+		return mWindows;
+	}
+
+
 	RenderService::UniqueMaterial::UniqueMaterial(std::unique_ptr<Shader> shader, std::unique_ptr<Material> material) :
 		mShader(std::move(shader)), mMaterial(std::move(material))
 	{ }
@@ -2907,34 +2945,5 @@ namespace nap
 		mDevice(device), mProperties(properties), mQueueCapabilities(queueCapabilities), mQueueIndex(queueIndex)
 	{
 		vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
-	}
-
-
-	nap::Display::Display(int index) : mIndex(index)
-	{
-		assert(index < SDL::getDisplayCount());
-		SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
-		SDL::getDisplayName(index, mName);
-		mValid = SDL::getDisplayBounds(index, mMin, mMax) == 0;
-	}
-
-
-	std::string nap::Display::toString() const
-	{
-		return utility::stringFormat
-		(
-			"Display: %d, %s, ddpi: %.1f, hdpi: %.1f, vdpi: %.1f, min: %d-%d, max: %d-%d",
-			mIndex,
-			mName.c_str(),
-			mDDPI, mHDPI, mVDPI,
-			mMin.x, mMin.y,
-			mMax.x, mMax.y
-		);
-	}
-
-
-	nap::math::Rect nap::Display::getBounds() const
-	{
-		return { glm::vec2(mMin), glm::vec2(mMax) };
 	}
 }

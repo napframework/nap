@@ -7,7 +7,6 @@
 #include "renderutils.h"
 #include "imagedata.h"
 
-#include <windowevent.h>
 #include <renderservice.h>
 #include <nap/core.h>
 #include <nap/logger.h>
@@ -47,25 +46,25 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Creates a new SDL window based on the settings provided by the render window
+	 * Creates a new SDL window based on the settings provided by the render window.
+	 * This call should only be used to create a top level, non embedded, window.
 	 * @return: the create window, nullptr if not successful
 	 */
-	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, utility::ErrorState& error)
+	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, utility::ErrorState& error)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
+		options |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
 		options |= renderWindow.mResizable  ? SDL_WINDOW_RESIZABLE  : 0x0U;
 		options |= renderWindow.mBorderless ? SDL_WINDOW_BORDERLESS : 0x0U;
 		options |= renderWindow.mAlwaysOnTop ? SDL_WINDOW_ALWAYS_ON_TOP : 0x0U;
-		options |= allowHighDPI ? SDL_WINDOW_ALLOW_HIGHDPI : 0x0U;
 
 		// Always hide window until added and configured by render service
 		options |= SDL_WINDOW_HIDDEN;
 
 		// Create window
+		// TODO: Where is the center option?
 		SDL_Window* new_window = SDL_CreateWindow(renderWindow.mTitle.c_str(),
-			SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED,
 			renderWindow.mWidth,
 			renderWindow.mHeight,
 			options);
@@ -88,7 +87,8 @@ namespace nap
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		// Use SDL to create the surface
-		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+		// TODO: Pass our own allocator instead of using system default
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, NULL, &outSurface),
 			"Unable to create Vulkan compatible surface using SDL");
 	}
 
@@ -494,11 +494,12 @@ namespace nap
 		if (!errorState.check(!mRenderService->isHeadless(), "Can't create window, headless rendering is enabled"))
 			return false;
 
-		// Create SDL window first
+		// Create new top-level SDL window if there is no external handle available.
+		// An external handle is provided by an external environment, when the window is embedded.
+		// Standalone nap applications have no handle, applets generally do.
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = mExternalHandle == nullptr ?
-			createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState) :
-			mExternalHandle;
+		mSDLWindow = mExternalHandle != nullptr ? mExternalHandle :
+			createSDLWindow(*this, errorState);
 
 		// Ensure window is valid
 		if (mSDLWindow == nullptr)
@@ -550,8 +551,7 @@ namespace nap
 			return false;
 
 		// Add window to render service
-		if (!mRenderService->addWindow(*this, errorState))
-			return false;
+		mRenderService->addWindow(*this);
 
 		// Show if requested
 		if (mVisible)
@@ -646,13 +646,17 @@ namespace nap
 	}
 
 
-	void RenderWindow::setPosition(const glm::ivec2& position)
+	void RenderWindow::setPosition(const glm::ivec2& position) const
 	{
-		SDL::setWindowPosition(mSDLWindow, position);
+		if (!SDL::setWindowPosition(mSDLWindow, position))
+		{
+			Logger::error("Unable to set '%s' position: '%s'",
+				mID.c_str(), SDL::getSDLError().c_str());
+		}
 	}
 
 
-	const glm::ivec2 RenderWindow::getPosition() const
+	glm::ivec2 RenderWindow::getPosition() const
 	{
 		return SDL::getWindowPosition(mSDLWindow);
 	}
@@ -696,16 +700,25 @@ namespace nap
 			}
 		}
 
-		// Check if the current extent has a valid (non-zero) size.
-		if (!validSwapchainExtent())
-			return VK_NULL_HANDLE;
-
 		// The swapchain extent can have a valid (higher than zero) size when the window is minimized.
 		// However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
 		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		if ((SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0)
+		if (!validSwapchainExtent() || isMinimized())
 			return VK_NULL_HANDLE;
+
+		// Under a wayland session, 'vkAcquireNextImageKHR' doesn't fail when the active swap chain extent doesn't match the surface.
+		// This path ensures that, under wayland, the swapchain is re-created when the buffer / swap delta exceeds 2 texels.
+		// I don't like this to be the default, because the `vkAcquireNextImageKHR` should  inform us about this.
+		if (mRenderService->getVideoDriver() == EVideoDriver::Wayland)
+		{
+			auto diff = glm::abs(getBufferSize() - glm::ivec2(mSwapchainExtent.width, mSwapchainExtent.height));
+			if (diff.x + diff.y > 2)
+			{
+				mRecreateSwapchain = true;
+				return VK_NULL_HANDLE;
+			}
+		}
 
 		// Figure out which swapchain image to draw to next, the semaphore is triggered when the image becomes available.
 		// On which the renderer waits to become available when the queue is submitted in RenderWindow::endRecording().
@@ -1033,7 +1046,7 @@ namespace nap
 		// Based on surface capabilities, determine swap image size
 		if (mSurfaceCapabilities.currentExtent.width == UINT32_MAX)
 		{
-			glm::ivec2 buffer_size = this->getBufferSize();
+			glm::ivec2 buffer_size = getBufferSize();
 			mSwapchainExtent =
 			{
 				math::clamp<uint32>(static_cast<uint32>(buffer_size.x), mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
@@ -1051,6 +1064,35 @@ namespace nap
 	void RenderWindow::setAlwaysOnTop(bool onTop)
 	{
 		SDL::setWindowAlwaysOnTop(mSDLWindow, onTop);
+	}
+
+
+	float RenderWindow::getDisplayScale() const
+	{
+		float scale;
+		SDL::getWindowDisplayScale(mSDLWindow, &scale);
+		return scale;
+	}
+
+
+	float RenderWindow::getPixelDensity() const
+	{
+		float density;
+		SDL::getWindowPixelDensity(mSDLWindow, &density);
+		return density;
+	}
+
+
+	int RenderWindow::getDisplayIndex() const
+	{
+		return mSDLWindow != nullptr ?
+			SDL::getDisplayIndex(mSDLWindow) : -1;
+	}
+
+
+	bool RenderWindow::isMinimized() const
+	{
+		return (SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0;
 	}
 }
 

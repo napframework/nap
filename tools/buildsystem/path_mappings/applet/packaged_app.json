@@ -1,6 +1,6 @@
 {
     "Type": "nap::PathMapping",
-    "mID": "Win64SourceMapping",
+    "mID": "NapkinPackagedMapping",
     "ProjectExeToRoot": "..",
     "ModulePaths": 
     [

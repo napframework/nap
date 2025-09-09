@@ -116,14 +116,14 @@ namespace nap
 		 * Returns the text associated with the current line index selection.
 		 * @return text associated with current line index.
 		 */
-		const std::string& getText();
+		const std::string& getText() const;
 
 		/**
 		 * Returns the text associated with the given line index.
 		 * @param index the line index.
 		 * @return text associated with the given line index.
 		 */
-		const std::string& getText(int index);
+		const std::string& getText(int index) const;
 
 		/**
 		 * Resizes the cache to the given number of lines.
@@ -176,10 +176,17 @@ namespace nap
 		MaterialInstance& getMaterialInstance()							{ return mMaterialInstance; }
 
 		/**
-		 * Returns the font dpi scaling factor
+		 * Set the font scaling factor, which clears and re-computes the glyph cache.
+ 		 * This call is only allowed on app update, not render.
+		 * @param scale new font scaling factor
+		 */
+		void setDPIScale(float scale);
+
+		/**
+		 * Returns the font scaling factor
 		 * @return font dpi scaling factor
 		 */
-		float getDPIScale() const											{ return mDPIScale; }
+		float getDPIScale() const										{ return mScale; }
 
 	protected:
 		/**
@@ -211,12 +218,16 @@ namespace nap
 		 */
 		virtual bool setup(float scale, utility::ErrorState& errorState);
 
+		/**
+		 * @return current cached text
+		 */
+		const std::vector<std::string>& getLineCache() const			{ return mLinesCache; }
+
 		FontInstance* mFont = nullptr;									///< Pointer to the font, set on initialization
 		RenderService* mRenderService = nullptr;						///< Pointer to the Renderer
 
 	private:
 		int mIndex = 0;													///< Current line index to update or draw
-		float mDPIScale = 1.0f;											///< Font DPI scaling factor
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
@@ -231,5 +242,6 @@ namespace nap
 		std::vector<std::vector<RenderableGlyph*>> mGlyphCache;			///< All available lines of text to render
 		std::vector<std::string> mLinesCache;							///< All current lines to be drawn
 		MaterialInstanceResource mMaterialInstanceResource;				///< Resource used to initialize the material instance
+		float mScale = 1.0f;											///< Font DPI scaling factor
 	};
 }

@@ -48,19 +48,20 @@ namespace nap
 		mRenderWindowThree = mResourceManager->findObject<nap::RenderWindow>("Window2");
 
 		// Align windows next to each other on primary (first) display
-		auto* display = mRenderService->findDisplay(*mRenderWindowOne);
-		if(display != nullptr)
+		// Windows can't be positioned programmatically in Wayland -> job of the compositor.
+		auto display = mRenderService->findDisplay(*mRenderWindowOne);
+		if (display.isValid() && mRenderService->getVideoDriver() != EVideoDriver::Wayland)
 		{
 			// Calculate window size
 			constexpr float eoff = 200.0f * 2.0f;
-			auto screen_size = display->getBounds().getMax() - display->getBounds().getMin();
+			auto screen_size = display.getBounds().getMax() - display.getBounds().getMin();
 			float sdim = (screen_size.x-eoff) / 3.0f;
 			float ddim = sdim * 2.0f;
 			float tdim = sdim * 3.0f;
 
 			// Calculate x and y window coordinate offsets
-			float offset_x = (screen_size.x - tdim) / 2 + display->getBounds().getMin().x;
-			float offset_y = (screen_size.y - sdim) / 2 + display->getBounds().getMin().y + 1;
+			float offset_x = (screen_size.x - tdim) / 2 + display.getBounds().getMin().x;
+			float offset_y = (screen_size.y - sdim) / 2 + display.getBounds().getMin().y + 1;
 
 			// Align window1
 			mRenderWindowOne->setPosition({ offset_x, offset_y });

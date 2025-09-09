@@ -87,8 +87,11 @@ namespace nap
 			{ EKeyCode::KEY_y,				0x79 },
 			{ EKeyCode::KEY_z,				0x7A },
 			{ EKeyCode::KEY_KP_LEFTBRACE,	0x7B },
+			{ EKeyCode::KEY_LEFTBRACE,		0x7B },
 			{ EKeyCode::KEY_KP_VERTICALBAR,	0x7C },
+			{ EKeyCode::KEY_PIPE,			0x7C },
 			{ EKeyCode::KEY_KP_RIGHTBRACE,	0x7D },
+			{ EKeyCode::KEY_RIGHTBRACE,		0x7D },
 			{ EKeyCode::KEY_TILDE,			0x7E }
 		};
 

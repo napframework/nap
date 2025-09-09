@@ -448,7 +448,7 @@ namespace nap
 		 * @param serviceConfig the service configuration to add.
 		 * @return true when added, false if already present.
 		 */
-		bool addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
+		bool addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig, utility::ErrorState& error);
 
 		// Manages all the loaded modules
 		std::unique_ptr<ModuleManager> mModuleManager = nullptr;
