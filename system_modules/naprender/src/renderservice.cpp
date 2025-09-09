@@ -1314,7 +1314,7 @@ namespace nap
 		{
 			// Set default window icon
 			auto* window_icon = getOrCreateDefaultWindowIcon();
-			if (window_icon != nullptr && !SDL_SetWindowIcon(window.mSDLWindow, mWindowIcon))
+			if (window_icon != nullptr && !SDL_SetWindowIcon(window.getNativeWindow(), window_icon))
 			{
 				Logger::error("Unable to set '%s' icon: %s",
 					window.mID.c_str(), SDL::getSDLError().c_str());
