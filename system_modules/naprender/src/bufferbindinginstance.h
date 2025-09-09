@@ -228,6 +228,10 @@ namespace nap
 		 */
 		void raiseChanged()									{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
 
+		// To be called when dynamic buffers are updated by upload
+		// This requires the descriptor buffer info in the material instance to be updated
+		nap::Slot<> mBufferChangedSlot = { [&]() -> void { raiseChanged(); } };
+
 		const ShaderVariableStructBufferDeclaration*		mDeclaration;
 	};
 
@@ -295,7 +299,7 @@ namespace nap
 		void setBuffer(TypedGPUBufferNumeric<T>& buffer);
 
 		/**
-		 * Updates thebuffer from a resource.
+		 * Updates the buffer from a resource.
 		 * @param resource resource to set buffer from.
 		 */
 		void setBuffer(const TypedBufferBindingNumeric<T>& resource);
@@ -315,6 +319,10 @@ namespace nap
 		 * Called when the buffer changes
 		 */
 		void raiseChanged()														{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
+
+		// To be called when dynamic buffers are updated by upload
+		// This requires the descriptor buffer info in the material instance to be updated
+		nap::Slot<> mBufferChangedSlot = { [&]() -> void { raiseChanged(); } };
 	};
 
 
@@ -329,7 +337,6 @@ namespace nap
 	using BufferBindingVec3Instance		= TypedBufferBindingNumericInstance<glm::vec3>;
 	using BufferBindingVec4Instance		= TypedBufferBindingNumericInstance<glm::vec4>;
 	using BufferBindingIVec4Instance	= TypedBufferBindingNumericInstance<glm::ivec4>;
-	using BufferBindingUVec4Instance	= TypedBufferBindingNumericInstance<glm::uvec4>;
 	using BufferBindingMat4Instance		= TypedBufferBindingNumericInstance<glm::mat4>;
 
 
@@ -340,16 +347,26 @@ namespace nap
 	template<class T>
 	void TypedBufferBindingNumericInstance<T>::setBuffer(TypedGPUBufferNumeric<T>& buffer)
 	{
-		NAP_ASSERT_MSG(mDeclaration->mStride == buffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size");
-		BufferBindingInstance::mBuffer = &buffer;
+		NAP_ASSERT_MSG(mDeclaration->mStride == buffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size")
+
+		if (mBuffer != nullptr)
+			mBuffer->bufferChanged.disconnect(mBufferChangedSlot);
+
+		mBuffer = &buffer;
+		mBuffer->bufferChanged.connect(mBufferChangedSlot);
 		raiseChanged();
 	}
 
 	template<class T>
 	void TypedBufferBindingNumericInstance<T>::setBuffer(const TypedBufferBindingNumeric<T>& resource)
 	{
-		NAP_ASSERT_MSG(mDeclaration->mStride == resource.mBuffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size");
-		BufferBindingInstance::mBuffer = resource.mBuffer.get();
+		NAP_ASSERT_MSG(mDeclaration->mStride == resource.mBuffer.getElementSize(), "Buffer declaration stride is not equal to buffer element size")
+
+		if (mBuffer != nullptr)
+			mBuffer->bufferChanged.disconnect(mBufferChangedSlot);
+
+		mBuffer = resource.mBuffer.get();
+		mBuffer->bufferChanged.connect(mBufferChangedSlot);
 		raiseChanged();
 	}
 }

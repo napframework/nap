@@ -53,7 +53,7 @@ namespace nap
 		}
 
 		// Make sure we have some meshes
-		if (!errorState.check(mMeshes.size() > 0, "No mesh files to select"))
+		if (!errorState.check(!mMeshes.empty(), "No mesh files to select"))
 			return false;
 
 		// Select the mesh to display based on resource index

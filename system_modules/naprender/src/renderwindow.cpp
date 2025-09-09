@@ -35,6 +35,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderWindow, "Desktop render windo
 	RTTI_PROPERTY("ClearColor",				&nap::RenderWindow::mClearColor,		nap::rtti::EPropertyMetaData::Default,	"Initial window clear color")
 	RTTI_PROPERTY("Samples",				&nap::RenderWindow::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default,	"The number of MSAA samples to use")
 	RTTI_PROPERTY("AdditionalSwapImages",	&nap::RenderWindow::mAddedSwapImages,	nap::rtti::EPropertyMetaData::Default,	"Number of additional swapchain images to create")
+	RTTI_PROPERTY("Clear",					&nap::RenderWindow::mClear,				nap::rtti::EPropertyMetaData::Default,	"Whether to clear the render window at the start of each render pass")
 	RTTI_PROPERTY("RestoreSize",			&nap::RenderWindow::mRestoreSize,		nap::rtti::EPropertyMetaData::Default,	"If window size is restored from the previous run")
 	RTTI_PROPERTY("RestorePosition",		&nap::RenderWindow::mRestorePosition,	nap::rtti::EPropertyMetaData::Default,	"If window position is restored from the previous run")
 RTTI_END_CLASS
@@ -555,7 +556,7 @@ namespace nap
 
 		// Show if requested
 		if (mVisible)
-			this->show();
+			show();
 
 		return true;
 	}
@@ -867,7 +868,7 @@ namespace nap
 
         // Create render pass and resources used by render pass
         // With only 1 multi-sample, don't create a render pass with a resolve step
-        if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, mRenderPass, errorState))
+        if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, mClear, mRenderPass, errorState))
             return false;
 
 		// Create attachment resources

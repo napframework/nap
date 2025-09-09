@@ -43,10 +43,6 @@ RTTI_BEGIN_CLASS(nap::BufferBindingIVec4, "Vector (ivec4) shader buffer binding"
 	RTTI_PROPERTY("Buffer", &nap::BufferBindingIVec4::mBuffer, nap::rtti::EPropertyMetaData::Required, "IVec4 data to bind")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::BufferBindingUVec4, "Vector (uvec4) shader buffer binding")
-	RTTI_PROPERTY("Buffer", &nap::BufferBindingUVec4::mBuffer, nap::rtti::EPropertyMetaData::Required, "UVec4 data to bind")
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS(nap::BufferBindingMat4, "Matrix (4x4) shader buffer binding")
 	RTTI_PROPERTY("Buffer", &nap::BufferBindingMat4::mBuffer, nap::rtti::EPropertyMetaData::Required, "Mat4 data to bind")
 RTTI_END_CLASS
