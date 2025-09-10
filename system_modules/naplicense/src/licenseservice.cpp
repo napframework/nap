@@ -110,7 +110,7 @@ namespace nap
 		}
 
         // hash and encode
-        std::string hashed_id = utility::sha256(id_str);
+        std::string hashed_id = utility::sha256(utility::rTrim(id_str));
 		std::string id_encoded = utility::encode64(hashed_id);
         assert(id_encoded.size() >= 10);
 
