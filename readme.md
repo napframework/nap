@@ -232,7 +232,7 @@ The bleeding edge: [0.8](https://github.com/napframework/nap/tree/0.8) introduce
 
 ### build
 
-An [alternative build system](https://github.com/napframework/nap/tree/build-system): Including support for macOS and a simplified CMAKE interface, developed by [Stijn van Beek](https://github.com/stijnvanbeek).
+An [alternative build system](https://github.com/stijnvanbeek/nap): Including support for macOS and a simplified CMAKE interface, developed by [Stijn van Beek](https://github.com/stijnvanbeek).
 
 # Contributing
 
