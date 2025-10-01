@@ -115,7 +115,8 @@ else()
             DESTINATION napkin)
     # Install resources into packaged app
     install(DIRECTORY ${NAP_ROOT}/tools/napkin/resources
-            DESTINATION napkin)
+            DESTINATION napkin
+	        PATTERN "*/path_mapping.json" EXCLUDE)
     # Install main Qt libs from thirdparty into packaged app
     install(DIRECTORY ${THIRDPARTY_DIR}/Qt/lib/
             DESTINATION napkin/lib)
