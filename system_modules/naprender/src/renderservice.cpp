@@ -66,25 +66,6 @@ namespace nap
 		mPosition = window.getPosition();
 		mSize = window.getSize();
 	}
-
-
-	/**
-	 * Used by the render service to temporarily bind and destroy information.
-	 * This information is required by the render service (on initialization) to extract
-	 * all required Vulkan surface extensions and select a queue that can present images,
-	 * next to render and transfer functionality.
-	 */
-	struct DummyWindow
-	{
-		~DummyWindow()
-		{
-			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
-			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
-		}
-		SDL_Window*	mWindow = nullptr;
-		VkInstance	mInstance = VK_NULL_HANDLE;
-		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
-	};
 }
 
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
@@ -1324,6 +1305,44 @@ namespace nap
 	}
 
 
+	/**
+	 * Used by the render service to temporarily bind and destroy vulkan surface information.
+	 * This information is required by the render service (on initialization) to extract
+	 * all required Vulkan surface extensions and select a queue that can present images,
+	 * next to render and transfer functionality.
+	 */
+	struct DummySurface
+	{
+		// Constructor
+		DummySurface(VkInstance instance) : mInstance(instance) {}
+
+		// Create surface using new temporary window handle
+		bool init(utility::ErrorState& error)
+		{
+			mWindow = SDL_CreateWindow("Dummy", 16, 16, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			if (error.check(mWindow != nullptr, "Failed to create temporary SDL window"))
+				return createSurface(mWindow, mInstance, mSurface, error);
+			return false;
+		}
+
+		// Create surface from external window handle
+		bool init(SDL_Window* windowHandle, utility::ErrorState& error)
+		{
+			return createSurface(windowHandle, mInstance, mSurface, error);
+		}
+
+		~DummySurface()
+		{
+			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
+			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
+		}
+
+		SDL_Window*	mWindow = nullptr;
+		VkInstance	mInstance = VK_NULL_HANDLE;
+		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service
 	//////////////////////////////////////////////////////////////////////////
@@ -1901,26 +1920,17 @@ namespace nap
 
 		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
 		// Allows for easy destruction of previously created and assigned resources when initialization fails.
-		DummyWindow dummy_window;
+		DummySurface dummy_surface(mInstance);
 		if (!mHeadless)
 		{
-			// Create dummy window when no external window handle is provided
-			dummy_window.mInstance = mInstance;
-			if (render_config->mWindowHandle == nullptr)
-			{
-				dummy_window.mWindow = SDL_CreateWindow("Dummy", 16, 16, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-				if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
-					return false;
+			// Create surface based on new or existing window
+			auto available = render_config->mWindowHandle != nullptr ?
+				dummy_surface.init(reinterpret_cast<SDL_Window*>(render_config->mWindowHandle), errorState) :
+				dummy_surface.init(errorState);
 
-				if (!createSurface(dummy_window.mWindow, dummy_window.mInstance, dummy_window.mSurface, errorState))
-					return false;
-			}
-			else
-			{
-				auto* ext_window = reinterpret_cast<SDL_Window*>(render_config->mWindowHandle);
-				if (!createSurface(ext_window, dummy_window.mInstance, dummy_window.mSurface, errorState))
-					return false;
-			}
+			// Make sure it's available
+			if (!available)
+				return false;
 		}
 
 		// Get the preferred physical device to select
@@ -1930,7 +1940,7 @@ namespace nap
 		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mEnableCompute);
 
 		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_surface.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify
