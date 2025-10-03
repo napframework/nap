@@ -750,7 +750,8 @@ namespace nap
 			if (gui_ctx.mDisplayIndex != display_index)
 			{
 				// Display Changed!
-				nap::Logger::info("Display changed from: %d to %d", gui_ctx.mDisplayIndex, display_index);
+				nap::Logger::debug("Window '%s': Display changed from index %d to %d", window->mID.c_str(),
+					gui_ctx.mDisplayIndex, display_index);
 				pushScale(*it->second, *window);
 			}
 		}
