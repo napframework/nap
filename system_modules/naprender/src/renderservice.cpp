@@ -1899,20 +1899,28 @@ namespace nap
 				setupDebugCallback(mInstance, mDebugCallback, errorState);
 		}
 
-		// Create presentation surface if not running headless. Can only do this after creation of instance.
-		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
+		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
+		// Allows for easy destruction of previously created and assigned resources when initialization fails.
 		DummyWindow dummy_window;
 		if (!mHeadless)
 		{
-			// Temporary window used to bind an SDL_Window and Vulkan surface together. 
-			// Allows for easy destruction of previously created and assigned resources when initialization fails.
-			dummy_window.mWindow = SDL_CreateWindow("Dummy", 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
-				return false;
-
+			// Create dummy window when no external window handle is provided
 			dummy_window.mInstance = mInstance;
-			if (!createSurface(dummy_window.mWindow, mInstance, dummy_window.mSurface, errorState))
-				return false;
+			if (render_config->mWindowHandle == nullptr)
+			{
+				dummy_window.mWindow = SDL_CreateWindow("Dummy", 16, 16, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+				if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
+					return false;
+
+				if (!createSurface(dummy_window.mWindow, dummy_window.mInstance, dummy_window.mSurface, errorState))
+					return false;
+			}
+			else
+			{
+				auto* ext_window = reinterpret_cast<SDL_Window*>(render_config->mWindowHandle);
+				if (!createSurface(ext_window, dummy_window.mInstance, dummy_window.mSurface, errorState))
+					return false;
+			}
 		}
 
 		// Get the preferred physical device to select

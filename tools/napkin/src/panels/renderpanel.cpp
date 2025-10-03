@@ -93,11 +93,15 @@ namespace napkin
 		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", SDL_GetError()))
 			return nullptr;
 
-		// Make sure that the applet window is created using the given handle
+		// Ensure the applet window is created using the given handle
 		nap::Core& app_core = applet.getCore();
 		auto& factory = app_core.getResourceManager()->getFactory();
-		auto obj_creator = std::make_unique<AppletWindowObjectCreator>(app_core, sdl_window);
-		factory.addObjectCreator(std::move(obj_creator));
+		auto window_creator = std::make_unique<AppletWindowObjectCreator>(app_core, sdl_window);
+		factory.addObjectCreator(std::move(window_creator));
+
+		// Ensure the render config is created using the given handle
+		auto config_creator = std::make_unique<RenderServiceObjectCreator>(sdl_window);
+		factory.addObjectCreator(std::move(config_creator));
 
 		// Create and return the new panel
 		return new RenderPanel(container.release(), sdl_window, applet);

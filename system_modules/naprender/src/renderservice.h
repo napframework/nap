@@ -51,7 +51,20 @@ namespace nap
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
+		friend class RenderService;
 	public:
+		// Default constructor
+		RenderServiceConfiguration() = default;
+
+		/**
+		 * Initialize render service using external window handle.
+		 * This is required when NAP is embedded in another process and doesn't create and manage it's own windows.
+		 * Note that the handle must of type SDL_Surface* !
+		 * @param windowHandle window handle, must be of type SDL_Window*
+		 */
+		RenderServiceConfiguration(void* windowHandle) :
+			mWindowHandle(windowHandle) {  }
+
 		/**
 		 * Supported Vulkan device types in order of preference
 		 */
@@ -79,7 +92,10 @@ namespace nap
 		bool							mPrintAvailableLayers = false;								///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool							mPrintAvailableExtensions = false;							///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
 
-		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
+		rtti::TypeInfo					getServiceType() const override								{ return RTTI_OF(RenderService); }
+
+	private:
+		void* mWindowHandle = nullptr;
 	};
 
 
