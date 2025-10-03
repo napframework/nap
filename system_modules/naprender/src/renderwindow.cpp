@@ -7,7 +7,6 @@
 #include "renderutils.h"
 #include "imagedata.h"
 
-#include <windowevent.h>
 #include <renderservice.h>
 #include <nap/core.h>
 #include <nap/logger.h>
@@ -48,25 +47,25 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Creates a new SDL window based on the settings provided by the render window
+	 * Creates a new SDL window based on the settings provided by the render window.
+	 * This call should only be used to create a top level, non embedded, window.
 	 * @return: the create window, nullptr if not successful
 	 */
-	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, utility::ErrorState& error)
+	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, utility::ErrorState& error)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
+		options |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
 		options |= renderWindow.mResizable  ? SDL_WINDOW_RESIZABLE  : 0x0U;
 		options |= renderWindow.mBorderless ? SDL_WINDOW_BORDERLESS : 0x0U;
 		options |= renderWindow.mAlwaysOnTop ? SDL_WINDOW_ALWAYS_ON_TOP : 0x0U;
-		options |= allowHighDPI ? SDL_WINDOW_ALLOW_HIGHDPI : 0x0U;
 
 		// Always hide window until added and configured by render service
 		options |= SDL_WINDOW_HIDDEN;
 
 		// Create window
+		// TODO: Where is the center option?
 		SDL_Window* new_window = SDL_CreateWindow(renderWindow.mTitle.c_str(),
-			SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED,
 			renderWindow.mWidth,
 			renderWindow.mHeight,
 			options);
@@ -89,7 +88,8 @@ namespace nap
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		// Use SDL to create the surface
-		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+		// TODO: Pass our own allocator instead of using system default
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, NULL, &outSurface),
 			"Unable to create Vulkan compatible surface using SDL");
 	}
 
@@ -351,7 +351,7 @@ namespace nap
 	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, VkImageView colorImageView, VkImageView depthImageView, std::vector<VkImageView>& swapChainImageViews, VkRenderPass renderPass, VkExtent2D extent, VkSampleCountFlagBits samples, utility::ErrorState& errorState)
 	{
 		// Create a frame buffer for every view in the swapchain.
-		framebuffers.resize(swapChainImageViews.size());
+		framebuffers.resize(swapChainImageViews.size(), VK_NULL_HANDLE);
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
 			std::array<VkImageView, 3> attachments = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
@@ -383,35 +383,29 @@ namespace nap
 	}
 
 
-	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int inNumCommandBuffers, utility::ErrorState& errorState)
+	static bool createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::vector<VkCommandBuffer>& commandBuffers, int count, utility::ErrorState& errorState)
 	{
-		commandBuffers.resize(inNumCommandBuffers);
-
+		commandBuffers.resize(count, VK_NULL_HANDLE);
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-		return errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to alocate command buffers");
+		return errorState.check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) == VK_SUCCESS, "Failed to allocate command buffers");
 	}
 
 
-	static bool createSyncObjects(VkDevice device, std::vector<VkSemaphore>& imageAvailableSemaphores, std::vector<VkSemaphore>& renderFinishedSemaphores, int numFramesInFlight, utility::ErrorState& errorState)
+	static bool createSyncPrimitives(VkDevice device, std::vector<VkSemaphore>& semaphores, int count, utility::ErrorState& errorState)
 	{
-		imageAvailableSemaphores.resize(numFramesInFlight);
-		renderFinishedSemaphores.resize(numFramesInFlight);
+		semaphores.resize(count, VK_NULL_HANDLE);
+		VkSemaphoreCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-		VkSemaphoreCreateInfo semaphoreInfo = {};
-		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-		for (size_t i = 0; i < numFramesInFlight; i++)
+		for (auto& handle : semaphores)
 		{
-			if (!errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) == VK_SUCCESS &&
-				vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) == VK_SUCCESS, "Failed to create sync objects"))
-			{
+			if (!errorState.check(vkCreateSemaphore(device, &info, nullptr, &handle) == VK_SUCCESS, "Failed to create image sync primitives"))
 				return false;
-			}
 		}
 		return true;
 	}
@@ -481,13 +475,6 @@ namespace nap
 		// Destroy resources associated with swapchain
 		destroySwapChainResources();
 
-		// Destroy all other  vulkan resources if present
-		for (VkSemaphore semaphore : mImageAvailableSemaphores)
-			vkDestroySemaphore(mDevice, semaphore, nullptr);
-
-		for (VkSemaphore semaphore : mRenderFinishedSemaphores)
-			vkDestroySemaphore(mDevice, semaphore, nullptr);
-
 		// Destroy window surface
 		if (mSurface != VK_NULL_HANDLE)
 		{
@@ -508,11 +495,12 @@ namespace nap
 		if (!errorState.check(!mRenderService->isHeadless(), "Can't create window, headless rendering is enabled"))
 			return false;
 
-		// Create SDL window first
+		// Create new top-level SDL window if there is no external handle available.
+		// An external handle is provided by an external environment, when the window is embedded.
+		// Standalone nap applications have no handle, applets generally do.
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = mExternalHandle == nullptr ?
-			createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState) :
-			mExternalHandle;
+		mSDLWindow = mExternalHandle != nullptr ? mExternalHandle :
+			createSDLWindow(*this, errorState);
 
 		// Ensure window is valid
 		if (mSDLWindow == nullptr)
@@ -562,15 +550,9 @@ namespace nap
 		// Create swapchain based on current window properties
 		if (!createSwapChainResources(errorState))
 			return false;
-		nap::Logger::info("%s: Created %d swap chain images", mID.c_str(), mSwapChainImageCount);
-
-		// Create frame / GPU synchronization objects
-		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
-			return false;
 
 		// Add window to render service
-		if (!mRenderService->addWindow(*this, errorState))
-			return false;
+		mRenderService->addWindow(*this);
 
 		// Show if requested
 		if (mVisible)
@@ -665,13 +647,17 @@ namespace nap
 	}
 
 
-	void RenderWindow::setPosition(const glm::ivec2& position)
+	void RenderWindow::setPosition(const glm::ivec2& position) const
 	{
-		SDL::setWindowPosition(mSDLWindow, position);
+		if (!SDL::setWindowPosition(mSDLWindow, position))
+		{
+			Logger::error("Unable to set '%s' position: '%s'",
+				mID.c_str(), SDL::getSDLError().c_str());
+		}
 	}
 
 
-	const glm::ivec2 RenderWindow::getPosition() const
+	glm::ivec2 RenderWindow::getPosition() const
 	{
 		return SDL::getWindowPosition(mSDLWindow);
 	}
@@ -715,22 +701,35 @@ namespace nap
 			}
 		}
 
-		// Check if the current extent has a valid (non-zero) size.
-		if (!validSwapchainExtent())
-			return VK_NULL_HANDLE;
-
 		// The swapchain extent can have a valid (higher than zero) size when the window is minimized.
 		// However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
 		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		if ((SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0)
+		if (!validSwapchainExtent() || isMinimized())
 			return VK_NULL_HANDLE;
+
+		// Under a wayland session, 'vkAcquireNextImageKHR' doesn't fail when the active swap chain extent doesn't match the surface.
+		// This path ensures that, under wayland, the swapchain is re-created when the buffer / swap delta exceeds 2 texels.
+		// I don't like this to be the default, because the `vkAcquireNextImageKHR` should  inform us about this.
+		if (mRenderService->getVideoDriver() == EVideoDriver::Wayland)
+		{
+			auto diff = glm::abs(getBufferSize() - glm::ivec2(mSwapchainExtent.width, mSwapchainExtent.height));
+			if (diff.x + diff.y > 2)
+			{
+				mRecreateSwapchain = true;
+				return VK_NULL_HANDLE;
+			}
+		}
+
+		// Figure out which swapchain image to draw to next, the semaphore is triggered when the image becomes available.
+		// On which the renderer waits to become available when the queue is submitted in RenderWindow::endRecording().
+		int	frame_index = mRenderService->getCurrentFrameIndex(); 
+		assert(mSwapchain != VK_NULL_HANDLE);
+		assert(frame_index < mAcquireSemaphores.size());
+		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mAcquireSemaphores[frame_index], VK_NULL_HANDLE, &mImageIndex);
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
 		// This situation occurs when the swapchain dimensions don't match the current extent, ie: window has been resized.
-		int	current_frame = mRenderService->getCurrentFrameIndex();
-		assert(mSwapchain != VK_NULL_HANDLE);
-		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			mRecreateSwapchain = true;
@@ -742,7 +741,7 @@ namespace nap
 			"Unable to retrieve the index of the next available presentable image");
 
 		// Reset command buffer for current frame
-		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
+		VkCommandBuffer commandBuffer = mCommandBuffers[frame_index];
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		// Start recording commands
@@ -757,59 +756,46 @@ namespace nap
 
 	void RenderWindow::endRecording()
 	{
-		int	current_frame = mRenderService->getCurrentFrameIndex();
-		VkCommandBuffer command_buffer = mCommandBuffers[current_frame];
-
+		// Stop recording command buffer
+		int	frame_index = mRenderService->getCurrentFrameIndex();
+		assert(frame_index < mCommandBuffers.size());
+		VkCommandBuffer command_buffer = mCommandBuffers[frame_index];
 		if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) 
 			throw std::runtime_error("failed to record command buffer!");
 
-		// The present engine may give us images out of order. If we receive an image index that was already in flight, we need to wait for it to complete.
-		// We only need to do this right before VkQueueSubmit, to avoid having multiple submits that are waiting on the same image to be returned from the
-		// presentation engine. By waiting until right before the submit, we maximize parallelism with the GPU.
-		if (mImagesInFlight[mCurrentImageIndex] != -1)
-			mRenderService->waitForFence(mImagesInFlight[mCurrentImageIndex]);
-
-		// Keep track of the fact that the current image index is in use by the current frame. This ensures we can wait for the frame to
-		// finish if we encounter this image index again in the future.
-		mImagesInFlight[mCurrentImageIndex] = current_frame;
-
-		VkSubmitInfo submit_info = {};
-		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
-		VkSemaphore wait_semaphores[] = { mImageAvailableSemaphores[current_frame] };
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitSemaphores = wait_semaphores;
+		submit_info.pWaitSemaphores = &mAcquireSemaphores[frame_index];
 		submit_info.pWaitDstStageMask = wait_stages;
 		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers = &mCommandBuffers[current_frame];
+		submit_info.pCommandBuffers = &mCommandBuffers[frame_index];
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
-		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame] };
-
+		assert(mImageIndex < mSubmitSemaphores.size());
+		VkSemaphore submit_semaphore = mSubmitSemaphores[mImageIndex];
 		submit_info.signalSemaphoreCount = 1;
-		submit_info.pSignalSemaphores = signalSemaphores;
-		
+		submit_info.pSignalSemaphores = &submit_semaphore;
+
+		// Submit the queue for rendering
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
 		// Set the rendering bit of queue submit ops of the current frame
-		mRenderService->mFramesInFlight[current_frame].mQueueSubmitOps |= RenderService::EQueueSubmitOp::Rendering;
+		mRenderService->mFramesInFlight[frame_index].mQueueSubmitOps |= RenderService::EQueueSubmitOp::Rendering;
 
-		// Create present information
+		// Create presentation information -> wait for the render finished semaphore to be signalled before presenting
 		VkPresentInfoKHR present_info = {};
 		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		present_info.waitSemaphoreCount = 1;
-		present_info.pWaitSemaphores = signalSemaphores;
-
-		// Add swap chain
-		VkSwapchainKHR swap_chains[] = { mSwapchain };
-		present_info.swapchainCount = 1; // Await only the render finished semaphore
-		present_info.pSwapchains = swap_chains;
-		present_info.pImageIndices = &mCurrentImageIndex;
+		present_info.pWaitSemaphores = &submit_semaphore;
+		present_info.swapchainCount = 1;						// Await only the render finished semaphore
+		present_info.pSwapchains = &mSwapchain;
+		present_info.pImageIndices = &mImageIndex;
 
 		// According to the spec, vkQueuePresentKHR can return VK_ERROR_OUT_OF_DATE_KHR when the framebuffer no longer matches the swapchain.
 		// In our case this should only happen due to window size changes, which is handled in makeCurrent. So, we don't attempt to handle it here.
@@ -859,15 +845,15 @@ namespace nap
 	{
 		// Check if number of requested images is supported based on queried abilities
 		// When maxImageCount == 0 there is no theoretical limit, otherwise it has to fall within the range of min-max
-		mSwapChainImageCount = mSurfaceCapabilities.minImageCount + mAddedSwapImages;
-		if (mSurfaceCapabilities.maxImageCount != 0 && mSwapChainImageCount > mSurfaceCapabilities.maxImageCount)
+		int min_image_count = mSurfaceCapabilities.minImageCount + mAddedSwapImages;
+		if (min_image_count > mSurfaceCapabilities.maxImageCount && mSurfaceCapabilities.maxImageCount != 0)
 		{
-			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), mSwapChainImageCount, mSurfaceCapabilities.maxImageCount);
-			mSwapChainImageCount = mSurfaceCapabilities.maxImageCount;
+			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), min_image_count, mSurfaceCapabilities.maxImageCount);
+			min_image_count = mSurfaceCapabilities.maxImageCount;
 		}
 
 		// Create swapchain, allowing us to acquire images to render to.
-		if (!createSwapChain(mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, mSurfaceCapabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
+		if (!createSwapChain(mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, min_image_count, mSurfaceCapabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -876,6 +862,7 @@ namespace nap
 			return false;
 
 		// Create image view for every image in swapchain
+		nap::Logger::debug("%s: Created swapchain with %d swap chain images", mID.c_str(), chain_images.size());
 		if (!createSwapchainImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
@@ -884,47 +871,78 @@ namespace nap
         if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, mClear, mRenderPass, errorState))
             return false;
 
-		if (mRasterizationSamples == VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT)
+		// Create attachment resources
+		switch (mRasterizationSamples)
 		{
-			if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
-				return false;
-		}
-		else
-		{
-			if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
-				return false;
+			case VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT:
+			{
+				if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
+					return false;
+				break;
+			}
+			default:
+			{
+				if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
+					return false;
 
-			if (!createColorResource(*mRenderService, mSwapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
-				return false;
+				if (!createColorResource(*mRenderService, mSwapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
+					return false;
+				break;
+			}
 		}
 
+		// Create swapchain frame-buffers
 		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.getView(), mDepthImage.getView(), mSwapChainImageViews, mRenderPass, mSwapchainExtent, mRasterizationSamples, errorState))
 			return false;
 
+		// Create command buffers
 		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
 
-		mImagesInFlight.resize(chain_images.size(), -1);
+		// Create frame sync primitives
+		if (!createSyncPrimitives(mDevice, mAcquireSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
+			return false;
+
+		// Create queue submit primitives -> same size as swap-chain image count
+		if (!createSyncPrimitives(mDevice, mSubmitSemaphores, static_cast<int>(chain_images.size()), errorState))
+			return false;
+
 		return true;
 	}
 
 
 	void RenderWindow::destroySwapChainResources()
 	{
+		// Destroy queue submission semaphores
+		for (VkSemaphore semaphore : mSubmitSemaphores)
+		{
+			if (semaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(mDevice, semaphore, nullptr);
+		}
+		mSubmitSemaphores.clear();
+
+		// Destroy frame-related semaphores
+		for (VkSemaphore semaphore : mAcquireSemaphores)
+		{
+			if (semaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(mDevice, semaphore, nullptr);
+		}
+		mAcquireSemaphores.clear();
+
 		// Destroy all frame buffers
 		for (VkFramebuffer frame_buffer : mSwapChainFramebuffers)
-			vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
+		{
+			if (frame_buffer != VK_NULL_HANDLE)
+				vkDestroyFramebuffer(mDevice, frame_buffer, nullptr);
+		}
 		mSwapChainFramebuffers.clear();
 
 		// Free command buffers
-		if(!mCommandBuffers.empty())
+		if (!mCommandBuffers.empty())
 		{
 			vkFreeCommandBuffers(mDevice, mRenderService->getCommandPool(), static_cast<uint32>(mCommandBuffers.size()), mCommandBuffers.data());
 			mCommandBuffers.clear();
 		}
-
-		// Reset image tracking
-		mImagesInFlight.clear();
 
 		// Destroy render pass if present
 		if (mRenderPass != VK_NULL_HANDLE)
@@ -934,8 +952,11 @@ namespace nap
 		}
 
 		// Destroy swapchain image views if present
-		for (VkImageView& view : mSwapChainImageViews)
-			vkDestroyImageView(mDevice, view, nullptr);
+		for (VkImageView view : mSwapChainImageViews)
+		{
+			if (view != VK_NULL_HANDLE)
+				vkDestroyImageView(mDevice, view, nullptr);
+		}
 		mSwapChainImageViews.clear();
 
 		// Destroy depth and color image
@@ -964,7 +985,7 @@ namespace nap
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass = mRenderPass;
-		render_pass_info.framebuffer = mSwapChainFramebuffers[mCurrentImageIndex];
+		render_pass_info.framebuffer = mSwapChainFramebuffers[mImageIndex];
 		render_pass_info.renderArea.offset = { 0, 0 };
 		render_pass_info.renderArea.extent = mSwapchainExtent;
 
@@ -1026,7 +1047,7 @@ namespace nap
 		// Based on surface capabilities, determine swap image size
 		if (mSurfaceCapabilities.currentExtent.width == UINT32_MAX)
 		{
-			glm::ivec2 buffer_size = this->getBufferSize();
+			glm::ivec2 buffer_size = getBufferSize();
 			mSwapchainExtent =
 			{
 				math::clamp<uint32>(static_cast<uint32>(buffer_size.x), mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
@@ -1044,6 +1065,35 @@ namespace nap
 	void RenderWindow::setAlwaysOnTop(bool onTop)
 	{
 		SDL::setWindowAlwaysOnTop(mSDLWindow, onTop);
+	}
+
+
+	float RenderWindow::getDisplayScale() const
+	{
+		float scale;
+		SDL::getWindowDisplayScale(mSDLWindow, &scale);
+		return scale;
+	}
+
+
+	float RenderWindow::getPixelDensity() const
+	{
+		float density;
+		SDL::getWindowPixelDensity(mSDLWindow, &density);
+		return density;
+	}
+
+
+	int RenderWindow::getDisplayIndex() const
+	{
+		return mSDLWindow != nullptr ?
+			SDL::getDisplayIndex(mSDLWindow) : -1;
+	}
+
+
+	bool RenderWindow::isMinimized() const
+	{
+		return (SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0;
 	}
 }
 

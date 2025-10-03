@@ -115,7 +115,7 @@ namespace nap
 			else if (mEventConverter->isWindowEvent(event))
 			{
 				// Quit when request to close
-				if (event.window.event == SDL_WINDOWEVENT_CLOSE && getApp<App>().shutdownRequested())
+				if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && getApp<App>().shutdownRequested())
 				{
 					getApp<App>().quit();
 				}
@@ -128,7 +128,7 @@ namespace nap
 			}
 
 			// Stop if the event tells us to quit
-			else if (event.type == SDL_QUIT && getApp<App>().shutdownRequested())
+			else if (event.type == SDL_EVENT_QUIT && getApp<App>().shutdownRequested())
 			{
 				getApp<App>().quit();
 			}
@@ -146,7 +146,7 @@ namespace nap
 	bool GUIAppEventHandler::setTouchGeneratesMouseEvents(bool value)
 	{
 		if (SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0",
-			SDL_HintPriority::SDL_HINT_OVERRIDE) > 0)
+			SDL_HintPriority::SDL_HINT_OVERRIDE))
 		{
 			mTouchGeneratesMouseEvents = value;
 			return true;

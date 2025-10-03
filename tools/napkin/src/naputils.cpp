@@ -514,3 +514,17 @@ nap::Entity* napkin::findChild(nap::Entity& parent, const std::string& name, int
 	return nullptr;
 }
 
+nap::EVideoDriver napkin::getVideoDriver()
+{
+	auto name = QApplication::platformName();
+	if (name == "xcb")
+		return nap::EVideoDriver::X11;
+	if (name == "wayland")
+		return nap::EVideoDriver::Wayland;
+	if (name == "windows")
+		return nap::EVideoDriver::Windows;
+
+	return nap::EVideoDriver::Default;
+}
+
+

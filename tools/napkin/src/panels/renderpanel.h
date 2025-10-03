@@ -34,7 +34,7 @@ namespace napkin
 		 * @param the error if creation or binding fails
 		 * @return the panel, nullptr if panel could not be created
 		 */
-		static RenderPanel* create(napkin::AppletRunner& applet, QWidget* parent, nap::utility::ErrorState& error);
+		static RenderPanel* create(napkin::AppletRunner& applet, QWidget& parent, nap::utility::ErrorState& error);
 
 		//////////////////////////////////////////////////////////////////////////
 
@@ -54,7 +54,7 @@ namespace napkin
 
 	private:
 		// Private constructor, call create instead
-		RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet);
+		RenderPanel(QWidget* container, SDL_Window* window, AppletRunner& applet);
 
 		QVBoxLayout				mLayout;
 		QWidget*				mContainer = nullptr;
@@ -64,3 +64,4 @@ namespace napkin
 		AppletEventConverter	mConverter;
 	};
 }
+

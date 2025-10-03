@@ -41,7 +41,6 @@ add_custom_command(TARGET ${PROJECT_NAME}
                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
                            ${CMAKE_CURRENT_LIST_DIR}/res/vinyl_cover.fbx
                            $<TARGET_FILE_DIR:${PROJECT_NAME}>/res-test/vinyl_cover.fbx
-                   DEPENDS always_rebuild
                    )
 
 # auto run test
@@ -69,7 +68,7 @@ if (WIN32)
     # TODO Update to find the libraries then install locating them via TARGET_FILE
     install(FILES ${NAP_ROOT}/system_modules/naprender/thirdparty/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll
                   ${THIRDPARTY_DIR}/rttr/msvc/x86_64/bin/rttr_core.dll
-                  ${NAP_ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/x86_64/lib/SDL2.dll
+                  ${NAP_ROOT}/system_modules/naprender/thirdparty/sdl/msvc/x86_64/bin/SDL3.dll
                   ${NAP_ROOT}/system_modules/napfont/thirdparty/freetype/msvc/x86_64/lib/Release/freetype.dll
                   ${PYTHON_DLLS}
                   ${ASSIMP_DLLS}

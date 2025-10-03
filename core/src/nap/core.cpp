@@ -232,14 +232,23 @@ namespace nap
 			assert(service_configuration_type.is_valid());
 			assert(service_configuration_type.can_create_instance());
 
-			// Construct the service configuration, store in unique ptr
-			std::unique_ptr<ServiceConfiguration> service_config(service_configuration_type.create<ServiceConfiguration>());
-			rtti::TypeInfo service_type = service_config->getServiceType();
+			// Create service config and store in unique_ptr
+			std::unique_ptr<ServiceConfiguration> service_config (
+				static_cast<ServiceConfiguration*>(mResourceManager->getFactory().create(service_configuration_type))
+			);
 
-			// Check if the service associated with the configuration isn't already part of the map, if so add as default
-			// Config is automatically destructed otherwise.
-			if (findServiceConfig(service_type) == nullptr)
-				addServiceConfig(std::move(service_config));
+			// Multiple nap applications can co-exist in the same runtime environment, it is therefore
+			// important to filter out incompatible ones.
+			rtti::TypeInfo service_type = service_config->getServiceType();
+			if (mModuleManager->findModule(service_type) == nullptr)
+				continue;
+
+			// Add service configuration if not previously loaded from config file.
+			if (findServiceConfig(service_type) == nullptr &&
+				!addServiceConfig(std::move(service_config), errorState))
+			{
+				assert(false); return false;
+			}
 		}
 
 		// First create and add all the services (unsorted)
@@ -416,11 +425,16 @@ namespace nap
 	}
 
 
-	bool Core::addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
+	bool Core::addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig, utility::ErrorState& error)
 	{
 		rtti::TypeInfo service_type = serviceConfig->getServiceType();
-		auto return_v = mServiceConfigs.emplace(std::make_pair(service_type, std::move(serviceConfig)));
-		return return_v.second;
+		if (!mServiceConfigs.try_emplace(service_type, std::move(serviceConfig)).second)
+		{
+			error.fail("Duplicate service configuration found with id '%s', service type: %s",
+				serviceConfig->mID.c_str(), service_type.get_name().to_string().c_str());
+			return false;
+		}
+		return true;
 	}
 
 
@@ -476,19 +490,15 @@ namespace nap
 					return false;
 
 				// Get type before moving and store pointer for
-                nap::ServiceConfiguration* config_ptr = config.get();
-				bool added = addServiceConfig(std::move(config));
-
-				// Duplicates are not allowed
-				if(!err.check(added, "Duplicate service configuration found with id: %s, type: %s",
-							   config_ptr->mID.c_str(), config_ptr->getServiceType().get_name().to_string().c_str()))
+				if (!addServiceConfig(std::move(config), err))
 					return false;
 			}
 		}
 		else
 		{
 			// File doesn't exist or can't be deserialized
-			nap::Logger::warn(deserialize_error.toString().c_str());
+			deserialize_error.fail("Service config '%s' de-serialization failed", mProjectInfo->mServiceConfigFilename.c_str());
+			Logger::error(deserialize_error.toString().c_str());
 		}
 		return true;
 	}

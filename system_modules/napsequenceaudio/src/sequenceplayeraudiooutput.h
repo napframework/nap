@@ -160,6 +160,11 @@ namespace nap
 
         // mix nodes created and owned by SequencePlayerAudioOutput
         std::vector<audio::SafeOwner<audio::MixNode>> mMixNodes;
+
+        // Buffer players are delete on audio thread. When an adapter is disconnected, the buffer players are moved
+        // to this vector and deleted on the next update of the audio thread.
+        std::mutex mBufferPlayersToDeleteMutex;
+        std::vector<audio::SafeOwner<audio::MultiSampleBufferPlayerNode>> mBufferPlayersToDelete;
     };
 
     // shortcut to factory function

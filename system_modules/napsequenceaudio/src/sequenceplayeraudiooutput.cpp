@@ -28,13 +28,11 @@ namespace nap
 
     bool SequencePlayerAudioOutput::init(utility::ErrorState& errorState)
     {
-        /**
-         * Get audio service and acquire audio node manager and create a mix node for each channel.
-         * All buffer players created when registering an adapter to this output will connect their audio output to the created
-         * mix nodes for each channel.
-         * When mManualRouting is false, the SequencePlayerAudioOutput will also create output nodes for each channel
-         * so audio played by SequencePlayer gets routed to the playback device selected by the AudioService.
-         */
+        // Get audio service and acquire audio node manager and create a mix node for each channel.
+        // All buffer players created when registering an adapter to this output will connect their audio output to the created
+        // mix nodes for each channel.
+        // When mManualRouting is false, the SequencePlayerAudioOutput will also create output nodes for each channel
+        // so audio played by SequencePlayer gets routed to the playback device selected by the AudioService.
         mAudioService = mService->getCore().getService<AudioService>();
         auto& node_manager = mAudioService->getNodeManager();
 
@@ -96,15 +94,11 @@ namespace nap
     {
         assert(mBufferPlayers.find(adapter)==mBufferPlayers.end()); // adapter already registered
 
-        /**
-         * Get audio service and acquire audio node manager
-         */
+        // Get audio service and acquire audio node manager
         mAudioService = mService->getCore().getService<AudioService>();
         auto& node_manager = mAudioService->getNodeManager();
 
-        /**
-         * Create buffer player for each available buffer
-         */
+        // Create buffer player for each available buffer
         std::unordered_map<std::string, SafeOwner<MultiSampleBufferPlayerNode>> buffer_players;
         for (auto buffer : mAudioBuffers)
         {
@@ -132,22 +126,34 @@ namespace nap
     {
         assert(mBufferPlayers.find(adapter)!=mBufferPlayers.end()); // entry not found
 
-        /**
-         * unregister adapter and destroy all associated buffer players
-         */
+        // unregister adapter and destroy all associated buffer players
         mAudioService = mService->getCore().getService<AudioService>();
         auto& node_manager = mAudioService->getNodeManager();
 
         for (auto& buffer_player_entry : mBufferPlayers)
         {
-            for (auto& buffer_player : buffer_player_entry.second)
+            if (adapter == buffer_player_entry.first)
             {
-                auto output_pins = buffer_player.second->getOutputPins();
-                for (int i = 0; i<output_pins.size(); i++)
+                for (auto& buffer_player : buffer_player_entry.second)
                 {
-                    assert(i<mMixNodes.size());
-                    mMixNodes[i]->inputs.disconnect(*output_pins[i]);
+                    auto output_pins = buffer_player.second->getOutputPins();
+                    for (int i = 0; i<output_pins.size(); i++)
+                    {
+                        assert(i<mMixNodes.size());
+                        mMixNodes[i]->inputs.disconnect(*output_pins[i]);
+                    }
+
+                    // move buffer player to delete queue which will be cleared on the next update of the audio thread
+                    std::lock_guard l(mBufferPlayersToDeleteMutex);
+                    mBufferPlayersToDelete.emplace_back(std::move(buffer_player.second));
                 }
+
+                // clear the buffer players marked for deletion
+                node_manager.enqueueTask([&]()
+                {
+                    std::lock_guard l(mBufferPlayersToDeleteMutex);
+                    mBufferPlayersToDelete.clear();
+                });
             }
         }
 

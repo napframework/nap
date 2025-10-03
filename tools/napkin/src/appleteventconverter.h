@@ -9,6 +9,7 @@
 #include <inputevent.h>
 #include <windowevent.h>
 #include <QPoint>
+#include <QWidget>
 #include <QWindow>
 #include <sdlhelpers.h>
 
@@ -21,8 +22,8 @@ namespace napkin
 	{
 	public:
 		// Default constructor
-		AppletEventConverter(SDL_Window* window, QWindow* qWindow) :
-			mWindow(window), mQWindow(qWindow) { }
+		AppletEventConverter(SDL_Window* window, QWidget* container) :
+			mWindow(window), mContainer(container) { }
 
 		// Default destructor
 		virtual ~AppletEventConverter() = default;
@@ -95,7 +96,7 @@ namespace napkin
 		/**
 		* Utility function to translate a Qt event into a NAP window event.
 		* This call assumes that the given Qt event can be translated into a NAP window event!
-		* Use isMouseEvent() to verify if the events are compatible.
+		* Use isWindowEvent() to verify if the events are compatible.
 		* @param qtEvent the qt window event to translate
 		* @return a nap pointer event, nullptr if the event could not be translated
 		*/
@@ -109,7 +110,7 @@ namespace napkin
 
 	private:
 		SDL_Window* mWindow = nullptr;		///< SDL window handle
-		QWindow* mQWindow = nullptr;		///< QWindow handle
+		QWidget* mContainer = nullptr;		///< QWidget handle
 		QPoint mLocation = { -1, -1 };		///< Previous mouse location
 
 		nap::InputEvent* translateQtKeyEvent(const QEvent& qtEvent, const nap::rtti::TypeInfo& eventType) const;

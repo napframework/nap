@@ -22,8 +22,8 @@ namespace nap
 {
 	Service::Service(ServiceConfiguration* configuration) :
 		mConfiguration(configuration)
-	{
-	}
+	{}
+
 
 	/**
 	@brief Destructor

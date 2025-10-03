@@ -123,9 +123,9 @@ if(MSVC)
     find_package(freeimage REQUIRED)
     copy_freeimage_dll()
 
-    # SDL2
-    find_sdl2()
-    copy_files_to_target_file_dir(${SDL2_DIR}/msvc/x86_64/lib/SDL2.dll)
+    # SDL
+    find_sdl()
+    copy_files_to_target_file_dir(${SDL_BIN_DIR}/SDL3.dll)
 
     # Assimp
     set(assimp_parent ${NAP_ROOT}/system_modules/naprender/thirdparty/assimp)
@@ -205,7 +205,7 @@ install(FILES ${NAP_ROOT}/tools/buildsystem/path_mappings/applet/framework_relea
 
 # Install module dependencies
 module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
-set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtGuiPrivate QtWidgets QtOpenGL)
 set(PATH_TO_THIRDPARTY "../../thirdparty")
 
 if(APPLE)

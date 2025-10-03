@@ -16,7 +16,7 @@ function(copy_assimp_dll)
 endfunction()
 
 # Find SDL2
-find_sdl2()
+find_sdl()
 
 if(NAP_BUILD_CONTEXT MATCHES "source")
     # Find Assimp
@@ -30,13 +30,15 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
 
     # Add includes
     set(INCLUDES
-        ${SDL2_INCLUDE_DIR}
+        ${SDL_INCLUDE_DIR}
         ${FREEIMAGE_INCLUDE_DIR}
         ${ASSIMP_INCLUDE_DIRS}
         ${VULKANSDK_INCLUDE_DIRS}
         ${SPIRVCROSS_INCLUDE_DIR}
         ${GLSLANG_INCLUDE_DIR}
-        )
+    )
+
+    # Set include directories
     target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
 
     # Set compile definitions
@@ -48,9 +50,8 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     # Add libraries
     set(LIBRARIES
         ${VULKANSDK_LIBS}
-        ${SDL2_LIBRARY}
         ${FREEIMAGE_LIBRARIES}
-        )
+        SDL3::SDL3)
 
     # TODO Investigate why we're using a static lib for Win64 only
     if(MSVC)
@@ -79,8 +80,8 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         # Copy freeimage DLL to build directory
         copy_freeimage_dll()
 
-        # Copy SDL2 DLLs to build directory
-        copy_files_to_bin(${SDL2_DIR}/msvc/x86_64/lib/SDL2.dll)
+        # Copy SDL DLLs to build directory
+        copy_files_to_bin(${SDL_BIN_DIR}/SDL3.dll)
 
         # Copy over Assimp to build directory
         copy_assimp_dll()
@@ -101,9 +102,9 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     # FreeImage
     install(DIRECTORY ${FREEIMAGE_DIR} DESTINATION ${thirdparty_module_dest}/FreeImage/${NAP_THIRDPARTY_PLATFORM_DIR})
 
-    # SDL2
-    install(DIRECTORY ${SDL2_DIR}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH} DESTINATION ${thirdparty_module_dest}/SDL2/${NAP_THIRDPARTY_PLATFORM_DIR})
-    install(FILES ${SDL2_LICENSE_FILES} DESTINATION ${thirdparty_module_dest}/SDL2)
+    # SDL3
+    install(DIRECTORY ${SDL_DIR}/${NAP_THIRDPARTY_PLATFORM_DIR}/ DESTINATION ${thirdparty_module_dest}/sdl/${NAP_THIRDPARTY_PLATFORM_DIR})
+    install(FILES ${SDL_LICENSE_FILES} DESTINATION ${thirdparty_module_dest}/sdl)
 
     # Vulkan SDK
     install(DIRECTORY ${VULKANSDK_DIR}
@@ -136,6 +137,10 @@ else()
     endif()
     add_include_to_interface_target(naprender ${FREEIMAGE_INCLUDE_DIR})
 
+    # SDL
+    add_include_to_interface_target(naprender ${SDL_INCLUDE_DIR})
+    add_include_to_interface_target(naprender ${SDL_INCLUDE_DIR}/..)
+
     # Add Vulkan library
     set(MODULE_EXTRA_LIBS ${VULKANSDK_LIBS})
 
@@ -147,8 +152,8 @@ else()
                 PATTERN "pkgconfig" EXCLUDE
                 PATTERN "*.a" EXCLUDE)
 
-        # Package SDL2 into packaged project on *nix
-        install(DIRECTORY ${SDL2_LIBS_DIR}/
+        # Package SDL3 into packaged project on *nix
+        install(DIRECTORY ${SDL_LIBS_DIR}/
                 DESTINATION lib
                 PATTERN "cmake" EXCLUDE
                 PATTERN "pkgconfig" EXCLUDE
@@ -182,7 +187,7 @@ else()
     # Install thirdparty licenses into lib
     install(FILES ${FREEIMAGE_LICENSE_FILES} DESTINATION licenses/FreeImage)
     install(FILES ${ASSIMP_LICENSE_FILES} DESTINATION licenses/assimp)
-    install(FILES ${SDL2_LICENSE_FILES} DESTINATION licenses/SDL2)
+    install(FILES ${SDL_LICENSE_FILES} DESTINATION licenses/sdl)
     install(FILES ${VULKANSDK_LICENSE_FILES} DESTINATION "licenses/Vulkan SDK")
     install(FILES ${NAP_ROOT}/system_modules/naprender/thirdparty/glslang/source/LICENSE.txt DESTINATION licenses/glslang/)
     install(FILES ${NAP_ROOT}/system_modules/naprender/thirdparty/SPIRV-Cross/source/LICENSE DESTINATION licenses/SPIRV-Cross/)
