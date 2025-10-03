@@ -12,6 +12,7 @@
 #include <renderwindow.h>
 #include <rtti/objectptr.h>
 #include <SDL_render.h>
+#include <renderservice.h>
 
 namespace napkin
 {
@@ -19,29 +20,51 @@ namespace napkin
 	class AppletRunner;
 
 	/**
-	 * Creates a NAP render window from a QT window handle
+	 * Creates a NAP render window from an SDL window handle
 	 */
 	class AppletWindowObjectCreator : public nap::rtti::IObjectCreator
 	{
 	public:
-		/**
-		*/
 		AppletWindowObjectCreator(nap::Core& core, SDL_Window* windowHandle) :
 			mCore(core), mWindowHandle(windowHandle) { }
 
 		/**
-		* @return type to create
-		*/
+		 * @return type to create
+		 */
 		nap::rtti::TypeInfo getTypeToCreate() const override { return RTTI_OF(nap::RenderWindow); }
 
 		/**
-		* @return Constructs the resource using as a first argument the object stored in this class
-		*/
-		virtual nap::rtti::Object* create() override { return new nap::RenderWindow(mCore, mWindowHandle); }
+		 * @return Constructs the resource using as a first argument the object stored in this class
+		 */
+		nap::rtti::Object* create() override { return new nap::RenderWindow(mCore, mWindowHandle); }
 
 	private:
 		SDL_Window* mWindowHandle = nullptr;
 		nap::Core& mCore;
+	};
+
+
+	/**
+	 * Creates a NAP render service configuration from an SDL window handle
+	 */
+	class RenderServiceObjectCreator : public nap::rtti::IObjectCreator
+	{
+	public:
+		RenderServiceObjectCreator(SDL_Window* windowHandle) :
+			mWindowHandle(windowHandle) { }
+
+		/**
+		 * @return type to create
+		 */
+		nap::rtti::TypeInfo getTypeToCreate() const override { return RTTI_OF(nap::RenderServiceConfiguration); }
+
+		/**
+		 * @return Constructs the resource using as a first argument the object stored in this class
+		 */
+		nap::rtti::Object* create() override { return new nap::RenderServiceConfiguration(mWindowHandle); }
+
+	private:
+		SDL_Window* mWindowHandle = nullptr;
 	};
 
 

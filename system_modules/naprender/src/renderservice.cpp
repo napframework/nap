@@ -66,25 +66,6 @@ namespace nap
 		mPosition = window.getPosition();
 		mSize = window.getSize();
 	}
-
-
-	/**
-	 * Used by the render service to temporarily bind and destroy information.
-	 * This information is required by the render service (on initialization) to extract
-	 * all required Vulkan surface extensions and select a queue that can present images,
-	 * next to render and transfer functionality.
-	 */
-	struct DummyWindow
-	{
-		~DummyWindow()
-		{
-			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
-			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
-		}
-		SDL_Window*	mWindow = nullptr;
-		VkInstance	mInstance = VK_NULL_HANDLE;
-		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
-	};
 }
 
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
@@ -509,7 +490,7 @@ namespace nap
 	}
 
 
-	static bool getSurfaceInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	static bool getSurfaceInstanceExtensions(std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
@@ -517,11 +498,17 @@ namespace nap
 		auto ext_names = SDL_Vulkan_GetInstanceExtensions(&ext_count);
 
 		// Bail if query failed
-		if(!errorState.check(ext_names != nullptr,
-			"Unable to find any valid SDL Vulkan instance extensions, is the Vulkan driver installed?"))
+		assert(ext_names != nullptr);
+		if (!errorState.check(ext_names != nullptr,
+			"Unable to find any SDL Vulkan surface extensions, is the Vulkan driver installed?"))
+		{
+			errorState.fail(SDL_GetError());
 			return false;
+		}
+			
 
 		// Store
+		outExtensions.reserve(ext_count);
 		for (auto i = 0; i < ext_count; i++)
 			outExtensions.emplace_back(ext_names[i]);
 		return true;
@@ -1318,6 +1305,44 @@ namespace nap
 	}
 
 
+	/**
+	 * Used by the render service to temporarily bind and destroy vulkan surface information.
+	 * This information is required by the render service (on initialization) to extract
+	 * all required Vulkan surface extensions and select a queue that can present images,
+	 * next to render and transfer functionality.
+	 */
+	struct DummySurface
+	{
+		// Constructor
+		DummySurface(VkInstance instance) : mInstance(instance) {}
+
+		// Create surface using new temporary window handle
+		bool init(utility::ErrorState& error)
+		{
+			mWindow = SDL_CreateWindow("Dummy", 16, 16, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			if (error.check(mWindow != nullptr, "Failed to create temporary SDL window"))
+				return createSurface(mWindow, mInstance, mSurface, error);
+			return false;
+		}
+
+		// Create surface from external window handle
+		bool init(SDL_Window* windowHandle, utility::ErrorState& error)
+		{
+			return createSurface(windowHandle, mInstance, mSurface, error);
+		}
+
+		~DummySurface()
+		{
+			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
+			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
+		}
+
+		SDL_Window*	mWindow = nullptr;
+		VkInstance	mInstance = VK_NULL_HANDLE;
+		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service
 	//////////////////////////////////////////////////////////////////////////
@@ -1839,10 +1864,6 @@ namespace nap
 		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
 
-		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
-		// Allows for easy destruction of previously created and assigned resources when initialization fails.
-		DummyWindow dummy_window;
-
 		// Get available vulkan instance extensions using SDL.
 		// Returns, next to the default VK_KHR_surface, a platform specific extension.
 		// These extensions have to be enabled in order to create a swapchain and a handle to a presentable surface.
@@ -1850,14 +1871,9 @@ namespace nap
 		std::vector<std::string> instance_extensions;
 		if (!mHeadless)
 		{
-			// Create dummy window and verify creation
-			dummy_window.mWindow = SDL_CreateWindow("Dummy", 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
-				return false;
-
 			// Get all available vulkan instance extensions, required to create a presentable surface.
 			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
-			if (!getSurfaceInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
+			if (!getSurfaceInstanceExtensions(instance_extensions, errorState))
 				return false;
 		}
 
@@ -1902,12 +1918,18 @@ namespace nap
 				setupDebugCallback(mInstance, mDebugCallback, errorState);
 		}
 
-		// Create presentation surface if not running headless. Can only do this after creation of instance.
-		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
+		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
+		// Allows for easy destruction of previously created and assigned resources when initialization fails.
+		DummySurface dummy_surface(mInstance);
 		if (!mHeadless)
 		{
-			dummy_window.mInstance = mInstance;
-			if (!createSurface(dummy_window.mWindow, mInstance, dummy_window.mSurface, errorState))
+			// Create surface based on new or existing window
+			auto available = render_config->mWindowHandle != nullptr ?
+				dummy_surface.init(reinterpret_cast<SDL_Window*>(render_config->mWindowHandle), errorState) :
+				dummy_surface.init(errorState);
+
+			// Make sure it's available
+			if (!available)
 				return false;
 		}
 
@@ -1918,7 +1940,7 @@ namespace nap
 		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mEnableCompute);
 
 		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_surface.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify

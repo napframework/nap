@@ -34,7 +34,7 @@ namespace napkin
 		 * @param the error if creation or binding fails
 		 * @return the panel, nullptr if panel could not be created
 		 */
-		static RenderPanel* create(napkin::AppletRunner& applet, QWidget* parent, nap::utility::ErrorState& error);
+		static RenderPanel* create(napkin::AppletRunner& applet, QWidget& parent, nap::utility::ErrorState& error);
 
 		//////////////////////////////////////////////////////////////////////////
 

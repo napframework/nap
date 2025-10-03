@@ -232,12 +232,14 @@ namespace nap
 			assert(service_configuration_type.is_valid());
 			assert(service_configuration_type.can_create_instance());
 
-			// Construct the service configuration, store in unique ptr
-			std::unique_ptr<ServiceConfiguration> service_config(service_configuration_type.create<ServiceConfiguration>());
-			rtti::TypeInfo service_type = service_config->getServiceType();
+			// Create service config and store in unique_ptr
+			std::unique_ptr<ServiceConfiguration> service_config (
+				static_cast<ServiceConfiguration*>(mResourceManager->getFactory().create(service_configuration_type))
+			);
 
 			// Multiple nap applications can co-exist in the same runtime environment, it is therefore
 			// important to filter out incompatible ones.
+			rtti::TypeInfo service_type = service_config->getServiceType();
 			if (mModuleManager->findModule(service_type) == nullptr)
 				continue;
 

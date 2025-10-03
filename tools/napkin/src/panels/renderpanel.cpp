@@ -19,19 +19,19 @@
 
 namespace napkin
 {
-	RenderPanel* RenderPanel::create(napkin::AppletRunner& applet, QWidget* parent, nap::utility::ErrorState& error)
+	RenderPanel* RenderPanel::create(napkin::AppletRunner& applet, QWidget& parent, nap::utility::ErrorState& error)
 	{
 		// SDL window must be created on QT GUI thread
 		NAP_ASSERT_MSG(QThread::currentThread() == QCoreApplication::instance()->thread(),
 			"SDL event loop must be created and running on the QT GUI thread");
 
 		// Create QWidget window container
-		static constexpr int sDefaultSize = 256;
-		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint);
+		static constexpr int sMinSize = 256;
+		auto container = std::make_unique<QWidget>(&parent, Qt::Widget | Qt::FramelessWindowHint);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
-		container->setGeometry({0,0, sDefaultSize,sDefaultSize });
-		container->setMinimumSize(sDefaultSize, sDefaultSize);
+		container->setMinimumSize(sMinSize, sMinSize);
+		container->resize(parent.size());
 		container->setAutoFillBackground(false);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
 		container->setAttribute(Qt::WA_NativeWindow, true);
@@ -93,11 +93,15 @@ namespace napkin
 		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", SDL_GetError()))
 			return nullptr;
 
-		// Make sure that the applet window is created using the given handle
+		// Ensure the applet window is created using the given handle
 		nap::Core& app_core = applet.getCore();
 		auto& factory = app_core.getResourceManager()->getFactory();
-		auto obj_creator = std::make_unique<AppletWindowObjectCreator>(app_core, sdl_window);
-		factory.addObjectCreator(std::move(obj_creator));
+		auto window_creator = std::make_unique<AppletWindowObjectCreator>(app_core, sdl_window);
+		factory.addObjectCreator(std::move(window_creator));
+
+		// Ensure the render config is created using the given handle
+		auto config_creator = std::make_unique<RenderServiceObjectCreator>(sdl_window);
+		factory.addObjectCreator(std::move(config_creator));
 
 		// Create and return the new panel
 		return new RenderPanel(container.release(), sdl_window, applet);
