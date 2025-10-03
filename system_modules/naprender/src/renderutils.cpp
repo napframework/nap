@@ -21,7 +21,9 @@ namespace nap
 	{
         bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool clear, VkRenderPass& renderPass, utility::ErrorState& errorState)
         {
-            if (!errorState.check(targetLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR || targetLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, "Failed to create render pass. Unsupported target layout."))
+            if (!errorState.check(
+				targetLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR || targetLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				"Failed to create render pass. Unsupported target layout."))
                 return false;
 
             bool multi_sample = samples != VK_SAMPLE_COUNT_1_BIT;

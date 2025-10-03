@@ -24,14 +24,14 @@ namespace nap
 	 * This render target renders to both nap::RenderTexture2D and nap::DepthRenderTexture2D. This lets you
 	 * use the depth buffer as a shader resource in a subsequent render operation.
 	 * Only render to a render target within a headless recording pass, failure to do so will result in undefined behavior.
-	 * Make sure to call beginRendering() to start the render pass and endRendering() to end the render pass.
-	 * Always call RenderService::endHeadlessRecording after having recorded all off-screen render operations.
+	 * Make sure to call beginRendering() to start the render pass and endRenall off-screen render operations.
 	 *
-	 * ~~~~~{.cpp} 
+	 * ~~~~~{.cpp}
 	 *		mRenderService->beginFrame();
 	 *		if (mRenderService->beginHeadlessRecording())
 	 *		{
-	 *			...
+	 *			...dering() to end the render pass.
+	 * Always call RenderService::endHeadlessRecording after having recorded 
 	 *			mTargetOne->beginRendering();
 	 *			mRenderService->renderObjects(*mTargetOne, ortho_cam, objects_one);
 	 *			mTargetOne->endRendering();
