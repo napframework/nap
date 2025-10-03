@@ -19,19 +19,19 @@
 
 namespace napkin
 {
-	RenderPanel* RenderPanel::create(napkin::AppletRunner& applet, QWidget* parent, nap::utility::ErrorState& error)
+	RenderPanel* RenderPanel::create(napkin::AppletRunner& applet, QWidget& parent, nap::utility::ErrorState& error)
 	{
 		// SDL window must be created on QT GUI thread
 		NAP_ASSERT_MSG(QThread::currentThread() == QCoreApplication::instance()->thread(),
 			"SDL event loop must be created and running on the QT GUI thread");
 
 		// Create QWidget window container
-		static constexpr int sDefaultSize = 256;
-		auto container = std::make_unique<QWidget>(parent, Qt::Widget | Qt::FramelessWindowHint);
+		static constexpr int sMinSize = 256;
+		auto container = std::make_unique<QWidget>(&parent, Qt::Widget | Qt::FramelessWindowHint);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
-		container->setGeometry({0,0, sDefaultSize,sDefaultSize });
-		container->setMinimumSize(sDefaultSize, sDefaultSize);
+		container->setMinimumSize(sMinSize, sMinSize);
+		container->resize(parent.size());
 		container->setAutoFillBackground(false);
 		container->setAttribute(Qt::WA_UpdatesDisabled, true);
 		container->setAttribute(Qt::WA_NativeWindow, true);

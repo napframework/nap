@@ -50,7 +50,7 @@ namespace napkin
 
 		// Create the window
 		nap::utility::ErrorState error;
-		mPanel = RenderPanel::create(mRunner, this, error);
+		mPanel = RenderPanel::create(mRunner, *this, error);
 		if (mPanel == nullptr)
 		{
 			nap::Logger::error(error.toString());
