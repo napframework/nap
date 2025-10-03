@@ -509,7 +509,7 @@ namespace nap
 	}
 
 
-	static bool getSurfaceInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	static bool getSurfaceInstanceExtensions(std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
@@ -517,11 +517,17 @@ namespace nap
 		auto ext_names = SDL_Vulkan_GetInstanceExtensions(&ext_count);
 
 		// Bail if query failed
-		if(!errorState.check(ext_names != nullptr,
-			"Unable to find any valid SDL Vulkan instance extensions, is the Vulkan driver installed?"))
+		assert(ext_names != nullptr);
+		if (!errorState.check(ext_names != nullptr,
+			"Unable to find any SDL Vulkan surface extensions, is the Vulkan driver installed?"))
+		{
+			errorState.fail(SDL_GetError());
 			return false;
+		}
+			
 
 		// Store
+		outExtensions.reserve(ext_count);
 		for (auto i = 0; i < ext_count; i++)
 			outExtensions.emplace_back(ext_names[i]);
 		return true;
@@ -1839,10 +1845,6 @@ namespace nap
 		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
 
-		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
-		// Allows for easy destruction of previously created and assigned resources when initialization fails.
-		DummyWindow dummy_window;
-
 		// Get available vulkan instance extensions using SDL.
 		// Returns, next to the default VK_KHR_surface, a platform specific extension.
 		// These extensions have to be enabled in order to create a swapchain and a handle to a presentable surface.
@@ -1850,14 +1852,9 @@ namespace nap
 		std::vector<std::string> instance_extensions;
 		if (!mHeadless)
 		{
-			// Create dummy window and verify creation
-			dummy_window.mWindow = SDL_CreateWindow("Dummy", 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
-				return false;
-
 			// Get all available vulkan instance extensions, required to create a presentable surface.
 			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
-			if (!getSurfaceInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
+			if (!getSurfaceInstanceExtensions(instance_extensions, errorState))
 				return false;
 		}
 
@@ -1904,8 +1901,15 @@ namespace nap
 
 		// Create presentation surface if not running headless. Can only do this after creation of instance.
 		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
+		DummyWindow dummy_window;
 		if (!mHeadless)
 		{
+			// Temporary window used to bind an SDL_Window and Vulkan surface together. 
+			// Allows for easy destruction of previously created and assigned resources when initialization fails.
+			dummy_window.mWindow = SDL_CreateWindow("Dummy", 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
+				return false;
+
 			dummy_window.mInstance = mInstance;
 			if (!createSurface(dummy_window.mWindow, mInstance, dummy_window.mSurface, errorState))
 				return false;
