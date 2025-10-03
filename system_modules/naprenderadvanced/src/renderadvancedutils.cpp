@@ -5,6 +5,9 @@
 // Local Includes
 #include "renderadvancedutils.h"
 
+// External Includes
+#include <vk_mem_alloc.h>
+
 namespace nap
 {
 	namespace utility

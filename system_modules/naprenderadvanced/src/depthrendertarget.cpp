@@ -87,22 +87,22 @@ namespace nap
 
 		// Store as attachments
 		std::array<VkImageView, 2> attachments { std::as_const(*mDepthTexture).getHandle().getView(), VK_NULL_HANDLE };
-
 		if (mRasterizationSamples != VK_SAMPLE_COUNT_1_BIT)
 		{
 			// Create depth image data and hook up to depth attachment
 			if (!createDepthResource(*mRenderService, framebuffer_size, mDepthTexture->getFormat(), mRasterizationSamples, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, mDepthImage, errorState))
 				return false;
 
+			// Reorder
+			attachments[1] = attachments[0];
 			attachments[0] = mDepthImage.getView();
-			attachments[1] = std::as_const(*mDepthTexture).getHandle().getView();
 		}
 
 		// Create framebuffer
 		VkFramebufferCreateInfo framebuffer_info = {};
 		framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebuffer_info.renderPass = mRenderPass;
-		framebuffer_info.attachmentCount = attachments.size();
+		framebuffer_info.attachmentCount = mRasterizationSamples != VK_SAMPLE_COUNT_1_BIT ? 2 : 1;
 		framebuffer_info.pAttachments = attachments.data();
 		framebuffer_info.width = framebuffer_size.width;
 		framebuffer_info.height = framebuffer_size.height;

@@ -14,7 +14,6 @@
 // Local Includes
 #include "imagedata.h"
 #include "bufferdata.h"
-#include "vk_mem_alloc.h"
 #include "surfacedescriptor.h"
 
 namespace nap
