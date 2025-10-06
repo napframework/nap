@@ -79,8 +79,6 @@ if(WIN32)
     # Install for fbxconverter on Win64
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
             CONFIGURATIONS Release)
-elseif(UNIX)
-    set_python_installed_rpath_on_linux_object(${PROJECT_NAME} "../..")
 endif()
 
 # Package headers

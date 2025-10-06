@@ -16,11 +16,6 @@
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
 
-// Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
-#if defined(__unix__)
-	#include <stdlib.h>
-#endif
-
 RTTI_BEGIN_CLASS(nap::Core)
 	RTTI_FUNCTION("getService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getService)
 	RTTI_FUNCTION("getResourceManager", &nap::Core::getResourceManager)
@@ -110,12 +105,6 @@ namespace nap
 			return false;
 
 		mInitialized = true;
-		return true;
-	}
-
-
-	bool Core::initializePython(utility::ErrorState& error)
-	{
 		return true;
 	}
 

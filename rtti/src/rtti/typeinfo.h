@@ -11,7 +11,7 @@
 #include <utility/module.h>
 
 /**
- * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system, properties and functions are also automatically exposed to Python.
+ * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system
  *
  * There are only a few macros important for the user of the RTTI system:
  * - RTTI_OF - This is a convenience macro used to get the underlying TypeInfo of the named type. Usage example: RTTI_OF(rtti::RTTIObject).
@@ -168,7 +168,7 @@ namespace nap
 			Required 	= 1,		///< Load will fail if the property isn't set
 			FileLink 	= 2,		///< Defines a relationship with an external file
 			Embedded 	= 4,		///< An embedded pointer
-			ReadOnly	= 8			///< A read only property in Python
+			ReadOnly	= 8			///< A read only property
 		};
 
 		/**
@@ -181,7 +181,6 @@ namespace nap
 			FragShader		= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
 			VertShader		= 3, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
 			ComputeShader	= 4, 	///< Points to a .comp file, must be used with EPropertyMetaData::FileLink
-			Python			= 5,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
 			Mesh			= 6,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
 			Video			= 7,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
 			ImageSequence	= 8,	///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
@@ -265,68 +264,6 @@ namespace nap
 					return result;
 			}
 			return type.get_method(methodName);
-		}
-	}
-
-	namespace detail
-	{
-		/**
-		 * The BaseClassList helper is used to extract the base classes from RTTR and expose them to python automatically.
-		 * This is a complicated process. These are the points worth noting:
-		 * 1) The RTTR_ENABLE macro defines the template type *base_class_list*, which has variadic template args that specify the list of base classes.
-		 *    We want to use these variadic template args to pass them to python (the python py::class_ also has variadic template args for base classes fortunately).
-		 * 2) To do so, we specialize PythonClass with this RTTR base_class_list type. Through template argument deduction, we have the variadic template arg
-		 *    named BaseClasses for our use in PythonClass.
-		 * 3) In PythonClass we make our own specialization of pybind11::class_ where we pass BaseClasses as a template argument. We alias a new type
-		 *    called PythonClass::PybindClass. PythonClass::PybindClass is passed everywhere in the macros as *the* python class. This type now contains
-		 *    the base classes as well.
-		 * 4) Rewinding to the specialization of PythonClass: this has got a little catch to it: We can not just pass the RTTR type to PythonClass,
-		 *    as there are situations where there is no such type. This happens in cases where there is no base class! This is where BaseClassList
-		 *    comes in: BaseClassList::List always contains a valid value. It is either Type::base_class_list in case there was/were base classes, or the
-		 *	  default rttr::detail::type_list containing zero variadic arguments.
-		 */
-		template<typename T>
-		struct void_ { typedef void type; };
-
-		template<typename Type, typename = void>
-		struct BaseClassList
-		{
-			using List = rttr::detail::type_list<>;
-		};
-
-		template<typename Type>
-		struct BaseClassList<Type, typename void_<typename Type::base_class_list>::type>
-		{
-			using List = typename Type::base_class_list;
-		};
-
-		/**
-		 * isReturnTypeLValueReference is a helper to make decisions about ownership in Python. First, a bit of explanation about how ownership works in pybind:
-		 * For each function that you expose to pybind11 that has a return value, we have to tell pybind how to treat that return value. It will wrap the returned value
-		 * and pybind could for instance, copy or reference the value. Besides the decision to either copy the value or reference the value, it can also decide to
-		 * take ownership of the value. For example, you could return a pointer, let pybind own the pointer and delete it at the end. Our default setting is that
-		 * pybind uses automatic_reference. This setting decides what to do with the return value based on it's type. (There is information in the docs but by inspecting
-		 * the code we've found it no to match the code exactly). In any case, the setting makes sure that when returning pointers, ownership is not taken. However,
-		 * when returning references, copies of the object are created through the copy constructor. This is not the default behaviour that we want, so in cases where we
-		 * return a reference, we change the policy to reference so that copies and ownership are avoided.
-		 * The isReturnTypeLValueReference checks whether the return type of the function/method is of a reference type to change the policy behaviour.
-		 */
-		template <typename Return, typename... Args>
-		bool isReturnTypeLValueReference(Return(*f)(Args...))
-		{
-			return std::is_lvalue_reference<Return>();
-		}
-
-		template <typename Return, typename Class, typename... Arg>
-		bool isReturnTypeLValueReference(Return(Class::*f)(Arg...))
-		{
-			return std::is_lvalue_reference<Return>();
-		}
-
-		template <typename Return, typename Class, typename... Arg>
-		bool isReturnTypeLValueReference(Return(Class::*f)(Arg...) const)
-		{
-			return std::is_lvalue_reference<Return>();
 		}
 	}
 }
