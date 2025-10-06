@@ -1,3 +1,0 @@
-Afterwards:
-
-install_name_tool -id @rpath/libassimp.3.dylib libassimp.3.dylib

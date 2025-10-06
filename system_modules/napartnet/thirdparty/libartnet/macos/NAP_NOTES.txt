@@ -1,3 +1,0 @@
-Afterwards:
-install_name_tool -id @rpath/libArtnet.dylib Release/libArtnet.dylib
-install_name_tool -id @rpath/libArtnet.dylib Debug/libArtnet.dylib
