@@ -71,9 +71,6 @@ macro(package_nap)
     # Package single app CLI build script
     install(FILES ${build_tools_dir}/cli_single_app_build/cli_single_app_build.py DESTINATION tools/buildsystem/cli_single_app_build)
 
-    # Package app/module upgrade script
-    install(FILES ${build_tools_dir}/app_and_module_updater/app_and_module_updater.py DESTINATION tools/buildsystem/app_and_module_updater)
-
     # Package module sharing prep and setup scripts
     install(FILES ${build_tools_dir}/prepare_module_to_share/prepare_module_to_share_by_dir.py
                   ${build_tools_dir}/prepare_module_to_share/prepare_module_to_share_by_name.py
