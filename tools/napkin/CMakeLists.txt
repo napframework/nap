@@ -49,11 +49,6 @@ endif()
 # The NAP modules Napkin needs
 set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath naprender napcameracontrol napfont napapp napinput napsdlinput napimgui napapi naprenderadvanced)
 
-# Add python if enabled
-if(NAP_ENABLE_PYTHON)
-    list(APPEND NAP_MODULES_DEPENDENCIES nappython)
-endif()
-
 # Add module lib dependencies
 add_dependencies(${PROJECT_NAME} ${NAP_MODULES_DEPENDENCIES})
 
@@ -138,12 +133,6 @@ if(MSVC)
     # RTTR
     find_rttr()
     copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
-
-    # Python
-    if(NAP_ENABLE_PYTHON)
-        file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
-        copy_files_to_target_file_dir(${PYTHON_DLLS})
-    endif()
 
     ########################################################################
 

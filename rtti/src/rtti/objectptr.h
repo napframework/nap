@@ -11,10 +11,6 @@
 #include <cassert>
 #include <mutex>
 
-#ifdef NAP_ENABLE_PYTHON
-	#include <pybind11/cast.h>
-#endif
-
 namespace nap
 {
 	namespace rtti
@@ -347,68 +343,3 @@ namespace rttr
 		inline static type create(const wrapped_type& value)	{ return nap::rtti::ObjectPtr<T>(value); }		
 	};
 }
-
- 
-/**
-* There is a problem in pybind11 where ownership of smart pointers is always treated like 'owned by pybind11'.
-* The following code works around this problem. First, some explanation on the problem:
-*
-* Pybind deals with std::unique_ptr and std::shared_ptr correctly. For smart pointers, pybind uses the internal
-* wrapped type and stores that internally. So, a std::unique_ptr<Foo> return type will first unwrap the inner type,
-* which is Foo*. To ensure that the object is scoped properly, the inner object is again stored in an std::unique_ptr<Foo>.
-* Those unique_ptr constructs are unrelated to the fact that our return type is std::unique_ptr: any object that is
-* returned that is fully owned by pybind is stored within an std::unique_ptr. The effect of this construct is that
-* unique_ptrs correctly transfer their ownership to another unique_ptr, which is what you would expect when returning
-* a unique_ptr. When the internal unique_ptr goes out of scope, the object is destroyed, which is what you'd expect.
-*
-* Any function that is returning a std::shared_ptr<Foo> should of course behave differently. Internally, the same
-* happens though: a std::unique_ptr<Foo> is stored and Foo* is destroyed afterwards. To counter this behaviour, pybind added
-* a template argument to determine how you want your type to be stored. If we pass std::shared_ptr, internally
-* we will instead store a std::shared_ptr. This solves the problem only partially, because the type is first unwrapped and then
-* again inserted into new shared_ptr. The refcounts of the shared_ptrs are unrelated, causing double deletes.
-*
-* To again counter this problem you can derive from std::shared_from_this. This causes refcounts to be stored inside your class
-* itself. So, it doesn't matter if separate shared_ptrs are unrelated, if they point to the same object, the refcount is fine
-* and no double deletes occur.
-*
-* As a sidenote: the construct where you have to specify how something is returned is stored on the class level. This makes little
-* sense, as it should instead be a property of the returning function: some functions could return by unique_ptr and some by
-* shared_ptr. You cannot decide on the class level how your type is returned.
-*
-* In any case, for smart pointers other than unique_ptr and shared_ptr, we're in a bit of a pickle. We want our types to be
-* referenced instead of owned. We also don't want to try to hack around on the class level, which would make the class design
-* inflexible.
-* We've found an internal pybind class that we could specialize and alter the behaviour of the ownership for our type. Two things
-* to note:
-*		1) We pass return_value_policy::reference (instead of the default ownership)
-*		2) We pass a nullptr to the cast function for the 'existing_holder' function. The existing holder could already be specified
-*		   as a unique_ptr (as described above, through the class template type), causing it to be stored as a unique_ptr anyway.
-*		   Instead we pass nullptr to circumvent this behaviour.
-*/
-#ifdef NAP_ENABLE_PYTHON
-namespace pybind11
-{
-	namespace detail
-	{
-		template <typename type>
-		struct always_construct_holder<nap::rtti::ObjectPtr<type>> : always_construct_holder<void, true>
-		{
-		};
-
-		template <typename type> class type_caster<nap::rtti::ObjectPtr<type>> : public copyable_holder_caster<type, nap::rtti::ObjectPtr<type>>
-		{
-		public:
-			static handle cast(const nap::rtti::ObjectPtr<type>& src, return_value_policy, handle)
-			{
-				const auto *ptr = src.get();
-
-				auto st = copyable_holder_caster<type, nap::rtti::ObjectPtr<type>>::src_and_type(ptr);
-
-				return type_caster_generic::cast(
-					st.first, return_value_policy::reference, {}, st.second,
-					nullptr, nullptr, nullptr);
-			}
-		};
-	}
-}
-#endif // NAP_ENABLE_PYTHON

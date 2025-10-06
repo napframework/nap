@@ -14,11 +14,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCEvent)
 RTTI_END_CLASS
 
 using OSCEventSignal = nap::Signal<const nap::OSCEvent&>;
-RTTI_BEGIN_CLASS(OSCEventSignal)
-#ifdef NAP_ENABLE_PYTHON
-	RTTI_FUNCTION("connect", (void(OSCEventSignal::*)(const pybind11::function))&OSCEventSignal::connect)
-#endif
-RTTI_END_CLASS
+RTTI_DEFINE_CLASS(OSCEventSignal)
 
 namespace nap
 {

@@ -421,12 +421,6 @@ namespace nap
 		void calculateFramerate(double deltaTime);
 
 		/**
-		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
-		 * or alongside our binary for a packaged project
-		 */
-		void setupPythonEnvironment();
-
-		/**
 		 * Explicitly load a project from file.
 		 * Call this before initializeEngine() if custom project setup is required.
 		 * @param projectFilename absolute path to the project file on disk.
