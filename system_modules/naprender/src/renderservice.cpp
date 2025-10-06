@@ -1772,9 +1772,10 @@ namespace nap
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
+		auto* render_config = getConfiguration<RenderServiceConfiguration>();
 #ifndef NDEBUG
 		// Get all available vulkan layers
-		const std::vector<std::string>& requested_layers = { "VK_LAYER_KHRONOS_validation" };
+		const std::vector<std::string>& requested_layers = render_config->mLayers;
 		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
 			return false;
 
@@ -1788,7 +1789,7 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_MAKE_API_VERSION(0, 1, 2, 0);
+		mAPIVersion = VK_MAKE_API_VERSION(0,render_config->mVulkanVersionMajor,render_config->mVulkanVersionMinor,0);
 		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
 			return false;
 
@@ -1799,7 +1800,7 @@ namespace nap
 			setupDebugCallback(mInstance, mDebugCallback, error);
 
 		// Get the preferred physical device to select
-		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete);
+		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
 
 		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
 		VkQueueFlags req_queue_capabilities = getQueueFlags(false);
