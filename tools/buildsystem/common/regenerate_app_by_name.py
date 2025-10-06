@@ -41,9 +41,6 @@ def cmake_reconfigure_app_framework_release(search_app_name, build_type, show_so
     if show_solution and Platform.get() == Platform.Windows:
         msvc_solution_path = os.path.join(app_path, build_dir, '%s.sln' % app_name)
         call(r'explorer /select,"%s"' % msvc_solution_path)
-    elif show_solution and Platform.get() == Platform.macOS:
-        xcode_solution_path = os.path.join(app_path, build_dir, '%s.xcodeproj' % app_name)
-        call(["open", "-R", xcode_solution_path])
 
     print("Solution generated in %s" % os.path.relpath(os.path.join(app_path, build_dir)))
     return 0

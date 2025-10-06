@@ -52,7 +52,7 @@ macro(bootstrap_environment)
     # proprietary APIs, etc. It's simply not in line with our policies and what we stand for.
     # Feel free to continue support for macOS on your end.
     if(APPLE)
-        message(FATAL_ERROR "macOS is no longer supported as a target operating system. Our development focus has shifted to ensure compatibility with other open platforms.")
+        message(FATAL_ERROR "macOS is not supported as a target operating system. Our development focus has shifted to ensure compatibility with other open platforms.")
     endif()
 
     # We don't actively support and work on Python bindings anymore.
@@ -355,37 +355,29 @@ endmacro()
 # Helper function to filter out platform-specific files
 # The function outputs the following new variables with the platform-specific sources:
 # - WIN32_SOURCES
-# - MACOS_SOURCES
 # - LINUX_SOURCES
 function(filter_platform_specific_files UNFILTERED_SOURCES)
     set(LOCAL_WIN32_SOURCES)
-    set(LOCAL_MACOS_SOURCES)
     set(LOCAL_LINUX_SOURCES)
     foreach(TMP_PATH ${${UNFILTERED_SOURCES}})
         string(FIND ${TMP_PATH} "/win32/" WIN32_EXCLUDE_DIR_FOUND)
         if(NOT ${WIN32_EXCLUDE_DIR_FOUND} EQUAL -1)
             list(APPEND LOCAL_WIN32_SOURCES ${TMP_PATH})
         else()
-            string(FIND ${TMP_PATH} "/osx/" MACOS_EXCLUDE_DIR_FOUND)
-            if(NOT ${MACOS_EXCLUDE_DIR_FOUND} EQUAL -1)
-                list(APPEND LOCAL_MACOS_SOURCES ${TMP_PATH})
-            else()
-                string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
-                if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
-                    list(APPEND LOCAL_LINUX_SOURCES ${TMP_PATH})
-                endif()
+            string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
+            if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
+                list(APPEND LOCAL_LINUX_SOURCES ${TMP_PATH})
             endif()
         endif()
     endforeach(TMP_PATH)
 
     set(WIN32_SOURCES ${LOCAL_WIN32_SOURCES} PARENT_SCOPE)
-    set(MACOS_SOURCES ${LOCAL_MACOS_SOURCES} PARENT_SCOPE)
     set(LINUX_SOURCES ${LOCAL_LINUX_SOURCES} PARENT_SCOPE)
 endfunction()
 
 # Helper macro to add platform-specific files to the correct directory and
 # to only compile the platform-specific files that match the current platform
-macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
+macro(add_platform_specific_files WIN32_SOURCES LINUX_SOURCES)
     # Add to solution folders
     if(MSVC)
         # Sort header and cpps into solution folders for Win32
@@ -403,14 +395,6 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
                 source_group("Source Files\\Linux" FILES ${TMP_PATH})
             else()
                 source_group("Header Files\\Linux" FILES ${TMP_PATH})
-            endif()
-        endforeach()
-        foreach(TMP_PATH ${MACOS_SOURCES})
-            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
-            if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\macOS" FILES ${TMP_PATH})
-            else()
-                source_group("Header Files\\macOS" FILES ${TMP_PATH})
             endif()
         endforeach()
     endif()

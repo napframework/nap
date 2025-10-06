@@ -425,7 +425,7 @@ macro(package_system_module_into_framework_release)
 
     # Package module.json
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/)
-    if(WIN32 OR APPLE)
+    if(WIN32)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH}/ RENAME ${PROJECT_NAME}.json)
     else()
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}-${ARCH}/ RENAME ${PROJECT_NAME}.json)
@@ -527,40 +527,6 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                       endif()
                   endif()
                   ")
-endmacro()
-
-# macOS: Remove specified path and subpaths from a single specified object at install time
-# FILEPATH: The file to update
-# PATH_PREFIX: The path (and sub paths) to remove
-macro(macos_remove_rpaths_from_object_at_install_time FILEPATH PATH_PREFIX CONFIGURATION)
-    if(CMAKE_HOST_WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/x86_64/python.exe)
-    elseif(CMAKE_HOST_APPLE)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/macos/x86_64/bin/python3)
-    else()
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/${ARCH}/bin/python3)
-    endif()
-    if(NOT EXISTS ${PYTHON_BIN})
-        message(FATAL_ERROR \"Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?\")
-    endif()
-
-    # Change link to dylib
-    install(CODE "if(EXISTS ${FILEPATH})
-                      # Clear any system Python path settings
-                      unset(ENV{PYTHONHOME})
-                      unset(ENV{PYTHONPATH})
-
-                      # Change link to dylib
-                      execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/buildsystem/macos_rpath_stripper/strip_rpaths.py
-                                              ${FILEPATH}
-                                              ${PATH_PREFIX}
-                                      RESULT_VARIABLE EXIT_CODE)
-                      if(NOT \${EXIT_CODE} EQUAL 0)
-                          message(FATAL_ERROR \"Failed to strip RPATHs on ${FILEPATH}\")
-                      endif()
-                  endif()
-                  "
-            CONFIGURATIONS ${CONFIGURATION})
 endmacro()
 
 # Linux: Set the packaged RPATH of binary object for its dependent modules
