@@ -26,11 +26,6 @@ target_link_libraries(${PROJECT_NAME} ${LIBCRYPTO_LIB} ${LIBSSL_LIB})
 #set(DEPENDENT_NAP_MODULES naprender napmath napscene)
 #target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
-# Add the runtime paths for RTTR on macOS
-if(APPLE)
-    macos_add_rttr_rpath()
-endif()
-
 if(WIN32)
     copy_openssl_dll()
 endif ()

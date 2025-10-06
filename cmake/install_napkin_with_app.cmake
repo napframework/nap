@@ -48,65 +48,6 @@ if(WIN32)
             include(${MODULE_EXTRA_CMAKE_PATH})
         endif()
     endforeach()
-
-elseif(APPLE)
-    list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
-
-    # ---- Install napkin with packaged app ------
-
-    # Install executable into packaged app
-    install(PROGRAMS ${NAP_ROOT}/tools/napkin/napkin
-            DESTINATION napkin)
-    # Install resources into packaged app
-    install(DIRECTORY ${NAP_ROOT}/tools/napkin/resources
-            DESTINATION napkin)
-    # Install main Qt libs from thirdparty into packaged app
-    install(DIRECTORY ${THIRDPARTY_DIR}/Qt/lib/
-            DESTINATION napkin/lib)
-    # Install Qt plugins from thirdparty into packaged app
-    install(DIRECTORY ${THIRDPARTY_DIR}/Qt/plugins
-            DESTINATION napkin)
-
-    # Ensure we have our dependent modules
-    set(INSTALLING_MODULE_FOR_NAPKIN TRUE)
-    foreach(NAP_MODULE ${NAPKIN_DEPENDENT_NAP_MODULES})
-        find_nap_module(${NAP_MODULE})
-    endforeach()
-    unset(INSTALLING_MODULE_FOR_NAPKIN)
-
-    # Add core libs path to RPATH
-    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                          -add_rpath 
-                                          @executable_path/lib
-                                          ${CMAKE_INSTALL_PREFIX}/napkin/napkin
-                                  ERROR_QUIET
-                                  RESULT_VARIABLE EXIT_CODE)
-                  if(NOT \${EXIT_CODE} EQUAL 0)
-                      message(FATAL_ERROR \"Failed to add RPATH for napkin\")
-                  endif()")
-    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                          -add_rpath 
-                                          @executable_path/../lib
-                                          ${CMAKE_INSTALL_PREFIX}/napkin/napkin
-                                  ERROR_QUIET
-                                  RESULT_VARIABLE EXIT_CODE)
-                  if(NOT \${EXIT_CODE} EQUAL 0)
-                      message(FATAL_ERROR \"Failed to add parent lib RPATH for napkin\")
-                  endif()")
-
-    # Update paths to Qt frameworks in libqcocoa plugin
-    macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
-                                                  "libqcocoa"
-                                                  ${CMAKE_INSTALL_PREFIX}/napkin/plugins/platforms/libqcocoa.dylib
-                                                  "@loader_path/../../lib/"
-                                                  )
-
-    # Update paths to Qt frameworks in napkin
-    macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
-                                                  "napkin"
-                                                  ${CMAKE_INSTALL_PREFIX}/napkin/napkin
-                                                  "@loader_path/lib/"
-                                                  )
 else()
     # Linux
 

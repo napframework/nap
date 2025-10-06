@@ -58,9 +58,7 @@ macro(package_nap)
 
     # Package check_build_environment scripts
     set(cbe_tool_dir ${build_tools_dir}/check_build_environment)
-    if(APPLE)
-        install(PROGRAMS ${cbe_tool_dir}/macos/check_build_environment.py DESTINATION tools RENAME check_build_environment)
-    elseif(UNIX)
+    if(UNIX)
         install(PROGRAMS ${cbe_tool_dir}/linux/check_build_environment.sh DESTINATION tools)
         install(PROGRAMS ${cbe_tool_dir}/linux/check_build_environment_worker.py DESTINATION tools/buildsystem/common)
     else()
@@ -108,8 +106,6 @@ macro(package_nap)
     # Package IDE templates
     if(WIN32)
         install(DIRECTORY ${NAP_ROOT}/ide_templates/visual_studio_templates/ DESTINATION visual_studio_templates)
-    elseif(APPLE)
-        install(DIRECTORY ${NAP_ROOT}/ide_templates/xcode_templates/ DESTINATION xcode_templates)
     endif()
 
     # Package CMake
@@ -120,26 +116,11 @@ macro(package_nap)
         install(FILES "${build_tools_dir}/win64_redist_help/Microsoft Visual C++ Redistributable Help.txt" DESTINATION tools/buildsystem)
     endif()
 
-    # Package Gatekeeper unquarantine scripts for macOS
-    if(APPLE)
-        install(PROGRAMS ${build_tools_dir}/macos_gatekeeper_unquarantine/unquarantine_framework.command DESTINATION tools)
-        install(PROGRAMS "${build_tools_dir}/macos_gatekeeper_unquarantine/Unquarantine App.command" DESTINATION cmake/app_creator/template)
-        install(FILES "${build_tools_dir}/macos_gatekeeper_unquarantine/Help launching on macOS.txt" DESTINATION cmake/app_creator/template)
-    endif()
-
     # Install NAP source code license
     install(FILES ${NAP_ROOT}/LICENSE.txt DESTINATION .)
 
     # Install NAP readme
     install(FILES ${NAP_ROOT}/docs/license/README.txt DESTINATION .)
-    if(APPLE)
-        install(CODE "execute_process(COMMAND sh -c \"cat ${build_tools_dir}/macos_gatekeeper_unquarantine/framework_readme_extra.txt >> ${CMAKE_INSTALL_PREFIX}/README.txt\"
-                                      ERROR_QUIET
-                                      RESULT_VARIABLE EXIT_CODE)
-                      if(NOT \${EXIT_CODE} EQUAL 0)
-                          message(FATAL_ERROR \"Failed to add macOS gatekeeper note\")
-                      endif()")
-    endif()
 
     # Install NAP Packaged App license
     install(FILES ${NAP_ROOT}/docs/license/NAP.txt DESTINATION cmake/app_creator)
@@ -239,49 +220,6 @@ macro(package_qt)
         install(FILES ${QT_DIR}/plugins/platforms/qwindows.dll
                 DESTINATION thirdparty/Qt/plugins/Release/platforms/
                 CONFIGURATIONS Release)
-
-    elseif(APPLE)
-        # macOS appears to depend on these extra Qt frameworks
-        list(APPEND QT_FRAMEWORKS PrintSupport DBus)
-
-        # Install frameworks
-        foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
-            set(QT_FRAMEWORK_SRC ${QT_DIR}/lib/Qt${QT_INSTALL_FRAMEWORK}.framework/Versions/Current/Qt${QT_INSTALL_FRAMEWORK})
-            set(FRAMEWORK_INSTALL_LOC ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/lib/Qt${QT_INSTALL_FRAMEWORK})
-
-            install(FILES ${QT_FRAMEWORK_SRC}
-                    DESTINATION thirdparty/Qt/lib/
-                    CONFIGURATIONS Release
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                    )
-
-            # Change dylib installed id
-            install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                                                  -id @rpath/Qt${QT_INSTALL_FRAMEWORK}
-                                                  ${FRAMEWORK_INSTALL_LOC}
-                                          ERROR_QUIET
-                                          RESULT_VARIABLE EXIT_CODE)
-                          if(NOT \${EXIT_CODE} EQUAL 0)
-                              message(FATAL_ERROR \"Failed to change Qt framework installed id\")
-                          endif()")
-
-            macos_replace_qt_framework_links("${QT_FRAMEWORKS}" Qt${QT_INSTALL_FRAMEWORK} ${QT_FRAMEWORK_SRC} ${FRAMEWORK_INSTALL_LOC} "@loader_path")
-        endforeach()
-
-        set(PATH_FROM_QT_PLUGIN_TOLIB "@loader_path/../../../../thirdparty/Qt/lib")
-
-        # Install plugins
-        install(FILES ${QT_DIR}/plugins/platforms/libqcocoa.dylib
-                DESTINATION thirdparty/Qt/plugins/platforms/
-                CONFIGURATIONS Release
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                )
-        macos_replace_qt_framework_links("${QT_FRAMEWORKS}"
-                                         libqcocoa
-                                         ${QT_DIR}/plugins/platforms/libqcocoa.dylib
-                                         ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqcocoa.dylib
-                                         ${PATH_FROM_QT_PLUGIN_TOLIB}
-                                         )
     elseif(UNIX)
         list(APPEND QT_FRAMEWORKS DBus XcbQpa)
 
@@ -431,11 +369,6 @@ macro(package_app_into_framework_release DEST_DIR)
 
     # Package our regenerate & package shortcuts into the app directory
     package_app_dir_shortcuts(${DEST_DIR})
-
-    # On macOS install Apple property list file
-    if(APPLE AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/macos)
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/macos/ DESTINATION ${DEST_DIR}/macos)
-    endif()
 endmacro()
 
 # Package (installed) module in current CMake source dir into framework release
@@ -486,9 +419,7 @@ macro(package_system_module_into_framework_release)
         if(PACKAGE_PDBS)
             install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH})
         endif()
-    elseif(APPLE)
-        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH})
-    else()
+    elseif(UNIX)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}-${ARCH})
     endif()
 
@@ -503,19 +434,7 @@ macro(package_system_module_into_framework_release)
     # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done after we
     # install the target above due to ordering of install_name_tool calling)
     set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")
-    if(APPLE)
-        if(DEFINED MACOS_EXTRA_RPATH_RELEASE)
-            set(MACOS_EXTRA_RPATH_RELEASE "${MACOS_EXTRA_RPATH_RELEASE}")
-        else()
-            set(MACOS_EXTRA_RPATH_RELEASE "")
-        endif()
-        if(DEFINED MACOS_EXTRA_RPATH_DEBUG)
-            set(MACOS_EXTRA_RPATH_DEBUG "${MACOS_EXTRA_RPATH_DEBUG}")
-        else()
-            set(MACOS_EXTRA_RPATH_DEBUG "")
-        endif()
-        set_installed_rpath_on_macos_module_for_dependent_modules("${DEEP_DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} "${MACOS_EXTRA_RPATH_RELEASE}" "${MACOS_EXTRA_RPATH_DEBUG}")
-    elseif(UNIX)
+    if(UNIX)
         if(DEFINED LINUX_EXTRA_RPATH)
             set(EXTRA_RPATH "${LINUX_EXTRA_RPATH}")
         else()

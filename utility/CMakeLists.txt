@@ -20,9 +20,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${MOODYCAMEL_INCLUDE_DIRS}
 # Package into release build
 if (WIN32)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>-${ARCH})
-elseif(APPLE)
-    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>-${ARCH})
-else()
+elseif(UNIX)
     install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/${CMAKE_BUILD_TYPE}-${ARCH})
 endif()
 

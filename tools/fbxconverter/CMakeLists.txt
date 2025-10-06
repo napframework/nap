@@ -14,11 +14,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set(DEPENDENT_NAP_MODULES naprender napmath napscene)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
-# Add the runtime paths for RTTR on macOS
-if(APPLE)
-    macos_add_rttr_rpath()
-endif()
-
 # ======================= UNIT TESTS
 enable_testing()
 
@@ -80,15 +75,6 @@ if (WIN32)
                 CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE}
                 )
     endif()
-elseif(APPLE)
-    list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
-
-    set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE}
-                                                                            "${DEEP_DEPENDENT_NAP_MODULES}"
-                                                                            ${CMAKE_INSTALL_PREFIX}/tools/buildsystem/fbxconverter
-                                                                            "../.."
-                                                                            "${DEEP_DEPENDENT_RPATHS}"
-                                                                            )
 elseif(UNIX)
     set_installed_rpath_on_linux_object_for_dependent_modules("${DEEP_DEPENDENT_NAP_MODULES}"
                                                               ${PROJECT_NAME} "../.."

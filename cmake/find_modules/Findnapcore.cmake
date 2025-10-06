@@ -49,20 +49,18 @@ if(WIN32)
 endif()
 
 # Install into packaged app for macOS/Linux
-if(NOT WIN32)
+if(UNIX)
     install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)
 
     # On Linux use lib directory for RPATH
-    if(NOT APPLE)
-        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/napcore.so\")
-                      execute_process(COMMAND patchelf
-                                              --set-rpath
-                                              $ORIGIN/.
-                                              ${CMAKE_INSTALL_PREFIX}/lib/napcore.so
-                                      RESULT_VARIABLE EXIT_CODE)
-                      if(NOT \${EXIT_CODE} EQUAL 0)
-                          message(FATAL_ERROR \"Failed to fetch RPATH on napcore.so using patchelf\")
-                      endif()
-                      ")
-    endif()
+    install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/napcore.so\")
+                  execute_process(COMMAND patchelf
+                                          --set-rpath
+                                          $ORIGIN/.
+                                          ${CMAKE_INSTALL_PREFIX}/lib/napcore.so
+                                  RESULT_VARIABLE EXIT_CODE)
+                  if(NOT \${EXIT_CODE} EQUAL 0)
+                      message(FATAL_ERROR \"Failed to fetch RPATH on napcore.so using patchelf\")
+                  endif()
+                  ")
 endif()

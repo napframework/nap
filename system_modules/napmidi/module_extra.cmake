@@ -24,10 +24,6 @@ if (NAP_ENABLE_RTMIDI)
             file(GLOB RTMIDI_STATIC_LIBS ${RTMIDI_LIBRARY_DIR}/rtmidi*${CMAKE_STATIC_LIBRARY_SUFFIX})
             install(FILES ${RTMIDI_STATIC_LIBS}
                     DESTINATION ${rtmidi_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
-        elseif(APPLE)
-            file(GLOB RTMIDI_DYLIBS ${RTMIDI_LIBRARY_DIR}/librtmidi*${CMAKE_SHARED_LIBRARY_SUFFIX})
-            install(FILES ${RTMIDI_DYLIBS}
-                    DESTINATION ${rtmidi_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
         elseif(UNIX)
             file(GLOB RTMIDI_DYLIBS ${RTMIDI_LIBRARY_DIR}/librtmidi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
             install(FILES ${RTMIDI_DYLIBS}
@@ -49,9 +45,7 @@ if (NAP_ENABLE_RTMIDI)
         add_include_to_interface_target(napmidi ${MOODYCAMEL_INCLUDE_DIRS})
 
         # Install rtmidi lib into packaged app
-        if(APPLE)
-            install(FILES ${RTMIDI_LIBRARIES_RELEASE} DESTINATION lib)
-        elseif(UNIX)
+        if(UNIX)
             file(GLOB RTMIDI_DYLIBS ${NAP_ROOT}/${rtmidi_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/librt*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
             install(FILES ${RTMIDI_DYLIBS} DESTINATION lib)
         endif()

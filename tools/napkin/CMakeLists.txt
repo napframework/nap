@@ -19,7 +19,7 @@ add_source_dir("napkin" "src")
 # This will make applet specific resources and components accessible and editable in Napkin.
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_DEV)
 
-if(MSVC OR APPLE)
+if(MSVC)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
@@ -67,11 +67,6 @@ set(LIBS
 
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${QT_LIBS})
 nap_qt_post(${PROJECT_NAME})
-
-# Add the runtime paths for RTTR
-if(APPLE)
-    macos_add_rttr_rpath()
-endif()
 
 # Copy resources
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -185,13 +180,6 @@ else()
             CONFIGURATIONS Release)
 endif()
 
-if(APPLE)
-    # Remove thirdparty from framework release at install time
-    macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
-                                                    ${THIRDPARTY_DIR}  
-                                                    Release)
-endif()   
-
 # Install napkin resources, exlude path mapping -> seperate install
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources 
     DESTINATION tools/napkin/
@@ -206,39 +194,9 @@ install(FILES ${NAP_ROOT}/tools/buildsystem/path_mappings/applet/framework_relea
 # Install module dependencies
 module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtGuiPrivate QtWidgets QtOpenGL)
-set(PATH_TO_THIRDPARTY "../../thirdparty")
+set(PATH_TO_THIRDPARTY "../../thirdparty")        
 
-if(APPLE)
-    list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
-    list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_THIRDPARTY}/Qt/lib)
-    list(APPEND DEEP_DEPENDENT_RPATHS lib)
-
-    foreach(MODULECONFIG Release)
-        set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
-                                                                                "${NAP_MODULES_DEPENDENCIES}" 
-                                                                                ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
-                                                                                "../.."
-                                                                                "${DEEP_DEPENDENT_RPATHS}")
-    endforeach()
-
-    # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
-    # remotely (from thirdparty)
-    install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins
-            DESTINATION tools/napkin/
-            CONFIGURATIONS Release
-            )
-
-    # Update paths to Qt frameworks in Napkin. Using explicit paths in an attempt to avoid loading
-    # any installed Qt library.
-    macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
-                                                  UNUSED
-                                                  ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
-                                                  "@rpath"
-                                                  )
-
-        
-
-elseif(UNIX)
+if(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
         list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_THIRDPARTY}/Qt/lib)
         list(APPEND DEEP_DEPENDENT_RPATHS lib)
