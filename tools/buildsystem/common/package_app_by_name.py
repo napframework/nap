@@ -99,17 +99,6 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
             call([show_command], shell=True)
             # call(["nautilus -s %s > /dev/null 2>&1 &" % packaged_to], shell=True)
 
-    elif Platform.get() == Platform.macOS:
-        # Create archive
-        if zip_package:
-            packaged_to = archive_to_macos_zip(timestamp, bin_dir, app_full_name, app_version)
-        else:
-            packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, app_full_name, app_version, 'macOS')
-
-        # Show in Finder
-        if show_created_package:
-            call(["open", "-R", packaged_to])
-
     elif Platform.get() == Platform.Windows:
         # Remove pdbs for distribution
         for root, dirs, files in os.walk(local_bin_dir_name):
@@ -154,33 +143,6 @@ def archive_to_linux_tar_bz2(timestamp, bin_dir, app_full_name, app_version):
     shutil.rmtree(archive_dir)
 
     # Cleanup
-    packaged_to = os.path.join(app_dir, package_filename_with_ext)
-    print("Packaged to %s" % packaged_to)
-    return os.path.relpath(packaged_to)
-
-# Create build archive to zip on macOS
-def archive_to_macos_zip(timestamp, bin_dir, app_full_name, app_version):
-    package_filename = build_package_filename(app_full_name, app_version, 'macOS', timestamp)
-    package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
-
-    # Populate build info into the app
-    populate_build_info_into_app(bin_dir, timestamp)
-
-    app_dir = os.path.abspath(os.path.join(bin_dir, os.pardir))
-    archive_dir = os.path.join(app_dir, package_filename)
-
-    shutil.move(bin_dir, archive_dir)
-
-    # Remove unwanted files (eg. .DS_Store)
-    call_except_on_failure(archive_dir, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
-
-    # Archive
-    print("Archiving to %s.." % package_filename_with_ext)
-    call_except_on_failure(app_dir, ['zip', '-yr', package_filename_with_ext, package_filename])
-
-    # Cleanup
-    shutil.rmtree(archive_dir)
-
     packaged_to = os.path.join(app_dir, package_filename_with_ext)
     print("Packaged to %s" % packaged_to)
     return os.path.relpath(packaged_to)

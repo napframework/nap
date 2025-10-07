@@ -120,10 +120,6 @@ def package(zip_release,
             enable_python
         )
 
-    if Platform.get() == Platform.macOS:
-        # Remove unwanted files (eg. .DS_Store)
-        call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
-
     # Remove all Naivi apps but the requested one
     if single_app_to_include is not None:
         remove_all_apps_but_specified(single_app_to_include)
@@ -140,8 +136,6 @@ def package(zip_release,
     # Zip
     if Platform.get() == Platform.Linux:
         archive_framework_to_linux_tar_bz2(package_basename)
-    elif Platform.get() == Platform.macOS:
-        archive_framework_to_macos_zip(package_basename)
     elif Platform.get() == Platform.Windows:
         archive_framework_to_win64_zip(package_basename)
     else:
@@ -278,29 +272,6 @@ def create_linux_tar_bz2(source_directory):
     call(WORKING_DIR, ['tar', '-cjvf', archive_filename_with_ext, source_directory])
     return archive_filename_with_ext
 
-def archive_framework_to_macos_zip(package_basename):
-    """Create build archive to zip on macOS"""
-
-    shutil.move(PACKAGING_DIR, package_basename)
-
-    # Archive
-    package_filename_with_ext = create_macos_zip(package_basename)
-
-    # Cleanup
-    shutil.move(package_basename, PACKAGING_DIR)
-
-    full_out_path = os.path.abspath(package_filename_with_ext)
-    print("Packaged to %s" % full_out_path)
-    return full_out_path
-
-def create_macos_zip(source_directory):
-    """Create a zip for the provided directory on macOS"""
-
-    archive_filename_with_ext = '%s.%s' % (source_directory, 'zip')
-    print("Archiving to %s ..." % os.path.abspath(archive_filename_with_ext))
-    call(WORKING_DIR, ['zip', '-yr', archive_filename_with_ext, source_directory])
-    return archive_filename_with_ext
-
 def archive_framework_to_win64_zip(package_basename):
     """Create build archive to zip on Win64"""
 
@@ -357,8 +328,6 @@ def build_package_basename(timestamp, label):
     # Do the packaging
     if Platform.get() == Platform.Linux:
         platform_name = 'Linux'
-    elif Platform.get() == Platform.macOS:
-        platform_name = 'macOS'
     elif Platform.get() == Platform.Windows:
         platform_name = 'Win64'
     else:

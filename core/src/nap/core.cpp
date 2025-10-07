@@ -9,18 +9,12 @@
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
 #include "packaginginfo.h"
-#include "python.h"
 
 // External Includes
 #include <iostream>
 #include <utility/fileutils.h>
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-
-// Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
-#if defined(__APPLE__) || defined(__unix__)
-	#include <stdlib.h>
-#endif
 
 RTTI_BEGIN_CLASS(nap::Core)
 	RTTI_FUNCTION("getService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getService)
@@ -89,10 +83,6 @@ namespace nap
 		if (!loadProjectInfo(projectInfofile, context, error))
 			return false;
 
-		// Setup our Python environment
-#ifdef NAP_ENABLE_PYTHON
-		setupPythonEnvironment();
-#endif
 		// Apply any platform specific environment setup
 		setupPlatformSpecificEnvironment();
 
@@ -115,21 +105,6 @@ namespace nap
 			return false;
 
 		mInitialized = true;
-		return true;
-	}
-
-
-	bool Core::initializePython(utility::ErrorState& error)
-	{
-#ifdef NAP_ENABLE_PYTHON
-		// Here we register a callback that is called when the nap python module is imported.
-		// We register a 'core' attribute so that we can write nap.core.<function>() in python
-		// to access core functionality as a 'global'.
-		nap::rtti::PythonModule::get("nap").registerImportCallback([this](pybind11::module& module)
-		{
-			module.attr("core") = this;
-		});
-#endif
 		return true;
 	}
 
@@ -369,52 +344,6 @@ namespace nap
 	double Core::getElapsedTime() const
 	{
 		return mTimer.getElapsedTime();
-	}
-
-
-	void Core::setupPythonEnvironment()
-	{
-#ifdef _WIN32
-		const std::string platformPrefix = "msvc";
-#elif defined(__APPLE__)
-		const std::string platformPrefix = "macos";
-#else // __unix__
-		const std::string platformPrefix = "linux";
-#endif
-
-#ifdef NAP_PACKAGED_BUILD
-		const bool packagedBuild = true;
-#else
-		const bool packagedBuild = false;
-#endif
-
-		const std::string exeDir = utility::getExecutableDir();
-
-#if _WIN32
-		if (packagedBuild)
-		{
-			// TODO Explore locating Python instead in third party to reduce duplication on disk
-			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
-			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "python36.zip"});
-			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
-		}
-		else {
-			// Set PYTHONPATH for thirdparty location beside NAP source
-			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python", "msvc", "x86_64", "python36.zip"});
-			_putenv_s("PYTHONPATH", pythonHome.c_str());
-		}
-#else
-        // Check for packaged app modules dir
-        const std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
-        if (utility::dirExists(packagedAppPythonPath)) {
-            setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
-        }
-        else {
-            // set PYTHONHOME for thirdparty location within NAP source
-            const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python", platformPrefix, sBuildArch});
-            setenv("PYTHONHOME", pythonHome.c_str(), 1);
-        }
-#endif
 	}
 
 

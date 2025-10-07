@@ -161,11 +161,6 @@ namespace nap
 		bool isInitialized() const;
 
 		/**
-		 * Initialize python interpreter so we can have components running python scripts
-		 */
-		bool initializePython(utility::ErrorState& error);
-
-		/**
 		 * Starts core, call this after initializing the engine, just before starting the application loop.
 		 */
 		void start();
@@ -419,12 +414,6 @@ namespace nap
 		 *	Calculates the framerate over time
 		 */
 		void calculateFramerate(double deltaTime);
-
-		/**
-		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
-		 * or alongside our binary for a packaged project
-		 */
-		void setupPythonEnvironment();
 
 		/**
 		 * Explicitly load a project from file.

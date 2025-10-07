@@ -3,7 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "python.h"
 #include "logger.h"
 #include "service.h"
 #include "core.h"

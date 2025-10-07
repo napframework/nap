@@ -25,7 +25,7 @@ def package_app_by_dir(app_path, include_napkin, zip_package, show, pause_on_pac
         cmd.append('--no-show')
     exit_code = call(cmd)
 
-    # Pause to display output in case we're running from Windows Explorer / macOS Finder
+    # Pause to display output in case we're running from Windows Explorer
     if pause_on_package:
         print("Press key to close...")
 

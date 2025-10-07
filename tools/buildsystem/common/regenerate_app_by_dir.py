@@ -23,7 +23,7 @@ def regenerate_app_by_dir(app_path, suppress_showing_solution, build_type, pause
         cmd.append('--no-show')
     exit_code = call(cmd)
 
-    # Pause to display output in case we're running from Windows Explorer / macOS Finder
+    # Pause to display output in case we're running from Windows Explorer
     if exit_code != 0 and pause_on_failure:
         print("Press key to close...")
         read_console_char()

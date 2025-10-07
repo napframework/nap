@@ -163,10 +163,6 @@ namespace nap
 		if (handle == nullptr)
 			return false;
 
-#ifdef NAP_ENABLE_PYTHON
-		if (!mCore.initializePython(error))
-			return false;
-#endif
 		// Change current working directory to directory that contains the data file
 		// TODO: Remove! setting cwd is not thread safe - make thread local or resolve local
 		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();

@@ -23,12 +23,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} ${LIBCRYPTO_LIB} ${LIBSSL_LIB})
 
-
-# Add the runtime paths for RTTR on macOS
-if(APPLE)
-    macos_add_rttr_rpath()
-endif()
-
 # Copy openssl dll
 if(WIN32)
     copy_openssl_dll()

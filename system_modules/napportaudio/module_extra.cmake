@@ -6,9 +6,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     add_source_dir("service" "src/audio/service")
 
     set(LIBRARIES portaudio)
-    if(APPLE)
-        list(APPEND LIBRARIES "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
-    elseif(UNIX)
+    if(UNIX)
         list(APPEND LIBRARIES atomic)
     endif()
 

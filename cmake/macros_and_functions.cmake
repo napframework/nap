@@ -5,7 +5,7 @@ macro(bootstrap_environment)
     message(STATUS "Generator: ${CMAKE_GENERATOR}")
 
     # Enforce GCC on Linux for now (when doing packaging build at least)
-    if(UNIX AND NOT APPLE)
+    if(UNIX)
         if(NOT NAP_BUILD_CONTEXT MATCHES "source" OR DEFINED NAP_PACKAGED_BUILD)
             if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
                 message(FATAL_ERROR "NAP only currently supports GCC on Linux")
@@ -52,8 +52,7 @@ macro(bootstrap_environment)
     # proprietary APIs, etc. It's simply not in line with our policies and what we stand for.
     # Feel free to continue support for macOS on your end.
     if(APPLE)
-        message(FATAL_ERROR "macOS is no longer supported as a target operating system. Our development focus has shifted to ensure compatibility with other open platforms.")
-        set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+        message(FATAL_ERROR "macOS is not supported as a target operating system. Our development focus has shifted to ensure compatibility with other open platforms.")
     endif()
 
     # We don't actively support and work on Python bindings anymore.
@@ -78,15 +77,13 @@ macro(bootstrap_environment)
     # Add extra CMake find module path
     list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake/find_modules")
 
-    if(APPLE)
-        set(NAP_THIRDPARTY_PLATFORM_DIR "macos")
-    elseif(MSVC)
+    if(MSVC)
         set(NAP_THIRDPARTY_PLATFORM_DIR "msvc")
     else()
         set(NAP_THIRDPARTY_PLATFORM_DIR "linux")
     endif()
 
-    if(UNIX AND NOT APPLE)
+    if(UNIX)
         # Ensure we have patchelf on Linux, preventing silent failures
         ensure_patchelf_installed()
 
@@ -106,17 +103,11 @@ macro(find_path_mapping APP_DIR DEST_CONTEXT)
     unset(PATH_MAPPING_FILE)
     set(CHECK_PATH_LIST "")
 
-    # Provide for greater specificity
-    if(APPLE)
-        list(APPEND CHECK_PATH_LIST macos)
-    elseif(UNIX)
-        list(APPEND CHECK_PATH_LIST linux)
-    endif()
-
     # Fallback to Windows/Unix split
     if(WIN32)
         list(APPEND CHECK_PATH_LIST win64)
     else()
+        list(APPEND CHECK_PATH_LIST linux)
         list(APPEND CHECK_PATH_LIST unix)
     endif()
 
@@ -218,9 +209,6 @@ function(configure_python)
     if(CMAKE_HOST_WIN32)
         set(PYTHON_BIN ${PYTHON_PREFIX}/msvc/x86_64/python.exe)
         set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/msvc/x86_64/libs PARENT_SCOPE)
-    elseif(CMAKE_HOST_APPLE)
-        set(PYTHON_BIN ${PYTHON_PREFIX}/macos/x86_64/bin/python3)
-        set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/macos/x86_64/lib PARENT_SCOPE)
     else()
         set(PYTHON_BIN ${PYTHON_PREFIX}/linux/${ARCH}/bin/python3)
         set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/linux/${ARCH}/lib PARENT_SCOPE)
@@ -334,14 +322,6 @@ macro(find_rttr)
     if(NOT TARGET RTTR::Core)
         if(WIN32)
             set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc/x86_64/cmake")
-        elseif(APPLE)
-            set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake")
-            find_path(
-                    RTTR_DIR
-                    NAMES rttr-config.cmake
-                    HINTS
-                    ${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake
-            )
         else()
             set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/linux/${ARCH}/cmake")
         endif()
@@ -375,37 +355,29 @@ endmacro()
 # Helper function to filter out platform-specific files
 # The function outputs the following new variables with the platform-specific sources:
 # - WIN32_SOURCES
-# - MACOS_SOURCES
 # - LINUX_SOURCES
 function(filter_platform_specific_files UNFILTERED_SOURCES)
     set(LOCAL_WIN32_SOURCES)
-    set(LOCAL_MACOS_SOURCES)
     set(LOCAL_LINUX_SOURCES)
     foreach(TMP_PATH ${${UNFILTERED_SOURCES}})
         string(FIND ${TMP_PATH} "/win32/" WIN32_EXCLUDE_DIR_FOUND)
         if(NOT ${WIN32_EXCLUDE_DIR_FOUND} EQUAL -1)
             list(APPEND LOCAL_WIN32_SOURCES ${TMP_PATH})
         else()
-            string(FIND ${TMP_PATH} "/osx/" MACOS_EXCLUDE_DIR_FOUND)
-            if(NOT ${MACOS_EXCLUDE_DIR_FOUND} EQUAL -1)
-                list(APPEND LOCAL_MACOS_SOURCES ${TMP_PATH})
-            else()
-                string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
-                if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
-                    list(APPEND LOCAL_LINUX_SOURCES ${TMP_PATH})
-                endif()
+            string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
+            if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
+                list(APPEND LOCAL_LINUX_SOURCES ${TMP_PATH})
             endif()
         endif()
     endforeach(TMP_PATH)
 
     set(WIN32_SOURCES ${LOCAL_WIN32_SOURCES} PARENT_SCOPE)
-    set(MACOS_SOURCES ${LOCAL_MACOS_SOURCES} PARENT_SCOPE)
     set(LINUX_SOURCES ${LOCAL_LINUX_SOURCES} PARENT_SCOPE)
 endfunction()
 
 # Helper macro to add platform-specific files to the correct directory and
 # to only compile the platform-specific files that match the current platform
-macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
+macro(add_platform_specific_files WIN32_SOURCES LINUX_SOURCES)
     # Add to solution folders
     if(MSVC)
         # Sort header and cpps into solution folders for Win32
@@ -425,14 +397,6 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
                 source_group("Header Files\\Linux" FILES ${TMP_PATH})
             endif()
         endforeach()
-        foreach(TMP_PATH ${MACOS_SOURCES})
-            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
-            if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\macOS" FILES ${TMP_PATH})
-            else()
-                source_group("Header Files\\macOS" FILES ${TMP_PATH})
-            endif()
-        endforeach()
     endif()
 
     # Unfortunately, there's no clean way to add a file to the solution (for browsing purposes, etc) but
@@ -441,18 +405,14 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
         set_source_files_properties(${WIN32_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
     endif()
 
-    if(NOT APPLE)
-        set_source_files_properties(${MACOS_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
-    endif()
-
-    if(APPLE OR NOT UNIX)
+    if(NOT UNIX)
         set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
     endif()
 endmacro()
 
 # Set build output configuration for Source context
 macro(set_source_build_configuration)
-    if(MSVC OR APPLE)
+    if(MSVC)
         # Loop over each configuration for multi-configuration systems
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
             set(BUILD_CONF ${OUTPUTCONFIG}-${ARCH})
@@ -558,7 +518,7 @@ function(export_fbx)
     endif()
 
     if(NAP_BUILD_CONTEXT MATCHES "source")
-        if(MSVC OR APPLE)
+        if(MSVC)
             set(BUILD_CONF $<CONFIG>-${ARCH})
         endif()
         if(DEFINED NAP_PACKAGED_BUILD)
@@ -581,7 +541,7 @@ endfunction()
 
 # Setup our output directories in Framework Release context
 macro(set_framework_release_output_directories)
-    if(MSVC OR APPLE)
+    if(MSVC)
         # Loop over each configuration for multi-configuration systems
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
             if(APP_PACKAGE_BIN_DIR)
@@ -605,7 +565,7 @@ endmacro()
 
 # Setup our module output directories
 macro(set_module_output_directories)
-    if(MSVC OR APPLE)
+    if(MSVC)
         # Loop over each configuration for multi-configuration systems
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
             set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${OUTPUTCONFIG}-${ARCH}/)
@@ -849,13 +809,7 @@ endfunction()
 function(copy_module_json_to_bin)
     set(DEST_FILENAME ${PROJECT_NAME}.json)
 
-    if(APPLE)
-        # macOS: Multi build type outputting to LIBRARY_OUTPUT_DIRECTORY
-        add_custom_command(TARGET ${PROJECT_NAME}
-                           POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
-    elseif(UNIX)
+    if(UNIX)
         # Linux: Single build type outputting to LIBRARY_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
@@ -981,7 +935,7 @@ function(deploy_single_path_mapping APP_DIR DEST_CONTEXT)
     # Deploy to build output
     find_path_mapping(${APP_DIR} ${DEST_CONTEXT})
 
-    if(APPLE OR WIN32)
+    if(WIN32)
         # Multi build-type systems
         set(DEST_CACHE_PATH $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/cache/path_mapping.json)
     else()
@@ -1064,21 +1018,20 @@ macro(find_nap_module MODULE_NAME)
         endif()
 
         # On macOS & Linux install module into packaged app
-        if(NOT WIN32)
+        if(UNIX)
             install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)
             install(FILES ${${MODULE_NAME}_MODULE_JSON} DESTINATION lib CONFIGURATIONS Release)
+
             # On Linux set our modules use their directory for RPATH
-            if(NOT APPLE)
-                install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so\")
-                              execute_process(COMMAND patchelf
-                                                      --set-rpath
-                                                      $ORIGIN/.
-                                                      ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so
-                                              RESULT_VARIABLE EXIT_CODE)
-                              if(NOT \${EXIT_CODE} EQUAL 0)
-                                  message(FATAL_ERROR \"Failed to fetch RPATH on ${MODULE_NAME} using patchelf. Is patchelf installed?\")
-                              endif()")
-            endif()
+            install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so\")
+                          execute_process(COMMAND patchelf
+                                                  --set-rpath
+                                                  $ORIGIN/.
+                                                  ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so
+                                          RESULT_VARIABLE EXIT_CODE)
+                          if(NOT \${EXIT_CODE} EQUAL 0)
+                              message(FATAL_ERROR \"Failed to fetch RPATH on ${MODULE_NAME} using patchelf. Is patchelf installed?\")
+                          endif()")
         endif()
 
         # Bring in any additional module logic

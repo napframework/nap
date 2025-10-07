@@ -32,9 +32,7 @@ endif()
 if (NAP_AUDIOFILE_SUPPORT)
     if(NAP_BUILD_CONTEXT MATCHES "source")
         set(LIBRARIES libsndfile libmpg123)
-        if (APPLE)
-            list(APPEND LIBRARIES "-framework CoreFoundation")
-        elseif(UNIX)
+        if(UNIX)
             list(APPEND LIBRARIES atomic)
         endif()
 
@@ -71,27 +69,9 @@ if (NAP_AUDIOFILE_SUPPORT)
             install(FILES ${MPG123_DYLIBS} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
             file(GLOB MPG123_LIBFILES ${LIBMPG123_LIB_DIR}/*.lib)
             install(FILES ${MPG123_LIBFILES} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
-        elseif(APPLE)
-            # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
-            add_custom_command(TARGET ${PROJECT_NAME}
-                               PRE_BUILD
-                               COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libmpg123.dylib ${LIBMPG123_LIB_DIR}/libmpg123.0.dylib
-                               )
-
-            file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-            install(FILES ${MPG123_DYLIBS}
-                    DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
-
-            foreach(build_type Release Debug)
-                ensure_macos_file_has_rpath_at_install(${CMAKE_INSTALL_PREFIX}/modules/napaudio/lib/${build_type}/libnapaudio.dylib
-                                                       "@loader_path/../../thirdparty/mpg123/macos/${ARCH}lib")
-            endforeach()
         elseif(UNIX)
             file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
             install(FILES ${MPG123_DYLIBS} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
-
-
-
         endif()
 
         # Package libsndfile into platform release
