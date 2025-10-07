@@ -7,10 +7,8 @@
 // Local includes
 #include "frame2dtexturecomponent.h"
 #include "framecubemapcomponent.h"
-#include "../appletextension.h"
 
 // External includes
-#include <component.h>
 #include <apicomponent.h>
 #include <componentptr.h>
 #include <renderskyboxcomponent.h>
@@ -24,6 +22,7 @@ namespace nap
 namespace napkin
 {
 	using namespace nap;
+	class AppletExtension;
 	class TexturePreviewApplet;
 	class TexturePreviewAPIComponentInstance;
 
@@ -173,6 +172,6 @@ namespace napkin
 		EType mSelectedType = EType::None;
 
 		// GUI service
-		nap::IMGuiService* mGUIService;
+		nap::IMGuiService* mGUIService = nullptr;
 	};
 }

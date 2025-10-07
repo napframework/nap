@@ -88,6 +88,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		return;
 	}
 	mTexturePreviewPanel.close();
+	mMeshPreviewPanel.close();
 	qt::AutoSettings::get().store(*this);
 	QMainWindow::closeEvent(event);
 }
@@ -106,6 +107,7 @@ void MainWindow::addDocks()
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
 	addDock(QString::fromStdString(mTexturePreviewPanel.getDisplayName()), &mTexturePreviewPanel);
+	addDock(QString::fromStdString(mMeshPreviewPanel.getDisplayName()), &mMeshPreviewPanel);
 
 	// Add logger -> raise when it receives an important message
 	auto* log_dock = addDock("Log", &mLogPanel);
@@ -117,6 +119,7 @@ void MainWindow::addDocks()
 	// Register resource load options ->
 	// Tells the resource panel which widgets (preview, etc.) are available to handle specific types.
 	mResourcePanel.registerStageOption(mTexturePreviewPanel.toOption());
+	mResourcePanel.registerStageOption(mMeshPreviewPanel.toOption());
 
 	// Add menu
 	menuBar()->addMenu(&mPanelsMenu);

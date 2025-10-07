@@ -24,7 +24,7 @@
 #include "panels/modulepanel.h"
 #include "panels/instanceproppanel.h"
 #include "panels/serviceconfigpanel.h"
-#include "panels/renderpreviewpanel.h"
+#include "panels/meshpreviewpanel.h"
 #include "panels/texturepreviewpanel.h"
 #include "panels/pathbrowserpanel.h"
 
@@ -206,6 +206,7 @@ namespace napkin
 		CurvePanel mCurvePanel;
 		ScenePanel mScenePanel;
 		TexturePreviewPanel mTexturePreviewPanel;
+		MeshPreviewPanel mMeshPreviewPanel;
 		ServiceConfigPanel mServiceConfigPanel;
 
 		ThemeSelectionMenu mThemeMenu;

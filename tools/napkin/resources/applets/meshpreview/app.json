@@ -10,7 +10,7 @@
         "napimgui",
         "napapi"
     ],
-    "Data": "data/preview.json",
+    "Data": "data/mesh_preview.json",
     "ServiceConfig": "",
     "PathMapping": "../path_mapping.json"
 }

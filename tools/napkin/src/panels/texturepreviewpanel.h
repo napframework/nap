@@ -63,7 +63,6 @@ namespace napkin
 		RenderPanel*			mPanel = nullptr;			//< NAP compatible Qt render window
 		TextureAppletRunner		mRunner;					//< Application that is run
 		QVBoxLayout				mLayout;					//< Widget layout
-		bool					mInitialized;				//< If the panel is initialized
 		nap::Texture*			mLoadedTexture = nullptr;	//< Current texture
 		nap::rtti::Object*		mTrackedObject = nullptr;	//< Mesh or texture last loaded
 		std::future<bool>		mFutureInit;

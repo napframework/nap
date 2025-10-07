@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
-#include "renderpreviewapplet.h"
+#include "meshpreviewapplet.h"
 
 // External includes
 #include <utility/fileutils.h>
@@ -15,8 +15,9 @@
 #include <renderablemeshcomponent.h>
 #include <renderable2dtextcomponent.h>
 #include <apicomponent.h>
+#include <imguiutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::RenderPreviewApplet)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::MeshPreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -26,7 +27,7 @@ namespace napkin
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool RenderPreviewApplet::init(utility::ErrorState& error)
+	bool MeshPreviewApplet::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService = getCore().getService<nap::RenderService>();
@@ -40,11 +41,6 @@ namespace napkin
 		// Fetch render window
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
 		if (!error.check(mRenderWindow != nullptr, "Missing 'Window'"))
-			return false;
-
-		// API Signature
-		mAPISignature = mResourceManager->findObject<APISignature>("SetText");
-		if (!error.check(mAPISignature != nullptr, "Missing 'SetText' api signature"))
 			return false;
 
 		// Get the resource that manages all the entities
@@ -65,25 +61,12 @@ namespace napkin
 		if (!error.check(mOrthographicCamEntity != nullptr, "Missing 'OrthographicCamera' entity"))
 			return false;
 
-		// API Handling
-		mAPIEntity = scene->findEntity("API");
-		if (!error.check(mAPIEntity != nullptr, "Missing 'API' entity"))
-			return false;
-
-		// Register text change callback
-		auto* api_component = mAPIEntity->findComponent<nap::APIComponentInstance>();
-		if (!error.check(api_component != nullptr, "Missing APIComponent"))
-			return false;
-
-		auto& api_comp = mAPIEntity->getComponent<nap::APIComponentInstance>();
-		api_comp.registerCallback(*mAPISignature, mTextChangedSlot);
-
 		return true;
 	}
 	
 	
 	// Update app
-	void RenderPreviewApplet::update(double deltaTime)
+	void MeshPreviewApplet::update(double deltaTime)
 	{
 		// Create an input router, the default one forwards messages to mouse and keyboard input components
 		nap::DefaultInputRouter input_router;
@@ -94,23 +77,34 @@ namespace napkin
 
 		// Setup GUI
 		ImGui::BeginMainMenuBar();
-		if (ImGui::BeginMenu("File"))
+
+		if (ImGui::BeginMenu("Background"))
 		{
-			ImGui::MenuItem("Open...");
+			ImGui::ColorPicker4("Color", mClearColor.getData());
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Info"))
+
+		if (ImGui::BeginMenu("Applet"))
 		{
 			ImGui::MenuItem(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 			ImGui::MenuItem(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
 			ImGui::EndMenu();
+		}
+
+		float bar_height = ImGui::GetWindowHeight();
+		float ico_height = bar_height * 0.7f;
+
+		// Add frame icon
+		if (ImGui::ImageButton(mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Selection"))
+		{
+			// TODO: Frame
 		}
 		ImGui::EndMainMenuBar();
 	}
 	
 	
 	// Render app
-	void RenderPreviewApplet::render()
+	void MeshPreviewApplet::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -119,6 +113,7 @@ namespace napkin
 
 		// Begin recording the render commands for the main render window
 		nap::RenderWindow& render_window = *mRenderWindow;
+		render_window.setClearColor(mClearColor);
 
 		if (mRenderService->beginRecording(render_window))
 		{
@@ -147,31 +142,20 @@ namespace napkin
 	}
 	
 
-	void RenderPreviewApplet::windowMessageReceived(WindowEventPtr windowEvent)
+	void MeshPreviewApplet::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void RenderPreviewApplet::inputMessageReceived(InputEventPtr inputEvent)
+	void MeshPreviewApplet::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	int RenderPreviewApplet::shutdown()
+	int MeshPreviewApplet::shutdown()
 	{
 		return 0;
-	}
-
-
-	void RenderPreviewApplet::onTextChanged(const nap::APIEvent& apiEvent)
-	{
-		std::string new_text = apiEvent.getArgument(0)->asString();
-		auto& text_comp = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
-
-		nap::utility::ErrorState error;
-		if (!text_comp.setText(new_text, error))
-			nap::Logger::error(error.toString());
 	}
 }

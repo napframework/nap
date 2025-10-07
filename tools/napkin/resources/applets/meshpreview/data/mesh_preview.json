@@ -6,10 +6,16 @@
             "Components": [
                 {
                     "Type": "nap::APIComponent",
-                    "mID": "PreviewAPIComponent",
+                    "mID": "APIComponent",
                     "Signatures": [
-                        "SetText"
+                        "LoadMesh",
+                        "ClearMesh",
+                        "ChangeTheme"
                     ]
+                },
+                {
+                    "Type": "napkin::MeshPreviewAPIcomponent",
+                    "mID": "APIComponentHandler"
                 }
             ],
             "Children": []
@@ -144,7 +150,7 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Text": "Load Mesh or Material",
+                    "Text": "Load Mesh",
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
@@ -191,7 +197,7 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 18
+                "Size": 16
             },
             "Font": "fonts/Manrope-Light.otf"
         },
@@ -201,6 +207,7 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": false,
+            "AlwaysOnTop": false,
             "SampleShading": true,
             "Title": "Window 1",
             "Width": 1280,
@@ -225,12 +232,35 @@
             "Members": [
                 {
                     "Type": "nap::APISignature",
-                    "mID": "SetText",
+                    "mID": "LoadMesh",
                     "Arguments": [
                         {
                             "Type": "nap::APIString",
-                            "mID": "APIString",
-                            "Name": "text",
+                            "mID": "meshDataArg",
+                            "Name": "data",
+                            "Value": ""
+                        },
+                        {
+                            "Type": "nap::APIBool",
+                            "mID": "meshFrameArg",
+                            "Name": "frame",
+                            "Value": false
+                        }
+                    ]
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "ClearMesh",
+                    "Arguments": []
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "ChangeTheme",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "themeArg",
+                            "Name": "theme",
                             "Value": ""
                         }
                     ]

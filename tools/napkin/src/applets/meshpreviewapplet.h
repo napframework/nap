@@ -15,10 +15,8 @@
 #include <scene.h>
 #include <renderwindow.h>
 #include <entity.h>
-#include <imagefromfile.h>
 #include <imguiservice.h>
-#include <apisignature.h>
-#include <apievent.h>
+#include <color.h>
 
 // Local includes
 #include "../applet.h"
@@ -31,7 +29,7 @@ namespace napkin
 	/**
 	 * Main application that is called from within the main loop
 	 */
-	class RenderPreviewApplet : public napkin::Applet
+	class MeshPreviewApplet : public napkin::Applet
 	{
 		RTTI_ENABLE(napkin::Applet)
 	public:
@@ -39,7 +37,7 @@ namespace napkin
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		RenderPreviewApplet(nap::Core& core) : napkin::Applet(core) { }
+		MeshPreviewApplet(nap::Core& core) : napkin::Applet(core) { }
 		
 		/**
 		 * Initialize all the services and app specific data structures
@@ -88,12 +86,8 @@ namespace napkin
 		ObjectPtr<EntityInstance>	mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
-		ObjectPtr<EntityInstance>	mAPIEntity = nullptr;				//< Pointer to the api entity
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
 
-		ObjectPtr<APISignature>		mAPISignature = nullptr;			//< Pointer to the api text signature
-
-		void onTextChanged(const nap::APIEvent& apiEvent);
-		Slot<const nap::APIEvent&> mTextChangedSlot = { this, &RenderPreviewApplet::onTextChanged };
+		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
 	};
 }

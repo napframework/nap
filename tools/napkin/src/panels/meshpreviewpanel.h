@@ -6,9 +6,10 @@
 
 // Local includes
 #include "renderpanel.h"
-#include "../applets/renderpreviewapplet.h"
+#include "../applets/meshpreviewapplet.h"
 #include "../appletrunner.h"
 #include "../stagewidget.h"
+#include "../thememanager.h"
 
 // External includes
 #include <QLineEdit>
@@ -20,23 +21,23 @@
 namespace napkin
 {
 	// The applet this panel runs & embeds
-	using PreviewAppletRunner = TypedAppletRunner<RenderPreviewApplet> ;
+	using MeshPreviewAppletRunner = TypedAppletRunner<MeshPreviewApplet> ;
 
 	/**
 	 * Allows for previewing material and meshes
 	 */
-	class RenderPreviewPanel : public StageWidget
+	class MeshPreviewPanel : public StageWidget
 	{
 		Q_OBJECT
 	public:
 		// App to load (relative to executable)
-		static constexpr const char* app = "/resources/applets/renderpreview/app.json";
+		static constexpr const char* app = "/resources/applets/meshpreview/app.json";
 
 		// Creates the surface and adds it to this widget
-		RenderPreviewPanel(QWidget* parent = nullptr);
+		MeshPreviewPanel(QWidget* parent = nullptr);
 
 		// Ensures applet stops running
-		~RenderPreviewPanel();
+		~MeshPreviewPanel();
 
 		/**
 		 * @return if the preview applet is initialized
@@ -51,23 +52,28 @@ namespace napkin
 		virtual bool onLoadPath(const PropertyPath& path, nap::utility::ErrorState& error) override;
 
 	private:
-		QLineEdit				mLineEdit;
-		QSpinBox				mSpinbox;
 		RenderPanel*			mPanel = nullptr;		//< NAP compatible Qt render window
-		PreviewAppletRunner		mRunner;				//< Application that is run
+		MeshPreviewAppletRunner	mRunner;				//< Application that is run
 		QVBoxLayout				mMasterLayout;			//< Master widget layout
-		QHBoxLayout				mControlLayout;			//< Control widget layout
-		bool					mInitialized;			//< If the panel is initialized
-		std::future<bool>		mInitFuture;
+		nap::rtti::Object*		mMesh = nullptr;	//< Currently loaded mesh
+		std::future<bool>		mInitFuture;			
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);
 
-		// Called when the line edit text changes
-		void textChanged(const QString& text);
+		// Clear selection
+		void clear();
 
-		// Called when the update frequency changes
-		void freqChanged(int freq);
+		// When a property value changes
+		void propertyValueChanged(const PropertyPath& path);
+
+		// When an object is removed
+		void objectRemoved(nap::rtti::Object* object);
+
+		// When document is closing
+		void documentClosing(const QString& doc);
+
+		// When theme changes
+		void themeChanged(const Theme& theme);
 	};
 }
-

@@ -11,7 +11,7 @@
         "napapi",
         "naprenderadvanced"
     ],
-    "Data": "data/preview.json",
+    "Data": "data/texture_preview.json",
     "ServiceConfig": "",
     "PathMapping": "../path_mapping.json"
 }
