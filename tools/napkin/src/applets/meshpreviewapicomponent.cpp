@@ -10,6 +10,8 @@
 #include <entity.h>
 #include <nap/core.h>
 #include <imguiservice.h>
+#include <rtti/jsonreader.h>
+#include <mesh.h>
 
 // nap::meshpreviewapicomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::MeshPreviewAPIcomponent)
@@ -72,7 +74,52 @@ namespace napkin
 
 	void MeshPreviewAPIComponentInstance::loadMesh(const nap::APIEvent& apiEvent)
 	{
-		nap::Logger::info("should load mesh!");
+		// Get mesh data
+		auto* data_arg = apiEvent.getArgumentByName(MeshPreviewAPIcomponent::loadMeshArg1);
+		assert(data_arg != nullptr);
+
+		// De-serialize mesh
+		nap::Core& core = *getEntityInstance()->getCore();
+		utility::ErrorState error; rtti::DeserializeResult result;
+		if (!rtti::deserializeJSON(data_arg->asString(), rtti::EPropertyValidationMode::DisallowMissingProperties,
+			rtti::EPointerPropertyMode::OnlyRawPointers, core.getResourceManager()->getFactory(), result, error))
+		{
+			error.fail("%s cmd failed", MeshPreviewAPIcomponent::loadMeshCmd);
+			nap::Logger::error(error.toString());
+			return;
+		}
+
+		// Ensure there's at least one object
+		if (result.mReadObjects.empty())
+		{
+			nap::Logger::error("%s cmd failed: invalid payload", MeshPreviewAPIcomponent::loadMeshCmd);
+			return;
+		}
+
+		// Warn if there's more than 1 object and store
+		if (result.mReadObjects.size() > 1)
+			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...",
+				MeshPreviewAPIcomponent::loadMeshCmd);
+
+		// Ensure type is a mesh
+		auto& object = result.mReadObjects[0];
+		if (!object->get_type().is_derived_from(RTTI_OF(nap::IMesh)))
+		{
+			nap::Logger::error("%s cmd failed: unsupported type", MeshPreviewAPIcomponent::loadMeshCmd);
+			return;
+		}
+
+		// Init mesh relative to project data directory (thread-safe)
+		{
+			napkin::CWDHandle cwd_handle = mExtension->switchWorkingDir();
+			if (!object->init(error))
+			{
+				nap::Logger::error(error.toString().c_str());
+				return;
+			}
+		}
+
+		nap::Logger::info("Loading '%s'", object->mID.c_str());
 	}
 
 

@@ -95,7 +95,7 @@ namespace napkin
 		}
 
 		// Ensure there's at least 1 object and it's of type texture
-		if (result.mReadObjects.size() == 0)
+		if (result.mReadObjects.empty())
 		{
 			nap::Logger::error("%s cmd failed: invalid payload", TexturePreviewAPIComponent::loadTextureCmd);
 			return;
@@ -172,6 +172,13 @@ namespace napkin
 		{
 			error.fail("%s cmd failed", TexturePreviewAPIComponent::loadMeshCmd);
 			nap::Logger::error(error.toString());
+			return;
+		}
+
+		// Ensure there's at least one object
+		if (result.mReadObjects.empty())
+		{
+			nap::Logger::error("%s cmd failed: invalid payload", TexturePreviewAPIComponent::loadMeshCmd);
 			return;
 		}
 
