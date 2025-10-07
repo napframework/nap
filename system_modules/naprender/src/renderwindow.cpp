@@ -703,8 +703,9 @@ namespace nap
 		// The swapchain extent can have a valid (higher than zero) size when the window is minimized.
 		// However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
-		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		if (!validSwapchainExtent() || isMinimized())
+		// In either case, when the window is not visible, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
+		auto not_visible = SDL::getWindowFlags(mSDLWindow) & static_cast<uint32>((SDL_WINDOW_MINIMIZED | SDL_WINDOW_HIDDEN)) > 0;
+		if (!validSwapchainExtent() || not_visible)
 			return VK_NULL_HANDLE;
 
 		// Under a wayland session, 'vkAcquireNextImageKHR' doesn't fail when the active swap chain extent doesn't match the surface.
@@ -1093,6 +1094,18 @@ namespace nap
 	bool RenderWindow::isMinimized() const
 	{
 		return (SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0;
+	}
+
+
+	bool RenderWindow::isHidden() const
+	{
+		return (SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_HIDDEN) != 0;
+	}
+
+
+	bool RenderWindow::isOccluded() const
+	{
+		return (SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_OCCLUDED) != 0;
 	}
 }
 
