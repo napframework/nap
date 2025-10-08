@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "appcontext.h"
 #include "napkin-resources.h"
+#include "napkin-env.h"
 
 #include <QFontDatabase>
 #include <QCommandLineParser>
@@ -22,15 +23,6 @@ namespace napkin
 		inline constexpr int parseError		= 1;		//< Parse error
 		inline constexpr int coreError		= 2;		//< Core initialization error
 		inline constexpr int documentError	= 3;		//< Document load error
-	}
-
-	void setEnv(const char* key, const char* value)
-	{
-#ifdef _WIN32
-		_putenv_s(key, value);
-#else
-		setenv(key, value, 0);
-#endif // _WIN32
 	}
 }
 
@@ -144,7 +136,7 @@ int main(int argc, char* argv[])
 	// X applications executed in a wayland session use XWayland for compatibility.
 	// It is recommended that you use X11 instead of wayland until properly supported by SDL and NVIDIA.
 #ifdef __linux__
-	napkin::setEnv("QT_QPA_PLATFORM", "xcb");
+	env::set(env::option::QT_QPA_PLATFORM, "xcb");
 #endif
 
 	// Start logging to file next to console

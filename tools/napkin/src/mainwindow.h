@@ -14,6 +14,7 @@
 #include "actionmodel.h"
 #include "appcontext.h"
 #include "themeselectionmenu.h"
+#include "stagewidget.h"
 #include "panels/apprunnerpanel.h"
 #include "panels/historypanel.h"
 #include "panels/inspectorpanel.h"
@@ -24,8 +25,6 @@
 #include "panels/modulepanel.h"
 #include "panels/instanceproppanel.h"
 #include "panels/serviceconfigpanel.h"
-#include "panels/meshpreviewpanel.h"
-#include "panels/texturepreviewpanel.h"
 #include "panels/pathbrowserpanel.h"
 
 namespace napkin
@@ -205,8 +204,7 @@ namespace napkin
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;
 		ScenePanel mScenePanel;
-		TexturePreviewPanel mTexturePreviewPanel;
-		MeshPreviewPanel mMeshPreviewPanel;
+		std::vector<std::unique_ptr<StageWidget>> mApplets;
 		ServiceConfigPanel mServiceConfigPanel;
 
 		ThemeSelectionMenu mThemeMenu;

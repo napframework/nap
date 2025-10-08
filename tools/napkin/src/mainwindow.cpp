@@ -3,12 +3,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "mainwindow.h"
+#include "panels/meshpreviewpanel.h"
+#include "panels/texturepreviewpanel.h"
+#include "napkin-env.h"
 
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QtDebug>
 #include <QDockWidget>
 #include <QMenuBar>
+#include <QtEnvironmentVariables>
 #include <fcurve.h>
 #include <utility/fileutils.h>
 #include <napqt/autosettings.h>
@@ -87,9 +91,12 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		event->ignore();
 		return;
 	}
-	mTexturePreviewPanel.close();
-	mMeshPreviewPanel.close();
+
+	// Store geometry and stop applets from running
 	qt::AutoSettings::get().store(*this);
+	for (auto& applet : mApplets)
+		applet->close();
+
 	QMainWindow::closeEvent(event);
 }
 
@@ -106,8 +113,13 @@ void MainWindow::addDocks()
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
-	addDock(QString::fromStdString(mTexturePreviewPanel.getDisplayName()), &mTexturePreviewPanel);
-	addDock(QString::fromStdString(mMeshPreviewPanel.getDisplayName()), &mMeshPreviewPanel);
+
+	// Add widget applets
+	for (auto& applet : mApplets)
+	{
+		addDock(QString::fromStdString(applet->getDisplayName()), applet.get());
+		mResourcePanel.registerStageOption(applet->toOption());
+	}
 
 	// Add logger -> raise when it receives an important message
 	auto* log_dock = addDock("Log", &mLogPanel);
@@ -115,11 +127,6 @@ void MainWindow::addDocks()
 		log_dock->raise();
 		}
 	);
-
-	// Register resource load options ->
-	// Tells the resource panel which widgets (preview, etc.) are available to handle specific types.
-	mResourcePanel.registerStageOption(mTexturePreviewPanel.toOption());
-	mResourcePanel.registerStageOption(mMeshPreviewPanel.toOption());
 
 	// Add menu
 	menuBar()->addMenu(&mPanelsMenu);
@@ -206,6 +213,13 @@ void MainWindow::updateWindowTitle()
 
 MainWindow::MainWindow() : mErrorDialog(this)
 {
+	// Create applets when NAPKIN_DISABLE_APPLETS isn't set
+	if (env::disabled(env::option::NAPKIN_DISABLE_APPLETS))
+	{
+		mApplets.emplace_back(std::make_unique<TexturePreviewPanel>());
+		mApplets.emplace_back(std::make_unique<MeshPreviewPanel>());
+	}
+
 	setWindowTitle(QApplication::applicationName());
 	setDockNestingEnabled(true);
 	setStatusBar(&mStatusBar);
@@ -520,4 +534,3 @@ QDockWidget* MainWindow::addDock(const QString& name, QWidget* widget, Qt::DockW
 	addDockWidget(area, dock_widget);
 	return dock_widget;
 }
-
