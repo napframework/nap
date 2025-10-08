@@ -8,7 +8,8 @@
         "napcameracontrol",
         "napsdlinput",
         "napimgui",
-        "napapi"
+        "napapi",
+        "naprenderadvanced"
     ],
     "Data": "data/mesh_preview.json",
     "ServiceConfig": "",

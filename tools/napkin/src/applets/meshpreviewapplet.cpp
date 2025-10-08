@@ -48,8 +48,18 @@ namespace napkin
 		if (!error.check(scene != nullptr, "Missing 'Scene'"))
 			return false;
 
+		// Get the text entity
 		mTextEntity = scene->findEntity("Text");
-		if (!error.check(mTextEntity != nullptr, "Missing 'Text' Entity"))
+		if (!error.check(mTextEntity != nullptr, "Missing 'Text' entity"))
+			return false;
+
+		// Get the render entity
+		mRenderEntity = scene->findEntity("Renderer");
+		if (!error.check(mRenderEntity != nullptr, "Mussing 'Renderer' entity"))
+			return false;
+
+		mConstantEntity = scene->findEntity("ConstantRenderer");
+		if (!error.check(mRenderEntity != nullptr, "Mussing 'ConstantRenderer' entity"))
 			return false;
 
 		// Fetch the two different cameras
@@ -120,12 +130,23 @@ namespace napkin
 			// Begin the render pass
 			render_window.beginRendering();
 
+			std::vector<RenderableComponentInstance*> render_comps =
+			{
+				&mConstantEntity->getComponent<RenderableMeshComponentInstance>()
+			};
+
+			auto& camera = mPerspectiveCamEntity->getComponent<PerspCameraComponentInstance>();
+			mRenderService->renderObjects(*mRenderWindow, camera, render_comps);
+
+
+			/*
 			// Locate component that can render text to screen
 			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 
 			// Center text and render it using the given draw call, 
 			render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
 			render_text.draw(render_window);
+			*/
 
 			// Draw our GUI
 			mGuiService->draw();
