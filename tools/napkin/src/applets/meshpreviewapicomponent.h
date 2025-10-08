@@ -67,7 +67,7 @@ namespace napkin
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Resolved link to the frame mesh component
-		ComponentInstancePtr<FrameMeshComponent> mFrameMesh =	{ this, &MeshPreviewAPIcomponent::mFrameMeshComponent };
+		ComponentInstancePtr<FrameMeshComponent> mFrameMeshComponent =	{ this, &MeshPreviewAPIcomponent::mFrameMeshComponent };
 
 	private:
 		// Callbacks

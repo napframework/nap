@@ -5,6 +5,11 @@
 #pragma once
 
 #include <component.h>
+#include <orbitcontroller.h>
+#include <perspcameracomponent.h>
+#include <componentptr.h>
+#include <renderablemeshcomponent.h>
+#include <box.h>
 
 namespace napkin
 {
@@ -18,6 +23,11 @@ namespace napkin
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(FrameMeshComponent, FrameMeshComponentInstance)
+
+	public:
+		ComponentPtr<OrbitController> mOrbitController;				///< Property: 'OrbitController' Camera orbit controller
+		ComponentPtr<PerspCameraComponent> mCamera;					///< Property: 'Camera' Perspective Camera
+		ComponentPtr<RenderableMeshComponent> mFlatRenderer;		///< Property: 'FlatRenderer' flat renderer
 	};
 
 
@@ -36,12 +46,28 @@ namespace napkin
 		 * @param errorState the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * update framemeshcomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
+		 * Bind and optionally frame mesh
+		 * @param mesh the mesh to set
+		 * @param frame if the camera should frame the mesh
+		 * @param error contains the error if the mesh can't be set
 		 */
-		virtual void update(double deltaTime) override;
+		bool load(std::unique_ptr<IMesh>&& mesh, utility::ErrorState& error);
+
+		/**
+		 * Frames current selection
+		 */
+		void frame();
+
+		ComponentInstancePtr<OrbitController> mOrbitController		= { this, &napkin::FrameMeshComponent::mOrbitController };
+		ComponentInstancePtr<PerspCameraComponent> mCamera			= { this, &napkin::FrameMeshComponent::mCamera };
+		ComponentInstancePtr<RenderableMeshComponent> mFlatRenderer = { this, &napkin::FrameMeshComponent::mFlatRenderer };
+
+	private:
+		std::unique_ptr<IMesh> mMesh = nullptr;
+		math::Box mBounds;
+		float mSpeedReference = 0.0f;
 	};
 }

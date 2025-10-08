@@ -23,63 +23,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "ConstantRenderer",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "ConstantXFormComponent",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "ConstantRenderComponent",
-                    "Visible": true,
-                    "Tags": [],
-                    "Layer": "",
-                    "Mesh": "SphereMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "DirectionalLight",
             "Components": [
                 {
@@ -128,6 +71,63 @@
                     "ClippingPlanes": {
                         "x": 1.0,
                         "y": 1000.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "FlatRenderer",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "FlatXFormComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "FlatRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "SphereMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
                     }
                 }
             ],
@@ -296,8 +296,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "CameraControllerComponent",
-                    "MovementSpeed": 0.032999999821186066,
-                    "RotateSpeed": 0.0032999999821186066,
+                    "MovementSpeed": 0.003000000026077032,
+                    "RotateSpeed": 0.0022499999031424522,
                     "PerspCameraComponent": "CameraComponent",
                     "LimitZoomDistance": false,
                     "MinimumZoomDistance": 0.5,
@@ -338,11 +338,14 @@
                 },
                 {
                     "Type": "napkin::FrameMeshComponent",
-                    "mID": "FrameMeshComponent"
+                    "mID": "FrameMeshComponent",
+                    "OrbitController": "../PerspectiveCamera/CameraControllerComponent",
+                    "Camera": "../PerspectiveCamera/CameraComponent",
+                    "FlatRenderer": "./FlatRenderer/FlatRenderComponent"
                 }
             ],
             "Children": [
-                "ConstantRenderer",
+                "FlatRenderer",
                 "NormalRenderer"
             ]
         },

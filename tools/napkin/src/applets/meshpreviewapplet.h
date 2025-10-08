@@ -84,7 +84,7 @@ namespace napkin
 		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
 
 		ObjectPtr<EntityInstance>	mRenderEntity = nullptr;			//< Pointer to the render entity
-		ObjectPtr<EntityInstance>	mConstantEntity = nullptr;			//< Pointer to the constant entity
+		ObjectPtr<EntityInstance>	mFlatEntity = nullptr;				//< Pointer to the constant entity
 		ObjectPtr<EntityInstance>	mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera

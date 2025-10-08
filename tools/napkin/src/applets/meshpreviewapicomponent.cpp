@@ -119,7 +119,14 @@ namespace napkin
 			}
 		}
 
-		nap::Logger::info("Loading '%s'", object->mID.c_str());
+		// Load it
+		std::unique_ptr<IMesh> mesh(static_cast<IMesh*>(object.release()));
+		mFrameMeshComponent->load(std::move(mesh), error);
+
+		// Frame when requested
+		auto* frame_arg = apiEvent.getArgumentByName(MeshPreviewAPIcomponent::loadMeshArg2);
+		if (frame_arg->asBool())
+			mFrameMeshComponent->frame();
 	}
 
 
@@ -147,3 +154,4 @@ namespace napkin
 		mGUIService->setPalette(var.get_value<gui::EColorScheme>());
 	}
 }
+

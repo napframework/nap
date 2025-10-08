@@ -4,6 +4,7 @@
 
 // Local includes
 #include "meshpreviewapplet.h"
+#include "framemeshcomponent.h"
 
 // External includes
 #include <utility/fileutils.h>
@@ -58,8 +59,8 @@ namespace napkin
 		if (!error.check(mRenderEntity != nullptr, "Mussing 'Renderer' entity"))
 			return false;
 
-		mConstantEntity = scene->findEntity("ConstantRenderer");
-		if (!error.check(mRenderEntity != nullptr, "Mussing 'ConstantRenderer' entity"))
+		mFlatEntity = scene->findEntity("FlatRenderer");
+		if (!error.check(mRenderEntity != nullptr, "Mussing 'FlatRenderer' entity"))
 			return false;
 
 		// Fetch the two different cameras
@@ -107,7 +108,7 @@ namespace napkin
 		// Add frame icon
 		if (ImGui::ImageButton(mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Selection"))
 		{
-			// TODO: Frame
+			mRenderEntity->getComponent<FrameMeshComponentInstance>().frame();
 		}
 		ImGui::EndMainMenuBar();
 	}
@@ -132,7 +133,7 @@ namespace napkin
 
 			std::vector<RenderableComponentInstance*> render_comps =
 			{
-				&mConstantEntity->getComponent<RenderableMeshComponentInstance>()
+				&mFlatEntity->getComponent<RenderableMeshComponentInstance>()
 			};
 
 			auto& camera = mPerspectiveCamEntity->getComponent<PerspCameraComponentInstance>();
