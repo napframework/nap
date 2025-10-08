@@ -25,14 +25,14 @@ namespace napkin
 		 * @param env the environment variable to check
 		 * @return if the given environment variable is defined and set to 1 (enabled)
 		 */
-		bool enabled(const char* env)	{ auto v = qgetenv(env); return v != nullptr && v.toInt() == 1; }
+		inline bool enabled(const char* env)	{ auto v = qgetenv(env); return v != nullptr && v.toInt() == 1; }
 
 		/**
 		 * Returns if the given environment variable isn't defined or set to 0 (disabled)
 		 * @param env the environment variable to check
 		 * @return if the given environment variable isn't defined or set to 0 (disabled)
 		 */
-		bool disabled(const char* env)	{ auto v = qgetenv(env); return v == nullptr || v.toInt() == 0; }
+		inline bool disabled(const char* env)	{ auto v = qgetenv(env); return v == nullptr || v.toInt() == 0; }
 
 		/**
 		 * Set given environment variable to value
@@ -40,6 +40,6 @@ namespace napkin
 		 * @param value the value of the environment variable
 		 * @return if the value was set
 		 */
-		bool set(const char* env, const char* value) { qputenv(env, value); }
+		inline bool set(const char* env, const char* value) { return qputenv(env, value); }
 	}
 }
