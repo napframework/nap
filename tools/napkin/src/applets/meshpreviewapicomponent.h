@@ -4,6 +4,9 @@
 
 #pragma once
 
+// Local includes
+#include "framemeshcomponent.h"
+
 // External includes
 #include <apicomponent.h>
 #include <componentptr.h>
@@ -41,6 +44,8 @@ namespace napkin
 
 		// Requires API component
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+
+		ComponentPtr<FrameMeshComponent> mFrameMeshComponent;		///< Property: 'FrameMesh' the frame mesh component
 	};
 
 
@@ -60,6 +65,9 @@ namespace napkin
 		 * @return if the component initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		// Resolved link to the frame mesh component
+		ComponentInstancePtr<FrameMeshComponent> mFrameMesh =	{ this, &MeshPreviewAPIcomponent::mFrameMeshComponent };
 
 	private:
 		// Callbacks

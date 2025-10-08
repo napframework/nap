@@ -15,7 +15,8 @@
                 },
                 {
                     "Type": "napkin::MeshPreviewAPIcomponent",
-                    "mID": "APIComponentHandler"
+                    "mID": "APIComponentHandler",
+                    "FrameMesh": "../Renderer/FrameMeshComponent"
                 }
             ],
             "Children": []
@@ -334,6 +335,10 @@
                         },
                         "UniformScale": 1.0
                     }
+                },
+                {
+                    "Type": "napkin::FrameMeshComponent",
+                    "mID": "FrameMeshComponent"
                 }
             ],
             "Children": [

@@ -15,7 +15,7 @@
 
 // nap::meshpreviewapicomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::MeshPreviewAPIcomponent)
-	// Put additional properties here
+	RTTI_PROPERTY("FrameMesh", &napkin::MeshPreviewAPIcomponent::mFrameMeshComponent, nap::rtti::EPropertyMetaData::Required, "Binds a mesh to a renderer and frames it in the viewport")
 RTTI_END_CLASS
 
 // nap::meshpreviewapicomponentInstance run time class definition 
