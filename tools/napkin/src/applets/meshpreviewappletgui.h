@@ -4,28 +4,25 @@
 
 #pragma once
 
-// Local includes
-#include "texturepreviewapicomponent.h"
-
 // External includes
 #include <utility/errorstate.h>
 #include <rtti/typeinfo.h>
 
 namespace napkin
 {
-	class TexturePreviewApplet;
+	class MeshPreviewApplet;
 	using namespace nap;
 
 	/**
-	 * Creates and draws the GUI of the texture preview applet
+	 * Creates and draws the GUI of the mesh preview applet
 	 */
-	class TexturePreviewAppletGUI final
+	class MeshPreviewAppletGUI final
 	{
 	public:
 		/**
 		 * Gui requires full access to applet
 		 */
-		TexturePreviewAppletGUI(TexturePreviewApplet& applet) :
+		MeshPreviewAppletGUI(MeshPreviewApplet& applet) :
 			mApplet(applet)												{ }
 
 		/**
@@ -42,9 +39,7 @@ namespace napkin
 	private:
 		void texDetail(std::string&& label, const std::string& value, std::string&& appendix = "");
 		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
-		void updateTexture2D(TexturePreviewAPIComponentInstance& controller);
-		void updateTextureCube(TexturePreviewAPIComponentInstance& controller);
-		TexturePreviewApplet& mApplet;
+		MeshPreviewApplet& mApplet;
 	};
 }
 

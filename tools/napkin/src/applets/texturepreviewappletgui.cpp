@@ -5,6 +5,7 @@
 // Local includes
 #include "texturepreviewappletgui.h"
 #include "texturepreviewapicomponent.h"
+#include "texturepreviewapplet.h"
 
 // External includes
 #include <vulkan/vk_enum_string_helper.h>

@@ -20,6 +20,7 @@
 
 // Local includes
 #include "../applet.h"
+#include "meshpreviewappletgui.h"
 
 namespace napkin
 {
@@ -27,17 +28,19 @@ namespace napkin
 	using namespace nap::rtti;
 
 	/**
-	 * Main application that is called from within the main loop
+	 * Simple mesh preview application.
+	 * Allows users to load and visualize all mesh (nap::IMesh) types.
 	 */
 	class MeshPreviewApplet : public napkin::Applet
 	{
+		friend class MeshPreviewAppletGUI;
 		RTTI_ENABLE(napkin::Applet)
 	public:
 		/**
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		MeshPreviewApplet(nap::Core& core) : napkin::Applet(core) { }
+		MeshPreviewApplet(nap::Core& core);
 		
 		/**
 		 * Initialize all the services and app specific data structures
@@ -68,12 +71,6 @@ namespace napkin
 		 * @param inputEvent the input event that occurred
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
-		
-		/**
-		 * Called when the app is shutting down after quit() has been invoked
-		 * @return the application exit code, this is returned when the main loop is exited
-		 */
-		virtual int shutdown() override;
 
 	private:
 		ResourceManager*			mResourceManager = nullptr;			///< Manages all the loaded data
@@ -91,5 +88,6 @@ namespace napkin
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
 
 		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
+		std::unique_ptr<MeshPreviewAppletGUI> mGUI;						//< Applet gui helper class
 	};
 }

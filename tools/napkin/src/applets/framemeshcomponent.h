@@ -38,8 +38,7 @@ namespace napkin
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		FrameMeshComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)									{ }
+		FrameMeshComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initialize based on the resource
@@ -61,6 +60,37 @@ namespace napkin
 		 */
 		void frame();
 
+		/**
+		 * If a mesh has been loaded
+		 */
+		bool loaded() const { return mMesh != nullptr; }
+
+		/**
+		 * @return loaded mesh, nullptr if no mesh is loaded
+		 */
+		nap::IMesh* getMesh() const { return mMesh.get(); }
+
+		/**
+		 * @return mesh bounds
+		 */
+		const math::Box& getBounds() const { return mBounds; }
+
+		/**
+		 * Draws selection as mesh
+		 */
+		void drawMesh(const RGBAColorFloat& color);
+
+		/**
+		 * Draws selection as wireframe
+		 */
+		void drawWireframe(const RGBAColorFloat& color, float width);
+
+		/**
+		 * Draws selection as points
+		 */
+		void drawPoints(const RGBAColorFloat& color);
+
+
 		ComponentInstancePtr<OrbitController> mOrbitController		= { this, &napkin::FrameMeshComponent::mOrbitController };
 		ComponentInstancePtr<PerspCameraComponent> mCamera			= { this, &napkin::FrameMeshComponent::mCamera };
 		ComponentInstancePtr<RenderableMeshComponent> mFlatRenderer = { this, &napkin::FrameMeshComponent::mFlatRenderer };
@@ -69,5 +99,12 @@ namespace napkin
 		std::unique_ptr<IMesh> mMesh = nullptr;
 		math::Box mBounds;
 		float mSpeedReference = 0.0f;
+
+		// Uniforms
+		UniformVec3Instance* mColorUniform = nullptr;
+		UniformFloatInstance* mAlphaUniform = nullptr;
+		RenderService* mRenderService = nullptr;
+
+		void draw(const RGBAColorFloat& color);
 	};
 }

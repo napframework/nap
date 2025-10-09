@@ -5,7 +5,6 @@
 // Local Includes
 #include "texturepreviewapplet.h"
 #include "texturepreviewapicomponent.h"
-#include "texturepreviewappletgui.h"
 
 // External Includes
 #include <utility/fileutils.h>

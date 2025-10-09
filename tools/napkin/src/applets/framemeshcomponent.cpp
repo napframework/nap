@@ -9,6 +9,9 @@
 #include <entity.h>
 #include <renderglobals.h>
 #include <meshutils.h>
+#include <constantshader.h>
+#include <nap/core.h>
+#include <renderservice.h>
 
 // nap::framemeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
@@ -27,10 +30,32 @@ RTTI_END_CLASS
 
 namespace napkin
 {
+
+	FrameMeshComponentInstance::FrameMeshComponentInstance(EntityInstance& entity, Component& resource) :
+		ComponentInstance(entity, resource) { }
+
+
 	bool FrameMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Fetch render service
+		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
+		assert(mRenderService != nullptr);
+
 		// Fetch normalized rotation speed
 		mSpeedReference = mOrbitController->getMovementSpeed();
+
+		// Fetch uniforms
+		auto* ubo = mFlatRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
+		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
+			return false;
+
+		mColorUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::constant::color);
+		if (!errorState.check(mColorUniform != nullptr, "Missing '%s' uniform", uniform::constant::color))
+			return false;
+
+		mAlphaUniform = ubo->getOrCreateUniform<UniformFloatInstance>(uniform::constant::alpha);
+		if (!errorState.check(mAlphaUniform != nullptr, "Missing '%s' uniform", uniform::constant::alpha))
+			return false;
 
 		return true;
 	}
@@ -83,6 +108,45 @@ namespace napkin
 		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.1f);
 		props.mFarClippingPlane = sky_scale;
 		mCamera->setProperties(props);
+	}
+
+
+	void FrameMeshComponentInstance::drawMesh(const RGBAColorFloat& color)
+	{
+		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::Additive);
+		assert(mMesh != nullptr);
+		mMesh->getMeshInstance().setDrawMode(EDrawMode::Triangles);
+		draw(color);
+	}
+
+
+	void FrameMeshComponentInstance::drawWireframe(const RGBAColorFloat& color, float width)
+	{
+		assert(mMesh != nullptr);
+		mMesh->getMeshInstance().setDrawMode(EDrawMode::Lines);
+		mFlatRenderer->setLineWidth(width);
+		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
+		draw(color);
+	}
+
+
+	void FrameMeshComponentInstance::drawPoints(const RGBAColorFloat& color)
+	{
+		assert(mMesh != nullptr);
+		mMesh->getMeshInstance().setDrawMode(EDrawMode::Points);
+		draw(color);
+	}
+
+
+	void FrameMeshComponentInstance::draw(const RGBAColorFloat& color)
+	{
+		auto* window = mRenderService->getCurrentRenderWindow();
+		assert(window != nullptr);
+
+		mColorUniform->setValue(color.toVec4());
+		mAlphaUniform->setValue(color.getAlpha());
+		std::vector<RenderableComponentInstance*> render_comps = { mFlatRenderer.get()	};
+		mRenderService->renderObjects(*window, *mCamera, render_comps);
 	}
 }
 

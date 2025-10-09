@@ -19,12 +19,12 @@
 
 // Local includes
 #include "../applet.h"
+#include "texturepreviewappletgui.h"
 
 namespace napkin
 {
 	using namespace nap;
 	using namespace nap::rtti;
-	class TexturePreviewAppletGUI;
 
 	/**
 	 * 2DTexture and Cubemap preview application.

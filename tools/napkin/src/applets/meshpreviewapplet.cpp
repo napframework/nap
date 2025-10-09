@@ -24,6 +24,10 @@ RTTI_END_CLASS
 
 namespace napkin 
 {
+
+	MeshPreviewApplet::MeshPreviewApplet(nap::Core& core) :
+		napkin::Applet(core) { }
+
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
@@ -72,6 +76,9 @@ namespace napkin
 		if (!error.check(mOrthographicCamEntity != nullptr, "Missing 'OrthographicCamera' entity"))
 			return false;
 
+		// Create GUI
+		mGUI = std::make_unique<MeshPreviewAppletGUI>(*this);
+
 		return true;
 	}
 	
@@ -86,31 +93,8 @@ namespace napkin
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Setup GUI
-		ImGui::BeginMainMenuBar();
-
-		if (ImGui::BeginMenu("Background"))
-		{
-			ImGui::ColorPicker4("Color", mClearColor.getData());
-			ImGui::EndMenu();
-		}
-
-		if (ImGui::BeginMenu("Applet"))
-		{
-			ImGui::MenuItem(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-			ImGui::MenuItem(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
-			ImGui::EndMenu();
-		}
-
-		float bar_height = ImGui::GetWindowHeight();
-		float ico_height = bar_height * 0.7f;
-
-		// Add frame icon
-		if (ImGui::ImageButton(mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Selection"))
-		{
-			mRenderEntity->getComponent<FrameMeshComponentInstance>().frame();
-		}
-		ImGui::EndMainMenuBar();
+		// Update GUI
+		mGUI->update(deltaTime);
 	}
 	
 	
@@ -131,26 +115,29 @@ namespace napkin
 			// Begin the render pass
 			render_window.beginRendering();
 
-			std::vector<RenderableComponentInstance*> render_comps =
+			// Render selected mesh
+			auto& controller = mRenderEntity->getComponent<FrameMeshComponentInstance>();
+			if (controller.loaded())
 			{
-				&mFlatEntity->getComponent<RenderableMeshComponentInstance>()
-			};
+				auto palette = mGuiService->getPalette();
+				auto c1 = palette.mFront2Color.convert<RGBAColorFloat>(); c1.setAlpha(1.0f);
+				auto c2 = RGBAColorFloat(0.0f, 0.0f, 0.0f, 0.2f);
+				auto c3 = palette.mHighlightColor3.convert<RGBAColorFloat>(); c3.setAlpha(1.0f);
 
-			auto& camera = mPerspectiveCamEntity->getComponent<PerspCameraComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, camera, render_comps);
-
-
-			/*
-			// Locate component that can render text to screen
-			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
-
-			// Center text and render it using the given draw call, 
-			render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
-			render_text.draw(render_window);
-			*/
+				controller.drawMesh(c1);
+				controller.drawWireframe(c2, 1.0f);
+				//controller.drawPoints(c3);
+			}
+			else
+			{
+				// Locate component that can render text to screen
+				auto& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+				render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
+				render_text.draw(render_window);
+			}
 
 			// Draw our GUI
-			mGuiService->draw();
+			mGUI->draw();
 
 			// End the render pass
 			render_window.endRendering();
@@ -173,11 +160,5 @@ namespace napkin
 	void MeshPreviewApplet::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		mInputService->addEvent(std::move(inputEvent));
-	}
-
-	
-	int MeshPreviewApplet::shutdown()
-	{
-		return 0;
 	}
 }
