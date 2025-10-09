@@ -1,3 +1,0 @@
-After build:
-
-install_name_tool -id @rpath/libfreetype.6.dylib libfreetype.6.16.0.dylib

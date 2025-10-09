@@ -53,7 +53,6 @@ if sys.platform.startswith('linux') and not machine() == 'x86_64':
 
 # Build directory names
 LINUX_BUILD_DIR = 'build'
-MACOS_BUILD_DIR = 'xcode'
 MSVC_BUILD_DIR = 'msvc64'
 
 # List of locations on a Ubuntu system where we're happy to find system libraries. Restricting
@@ -333,20 +332,6 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libOpenGL'
 ]
 
-# List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
-# above, restricting to these paths helps us identify libraries being source from strange 
-# locations. However on macOS, unlike on Linux, we trust any libraries we find within these folders.
-# The logic here is that on macOS you're typically going to install custom locations via Brew or
-# MacPorts etc and are less likely to end up within these system paths. If that logic doesn't hold
-# up we'll need to define a list like above for Linux, or use another approach.
-MACOS_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/', 
-                                   '/System/Library/Frameworks/', 
-                                   '/System/Library/PrivateFrameworks/', 
-                                   '/System/Library/Extensions/', 
-                                   '/System/Library/Components/',
-                                   '/Library/CoreMediaIO/'
-                                   ]
-
 # Quicker iteration when debugging this script
 SCRIPT_DEBUG_ONE_APP_ONLY = False
 
@@ -511,9 +496,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
 
     # Launch the app
     my_env = os.environ.copy()
-    # For shared libraries tracking on macOS
-    if sys.platform == 'darwin':
-        my_env['DYLD_PRINT_LIBRARIES'] = '1'
+
     # Split command on Unix
     if sys.platform != 'win32':
         cmd = shlex.split(cmd)
@@ -567,10 +550,6 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         stdout = stdout.decode('utf8')
     if type(stderr) == bytes:
         stderr = stderr.decode('utf8')    
-        
-    # Check for unexpected libraries
-    if sys.platform == 'darwin':
-        unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
 
     # Done
     return (success, stdout, stderr, unexpected_libraries, p.returncode)
@@ -612,40 +591,6 @@ def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path):
             if linux_file_is_shared_lib(path):
                 if not shared_lib_accepted(path, accepted_shared_libs_path):
                     unexpected_libs.append(path)
-
-    return unexpected_libs
-
-def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path):
-    """Check whether the a NAP process has used unexpected libraries on macOS
-
-    Parameters
-    ----------
-    stdout : str
-        STDOUT from the process
-    accepted_shared_libs_path : str
-        Absolute path to directory which we're happy to see any shared libraries source from.
-        Typically NAP framework for build programs running from framework, or the packaged app for
-        single apps.
-
-    Returns
-    -------
-    list
-        List of paths to unexpected libraries used
-    """
-
-    unexpected_libs = []
-    # Iterate STDOUT lines for shared libraries loaded and logged via DYLD_PRINT_LIBRARIES env. var
-    for line in stdout.split('\n'):
-        if line.startswith('dyld: loaded:'):
-            # Parse library path
-            lib = ':'.join(line.split(':')[2:]).strip()
-
-            # Get absolute path
-            libs_abs_path = os.path.abspath(lib)
-
-            # Check if library is accepted
-            if not shared_lib_accepted(libs_abs_path, accepted_shared_libs_path):
-                unexpected_libs.append(libs_abs_path)
 
     return unexpected_libs
 
@@ -705,30 +650,21 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
     accepted = False
 
     # Check if it's within the system libs paths
-    if is_linux():
-        for system_path in LINUX_ACCEPTED_SYSTEM_LIB_PATHS:
-            if file_path.startswith(system_path):
-                in_system_path = True
+    for system_path in LINUX_ACCEPTED_SYSTEM_LIB_PATHS:
+        if file_path.startswith(system_path):
+            in_system_path = True
 
-                if not ".so" in filename:
-                    eprint("Error: Unhandled Linux library due to lacking .so: %s" % path)
-                    return False
+            if not ".so" in filename:
+                eprint("Error: Unhandled Linux library due to lacking .so: %s" % path)
+                return False
 
-                # Get short library name used for verification
-                filename_parts = filename.split(".so")
-                short_lib_name = filename_parts[0]
+            # Get short library name used for verification
+            filename_parts = filename.split(".so")
+            short_lib_name = filename_parts[0]
 
-                # Verify against system library list
-                accepted = linux_system_library_accepted(short_lib_name)
-                break
-    else:
-        for system_path in MACOS_ACCEPTED_SYSTEM_LIB_PATHS:
-            if file_path.startswith(system_path):
-                # on macOS if it's within one of our system paths accept the library. See notes
-                # above with MACOS_ACCEPTED_SYSTEM_LIB_PATHS definition.
-                in_system_path = True
-                accepted = True
-                break
+            # Verify against system library list
+            accepted = linux_system_library_accepted(short_lib_name)
+            break
 
     if in_system_path:
         if accepted:
@@ -819,10 +755,7 @@ def build_cwd_app(app_name, build_type=APP_BUILD_TYPE):
     print("- Building...")
 
     # Build build command
-    if sys.platform.startswith('darwin'):
-        os.chdir(MACOS_BUILD_DIR)
-        cmd = 'xcodebuild -configuration %s -jobs %s' % (build_type, cpu_count())
-    elif is_linux():
+    if is_linux():
         os.chdir(LINUX_BUILD_DIR)
         cmd = 'make all . -j%s' % cpu_count()
     else:

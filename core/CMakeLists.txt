@@ -12,18 +12,7 @@ configure_file(src/nap/version.h.in version.h @ONLY)
 
 list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
-if(APPLE)
-    add_library(${PROJECT_NAME} SHARED 
-                ${SOURCES}
-                src/nap/osx/directorywatcher.cpp
-                src/nap/osx/module.cpp
-                src/nap/osx/core_env.cpp
-                src/nap/native/logger_ext.cpp
-                src/nap/native/core_ext.cpp
-                src/nap/native/resourcemanager_ext.cpp
-                src/nap/native/modulecache_ext.cpp
-                )
-elseif(MSVC)
+if(MSVC)
     add_library(${PROJECT_NAME} SHARED 
                 ${SOURCES}
                 src/nap/win32/directorywatcher.cpp
@@ -70,15 +59,10 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC src ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(${PROJECT_NAME} naputility naprtti)
 
-if (UNIX AND NOT APPLE)
+if (UNIX)
     include_directories(${PROJECT_NAME} src/nap/linux/FileWatcher)
-endif()
-
-if(APPLE)
-    target_link_libraries(${PROJECT_NAME} "-framework CoreServices")
-elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
-endif ()
+endif()
 
 # Package into release build
 if(WIN32)
@@ -87,9 +71,7 @@ if(WIN32)
     if(PACKAGE_PDBS)
         install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>-${ARCH})
     endif()
-elseif(APPLE)
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>-${ARCH})
-else()
+elseif(UNIX)
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE}-${ARCH})
 endif()
 
@@ -97,12 +79,6 @@ if(WIN32)
     # Install for fbxconverter on Win64
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
             CONFIGURATIONS Release)
-elseif(APPLE)
-    set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
-    set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
-    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
-elseif(UNIX)
-    set_python_installed_rpath_on_linux_object(${PROJECT_NAME} "../..")
 endif()
 
 # Package headers

@@ -133,7 +133,6 @@ const napkin::FileType& napkin::ResourceFactory::getFiletype(const nap::rtti::Pr
 		{EPropertyFileType::Image,			"Image Files",      { }},
 		{EPropertyFileType::FragShader,		"Fragment Shaders", {"frag"}},
 		{EPropertyFileType::VertShader,		"Vertex Shaders",   {"vert"}},
-		{EPropertyFileType::Python,			"Python Files",     {"py"}},
 		{EPropertyFileType::Mesh,			"NAP Mesh Files",   {"mesh"}},
 		{EPropertyFileType::Video,			"Video Files",      {} },
 		{EPropertyFileType::ImageSequence,	"Image Sequence",	{} },

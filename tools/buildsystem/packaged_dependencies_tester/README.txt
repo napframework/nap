@@ -6,7 +6,7 @@ During the testing each demo is configured, built, packaged, run from normal bui
 packaged app. Napkin is run from normal build output and a packaged app. An app is created from the template
 and then built, packaged, run from normal build output and run from the packaged app.
 
-On macOS and Linux the packaged NAP framework directory and Qt library directory are renamed before the
+On Linux the packaged NAP framework directory and Qt library directory are renamed before the
 packaged apps are run in an attempt to avoid dependency issues being hidden by libraries sourced from
 those paths. One impact of this is the process running in a slightly strange order. Another impact is that
 the test suite should probably be the only (NAP-related) thing running on those systems at that time.

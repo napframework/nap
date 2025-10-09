@@ -105,16 +105,7 @@ endif()
 target_link_libraries(${PROJECT_NAME} ${DEEP_DEPENDENT_NAP_MODULES})
 
 # Add extra RPATHs from module library search paths
-if(APPLE)
-    set(MACOS_EXTRA_RPATH_RELEASE "")
-    set(MACOS_EXTRA_RPATH_DEBUG "")
-    foreach(rpath ${DEEP_DEPENDENT_RPATHS})
-        string(REPLACE "{BUILD_TYPE}" "Release" release_rpath "${rpath}")
-        list(APPEND MACOS_EXTRA_RPATH_RELEASE ${release_rpath})
-        string(REPLACE "{BUILD_TYPE}" "Debug" debug_rpath "${rpath}")
-        list(APPEND MACOS_EXTRA_RPATH_DEBUG ${debug_rpath})
-    endforeach()
-elseif(UNIX)
+if(UNIX)
     set(LINUX_EXTRA_RPATH "")
     foreach(rpath ${DEEP_DEPENDENT_RPATHS})
         string(REPLACE "{BUILD_TYPE}" ${CMAKE_BUILD_TYPE} rpath "${rpath}")
@@ -146,22 +137,20 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
     endif()
 
     # On macOS & Linux install module into packaged app
-    if (NOT WIN32)
+    if(UNIX)
         install(FILES $<TARGET_FILE:${PROJECT_NAME}> DESTINATION lib CONFIGURATIONS Release)
         install(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PROJECT_NAME}.json DESTINATION lib CONFIGURATIONS Release)
 
         # On Linux set our user modules to use their directory for RPATH when installing
-        if(NOT APPLE)
-            install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so\")
-                          execute_process(COMMAND patchelf
-                                                  --set-rpath
-                                                  $ORIGIN/.
-                                                  ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so
-                                          RESULT_VARIABLE EXIT_CODE)
-                          if(NOT \${EXIT_CODE} EQUAL 0)
-                              message(FATAL_ERROR \"Failed to set RPATH on ${MODULE_NAME} using patchelf. Is patchelf installed?\")
-                          endif()")
-        endif()
+        install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so\")
+                      execute_process(COMMAND patchelf
+                                              --set-rpath
+                                              $ORIGIN/.
+                                              ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to set RPATH on ${MODULE_NAME} using patchelf. Is patchelf installed?\")
+                      endif()")
     endif()
 else()
     if(parent_dir MATCHES "^system_modules$")

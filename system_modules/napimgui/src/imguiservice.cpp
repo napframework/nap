@@ -463,11 +463,7 @@ namespace nap
 		else if (event.get_type().is_derived_from(RTTI_OF(MouseWheelEvent)))
 		{
 			const auto& wheel_event = static_cast<const MouseWheelEvent&>(event);
-#ifdef __APPLE__
-			int delta = ImGui::GetIO().KeyShift ? wheel_event.mX * -1 : wheel_event.mY;
-#else
 			int delta = wheel_event.mY;
-#endif
 			context->second->mMouseWheel = delta > 0 ? 1.0f : -1.0f;
 		}
 

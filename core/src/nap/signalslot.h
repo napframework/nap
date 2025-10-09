@@ -11,9 +11,6 @@
 #include <memory>
 #include <iostream>
 
-// Pybind includes
-#include "python.h"
-
 namespace nap
 {
     
@@ -63,13 +60,6 @@ namespace nap
          * Disconnect from another signal
          */
 		void disconnect(Signal<Args...>& signal);
-
-#ifdef NAP_ENABLE_PYTHON
-        /**
-         * Connect a function from a pybind11 python module. Internally the python function is wrapped in a function object.
-         */
-        void connect(const pybind11::function pythonFunction);
-#endif // NAP_ENABLE_PYTHON
 
         /**
          * Convenience method to connect a member function with one argument.
@@ -326,29 +316,6 @@ namespace nap
 		mFunctionEffects->emplace_back(inFunction);
 	}
     
-#ifdef NAP_ENABLE_PYTHON   
-    template <typename... Args>
-    void Signal<Args...>::connect(const pybind11::function pythonFunction)
-    {
-        Function func = [pythonFunction](Args... args)
-        {
-            try
-            {
-                pythonFunction(pybind11::cast(std::forward<Args>(args)..., std::is_lvalue_reference<Args>::value
-                                              ? pybind11::return_value_policy::reference : pybind11::return_value_policy::automatic_reference)...);
-            }
-            catch (const pybind11::error_already_set& err)
-            {
-                auto message = std::string("Runtime python error while executing signal: ") + std::string(err.what());
-                
-                // TODO It would be preferable to log python error message using the nap logger.
-                // Unfortunately the logger is not accessible in signalslot.h though because it uses Signals itself.
-                std::cout << message << std::endl;
-            }
-        };
-        connect(func);
-    }
-#endif // NAP_ENABLE_PYTHON
     
 	template <typename... Args>
 	void Signal<Args...>::trigger(Args... args)

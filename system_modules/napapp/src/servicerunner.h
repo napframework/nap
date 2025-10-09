@@ -166,11 +166,6 @@ namespace nap
 		if (mServicesHandle == nullptr)
 			return false;
 
-#ifdef NAP_ENABLE_PYTHON
-		if (!mCore.initializePython(error))
-			return false;
-#endif
-
 		// Initialize application
 		if(!error.check(app.init(error), "Unable to initialize application"))
 			return false;

@@ -39,33 +39,14 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     install(DIRECTORY ${ARTNET_INCLUDE_DIRS} DESTINATION ${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
 
     # Install libraries
-    if(UNIX AND NOT APPLE)
+    if(UNIX)
         file(GLOB ARTNET_DYLIBS ${ARTNET_LINUX_DIR}/lib/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${ARTNET_DYLIBS} DESTINATION ${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
     else()
         install(FILES $<TARGET_FILE:artnet> DESTINATION ${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/Release)
-    endif()
-    if(WIN32)
         install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION ${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/Release)
     endif()
 
-    # Set artnet install name macOS
-    if(APPLE)
-        # Ensure our libArtnet install name id is set properly, this is really for install into packaging
-        add_custom_command(TARGET ${PROJECT_NAME}
-                           PRE_BUILD
-                           COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libArtnet.dylib $<TARGET_FILE:artnet>
-                           COMMENT "Setting install name for libartnet")
-
-        foreach(build_type Release Debug)
-            install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                                                  -add_rpath
-                                                  @loader_path/../../../../thirdparty/libartnet/bin
-                                                  ${CMAKE_INSTALL_PREFIX}/system_modules/napartnet/lib/${build_type}/napartnet.dylib
-                                          ERROR_QUIET
-                                          )")
-        endforeach()
-    endif()
 else()
     set(MODULE_EXTRA_LIBS artnet)
 
@@ -78,11 +59,7 @@ else()
                                    $<TARGET_FILE:artnet>
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>
                            )
-    elseif(APPLE)
-        # Install artnet lib into packaged project on macOS
-        file(GLOB ARTNET_DYLIBS ${NAP_ROOT}/${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/Release/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-        install(FILES ${ARTNET_DYLIBS} DESTINATION lib)
-    else()
+    elseif(UNIX)
         # Install artnet lib into packaged project on Linux
         file(GLOB ARTNET_DYLIBS ${NAP_ROOT}/${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${ARTNET_DYLIBS} DESTINATION lib)

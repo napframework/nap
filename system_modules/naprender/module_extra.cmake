@@ -43,9 +43,6 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
 
     # Set compile definitions
     target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
-    if(APPLE)
-        target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_METAL_EXT=1)
-    endif()
 
     # Add libraries
     set(LIBRARIES
@@ -64,7 +61,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
              )
     endif()
 
-    if(UNIX AND NOT APPLE AND ${ARCH} STREQUAL "armhf")
+    if(UNIX AND ${ARCH} STREQUAL "armhf")
         list(APPEND LIBRARIES atomic)
     endif()
 
@@ -112,9 +109,6 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
             PATTERN "*.tar.gz" EXCLUDE)
 
     install(FILES ${VULKANSDK_LICENSE_FILES} DESTINATION ${thirdparty_module_dest}/vulkansdk)
-    if(APPLE)
-        install(FILES dist/vulkan_macos/MoltenVK_icd.json DESTINATION system_modules/${PROJECT_NAME}/macos/)
-    endif()
 
     # glslang
     install(FILES ${GLSLANG_DIR}/../../source/LICENSE.txt DESTINATION ${thirdparty_module_dest}/glslang/source)
@@ -177,11 +171,6 @@ else()
     else()
         copy_freeimage_dll()
         copy_assimp_dll()
-    endif()
-
-    # Package MoltenVK ICD file for packaged app on macOS
-    if(APPLE)
-        install(FILES ${NAP_ROOT}/system_modules/naprender/macos/MoltenVK_icd.json DESTINATION lib)
     endif()
 
     # Install thirdparty licenses into lib

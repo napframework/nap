@@ -4,7 +4,6 @@
 
 #include "entity.h"
 #include "scene.h"
-#include <nap/python.h>
 #include <nap/core.h>
 
 using namespace std;

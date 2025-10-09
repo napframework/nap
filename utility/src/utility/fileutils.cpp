@@ -25,14 +25,7 @@
 		#include <fstream>
 	#endif
 	#include <direct.h>
-#elif __APPLE__
-    #include <stdlib.h>
-    #include <sys/stat.h>
-    #include <dirent.h>
-    #include <fstream>
-	#include <unistd.h>
-	#include <mach-o/dyld.h>
-#else
+#elif __linux__
     #include <unistd.h>
     #include <dirent.h>
     #include <fstream>
@@ -44,7 +37,7 @@
 	#else
 		#define MAX_PATH_SIZE 260
 	#endif
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__)
 	#ifdef PATH_MAX
 		#define MAX_PATH_SIZE PATH_MAX
 	#else
@@ -319,13 +312,6 @@ namespace nap
 			ssize_t count = readlink(link.c_str(), &buffer[0], bufferSize);
 			if (count == -1) throw std::runtime_error("Could not read symbolic link");
 			buffer[count] = '\0';
-
-#elif defined(__APPLE__)
-			if (_NSGetExecutablePath(&buffer[0], &bufferSize))
-			{
-				buffer.resize(bufferSize);
-				_NSGetExecutablePath(&buffer[0], &bufferSize);
-			}
 #else
 #error Cannot yet find the executable on this platform
 #endif

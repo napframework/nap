@@ -18,8 +18,6 @@ configure_python() {
             ;;
         esac
         python="$thirdparty/python/linux/$nap_arch/bin/python3"
-    else
-        python="$thirdparty/python/macos/x86_64/bin/python3"
     fi
     unset PYTHONHOME
     unset PYTHONPATH
