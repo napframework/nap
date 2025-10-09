@@ -14,11 +14,24 @@
 
 namespace napkin
 {
+
+	MeshPreviewAppletGUI::MeshPreviewAppletGUI(MeshPreviewApplet& applet) :
+		mApplet(applet)
+	{ }
+
+
+	void MeshPreviewAppletGUI::init()
+	{
+		auto& renderer = mApplet.mRenderEntity->getComponent<FrameMeshComponentInstance>();
+		renderer.setLineWidth(mLineWidth);
+	}
+
+
 	void MeshPreviewAppletGUI::update(double elapsedTime)
 	{
 		// Fetch loaded texture
-		auto& renderer = mApplet.mRenderEntity->getComponent<FrameMeshComponentInstance>();
-		auto* loaded_mesh = renderer.getMesh();
+		auto& controller = mApplet.mRenderEntity->getComponent<FrameMeshComponentInstance>();
+		auto* loaded_mesh = controller.getMesh();
 
 		// Setup GUI for window
 		ImGui::BeginMainMenuBar();
@@ -40,7 +53,7 @@ namespace napkin
 			texDetail("Vertices", utility::stringFormat("%d", mesh_instance.getNumVertices()));
 			texDetail("Shapes", utility::stringFormat("%d", mesh_instance.getNumShapes()));
 			texDetail("Cull Mode", RTTI_OF(ECullMode), mesh_instance.getCullMode());
-			texDetail("Draw Mode", RTTI_OF(EDrawMode), mesh_instance.getDrawMode());
+			texDetail("Topology", RTTI_OF(EDrawMode), controller.getTopology());
 			texDetail("Polygon Mode ", RTTI_OF(EPolygonMode), mesh_instance.getPolygonMode());
 			texDetail("Usage", RTTI_OF(EMemoryUsage), mesh_instance.getUsage());
 
@@ -56,7 +69,7 @@ namespace napkin
 			}
 
 			// Mesh bound dimensions
-			const auto& bounds = renderer.getBounds();
+			const auto& bounds = controller.getBounds();
 			texDetail("Bounds", "");
 			texDetail("\tWidth", utility::stringFormat("%.1f", bounds.getWidth()), "unit(s)");
 			texDetail("\tHeight", utility::stringFormat("%.1f", bounds.getHeight()), "unit(s)");
@@ -76,6 +89,43 @@ namespace napkin
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::BeginMenu("Controls", loaded_mesh != nullptr))
+		{
+			// Blend mode selection options
+			static const std::array<const char*, 2> blend_labels =
+			{
+				RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Opaque).data(),
+				RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Additive).data()
+			};
+
+			// Modes
+			if (ImGui::Combo("Blending", &mBlendIndex, blend_labels.data(), blend_labels.size()))
+			{
+				auto blend_value = RTTI_OF(EBlendMode).get_enumeration().name_to_value(blend_labels[mBlendIndex]);
+				auto blend_mode = blend_value.get_value<EBlendMode>();
+				controller.setBlendMode(blend_mode);
+			}
+
+			// Wireframe line width
+			if (ImGui::SliderFloat("Line Size", &mLineWidth, 1.0f, 5.0f))
+				controller.setLineWidth(mLineWidth);
+
+			// Mesh Color
+			auto color = controller.getMeshColor();
+			if (ImGui::ColorEdit4("Mesh Color", color.getData()))
+				controller.setMeshColor(color);
+
+			// Wireframe color
+			if (controller.hasWireframe())
+			{
+				color = controller.getWireColor();
+				if (ImGui::ColorEdit4("Wire Color", color.getData()))
+					controller.setWireColor(color);
+			}
+
+			ImGui::EndMenu();
+		}
+
 		if (ImGui::BeginMenu("Applet"))
 		{
 			ImGui::MenuItem(utility::stringFormat("Framerate: %.02f", mApplet.getCore().getFramerate()).c_str());
@@ -88,7 +138,7 @@ namespace napkin
 			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Selection"))
 		{
 			// Frame object & reset rotation
-			renderer.frame();
+			controller.frame();
 		}
 		ImGui::EndMainMenuBar();
 	}

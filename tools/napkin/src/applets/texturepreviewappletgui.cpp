@@ -64,7 +64,7 @@ namespace napkin
 			texDetail("Vertices", utility::stringFormat("%d", mesh_instance.getNumVertices()));
 			texDetail("Shapes", utility::stringFormat("%d", mesh_instance.getNumShapes()));
 			texDetail("Cull Mode", RTTI_OF(ECullMode), mesh_instance.getCullMode());
-			texDetail("Draw Mode", RTTI_OF(EDrawMode), mesh_instance.getDrawMode());
+			texDetail("Topology", RTTI_OF(EDrawMode), mesh_instance.getDrawMode());
 			texDetail("Polygon Mode ", RTTI_OF(EPolygonMode), mesh_instance.getPolygonMode());
 			texDetail("Usage", RTTI_OF(EMemoryUsage), mesh_instance.getUsage());
 

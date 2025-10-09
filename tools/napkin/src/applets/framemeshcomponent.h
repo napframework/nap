@@ -76,19 +76,59 @@ namespace napkin
 		const math::Box& getBounds() const { return mBounds; }
 
 		/**
+		 * Set blend mode
+		 */
+		void setBlendMode(EBlendMode mode) { mBlendMode = mode; }
+
+		/**
+		 * Set wireframe width
+		 */
+		void setLineWidth(float size);
+
+		/**
+		 * Set mesh color
+		 */
+		void setMeshColor(const RGBAColorFloat& color) { mMeshColor = color; }
+
+		/**
+		 * @return mesh color
+		 */
+		const RGBAColorFloat& getMeshColor() const { return mMeshColor; }
+
+		/**
+		 * Set mesh color
+		 */
+		void setWireColor(const RGBAColorFloat& color) { mWireColor = color; }
+
+		/**
+		 * @return mesh color
+		 */
+		const RGBAColorFloat& getWireColor() const { return mWireColor; }
+
+		/**
+		 * @return current blend mode
+		 */
+		EBlendMode getBlendMode() const { return mBlendMode; }
+
+		/**
+		 * @return loaded mesh topology
+		 */
+		EDrawMode getTopology() const { return mTopology; }
+
+		/**
 		 * Draws selection as mesh
 		 */
-		void drawMesh(const RGBAColorFloat& color);
+		void drawMesh();
 
 		/**
-		 * Draws selection as wireframe
+		 * Draws wireframe overlay if possible
 		 */
-		void drawWireframe(const RGBAColorFloat& color, float width);
+		void drawWireframe();
 
 		/**
-		 * Draws selection as points
+		 * @return if the current selection has a wireframe
 		 */
-		void drawPoints(const RGBAColorFloat& color);
+		bool hasWireframe() const;
 
 
 		ComponentInstancePtr<OrbitController> mOrbitController		= { this, &napkin::FrameMeshComponent::mOrbitController };
@@ -99,11 +139,18 @@ namespace napkin
 		std::unique_ptr<IMesh> mMesh = nullptr;
 		math::Box mBounds;
 		float mSpeedReference = 0.0f;
+		EPolygonMode mPolyMode = EPolygonMode::Fill;
+		EDrawMode mTopology = EDrawMode::Unknown;
 
 		// Uniforms
 		UniformVec3Instance* mColorUniform = nullptr;
 		UniformFloatInstance* mAlphaUniform = nullptr;
 		RenderService* mRenderService = nullptr;
+
+		// Blend-mode
+		EBlendMode mBlendMode = EBlendMode::Opaque;
+		RGBAColorFloat mMeshColor = { 0.682352960, 0.674509823, 0.643137276, 1.0f};
+		RGBAColorFloat mWireColor = {0.0f, 0.0f, 0.0f, 0.2f};
 
 		void draw(const RGBAColorFloat& color);
 	};

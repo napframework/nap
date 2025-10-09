@@ -17,6 +17,7 @@
 #include <renderable2dtextcomponent.h>
 #include <apicomponent.h>
 #include <imguiutils.h>
+#include <meshutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::MeshPreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -78,6 +79,7 @@ namespace napkin
 
 		// Create GUI
 		mGUI = std::make_unique<MeshPreviewAppletGUI>(*this);
+		mGUI->init();
 
 		return true;
 	}
@@ -117,16 +119,13 @@ namespace napkin
 
 			// Render selected mesh
 			auto& controller = mRenderEntity->getComponent<FrameMeshComponentInstance>();
-			if (controller.loaded())
+			auto* mesh = controller.getMesh();
+			if (mesh != nullptr)
 			{
-				auto palette = mGuiService->getPalette();
-				auto c1 = palette.mFront2Color.convert<RGBAColorFloat>(); c1.setAlpha(1.0f);
-				auto c2 = RGBAColorFloat(0.0f, 0.0f, 0.0f, 0.2f);
-				auto c3 = palette.mHighlightColor3.convert<RGBAColorFloat>(); c3.setAlpha(1.0f);
-
-				controller.drawMesh(c1);
-				controller.drawWireframe(c2, 1.0f);
-				//controller.drawPoints(c3);
+				// Draw mesh and optionally wire-frame
+				controller.drawMesh();
+				if (controller.hasWireframe())
+					controller.drawWireframe();
 			}
 			else
 			{

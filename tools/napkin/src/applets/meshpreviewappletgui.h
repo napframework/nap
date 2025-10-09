@@ -22,8 +22,12 @@ namespace napkin
 		/**
 		 * Gui requires full access to applet
 		 */
-		MeshPreviewAppletGUI(MeshPreviewApplet& applet) :
-			mApplet(applet)												{ }
+		MeshPreviewAppletGUI(MeshPreviewApplet& applet);
+
+		/**
+		 * Initialize gui based on current applet state
+		 */
+		void init();
 
 		/**
 		 * Create and update the gui for this frame
@@ -40,6 +44,8 @@ namespace napkin
 		void texDetail(std::string&& label, const std::string& value, std::string&& appendix = "");
 		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
 		MeshPreviewApplet& mApplet;
+		int mBlendIndex = 0;
+		float mLineWidth = 1.5f;
 	};
 }
 

@@ -320,19 +320,15 @@ namespace nap
 		EBlendMode getBlendMode() const;
 
 		/**
-		 * Sets the blend mode that is used when rendering an object with this material. Note that frequently changing
-		 * the blend mode on the same MaterialInstance requires a rebuild of the underlying GPU pipeline. When frequent 
-		 * changes are required, it is recommended to use multiple MaterialInstance objects instead.
+		 * Sets the blend mode that is used when rendering an object with this material.
 		 * @param blendMode the new blend mode
 		 */
 		void setBlendMode(EBlendMode blendMode);
 
 		 /**
-		 * Sets the depth mode that is used when rendering an object with this material. Note that frequently changing
-		 * the depth mode on the same MaterialInstance requires a rebuild of the underlying GPU pipeline. When frequent
-		 * changes are required, it is recommended to use multiple MaterialInstance objects instead.
-		 * @param depthMode the new depth mode
-		 */
+		  * Sets the depth mode that is used when rendering an object with this material.
+		  * @param depthMode the new depth mode
+		  */
 		void setDepthMode(EDepthMode depthMode);
 
 		/**

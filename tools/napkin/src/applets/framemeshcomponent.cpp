@@ -73,11 +73,13 @@ namespace napkin
 			"%s: missing '%s' (vec3) vertex attribute", mesh->mID.c_str(), vertexid::position))
 			return false;
 
-		// Update the mesh
+		// Cache some stuff
 		mBounds = utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance());
-		mFlatRenderer->setMesh(render_mesh);
+		mPolyMode = mesh->getMeshInstance().getPolygonMode();
+		mTopology = mesh->getMeshInstance().getDrawMode();
 
-		// Copy ownership
+		// Set mesh for drawing
+		mFlatRenderer->setMesh(render_mesh);
 		mMesh = std::move(mesh);
 		return true;
 	}
@@ -111,30 +113,35 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::drawMesh(const RGBAColorFloat& color)
+	void FrameMeshComponentInstance::setLineWidth(float width)
 	{
-		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::Additive);
-		assert(mMesh != nullptr);
-		mMesh->getMeshInstance().setDrawMode(EDrawMode::Triangles);
-		draw(color);
-	}
-
-
-	void FrameMeshComponentInstance::drawWireframe(const RGBAColorFloat& color, float width)
-	{
-		assert(mMesh != nullptr);
-		mMesh->getMeshInstance().setDrawMode(EDrawMode::Lines);
 		mFlatRenderer->setLineWidth(width);
-		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
-		draw(color);
 	}
 
 
-	void FrameMeshComponentInstance::drawPoints(const RGBAColorFloat& color)
+	void FrameMeshComponentInstance::drawMesh()
 	{
 		assert(mMesh != nullptr);
-		mMesh->getMeshInstance().setDrawMode(EDrawMode::Points);
-		draw(color);
+		mMesh->getMeshInstance().setPolygonMode(mPolyMode);
+		mFlatRenderer->getMaterialInstance().setBlendMode(mBlendMode);
+		draw(mMeshColor);
+	}
+
+
+	void FrameMeshComponentInstance::drawWireframe()
+	{
+		assert(mMesh != nullptr);
+		mMesh->getMeshInstance().setPolygonMode(EPolygonMode::Line);
+		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
+		draw(mWireColor);
+	}
+
+
+	bool FrameMeshComponentInstance::hasWireframe() const
+	{
+		return mMesh != nullptr ?
+			utility::isTriangleMesh(mMesh->getMeshInstance()) && mPolyMode == EPolygonMode::Fill:
+			false;
 	}
 
 
