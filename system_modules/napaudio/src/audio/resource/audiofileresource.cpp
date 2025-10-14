@@ -32,7 +32,18 @@ namespace nap
 			float sampleRate;
 			if (readAudioFile(mAudioFilePath, *getBuffer(), sampleRate, errorState))
 			{
-				nap::Logger::info("Loaded audio file: %s", mAudioFilePath.c_str());
+				auto serviceSampleRate = mAudioService->getNodeManager().getSampleRate();
+				if( serviceSampleRate != sampleRate){
+
+					nap::Logger::info("Resampling audio file: %s", mAudioFilePath.c_str());
+					if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, 0, errorState))
+						return false;
+					
+					sampleRate = serviceSampleRate;
+
+
+				}
+				nap::Logger::info("Loaded audio file: %s sampleRate: %f", mAudioFilePath.c_str(), sampleRate);
 				setSampleRate(sampleRate);
 				return true;
 			}
@@ -55,17 +66,29 @@ namespace nap
 				if (readAudioFile(mAudioFilePaths[i], *getBuffer(), sampleRate, errorState))
 				{
 					nap::Logger::info("Loaded audio file: %s", mAudioFilePaths[i].c_str());
-					if (i == 0)
-						setSampleRate(sampleRate);
-					else {
-						if (sampleRate != getSampleRate()) {
-							errorState.fail("MultiAudioFileResource: files have different sample rates.");
+					auto serviceSampleRate = mAudioService->getNodeManager().getSampleRate();
+					if( serviceSampleRate != sampleRate)
+					{
+						nap::Logger::info("Resampling audio file: %s", mAudioFilePaths[1].c_str());
+						if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, 0, errorState))
 							return false;
-						}
+					
+						sampleRate = serviceSampleRate;
 					}
+					// if (i == 0)
+					// 	setSampleRate(sampleRate);
+					// // else {
+					// 	if (sampleRate != getSampleRate()) {
+					// 		errorState.fail("MultiAudioFileResource: files have different sample rates.");
+					// 		return false;
+					// 	}
+					// }
 				} else
 					return false;
 			}
+			
+			setSampleRate(sampleRate);
+			
 			
 			return true;
 		}
