@@ -67,6 +67,8 @@ namespace nap
 			 * Sets the sample rate at which the audio material in the buffer was sampled.
 			 */
 			void setSampleRate(float sampleRate) { mSampleRate = sampleRate; }
+
+			AudioService* mAudioService = nullptr;
 		
 		private:
 			float mSampleRate = 0;
