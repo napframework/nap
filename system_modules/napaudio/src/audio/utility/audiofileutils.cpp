@@ -11,7 +11,7 @@
 
 // Third party includes
 #include <sndfile.h>
-// #include <mpg123.h>
+#include <mpg123.h>
 #include <samplerate.h>
 
 // Nap include
