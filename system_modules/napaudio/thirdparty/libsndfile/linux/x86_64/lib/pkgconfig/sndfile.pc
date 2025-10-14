@@ -1,13 +1,13 @@
-prefix=/home/cklosters/Documents/dev/nap/system_modules/napaudio/thirdparty/libsndfile/linux/x86_64
+prefix=/home/roy/nap/system_modules/napaudio/thirdparty/libsndfile/source/build/install
 exec_prefix=${prefix}
-libdir=/home/cklosters/Documents/dev/nap/system_modules/napaudio/thirdparty/libsndfile/linux/x86_64/lib
-includedir=/home/cklosters/Documents/dev/nap/system_modules/napaudio/thirdparty/libsndfile/linux/x86_64/include
+libdir=/home/roy/nap/system_modules/napaudio/thirdparty/libsndfile/source/build/install/lib
+includedir=/home/roy/nap/system_modules/napaudio/thirdparty/libsndfile/source/build/install/include
 
 Name: sndfile
 Description: A library for reading and writing audio files
 Requires:
-Requires.private:  
+Requires.private: flac ogg vorbis vorbisenc opus libmpg123
 Version: 1.2.2
 Libs: -L${libdir} -lsndfile
-Libs.private: 
+Libs.private: -lmp3lame
 Cflags: -I${includedir}
