@@ -5,7 +5,7 @@
 #pragma once
 
 // External includes
-#include <QTEnvironmentVariables>
+#include <QtEnvironmentVariables>
 
 namespace napkin
 {

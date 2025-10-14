@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
 	// X applications executed in a wayland session use XWayland for compatibility.
 	// It is recommended that you use X11 instead of wayland until properly supported by SDL and NVIDIA.
 #ifdef __linux__
-	env::set(env::option::QT_QPA_PLATFORM, "xcb");
+	napkin::env::set(napkin::env::option::QT_QPA_PLATFORM, "xcb");
 #endif
 
 	// Start logging to file next to console
