@@ -27,6 +27,20 @@ namespace nap
 		 */
 		bool NAPAPI readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState);
 
+
+		/**
+		 * Utility to change the sample rate of a sample buffer. IMPORTANT: it is intended for resampling whole audio buffers from files not chuncks of audio.
+		 * @param buffer the sample buffer that needs to be resampled. On success this buffer will contain the resampled audio data
+		 * @param sourceSampleRate is the sample rate that is the sample buffer has.
+		 * @param destSampleRate is the sample rate into which this function will resample the sample buffer.
+		 * @param converterType. value between 0 (best quality) to 4 (worst quality). refer to https://libsndfile.github.io/libsamplerate/api_misc.html#converters
+		 * @param errorState contains the error when resampling fails. If sourceSampleRate and destSampleRate are equal it will fail.
+		 * @return true on success.
+		 */
+		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, int converterType, nap::utility::ErrorState& errorState);
+
+
 	}
+
 
 }
