@@ -21,10 +21,7 @@ namespace napkin
 
 
 	void MeshPreviewAppletGUI::init()
-	{
-		auto& renderer = mApplet.mRenderEntity->getComponent<FrameMeshComponentInstance>();
-		renderer.setLineWidth(mLineWidth);
-	}
+	{ }
 
 
 	void MeshPreviewAppletGUI::update(double elapsedTime)
@@ -44,7 +41,7 @@ namespace napkin
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Mesh", loaded_mesh != nullptr))
+		if (ImGui::BeginMenu("Details", loaded_mesh != nullptr))
 		{
 			// Mesh attributes
 			const auto& mesh_instance = loaded_mesh->getMeshInstance();
@@ -89,8 +86,21 @@ namespace napkin
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Controls", loaded_mesh != nullptr))
+		if (ImGui::BeginMenu("Mesh", loaded_mesh != nullptr))
 		{
+			// If bounding box is visible
+			bool draw_bounds = controller.getDrawBounds();
+			if (ImGui::Checkbox("Show Bounds", &draw_bounds))
+				controller.setDrawBounds(draw_bounds);
+
+			// If wireframe should be visible
+			if (controller.hasWireframe())
+			{
+				bool draw_wire = controller.getDrawWireframe();
+				if (ImGui::Checkbox("Show Wireframe", &draw_wire))
+					controller.setDrawWireFrame(draw_wire);
+			}
+
 			// Blend mode selection options
 			static const std::array<const char*, 2> blend_labels =
 			{
@@ -106,27 +116,28 @@ namespace napkin
 				controller.setBlendMode(blend_mode);
 			}
 
-			// Wireframe line width
-			if (ImGui::SliderFloat("Line Size", &mLineWidth, 1.0f, 5.0f))
-				controller.setLineWidth(mLineWidth);
-
 			// Mesh Color
 			auto color = controller.getMeshColor();
 			if (ImGui::ColorEdit4("Mesh Color", color.getData()))
 				controller.setMeshColor(color);
 
-			// Wireframe color
-			if (controller.hasWireframe())
-			{
-				color = controller.getWireColor();
-				if (ImGui::ColorEdit4("Wire Color", color.getData()))
-					controller.setWireColor(color);
-			}
-
 			// Bounding box color
 			auto bounds_color = controller.getBoundsColor();
 			if (ImGui::ColorEdit3("Bounds Color", bounds_color.getData()))
 				controller.setBoundsColor(bounds_color);
+
+			// Wireframe
+			if (controller.hasWireframe() && controller.getDrawWireframe())
+			{
+				color = controller.getWireColor();
+				if (ImGui::ColorEdit4("Wire Color", color.getData()))
+					controller.setWireColor(color);
+
+				// Wireframe line width
+				auto width = controller.getWireWidth();
+				if (ImGui::SliderFloat("Wire Width", &width, 1.0f, 5.0f))
+					controller.setWireWidth(width);
+			}
 
 			ImGui::EndMenu();
 		}

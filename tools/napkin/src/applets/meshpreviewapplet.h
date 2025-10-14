@@ -12,6 +12,7 @@
 #include <renderservice.h>
 #include <sceneservice.h>
 #include <inputservice.h>
+#include <renderadvancedservice.h>
 #include <scene.h>
 #include <renderwindow.h>
 #include <entity.h>
@@ -79,6 +80,7 @@ namespace napkin
 		InputService*				mInputService = nullptr;			///< Input service for processing input
 		IMGuiService*				mGuiService = nullptr;				//< Manages gui related update / draw calls
 		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
+		RenderAdvancedService*		mRenderAdvancedService = nullptr;	///< Render advanced service
 
 		ObjectPtr<EntityInstance>	mRenderEntity = nullptr;			//< Pointer to the render entity
 		ObjectPtr<EntityInstance>	mFlatEntity = nullptr;				//< Pointer to the constant entity

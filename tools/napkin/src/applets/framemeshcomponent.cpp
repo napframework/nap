@@ -12,6 +12,7 @@
 #include <constantshader.h>
 #include <nap/core.h>
 #include <renderservice.h>
+#include <blinnphongcolorshader.h>
 
 // nap::framemeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
@@ -21,6 +22,7 @@ RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
 	RTTI_PROPERTY("BBoxTransform",		&napkin::FrameMeshComponent::mBBoxTransform,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BBoxRenderer",		&napkin::FrameMeshComponent::mBBoxRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BBoxTextRenderer",	&napkin::FrameMeshComponent::mBBoxTextRenderer, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShadedRenderer",		&napkin::FrameMeshComponent::mShadedRenderer,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::framemeshcomponentInstance run time class definition 
@@ -44,6 +46,10 @@ namespace napkin
 		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
 		assert(mRenderService != nullptr);
 
+		// Fetch render advanced service
+		mRenderAdvancedService = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
+		assert(mRenderAdvancedService != nullptr);
+
 		// Fetch normalized rotation speed
 		mSpeedReference = mOrbitController->getMovementSpeed();
 
@@ -52,12 +58,24 @@ namespace napkin
 		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
 			return false;
 
-		mMeshColorUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::constant::color);
-		if (!errorState.check(mMeshColorUniform != nullptr, "Missing '%s' uniform", uniform::constant::color))
+		mFlatColorUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::constant::color);
+		if (!errorState.check(mFlatColorUniform != nullptr, "Missing '%s' uniform", uniform::constant::color))
 			return false;
 
-		mMeshAlphaUniform = ubo->getOrCreateUniform<UniformFloatInstance>(uniform::constant::alpha);
-		if (!errorState.check(mMeshAlphaUniform != nullptr, "Missing '%s' uniform", uniform::constant::alpha))
+		mFlatAlphaUniform = ubo->getOrCreateUniform<UniformFloatInstance>(uniform::constant::alpha);
+		if (!errorState.check(mFlatAlphaUniform != nullptr, "Missing '%s' uniform", uniform::constant::alpha))
+			return false;
+
+		ubo = mShadedRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
+		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
+			return false;
+
+		mShadedDiffuseUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::blinnphongcolor::diffuse);
+		if (!errorState.check(mShadedDiffuseUniform != nullptr, "Missing '%s' uniform", uniform::blinnphongcolor::diffuse))
+			return false;
+
+		mShadedAlphaUniform = ubo->getOrCreateUniform<UniformFloatInstance>(uniform::blinnphongcolor::alpha);
+		if (!errorState.check(mShadedAlphaUniform != nullptr, "Missing '%s' uniform", uniform::blinnphongcolor::alpha))
 			return false;
 
 		ubo = mBBoxRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
@@ -72,23 +90,38 @@ namespace napkin
 		// bbox min, max, center
 		mBBoxTextRenderer->resize(3);
 
+		// Push wire width
+		setWireWidth(1.0f);
+
 		return true;
 	}
 
 
 	bool FrameMeshComponentInstance::load(std::unique_ptr<IMesh>&& mesh, utility::ErrorState& error)
 	{
-		// Attempt to create mesh to render
-		auto render_mesh = mFlatRenderer->createRenderableMesh(*mesh, error);
-		if (!render_mesh.isValid())
-			return false;
-
 		// Find position attr
 		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position) != nullptr,
 			"%s: missing '%s' (vec3) vertex attribute", mesh->mID.c_str(), vertexid::position))
 			return false;
 
-		// Cache some stuff
+		// Create flat mesh -> must be valid
+		mFlatRenderMesh = mFlatRenderer->createRenderableMesh(*mesh, error);
+		if (!mFlatRenderMesh.isValid())
+			return false;
+
+		mFlatRenderer->setMesh(mFlatRenderMesh);
+
+		// Attempt to create shaded mesh to render -> allowed to fail
+		utility::ErrorState shaded_error;
+		mShadedRenderMesh = mShadedRenderer->createRenderableMesh(*mesh, shaded_error);
+		if (mShadedRenderMesh.isValid()) {
+			mShadedRenderer->setMesh(mShadedRenderMesh);
+		}
+		else {
+			nap::Logger::warn("Shaded preview not available:\n%s", error.toString().c_str());
+		}
+
+		// Compute and cache some properties
 		mBounds = utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance());
 		mPolyMode = mesh->getMeshInstance().getPolygonMode();
 		mTopology = mesh->getMeshInstance().getDrawMode();
@@ -100,20 +133,17 @@ namespace napkin
 
 		if (!mBBoxTextRenderer->setText(1,
 			utility::stringFormat("%.02f, %.02f, %.02f", mBounds.getMax().x, mBounds.getMax().y, mBounds.getMax().z), error))
-			return
-			false;
+			return false;
 
 		if (!mBBoxTextRenderer->setText(2,
 			utility::stringFormat("%.02f, %.02f, %.02f", mBounds.getCenter().x, mBounds.getCenter().y, mBounds.getCenter().z), error))
-			return
-			false;
+			return false;
 
 		// Set bbox transform
 		mBBoxTransform->setTranslate(mBounds.getCenter());
 		mBBoxTransform->setScale(mBounds.getDimensions());
 
 		// Set mesh for drawing
-		mFlatRenderer->setMesh(render_mesh);
 		mMesh = std::move(mesh);
 		return true;
 	}
@@ -146,19 +176,54 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::setLineWidth(float width)
+	void FrameMeshComponentInstance::setWireWidth(float width)
 	{
 		mFlatRenderer->setLineWidth(width);
-		mBBoxRenderer->setLineWidth(width);
+		mWireWidth = width;
+	}
+
+
+	void FrameMeshComponentInstance::draw()
+	{
+		assert(mMesh != nullptr);
+		drawMesh();
+
+		if(hasWireframe() && mDrawWireframe)
+			drawWireframe();
+
+		if(mDrawBounds)
+			drawBounds();
 	}
 
 
 	void FrameMeshComponentInstance::drawMesh()
 	{
+		// Push polygon connectivity
 		assert(mMesh != nullptr);
 		mMesh->getMeshInstance().setPolygonMode(mPolyMode);
-		mFlatRenderer->getMaterialInstance().setBlendMode(mBlendMode);
-		draw(mMeshColor);
+
+		auto* window = mRenderService->getCurrentRenderWindow();
+		assert(window != nullptr);
+
+		if (mShadedRenderMesh.isValid())
+		{
+			mShadedDiffuseUniform->setValue(mMeshColor.toVec4());
+			mShadedAlphaUniform->setValue(mMeshColor.getAlpha());
+			mShadedRenderer->getMaterialInstance().setBlendMode(mBlendMode);
+			mShadedRenderer->getMaterialInstance().setDepthMode(EDepthMode::InheritFromBlendMode);
+			std::vector<RenderableComponentInstance*> render_comp = { mShadedRenderer.get() };
+			mRenderAdvancedService->pushLights(render_comp);
+			mRenderService->renderObjects(*window, *mCamera, render_comp);
+		}
+		else
+		{
+			mFlatColorUniform->setValue(mMeshColor.toVec4());
+			mFlatAlphaUniform->setValue(mMeshColor.getAlpha());
+			mFlatRenderer->getMaterialInstance().setBlendMode(mBlendMode);
+			mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::InheritFromBlendMode);
+			std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
+			mRenderService->renderObjects(*window, *mCamera, render_comp);
+		}
 	}
 
 
@@ -166,8 +231,16 @@ namespace napkin
 	{
 		assert(mMesh != nullptr);
 		mMesh->getMeshInstance().setPolygonMode(EPolygonMode::Line);
+
+		auto* window = mRenderService->getCurrentRenderWindow();
+		assert(window != nullptr);
+
+		mFlatColorUniform->setValue(mWireColor.toVec4());
+		mFlatAlphaUniform->setValue(mWireColor.getAlpha());
 		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
-		draw(mWireColor);
+		mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::NoReadWrite);
+		std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
+		mRenderService->renderObjects(*window, *mCamera, render_comp);
 	}
 
 
@@ -209,17 +282,4 @@ namespace napkin
 		mBBoxTextRenderer->setLocation(cen_screen);
 		mBBoxTextRenderer->draw(*window);
 	}
-
-
-	void FrameMeshComponentInstance::draw(const RGBAColorFloat& color)
-	{
-		auto* window = mRenderService->getCurrentRenderWindow();
-		assert(window != nullptr);
-
-		mMeshColorUniform->setValue(color.toVec4());
-		mMeshAlphaUniform->setValue(color.getAlpha());
-		std::vector<RenderableComponentInstance*> render_comps = { mFlatRenderer.get()	};
-		mRenderService->renderObjects(*window, *mCamera, render_comps);
-	}
 }
-

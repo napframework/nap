@@ -40,6 +40,7 @@ namespace napkin
 		mSceneService = getCore().getService<nap::SceneService>();
 		mInputService = getCore().getService<nap::InputService>();
 		mGuiService = getCore().getService<nap::IMGuiService>();
+		mRenderAdvancedService = getCore().getService<nap::RenderAdvancedService>();
 
 		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
@@ -121,13 +122,7 @@ namespace napkin
 			auto& controller = mRenderEntity->getComponent<FrameMeshComponentInstance>();
 			if (controller.hasMesh())
 			{
-				// Draw mesh and optionally wire-frame
-				controller.drawMesh();
-				if (controller.hasWireframe())
-					controller.drawWireframe();
-
-				// Draw bounds
-				controller.drawBounds();
+				controller.draw();
 			}
 			else
 			{

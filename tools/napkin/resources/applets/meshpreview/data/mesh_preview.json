@@ -63,7 +63,7 @@
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadOnly"
                     },
-                    "LineWidth": 1.0,
+                    "LineWidth": 1.5,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -196,63 +196,6 @@
                         "Buffers": [],
                         "Constants": [],
                         "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "NormalRenderer",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "NormalXFormComponent",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "NormalRenderComponent",
-                    "Visible": true,
-                    "Tags": [],
-                    "Layer": "",
-                    "Mesh": "PlaneMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "NormalMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -425,14 +368,72 @@
                     "FlatRenderer": "./FlatRenderer/FlatRenderComponent",
                     "BBoxTransform": "./BoundingBox/BBoxXformComponent",
                     "BBoxRenderer": "./BoundingBox/BBoxRenderComponent",
-                    "BBoxTextRenderer": "./BoundingBox/BBoxTextComponent"
+                    "BBoxTextRenderer": "./BoundingBox/BBoxTextComponent",
+                    "ShadedRenderer": "./ShadedRenderer/ShadedRenderComponent"
                 }
             ],
             "Children": [
                 "FlatRenderer",
-                "NormalRenderer",
+                "ShadedRenderer",
                 "BoundingBox"
             ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ShadedRenderer",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "ShadedXFormComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "ShadedRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "LightMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -488,27 +489,13 @@
             "Children": []
         },
         {
-            "Type": "nap::HumanoidMesh",
-            "mID": "HumanoidMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill"
-        },
-        {
-            "Type": "nap::LucyMesh",
-            "mID": "LucyMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill"
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Borderless": false,
             "Resizable": true,
             "Visible": false,
             "AlwaysOnTop": false,
-            "SampleShading": true,
+            "SampleShading": false,
             "Title": "Window 1",
             "Width": 1280,
             "Height": 720,
@@ -595,16 +582,87 @@
                 },
                 {
                     "Type": "nap::BlinnPhongColorShader",
-                    "mID": "NormalShader"
+                    "mID": "LightShader"
                 },
                 {
                     "Type": "nap::Material",
-                    "mID": "NormalMaterial",
-                    "Uniforms": [],
+                    "mID": "LightMaterial",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "UBO_8d251f",
+                            "Name": "UBO",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "ambient",
+                                    "Name": "ambient",
+                                    "Value": {
+                                        "x": 0.15000000596046448,
+                                        "y": 0.15000000596046448,
+                                        "z": 0.15000000596046448
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "diffuse",
+                                    "Name": "diffuse",
+                                    "Value": {
+                                        "x": 0.6823529601097107,
+                                        "y": 0.6745098233222961,
+                                        "z": 0.6431372761726379
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "specular",
+                                    "Name": "specular",
+                                    "Value": {
+                                        "x": 0.10000000149011612,
+                                        "y": 0.10000000149011612,
+                                        "z": 0.10000000149011612
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec2",
+                                    "mID": "fresnel",
+                                    "Name": "fresnel",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "shininess",
+                                    "Name": "shininess",
+                                    "Value": 4.0
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "alpha_9cd81f",
+                                    "Name": "alpha",
+                                    "Value": 1.0
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "reflection",
+                                    "Name": "reflection",
+                                    "Value": 0.0
+                                },
+                                {
+                                    "Type": "nap::UniformUInt",
+                                    "mID": "environment",
+                                    "Name": "environment",
+                                    "Value": 0
+                                }
+                            ]
+                        }
+                    ],
                     "Samplers": [],
                     "Buffers": [],
                     "Constants": [],
-                    "Shader": "NormalShader",
+                    "Shader": "LightShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "InheritFromBlendMode"
@@ -713,6 +771,10 @@
                 },
                 {
                     "Entity": "OrthographicCamera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "DirectionalLight",
                     "InstanceProperties": []
                 }
             ]

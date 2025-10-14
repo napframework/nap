@@ -11,6 +11,7 @@
 #include <renderablemeshcomponent.h>
 #include <box.h>
 #include <renderable2dtextcomponent.h>
+#include <renderadvancedservice.h>
 
 namespace napkin
 {
@@ -32,6 +33,7 @@ namespace napkin
 		ComponentPtr<TransformComponent> mBBoxTransform;			///< Property: 'BBoxTransform' bounding box transform
 		ComponentPtr<RenderableMeshComponent> mBBoxRenderer;		///< Property: 'BBoxRenderer' bounding box renderer
 		ComponentPtr<Renderable2DTextComponent> mBBoxTextRenderer;	///< Property: 'BBoxTextRenderer' bounding box text renderer
+		ComponentPtr<RenderableMeshComponent> mShadedRenderer;		///< Property: 'ShadedRenderer' shaded light renderer
 	};
 
 
@@ -92,7 +94,12 @@ namespace napkin
 		/**
 		 * Set wireframe width
 		 */
-		void setLineWidth(float size);
+		void setWireWidth(float width);
+
+		/**
+		 * @return wireframe line width
+		 */
+		float getWireWidth() const { return mWireWidth; }
 
 		/**
 		 * Set mesh color
@@ -135,6 +142,31 @@ namespace napkin
 		EDrawMode getTopology() const { return mTopology; }
 
 		/**
+		 * @return if wireframe is drawn on top of mesh
+		 */
+		bool getDrawWireframe() const { return mDrawWireframe; }
+
+		/**
+		 * Set if wireframe is drawn on top of mesh
+		 */
+		void setDrawWireFrame(bool draw) { mDrawWireframe = draw; }
+
+		/**
+		 * @return if bounding box is drawn
+		 */
+		bool getDrawBounds() const { return mDrawBounds; }
+
+		/**
+		 * Set if bounding box is drawn
+		 */
+		void setDrawBounds(bool draw) { mDrawBounds = draw; }
+
+		/**
+		 * Draws mesh, wireframe and bounds
+		 */
+		void draw();
+
+		/**
 		 * Draws selection as mesh
 		 */
 		void drawMesh();
@@ -160,26 +192,35 @@ namespace napkin
 		ComponentInstancePtr<TransformComponent> mBBoxTransform				= { this, &napkin::FrameMeshComponent::mBBoxTransform };
 		ComponentInstancePtr<RenderableMeshComponent> mBBoxRenderer			= { this, &napkin::FrameMeshComponent::mBBoxRenderer };
 		ComponentInstancePtr<Renderable2DTextComponent> mBBoxTextRenderer	= { this, &napkin::FrameMeshComponent::mBBoxTextRenderer };
+		ComponentInstancePtr<RenderableMeshComponent> mShadedRenderer		= { this, &napkin::FrameMeshComponent::mShadedRenderer };
 
 	private:
 		std::unique_ptr<IMesh> mMesh = nullptr;
 		math::Box mBounds;
 		float mSpeedReference = 0.0f;
+		float mWireWidth = 1.0f;
 		EPolygonMode mPolyMode = EPolygonMode::Fill;
 		EDrawMode mTopology = EDrawMode::Unknown;
 
 		// Uniforms
-		UniformVec3Instance* mMeshColorUniform = nullptr;
-		UniformFloatInstance* mMeshAlphaUniform = nullptr;
+		UniformVec3Instance* mFlatColorUniform = nullptr;
+		UniformFloatInstance* mFlatAlphaUniform = nullptr;
+		UniformVec3Instance* mShadedDiffuseUniform = nullptr;
+		UniformFloatInstance* mShadedAlphaUniform = nullptr;
 		UniformVec3Instance* mBBoxColorUniform = nullptr;
 		RenderService* mRenderService = nullptr;
 
-		// Blend-mode
+		// Colors
 		EBlendMode mBlendMode = EBlendMode::Opaque;
-		RGBAColorFloat mMeshColor = { 0.682352960, 0.674509823, 0.643137276, 1.0f};
-		RGBAColorFloat mWireColor = {0.0f, 0.0f, 0.0f, 0.2f};
+		RGBAColorFloat mMeshColor = { 0.682352960, 0.674509823, 0.643137276, 0.45f};
+		RGBAColorFloat mWireColor = {0.18f, 0.18f, 0.18f, 0.2f};
 		RGBColorFloat mBBoxColor = { 1.0f, 1.0f, 1.0f };
 
-		void draw(const RGBAColorFloat& color);
+		// Service
+		RenderAdvancedService* mRenderAdvancedService = nullptr;
+		RenderableMesh mFlatRenderMesh;
+		RenderableMesh mShadedRenderMesh;
+		bool mDrawWireframe = false;
+		bool mDrawBounds = true;
 	};
 }

@@ -45,7 +45,6 @@ namespace napkin
 		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
 		MeshPreviewApplet& mApplet;
 		int mBlendIndex = 0;
-		float mLineWidth = 1.5f;
 	};
 }
 
