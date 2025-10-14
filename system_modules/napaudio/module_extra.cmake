@@ -1,10 +1,7 @@
-# Set this flag in order to link libsndfile and mpg123 and build support for reading audio files
+# Set this flag in order to link libsndfile and libsamplerate and build support for reading audio files
 set(NAP_AUDIOFILE_SUPPORT ON)
 
 if(NAP_AUDIOFILE_SUPPORT)
-    if(NOT TARGET libmpg123)
-        find_package(libmpg123 REQUIRED)
-    endif()
     if(NOT TARGET libsndfile)
         find_package(libsndfile REQUIRED)
     endif()
@@ -37,12 +34,12 @@ endif()
 # Add thirdparty libraries for audio file support
 if (NAP_AUDIOFILE_SUPPORT)
     if(NAP_BUILD_CONTEXT MATCHES "source")
-        set(LIBRARIES libsndfile libmpg123 libsamplerate)
+        set(LIBRARIES libsndfile libsamplerate)
         if(UNIX)
             list(APPEND LIBRARIES atomic)
         endif()
 
-        set(INCLUDES ${LIBSNDFILE_INCLUDE_DIR} ${LIBMPG123_INCLUDE_DIR} ${LIBSAMPLERATE_INCLUDE_DIR})
+        set(INCLUDES ${LIBSNDFILE_INCLUDE_DIR} ${LIBSAMPLERATE_INCLUDE_DIR})
         target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
         target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
@@ -53,10 +50,6 @@ if (NAP_AUDIOFILE_SUPPORT)
                 find_package(libsndfile REQUIRED)
             endif()
 
-            if(NOT DEFINED LIBMPG123_LIB_DIR)
-                find_package(libmpg123 REQUIRED)
-            endif()
-
             if(NOT DEFINED LIBSAMPLERATE_LIB_DIR)
                 find_package(libsamplerate REQUIRED)
             endif()
@@ -64,26 +57,12 @@ if (NAP_AUDIOFILE_SUPPORT)
             # Copy audio DLLs to project build directory
             set(FILES_TO_COPY
                 ${LIBSNDFILE_LIBS_RELEASE_DLL}
-                ${LIBMPG123_LIBS_RELEASE_DLL}
                 ${LIBSAMPLERATE_LIBS_RELEASE_DLL}
                 )
             copy_files_to_bin(${FILES_TO_COPY})
         endif()
 
         set(dest_thirdparty system_modules/${PROJECT_NAME}/thirdparty)
-
-        # Package mpg123 into platform release
-        install(FILES ${LIBMPG123_LICENSE_FILES} DESTINATION ${dest_thirdparty}/mpg123/source)
-        install(DIRECTORY ${LIBMPG123_INCLUDE_DIR} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
-        if(WIN32)
-            file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/*.dll)
-            install(FILES ${MPG123_DYLIBS} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
-            file(GLOB MPG123_LIBFILES ${LIBMPG123_LIB_DIR}/*.lib)
-            install(FILES ${MPG123_LIBFILES} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
-        elseif(UNIX)
-            file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-            install(FILES ${MPG123_DYLIBS} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
-        endif()
 
         # Package libsndfile into platform release
         install(FILES ${LIBSNDFILE_LICENSE_FILES} DESTINATION ${dest_thirdparty}/libsndfile/source)
@@ -119,7 +98,7 @@ if (NAP_AUDIOFILE_SUPPORT)
                     DESTINATION ${dest_thirdparty}/libsamplerate/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
         endif()
     else()
-        set(MODULE_NAME_EXTRA_LIB "libmpg123;libsndfile;libsamplerate")
+        set(MODULE_NAME_EXTRA_LIB "libsndfile;libsamplerate")
 
         if(NOT TARGET moodycamel)
             find_package(moodycamel REQUIRED)
@@ -127,19 +106,10 @@ if (NAP_AUDIOFILE_SUPPORT)
         add_include_to_interface_target(napaudio ${MOODYCAMEL_INCLUDE_DIRS})
 	    add_include_to_interface_target(napaudio ${LIBSNDFILE_INCLUDE_DIR})
         add_include_to_interface_target(napaudio ${LIBSAMPLERATE_INCLUDE_DIR})
-	    add_include_to_interface_target(napaudio ${LIBMPG123_INCLUDE_DIR})
 
 
         if(WIN32)
-            # Add post-build step to set copy mpg123 to bin on Win64
             set(DLLCOPY_PATH_SUFFIX "")
-            add_custom_command(TARGET ${PROJECT_NAME}
-                               POST_BUILD
-                               COMMAND ${CMAKE_COMMAND}
-                                       -E copy_if_different
-                                       $<TARGET_FILE:libmpg123>
-                                       $<TARGET_FILE_DIR:${PROJECT_NAME}>/${DLLCOPY_PATH_SUFFIX}
-                               )
 
             # Copy libsndfile to bin post-build on Win64
             add_custom_command(TARGET ${PROJECT_NAME}
@@ -162,10 +132,6 @@ if (NAP_AUDIOFILE_SUPPORT)
         elseif(UNIX)
             set(module_thirdparty ${NAP_ROOT}/system_modules/napaudio/thirdparty)
 
-            # Install mpg123 lib into packaged app
-            file(GLOB MPG123_DYLIBS ${module_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-            install(FILES ${MPG123_DYLIBS} DESTINATION lib)
-
             # Install libsndfile into packaged app
             file(GLOB SNDFILE_DYLIBS ${module_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/*snd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
             install(FILES ${SNDFILE_DYLIBS} DESTINATION lib)
@@ -176,7 +142,6 @@ if (NAP_AUDIOFILE_SUPPORT)
         endif()
 
         # Install thirdparty licenses into packaged project
-        install(FILES ${LIBMPG123_LICENSE_FILES} DESTINATION licenses/mpg123)
         install(FILES ${LIBSNDFILE_LICENSE_FILES} DESTINATION licenses/libsndfile)
         install(FILES ${LIBSAMPLERATE_LICENSE_FILES} DESTINATION licenses/libsamplerate)
     endif()
