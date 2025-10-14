@@ -123,6 +123,11 @@ namespace napkin
 					controller.setWireColor(color);
 			}
 
+			// Bounding box color
+			auto bounds_color = controller.getBoundsColor();
+			if (ImGui::ColorEdit3("Bounds Color", bounds_color.getData()))
+				controller.setBoundsColor(bounds_color);
+
 			ImGui::EndMenu();
 		}
 

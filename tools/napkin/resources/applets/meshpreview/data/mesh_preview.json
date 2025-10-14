@@ -23,6 +23,87 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "BoundingBox",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "BBoxXformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "BBoxRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "BBoxMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "Opaque",
+                        "DepthMode": "ReadOnly"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "BBoxTextComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Text": "",
+                    "Font": "BBoxFont",
+                    "TextColor": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Left",
+                    "DepthMode": "NoReadWrite",
+                    "IgnoreTransform": true,
+                    "DPI Aware": true
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "DirectionalLight",
             "Components": [
                 {
@@ -108,7 +189,7 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Mesh": "SphereMesh",
+                    "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
@@ -165,7 +246,7 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Mesh": "SphereMesh",
+                    "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
@@ -341,12 +422,16 @@
                     "mID": "FrameMeshComponent",
                     "OrbitController": "../PerspectiveCamera/CameraControllerComponent",
                     "Camera": "../PerspectiveCamera/CameraComponent",
-                    "FlatRenderer": "./FlatRenderer/FlatRenderComponent"
+                    "FlatRenderer": "./FlatRenderer/FlatRenderComponent",
+                    "BBoxTransform": "./BoundingBox/BBoxXformComponent",
+                    "BBoxRenderer": "./BoundingBox/BBoxRenderComponent",
+                    "BBoxTextRenderer": "./BoundingBox/BBoxTextComponent"
                 }
             ],
             "Children": [
                 "FlatRenderer",
-                "NormalRenderer"
+                "NormalRenderer",
+                "BoundingBox"
             ]
         },
         {
@@ -403,12 +488,18 @@
             "Children": []
         },
         {
-            "Type": "nap::Font",
-            "mID": "Font",
-            "Properties": {
-                "Size": 16
-            },
-            "Font": "fonts/Manrope-Light.otf"
+            "Type": "nap::HumanoidMesh",
+            "mID": "HumanoidMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Fill"
+        },
+        {
+            "Type": "nap::LucyMesh",
+            "mID": "LucyMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Fill"
         },
         {
             "Type": "nap::RenderWindow",
@@ -434,6 +525,29 @@
             "AdditionalSwapImages": 1,
             "RestoreSize": false,
             "RestorePosition": false
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "Fonts",
+            "Members": [
+                {
+                    "Type": "nap::Font",
+                    "mID": "BBoxFont",
+                    "Properties": {
+                        "Size": 11
+                    },
+                    "Font": "fonts/Inconsolata-Medium.ttf"
+                },
+                {
+                    "Type": "nap::Font",
+                    "mID": "Font",
+                    "Properties": {
+                        "Size": 16
+                    },
+                    "Font": "fonts/Manrope-Light.otf"
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::ResourceGroup",
@@ -503,14 +617,24 @@
             "mID": "Meshes",
             "Members": [
                 {
-                    "Type": "nap::SphereMesh",
-                    "mID": "SphereMesh",
+                    "Type": "nap::BoxFrameMesh",
+                    "mID": "BBoxMesh",
+                    "Usage": "Static"
+                },
+                {
+                    "Type": "nap::PlaneMesh",
+                    "mID": "PlaneMesh",
                     "Usage": "Static",
-                    "CullMode": "Back",
-                    "PolygonMode": "Line",
-                    "Radius": 1.0,
-                    "Rings": 50,
-                    "Sectors": 50,
+                    "CullMode": "None",
+                    "PolygonMode": "Fill",
+                    "Size": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
                     "Color": {
                         "Values": [
                             1.0,
@@ -519,11 +643,8 @@
                             1.0
                         ]
                     },
-                    "Position": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    }
+                    "Rows": 1,
+                    "Columns": 1
                 }
             ],
             "Children": []

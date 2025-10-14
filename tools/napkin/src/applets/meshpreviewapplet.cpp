@@ -119,13 +119,15 @@ namespace napkin
 
 			// Render selected mesh
 			auto& controller = mRenderEntity->getComponent<FrameMeshComponentInstance>();
-			auto* mesh = controller.getMesh();
-			if (mesh != nullptr)
+			if (controller.hasMesh())
 			{
 				// Draw mesh and optionally wire-frame
 				controller.drawMesh();
 				if (controller.hasWireframe())
 					controller.drawWireframe();
+
+				// Draw bounds
+				controller.drawBounds();
 			}
 			else
 			{

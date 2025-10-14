@@ -18,6 +18,9 @@ RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
 	RTTI_PROPERTY("OrbitController",	&napkin::FrameMeshComponent::mOrbitController,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Camera",				&napkin::FrameMeshComponent::mCamera,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlatRenderer",		&napkin::FrameMeshComponent::mFlatRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BBoxTransform",		&napkin::FrameMeshComponent::mBBoxTransform,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BBoxRenderer",		&napkin::FrameMeshComponent::mBBoxRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BBoxTextRenderer",	&napkin::FrameMeshComponent::mBBoxTextRenderer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::framemeshcomponentInstance run time class definition 
@@ -44,18 +47,30 @@ namespace napkin
 		// Fetch normalized rotation speed
 		mSpeedReference = mOrbitController->getMovementSpeed();
 
-		// Fetch uniforms
+		// Fetch mesh uniforms
 		auto* ubo = mFlatRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
 		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
 			return false;
 
-		mColorUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::constant::color);
-		if (!errorState.check(mColorUniform != nullptr, "Missing '%s' uniform", uniform::constant::color))
+		mMeshColorUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::constant::color);
+		if (!errorState.check(mMeshColorUniform != nullptr, "Missing '%s' uniform", uniform::constant::color))
 			return false;
 
-		mAlphaUniform = ubo->getOrCreateUniform<UniformFloatInstance>(uniform::constant::alpha);
-		if (!errorState.check(mAlphaUniform != nullptr, "Missing '%s' uniform", uniform::constant::alpha))
+		mMeshAlphaUniform = ubo->getOrCreateUniform<UniformFloatInstance>(uniform::constant::alpha);
+		if (!errorState.check(mMeshAlphaUniform != nullptr, "Missing '%s' uniform", uniform::constant::alpha))
 			return false;
+
+		ubo = mBBoxRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
+		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
+			return false;
+
+		// Fetch bbox uniforms
+		mBBoxColorUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::constant::color);
+		if (!errorState.check(mBBoxColorUniform != nullptr, "Missing '%s' uniform", uniform::constant::color))
+			return false;
+
+		// bbox min, max, center
+		mBBoxTextRenderer->resize(3);
 
 		return true;
 	}
@@ -77,6 +92,25 @@ namespace napkin
 		mBounds = utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance());
 		mPolyMode = mesh->getMeshInstance().getPolygonMode();
 		mTopology = mesh->getMeshInstance().getDrawMode();
+
+		// Set bbox min, max text
+		if (!mBBoxTextRenderer->setText(0,
+			utility::stringFormat("%.02f, %.02f, %.02f", mBounds.getMin().x, mBounds.getMin().y, mBounds.getMin().z), error))
+			return false;
+
+		if (!mBBoxTextRenderer->setText(1,
+			utility::stringFormat("%.02f, %.02f, %.02f", mBounds.getMax().x, mBounds.getMax().y, mBounds.getMax().z), error))
+			return
+			false;
+
+		if (!mBBoxTextRenderer->setText(2,
+			utility::stringFormat("%.02f, %.02f, %.02f", mBounds.getCenter().x, mBounds.getCenter().y, mBounds.getCenter().z), error))
+			return
+			false;
+
+		// Set bbox transform
+		mBBoxTransform->setTranslate(mBounds.getCenter());
+		mBBoxTransform->setScale(mBounds.getDimensions());
 
 		// Set mesh for drawing
 		mFlatRenderer->setMesh(render_mesh);
@@ -104,11 +138,10 @@ namespace napkin
 		mOrbitController->setMovementSpeed(mBounds.getDiagonal() * mSpeedReference);
 
 		// Compute camera clip planes
-		// TODO: Parent skybox to camera to reduce far clip size
-		float sky_scale = math::max<float>(1000.0f, mBounds.getDiagonal() * 1000.0f);
+		float clip_scale = math::max<float>(1000.0f, mBounds.getDiagonal() * 1000.0f);
 		auto props = mCamera->getProperties();
 		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.1f);
-		props.mFarClippingPlane = sky_scale;
+		props.mFarClippingPlane = clip_scale;
 		mCamera->setProperties(props);
 	}
 
@@ -116,6 +149,7 @@ namespace napkin
 	void FrameMeshComponentInstance::setLineWidth(float width)
 	{
 		mFlatRenderer->setLineWidth(width);
+		mBBoxRenderer->setLineWidth(width);
 	}
 
 
@@ -145,13 +179,45 @@ namespace napkin
 	}
 
 
+	void FrameMeshComponentInstance::drawBounds()
+	{
+		// Draw bounds mesh
+		auto* window = mRenderService->getCurrentRenderWindow();
+		assert(window != nullptr && mMesh != nullptr);
+		mBBoxColorUniform->setValue(mBBoxColor);
+		std::vector<RenderableComponentInstance*> render_comps = { mBBoxRenderer.get() };
+		mRenderService->renderObjects(*window, *mCamera, render_comps);
+
+		// Draw min bbox coordinates
+		auto min_screen = mCamera->worldToScreen(getBounds().getMin(), window->getRect());
+		min_screen += 5.0f * window->getDisplayScale();
+		mBBoxTextRenderer->setLineIndex(0);
+		mBBoxTextRenderer->setLocation(min_screen);
+		mBBoxTextRenderer->setColor(mBBoxColor);
+		mBBoxTextRenderer->draw(*window);
+
+		// Draw max bbox coordinates
+		auto max_screen = mCamera->worldToScreen(getBounds().getMax(), window->getRect());
+		max_screen += 5.0f * window->getDisplayScale();
+		mBBoxTextRenderer->setLineIndex(1);
+		mBBoxTextRenderer->setLocation(max_screen);
+		mBBoxTextRenderer->draw(*window);
+
+		// Draw center bbox coordinates
+		auto cen_screen = mCamera->worldToScreen(getBounds().getCenter(), window->getRect());
+		mBBoxTextRenderer->setLineIndex(2);
+		mBBoxTextRenderer->setLocation(cen_screen);
+		mBBoxTextRenderer->draw(*window);
+	}
+
+
 	void FrameMeshComponentInstance::draw(const RGBAColorFloat& color)
 	{
 		auto* window = mRenderService->getCurrentRenderWindow();
 		assert(window != nullptr);
 
-		mColorUniform->setValue(color.toVec4());
-		mAlphaUniform->setValue(color.getAlpha());
+		mMeshColorUniform->setValue(color.toVec4());
+		mMeshAlphaUniform->setValue(color.getAlpha());
 		std::vector<RenderableComponentInstance*> render_comps = { mFlatRenderer.get()	};
 		mRenderService->renderObjects(*window, *mCamera, render_comps);
 	}

@@ -10,6 +10,7 @@
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <box.h>
+#include <renderable2dtextcomponent.h>
 
 namespace napkin
 {
@@ -28,6 +29,9 @@ namespace napkin
 		ComponentPtr<OrbitController> mOrbitController;				///< Property: 'OrbitController' Camera orbit controller
 		ComponentPtr<PerspCameraComponent> mCamera;					///< Property: 'Camera' Perspective Camera
 		ComponentPtr<RenderableMeshComponent> mFlatRenderer;		///< Property: 'FlatRenderer' flat renderer
+		ComponentPtr<TransformComponent> mBBoxTransform;			///< Property: 'BBoxTransform' bounding box transform
+		ComponentPtr<RenderableMeshComponent> mBBoxRenderer;		///< Property: 'BBoxRenderer' bounding box renderer
+		ComponentPtr<Renderable2DTextComponent> mBBoxTextRenderer;	///< Property: 'BBoxTextRenderer' bounding box text renderer
 	};
 
 
@@ -71,6 +75,11 @@ namespace napkin
 		nap::IMesh* getMesh() const { return mMesh.get(); }
 
 		/**
+		 * @return if the component has a mesh assigned
+		 */
+		bool hasMesh() const { return mMesh != nullptr; }
+
+		/**
 		 * @return mesh bounds
 		 */
 		const math::Box& getBounds() const { return mBounds; }
@@ -106,6 +115,16 @@ namespace napkin
 		const RGBAColorFloat& getWireColor() const { return mWireColor; }
 
 		/**
+		 * Set bounds color
+		 */
+		void setBoundsColor(const RGBColorFloat& color) { mBBoxColor = color; }
+
+		/**
+		 * @return bounds color
+		 */
+		const RGBColorFloat& getBoundsColor() const { return mBBoxColor; }
+
+		/**
 		 * @return current blend mode
 		 */
 		EBlendMode getBlendMode() const { return mBlendMode; }
@@ -130,10 +149,17 @@ namespace napkin
 		 */
 		bool hasWireframe() const;
 
+		/**
+		 * Draws bbox frame mesh & min, max coordinates
+		 */
+		void drawBounds();
 
-		ComponentInstancePtr<OrbitController> mOrbitController		= { this, &napkin::FrameMeshComponent::mOrbitController };
-		ComponentInstancePtr<PerspCameraComponent> mCamera			= { this, &napkin::FrameMeshComponent::mCamera };
-		ComponentInstancePtr<RenderableMeshComponent> mFlatRenderer = { this, &napkin::FrameMeshComponent::mFlatRenderer };
+		ComponentInstancePtr<OrbitController> mOrbitController				= { this, &napkin::FrameMeshComponent::mOrbitController };
+		ComponentInstancePtr<PerspCameraComponent> mCamera					= { this, &napkin::FrameMeshComponent::mCamera };
+		ComponentInstancePtr<RenderableMeshComponent> mFlatRenderer			= { this, &napkin::FrameMeshComponent::mFlatRenderer };
+		ComponentInstancePtr<TransformComponent> mBBoxTransform				= { this, &napkin::FrameMeshComponent::mBBoxTransform };
+		ComponentInstancePtr<RenderableMeshComponent> mBBoxRenderer			= { this, &napkin::FrameMeshComponent::mBBoxRenderer };
+		ComponentInstancePtr<Renderable2DTextComponent> mBBoxTextRenderer	= { this, &napkin::FrameMeshComponent::mBBoxTextRenderer };
 
 	private:
 		std::unique_ptr<IMesh> mMesh = nullptr;
@@ -143,14 +169,16 @@ namespace napkin
 		EDrawMode mTopology = EDrawMode::Unknown;
 
 		// Uniforms
-		UniformVec3Instance* mColorUniform = nullptr;
-		UniformFloatInstance* mAlphaUniform = nullptr;
+		UniformVec3Instance* mMeshColorUniform = nullptr;
+		UniformFloatInstance* mMeshAlphaUniform = nullptr;
+		UniformVec3Instance* mBBoxColorUniform = nullptr;
 		RenderService* mRenderService = nullptr;
 
 		// Blend-mode
 		EBlendMode mBlendMode = EBlendMode::Opaque;
 		RGBAColorFloat mMeshColor = { 0.682352960, 0.674509823, 0.643137276, 1.0f};
 		RGBAColorFloat mWireColor = {0.0f, 0.0f, 0.0f, 0.2f};
+		RGBColorFloat mBBoxColor = { 1.0f, 1.0f, 1.0f };
 
 		void draw(const RGBAColorFloat& color);
 	};
