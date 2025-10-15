@@ -49,6 +49,8 @@ namespace napkin
 			ImGui::PushID(loaded_mesh);
 			texDetail("Identifier", loaded_mesh->mID);
 			texDetail("Vertices", utility::stringFormat("%d", mesh_instance.getNumVertices()));
+			if(controller.isTriangleMesh())
+				texDetail("Triangles", utility::stringFormat("%d", controller.getTriangleCount()));
 			texDetail("Shapes", utility::stringFormat("%d", mesh_instance.getNumShapes()));
 			texDetail("Cull Mode", RTTI_OF(ECullMode), mesh_instance.getCullMode());
 			texDetail("Topology", RTTI_OF(EDrawMode), controller.getTopology());

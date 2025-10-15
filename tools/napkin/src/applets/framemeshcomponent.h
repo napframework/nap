@@ -176,6 +176,16 @@ namespace napkin
 		float getRotate() { return mMeshRotate->getSpeed(); }
 
 		/**
+		 * @return if a triangle mesh is loaded
+		 */
+		bool isTriangleMesh() const;
+
+		/**
+		 * @reutn number of triangles in the mesh, -1 if mesh has no triangles
+		 */
+		int getTriangleCount() const;
+
+		/**
 		 * Draws mesh, wireframe and bounds
 		 */
 		void draw();

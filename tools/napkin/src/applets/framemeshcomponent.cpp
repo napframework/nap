@@ -232,6 +232,19 @@ namespace napkin
 	}
 
 
+	bool FrameMeshComponentInstance::isTriangleMesh() const
+	{
+		return mMesh != nullptr && utility::isTriangleMesh(mMesh->getMeshInstance());
+	}
+
+
+	int FrameMeshComponentInstance::getTriangleCount() const
+	{
+		return isTriangleMesh() ?
+			utility::getTriangleCount(mMesh->getMeshInstance()) : 0;
+	}
+
+
 	void FrameMeshComponentInstance::draw()
 	{
 		assert(mMesh != nullptr);
@@ -348,4 +361,3 @@ namespace napkin
 		mBBoxTextRenderer->draw(*window);
 	}
 }
-
