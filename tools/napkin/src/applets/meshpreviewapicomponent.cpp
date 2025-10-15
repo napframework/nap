@@ -121,7 +121,11 @@ namespace napkin
 
 		// Load it
 		std::unique_ptr<IMesh> mesh(static_cast<IMesh*>(object.release()));
-		mFrameMeshComponent->load(std::move(mesh), error);
+		if (!mFrameMeshComponent->load(std::move(mesh), error))
+		{
+			nap::Logger::error(error.toString());
+			return;
+		}
 
 		// Frame when requested
 		auto* frame_arg = apiEvent.getArgumentByName(MeshPreviewAPIcomponent::loadMeshArg2);
@@ -132,7 +136,7 @@ namespace napkin
 
 	void MeshPreviewAPIComponentInstance::clear(const nap::APIEvent& apiEvent)
 	{
-
+		mFrameMeshComponent->clear();
 	}
 
 

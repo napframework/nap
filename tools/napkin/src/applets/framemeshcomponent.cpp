@@ -120,62 +120,65 @@ namespace napkin
 
 	bool FrameMeshComponentInstance::load(std::unique_ptr<IMesh>&& mesh, utility::ErrorState& error)
 	{
-		// Find position attr
-		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position) != nullptr,
-			"%s: missing '%s' (vec3) vertex attribute", mesh->mID.c_str(), vertexid::position))
-			return false;
-
 		// Create flat mesh -> must be valid
-		mFlatRenderMesh = mFlatRenderer->createRenderableMesh(*mesh, error);
-		if (!mFlatRenderMesh.isValid())
+		auto flat_mesh = mFlatRenderer->createRenderableMesh(*mesh, error);
+		if (!flat_mesh.isValid())
 			return false;
-		mFlatRenderer->setMesh(mFlatRenderMesh);
 
-		// Attempt to create shaded mesh to render -> allowed to fail
-		utility::ErrorState render_error;
-		mShadedRenderMesh = mShadedRenderer->createRenderableMesh(*mesh, render_error);
-		if (mShadedRenderMesh.isValid())
-			mShadedRenderer->setMesh(mShadedRenderMesh);
+		// Update bounding box text -> must succeed
+		auto obj_bounds = utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance());
 
-		// Attempt to create wireframe mesh to render -> allowed to fail
-		mWireRenderMesh = mWireRenderer->createRenderableMesh(*mesh, render_error);
-		if (mWireRenderMesh.isValid())
-			mWireRenderer->setMesh(mWireRenderMesh);
-
-		// Compute and cache some properties
-		mObjectBounds = utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance());
-		mPolyMode = mesh->getMeshInstance().getPolygonMode();
-		mTopology = mesh->getMeshInstance().getDrawMode();
-
-		// Set bbox min, max text
 		if (!mBBoxTextRenderer->setText(0,
-			utility::stringFormat("%.02f, %.02f, %.02f", mObjectBounds.getMin().x, mObjectBounds.getMin().y, mObjectBounds.getMin().z), error))
+			utility::stringFormat("%.02f, %.02f, %.02f", obj_bounds.getMin().x, obj_bounds.getMin().y, obj_bounds.getMin().z), error))
 			return false;
 
 		if (!mBBoxTextRenderer->setText(1,
-			utility::stringFormat("%.02f, %.02f, %.02f", mObjectBounds.getMax().x, mObjectBounds.getMax().y, mObjectBounds.getMax().z), error))
+			utility::stringFormat("%.02f, %.02f, %.02f", obj_bounds.getMax().x, obj_bounds.getMax().y, obj_bounds.getMax().z), error))
 			return false;
 
 		if (!mBBoxTextRenderer->setText(2,
-			utility::stringFormat("%.02f, %.02f, %.02f", mObjectBounds.getCenter().x, mObjectBounds.getCenter().y, mObjectBounds.getCenter().z), error))
+			utility::stringFormat("%.02f, %.02f, %.02f", obj_bounds.getCenter().x, obj_bounds.getCenter().y, obj_bounds.getCenter().z), error))
 			return false;
 
-		// Move mesh to center
-		auto center_offset = -mObjectBounds.getCenter();
-		mMeshTransform->setTranslate(center_offset);
+		// Attempt to create shaded mesh to render -> allowed to fail
+		mShadedRenderMesh = RenderableMesh(); mWireRenderMesh = RenderableMesh();
+		if(utility::isTriangleMesh(mesh->getMeshInstance()))
+		{
+			// Render shaded (with lights)
+			utility::ErrorState render_error;
+			mShadedRenderMesh = mShadedRenderer->createRenderableMesh(*mesh, render_error);
+			if (mShadedRenderMesh.isValid())
+				mShadedRenderer->setMesh(mShadedRenderMesh);
 
-		// Compute world (global) bounds
-		mWorldBounds = math::Box(
-			mObjectBounds.getMin() + center_offset,
-			mObjectBounds.getMax() + center_offset
-		);
+			// Special wire-frame renderer -> offsets vertices for better blending
+			mWireRenderMesh = mWireRenderer->createRenderableMesh(*mesh, render_error);
+			if (mWireRenderMesh.isValid())
+				mWireRenderer->setMesh(mWireRenderMesh);
+		}
+
+		// Cache some properties
+		mPolyMode = mesh->getMeshInstance().getPolygonMode();
+		mTopology = mesh->getMeshInstance().getDrawMode();
+
+		// Move mesh to center
+		auto center_offset = -obj_bounds.getCenter();
+		mMeshTransform->setTranslate(center_offset);
 
 		// Compute bounding box xform
 		mBBoxTransform->setTranslate({0.0f, 0.0f, 0.0f});
-		mBBoxTransform->setScale(mObjectBounds.getDimensions());
+		mBBoxTransform->setScale(obj_bounds.getDimensions());
 
-		// Set mesh for drawing
+		// Compute world (global) bounds
+		mWorldBounds = math::Box(
+			obj_bounds.getMin() + center_offset,
+			obj_bounds.getMax() + center_offset
+		);
+
+		// Take ownership of mesh
 		mMesh = std::move(mesh);
+		mFlatRenderer->setMesh(flat_mesh);
+		mObjectBounds = obj_bounds;
+
 		return true;
 	}
 
@@ -253,14 +256,13 @@ namespace napkin
 		if(hasWireframe() && mDrawWireframe)
 			drawWireframe();
 
-		if(mDrawBounds)
+		if (mDrawBounds)
 			drawBounds();
 	}
 
 
 	void FrameMeshComponentInstance::drawMesh()
 	{
-		// Push polygon connectivity
 		assert(mMesh != nullptr);
 		mMesh->getMeshInstance().setPolygonMode(mPolyMode);
 
@@ -278,15 +280,13 @@ namespace napkin
 			mRenderService->renderObjects(*window, *mCamera, render_comp);
 			return;
 		}
-		else
-		{
-			mFlatColorUniform->setValue(mMeshColor.toVec4());
-			mFlatAlphaUniform->setValue(mMeshColor.getAlpha());
-			mFlatRenderer->getMaterialInstance().setBlendMode(mBlendMode);
-			mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::InheritFromBlendMode);
-			std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
-			mRenderService->renderObjects(*window, *mCamera, render_comp);
-		}
+
+		mFlatColorUniform->setValue(mMeshColor.toVec4());
+		mFlatAlphaUniform->setValue(mMeshColor.getAlpha());
+		mFlatRenderer->getMaterialInstance().setBlendMode(mBlendMode);
+		mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::InheritFromBlendMode);
+		std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
+		mRenderService->renderObjects(*window, *mCamera, render_comp);
 	}
 
 
@@ -306,16 +306,15 @@ namespace napkin
 			mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::InheritFromBlendMode);
 			std::vector<RenderableComponentInstance*> render_comp = { mWireRenderer.get() };
 			mRenderService->renderObjects(*window, *mCamera, render_comp);
+			return;
 		}
-		else
-		{
-			mFlatColorUniform->setValue(mWireColor.toVec4());
-			mFlatAlphaUniform->setValue(mWireColor.getAlpha());
-			mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
-			mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::NoReadWrite);
-			std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
-			mRenderService->renderObjects(*window, *mCamera, render_comp);
-		}
+
+		mFlatColorUniform->setValue(mWireColor.toVec4());
+		mFlatAlphaUniform->setValue(mWireColor.getAlpha());
+		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
+		mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::NoReadWrite);
+		std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
+		mRenderService->renderObjects(*window, *mCamera, render_comp);
 	}
 
 
@@ -360,4 +359,13 @@ namespace napkin
 		mBBoxTextRenderer->setLocation(cen_screen);
 		mBBoxTextRenderer->draw(*window);
 	}
+
+
+	void FrameMeshComponentInstance::clear()
+	{
+		mWireRenderMesh = RenderableMesh();
+		mShadedRenderMesh = RenderableMesh();
+		mMesh.reset(nullptr);
+	}
 }
+

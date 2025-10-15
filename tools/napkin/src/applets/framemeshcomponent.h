@@ -210,6 +210,11 @@ namespace napkin
 		 */
 		void drawBounds();
 
+		/**
+		 * Clear current selection
+		 */
+		void clear();
+
 		ComponentInstancePtr<OrbitController> mOrbitController				= { this, &napkin::FrameMeshComponent::mOrbitController };
 		ComponentInstancePtr<PerspCameraComponent> mCamera					= { this, &napkin::FrameMeshComponent::mCamera };
 		ComponentInstancePtr<RenderableMeshComponent> mFlatRenderer			= { this, &napkin::FrameMeshComponent::mFlatRenderer };
@@ -249,7 +254,6 @@ namespace napkin
 
 		// Service
 		RenderAdvancedService* mRenderAdvancedService = nullptr;
-		RenderableMesh mFlatRenderMesh;
 		RenderableMesh mShadedRenderMesh;
 		RenderableMesh mWireRenderMesh;
 		bool mDrawWireframe = false;

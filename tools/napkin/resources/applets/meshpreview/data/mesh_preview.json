@@ -195,7 +195,7 @@
                         "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "WireMaterial",
+                        "Material": "ConstantMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },

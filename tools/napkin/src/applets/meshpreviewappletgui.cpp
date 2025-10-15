@@ -15,6 +15,16 @@
 
 namespace napkin
 {
+	static const std::array<const char*, 2>& getBlendOptions()
+	{
+		static const std::array<const char*, 2> options =
+		{
+			RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Additive).data(),
+			RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Opaque).data()
+		};
+		return options;
+	}
+
 
 	MeshPreviewAppletGUI::MeshPreviewAppletGUI(MeshPreviewApplet& applet) :
 		mApplet(applet)
@@ -22,7 +32,18 @@ namespace napkin
 
 
 	void MeshPreviewAppletGUI::init()
-	{ }
+	{
+		// Get selected blend mode from selection
+		assert(mBlendIndex < getBlendOptions().size());
+		const auto& blend_options = getBlendOptions();
+		auto blend_variant = RTTI_OF(nap::EBlendMode).get_enumeration().name_to_value(blend_options[mBlendIndex]);
+		assert(blend_variant.is_valid());
+		auto blend_value = blend_variant.get_value<nap::EBlendMode>();
+
+		// Push it
+		auto& controller = mApplet.mRenderEntity->getComponent<FrameMeshComponentInstance>();
+		controller.setBlendMode(blend_value);
+	}
 
 
 	void MeshPreviewAppletGUI::update(double elapsedTime)
@@ -104,17 +125,11 @@ namespace napkin
 					controller.setDrawWireFrame(draw_wire);
 			}
 
-			// Blend mode selection options
-			static const std::array<const char*, 2> blend_labels =
-			{
-				RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Additive).data(),
-				RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Opaque).data()
-			};
-
 			// Modes
-			if (ImGui::Combo("Blending", &mBlendIndex, blend_labels.data(), blend_labels.size()))
+			const auto& blend_options = getBlendOptions();
+			if (ImGui::Combo("Blending", &mBlendIndex, blend_options.data(), blend_options.size()))
 			{
-				auto blend_value = RTTI_OF(EBlendMode).get_enumeration().name_to_value(blend_labels[mBlendIndex]);
+				auto blend_value = RTTI_OF(EBlendMode).get_enumeration().name_to_value(blend_options[mBlendIndex]);
 				auto blend_mode = blend_value.get_value<EBlendMode>();
 				controller.setBlendMode(blend_mode);
 			}
