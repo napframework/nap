@@ -23,6 +23,8 @@ RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
 	RTTI_PROPERTY("BBoxRenderer",		&napkin::FrameMeshComponent::mBBoxRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BBoxTextRenderer",	&napkin::FrameMeshComponent::mBBoxTextRenderer, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShadedRenderer",		&napkin::FrameMeshComponent::mShadedRenderer,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshTransform",		&napkin::FrameMeshComponent::mMeshTransform,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshRotate",			&napkin::FrameMeshComponent::mMeshRotate,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::framemeshcomponentInstance run time class definition 
@@ -122,26 +124,36 @@ namespace napkin
 		}
 
 		// Compute and cache some properties
-		mBounds = utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance());
+		mObjectBounds = utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance());
 		mPolyMode = mesh->getMeshInstance().getPolygonMode();
 		mTopology = mesh->getMeshInstance().getDrawMode();
 
 		// Set bbox min, max text
 		if (!mBBoxTextRenderer->setText(0,
-			utility::stringFormat("%.02f, %.02f, %.02f", mBounds.getMin().x, mBounds.getMin().y, mBounds.getMin().z), error))
+			utility::stringFormat("%.02f, %.02f, %.02f", mObjectBounds.getMin().x, mObjectBounds.getMin().y, mObjectBounds.getMin().z), error))
 			return false;
 
 		if (!mBBoxTextRenderer->setText(1,
-			utility::stringFormat("%.02f, %.02f, %.02f", mBounds.getMax().x, mBounds.getMax().y, mBounds.getMax().z), error))
+			utility::stringFormat("%.02f, %.02f, %.02f", mObjectBounds.getMax().x, mObjectBounds.getMax().y, mObjectBounds.getMax().z), error))
 			return false;
 
 		if (!mBBoxTextRenderer->setText(2,
-			utility::stringFormat("%.02f, %.02f, %.02f", mBounds.getCenter().x, mBounds.getCenter().y, mBounds.getCenter().z), error))
+			utility::stringFormat("%.02f, %.02f, %.02f", mObjectBounds.getCenter().x, mObjectBounds.getCenter().y, mObjectBounds.getCenter().z), error))
 			return false;
 
-		// Set bbox transform
-		mBBoxTransform->setTranslate(mBounds.getCenter());
-		mBBoxTransform->setScale(mBounds.getDimensions());
+		// Move mesh to center
+		auto center_offset = -mObjectBounds.getCenter();
+		mMeshTransform->setTranslate(center_offset);
+
+		// Compute world (global) bounds
+		mWorldBounds = math::Box(
+			mObjectBounds.getMin() + center_offset,
+			mObjectBounds.getMax() + center_offset
+		);
+
+		// Compute bounding box xform
+		mBBoxTransform->setTranslate({0.0f, 0.0f, 0.0f});
+		mBBoxTransform->setScale(mObjectBounds.getDimensions());
 
 		// Set mesh for drawing
 		mMesh = std::move(mesh);
@@ -156,23 +168,31 @@ namespace napkin
 			return;
 
 		// Get radius of object
-		float obj_radius = utility::computeBoundingSphere(mBounds);
+		float obj_radius = utility::computeBoundingSphere(mObjectBounds);
 
 		// Compute camera distance using object bounding radius
 		float cam_distance = utility::computeCameraDistance(obj_radius, mCamera->getFieldOfView());
 
 		// Setup camera orbit controller
-		auto center = mBounds.getCenter();
-		glm::vec3 camera_pos = { center.x, center.y, mBounds.getDepth() / 2.0f + cam_distance };
-		mOrbitController->enable(camera_pos, center);
-		mOrbitController->setMovementSpeed(mBounds.getDiagonal() * mSpeedReference);
+		auto world_center = mWorldBounds.getCenter();
+		glm::vec3 camera_pos = {
+			world_center.x,
+			world_center.y,
+			world_center.z + (mWorldBounds.getDepth() / 2.0f + cam_distance)
+		};
+		mOrbitController->enable(camera_pos, world_center);
+		mOrbitController->setMovementSpeed(mObjectBounds.getDiagonal() * mSpeedReference);
 
 		// Compute camera clip planes
-		float clip_scale = math::max<float>(1000.0f, mBounds.getDiagonal() * 1000.0f);
+		float clip_scale = math::max<float>(1000.0f, mObjectBounds.getDiagonal() * 1000.0f);
 		auto props = mCamera->getProperties();
 		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.1f);
 		props.mFarClippingPlane = clip_scale;
 		mCamera->setProperties(props);
+
+		// Stop rotation
+		mMeshRotate->reset();
+		mMeshRotate->setSpeed(0.0f);
 	}
 
 
@@ -262,7 +282,8 @@ namespace napkin
 		mRenderService->renderObjects(*window, *mCamera, render_comps);
 
 		// Draw min bbox coordinates
-		auto min_screen = mCamera->worldToScreen(getBounds().getMin(), window->getRect());
+		auto min_xform = mMeshTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getMin(), 1.0f);
+		auto min_screen = mCamera->worldToScreen(min_xform, window->getRect());
 		min_screen += 5.0f * window->getDisplayScale();
 		mBBoxTextRenderer->setLineIndex(0);
 		mBBoxTextRenderer->setLocation(min_screen);
@@ -270,16 +291,19 @@ namespace napkin
 		mBBoxTextRenderer->draw(*window);
 
 		// Draw max bbox coordinates
-		auto max_screen = mCamera->worldToScreen(getBounds().getMax(), window->getRect());
+		auto max_xform = mMeshTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getMax(), 1.0f);
+		auto max_screen = mCamera->worldToScreen(max_xform, window->getRect());
 		max_screen += 5.0f * window->getDisplayScale();
 		mBBoxTextRenderer->setLineIndex(1);
 		mBBoxTextRenderer->setLocation(max_screen);
 		mBBoxTextRenderer->draw(*window);
 
 		// Draw center bbox coordinates
-		auto cen_screen = mCamera->worldToScreen(getBounds().getCenter(), window->getRect());
+		auto cen_xform = mMeshTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getCenter(), 1.0f);
+		auto cen_screen = mCamera->worldToScreen(cen_xform, window->getRect());
 		mBBoxTextRenderer->setLineIndex(2);
 		mBBoxTextRenderer->setLocation(cen_screen);
 		mBBoxTextRenderer->draw(*window);
 	}
 }
+

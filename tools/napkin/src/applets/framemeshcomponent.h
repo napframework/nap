@@ -12,6 +12,7 @@
 #include <box.h>
 #include <renderable2dtextcomponent.h>
 #include <renderadvancedservice.h>
+#include <rotatecomponent.h>
 
 namespace napkin
 {
@@ -34,6 +35,8 @@ namespace napkin
 		ComponentPtr<RenderableMeshComponent> mBBoxRenderer;		///< Property: 'BBoxRenderer' bounding box renderer
 		ComponentPtr<Renderable2DTextComponent> mBBoxTextRenderer;	///< Property: 'BBoxTextRenderer' bounding box text renderer
 		ComponentPtr<RenderableMeshComponent> mShadedRenderer;		///< Property: 'ShadedRenderer' shaded light renderer
+		ComponentPtr<TransformComponent> mMeshTransform;			///< Property: 'MeshTransform' global mesh render xform
+		ComponentPtr<RotateComponent> mMeshRotate;					///< Property: 'Rotator' mesh rotate component
 	};
 
 
@@ -84,7 +87,7 @@ namespace napkin
 		/**
 		 * @return mesh bounds
 		 */
-		const math::Box& getBounds() const { return mBounds; }
+		const math::Box& getObjectBounds() const { return mObjectBounds; }
 
 		/**
 		 * Set blend mode
@@ -162,6 +165,16 @@ namespace napkin
 		void setDrawBounds(bool draw) { mDrawBounds = draw; }
 
 		/**
+		 * Set rotate speed in seconds
+		 */
+		void setRotate(float speed) { mMeshRotate->setSpeed(speed); }
+
+		/**
+		 * @return mesh rotate speed in seconds
+		 */
+		float getRotate() { return mMeshRotate->getSpeed(); }
+
+		/**
 		 * Draws mesh, wireframe and bounds
 		 */
 		void draw();
@@ -193,10 +206,13 @@ namespace napkin
 		ComponentInstancePtr<RenderableMeshComponent> mBBoxRenderer			= { this, &napkin::FrameMeshComponent::mBBoxRenderer };
 		ComponentInstancePtr<Renderable2DTextComponent> mBBoxTextRenderer	= { this, &napkin::FrameMeshComponent::mBBoxTextRenderer };
 		ComponentInstancePtr<RenderableMeshComponent> mShadedRenderer		= { this, &napkin::FrameMeshComponent::mShadedRenderer };
+		ComponentInstancePtr<TransformComponent> mMeshTransform				= { this, &napkin::FrameMeshComponent::mMeshTransform };
+		ComponentInstancePtr<RotateComponent> mMeshRotate					= { this, &napkin::FrameMeshComponent::mMeshRotate };
 
 	private:
 		std::unique_ptr<IMesh> mMesh = nullptr;
-		math::Box mBounds;
+		math::Box mObjectBounds;
+		math::Box mWorldBounds;
 		float mSpeedReference = 0.0f;
 		float mWireWidth = 1.0f;
 		EPolygonMode mPolyMode = EPolygonMode::Fill;

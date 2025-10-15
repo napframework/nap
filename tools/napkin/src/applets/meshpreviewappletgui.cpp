@@ -66,7 +66,7 @@ namespace napkin
 			}
 
 			// Mesh bound dimensions
-			const auto& bounds = controller.getBounds();
+			const auto& bounds = controller.getObjectBounds();
 			texDetail("Bounds", "");
 			texDetail("\tWidth", utility::stringFormat("%.1f", bounds.getWidth()), "unit(s)");
 			texDetail("\tHeight", utility::stringFormat("%.1f", bounds.getHeight()), "unit(s)");
@@ -125,6 +125,11 @@ namespace napkin
 			auto bounds_color = controller.getBoundsColor();
 			if (ImGui::ColorEdit3("Bounds Color", bounds_color.getData()))
 				controller.setBoundsColor(bounds_color);
+
+			// Mesh rotation
+			float rotate_speed = controller.getRotate();
+			if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f, "%.3f", 2.0f))
+				controller.setRotate(rotate_speed);
 
 			// Wireframe
 			if (controller.hasWireframe() && controller.getDrawWireframe())

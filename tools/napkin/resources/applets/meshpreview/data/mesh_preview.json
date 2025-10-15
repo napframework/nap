@@ -336,6 +336,38 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "RenderModes",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "RenderModesXFormComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "FlatRenderer",
+                "ShadedRenderer"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "Renderer",
             "Components": [
                 {
@@ -365,16 +397,31 @@
                     "mID": "FrameMeshComponent",
                     "OrbitController": "../PerspectiveCamera/CameraControllerComponent",
                     "Camera": "../PerspectiveCamera/CameraComponent",
-                    "FlatRenderer": "./FlatRenderer/FlatRenderComponent",
+                    "FlatRenderer": "./RenderModes/FlatRenderer/FlatRenderComponent",
                     "BBoxTransform": "./BoundingBox/BBoxXformComponent",
                     "BBoxRenderer": "./BoundingBox/BBoxRenderComponent",
                     "BBoxTextRenderer": "./BoundingBox/BBoxTextComponent",
-                    "ShadedRenderer": "./ShadedRenderer/ShadedRenderComponent"
+                    "ShadedRenderer": "./RenderModes/ShadedRenderer/ShadedRenderComponent",
+                    "MeshTransform": "./RenderModes/RenderModesXFormComponent",
+                    "MeshRotate": "./RotateComponent"
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "RotateComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.10000000149011612,
+                        "Offset": 0.0
+                    }
                 }
             ],
             "Children": [
-                "FlatRenderer",
-                "ShadedRenderer",
+                "RenderModes",
                 "BoundingBox"
             ]
         },
