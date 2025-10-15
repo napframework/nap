@@ -88,11 +88,9 @@ namespace napkin
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
+		ObjectPtr<EntityInstance>	mLightsEntity = nullptr;				//< Pointer to the light entity
 
 		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
 		std::unique_ptr<MeshPreviewAppletGUI> mGUI;						//< Applet gui helper class
 	};
 }
-
-
-

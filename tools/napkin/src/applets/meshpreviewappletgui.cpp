@@ -11,6 +11,7 @@
 #include <vulkan/vk_enum_string_helper.h>
 #include <imgui/imgui.h>
 #include <imguiutils.h>
+#include <directionallightcomponent.h>
 
 namespace napkin
 {
@@ -147,6 +148,30 @@ namespace napkin
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::BeginMenu("Lights"))
+		{
+			auto& children = mApplet.mLightsEntity->getChildren(); 
+			int i = 1;
+			for (auto& child : children)
+			{
+				ImGui::PushID(child);
+
+				// Light intensity
+				auto& light = child->getComponent<DirectionalLightComponentInstance>();
+				float inten = light.getIntensity();
+				if (ImGui::SliderFloat(utility::stringFormat("Intensity %d", i).c_str(), &inten, 0.0f, 2.0f))
+					light.setIntensity(inten);
+
+				// Light color
+				RGBColorFloat color = light.getColor();
+				if (ImGui::ColorEdit3(utility::stringFormat("Color %d", i).c_str(), color.getData()))
+					light.setColor(color);
+
+				ImGui::PopID(); i++;
+			}
+			ImGui::EndMenu();
+		}
+
 		if (ImGui::BeginMenu("Applet"))
 		{
 			ImGui::MenuItem(utility::stringFormat("Framerate: %.02f", mApplet.getCore().getFramerate()).c_str());
@@ -192,3 +217,4 @@ namespace napkin
 		texDetail(std::move(label), enumerator.get_enumeration().value_to_name(argument).data());
 	}
 }
+

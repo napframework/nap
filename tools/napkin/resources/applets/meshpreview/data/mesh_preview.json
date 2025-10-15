@@ -116,8 +116,8 @@
                             "z": 0.0
                         },
                         "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
+                            "x": -30.0,
+                            "y": 30.0,
                             "z": 0.0
                         },
                         "Scale": {
@@ -213,6 +213,16 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "Lights",
+            "Components": [],
+            "Children": [
+                "DirectionalLight",
+                "DirectionalLight",
+                "DirectionalLight"
+            ]
         },
         {
             "Type": "nap::Entity",
@@ -645,9 +655,9 @@
                                     "mID": "ambient",
                                     "Name": "ambient",
                                     "Value": {
-                                        "x": 0.15000000596046448,
-                                        "y": 0.15000000596046448,
-                                        "z": 0.15000000596046448
+                                        "x": 0.05000000074505806,
+                                        "y": 0.05000000074505806,
+                                        "z": 0.05000000074505806
                                     }
                                 },
                                 {
@@ -659,31 +669,6 @@
                                         "y": 0.6745098233222961,
                                         "z": 0.6431372761726379
                                     }
-                                },
-                                {
-                                    "Type": "nap::UniformVec3",
-                                    "mID": "specular",
-                                    "Name": "specular",
-                                    "Value": {
-                                        "x": 0.10000000149011612,
-                                        "y": 0.10000000149011612,
-                                        "z": 0.10000000149011612
-                                    }
-                                },
-                                {
-                                    "Type": "nap::UniformVec2",
-                                    "mID": "fresnel",
-                                    "Name": "fresnel",
-                                    "Value": {
-                                        "x": 0.0,
-                                        "y": 0.0
-                                    }
-                                },
-                                {
-                                    "Type": "nap::UniformFloat",
-                                    "mID": "shininess",
-                                    "Name": "shininess",
-                                    "Value": 4.0
                                 },
                                 {
                                     "Type": "nap::UniformFloat",
@@ -702,6 +687,31 @@
                                     "mID": "environment",
                                     "Name": "environment",
                                     "Value": 0
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "shininess",
+                                    "Name": "shininess",
+                                    "Value": 5.0
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "specular",
+                                    "Name": "specular",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec2",
+                                    "mID": "fresnel",
+                                    "Name": "fresnel",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
                                 }
                             ]
                         }
@@ -821,8 +831,69 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "DirectionalLight",
-                    "InstanceProperties": []
+                    "Entity": "Lights",
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./DirectionalLight:1/DirectionalLightXformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Rotate/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override",
+                                        "Value": -30.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./DirectionalLight:1/DirectionalLightComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Intensity",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_42e904",
+                                        "Value": 0.3499999940395355
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./DirectionalLight:2/DirectionalLightXformComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Rotate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_bd7d1e",
+                                        "Value": 0.0
+                                    }
+                                },
+                                {
+                                    "Path": "Properties/Rotate/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_5822fe",
+                                        "Value": 180.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./DirectionalLight:2/DirectionalLightComponent",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Intensity",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_d74515",
+                                        "Value": 0.699999988079071
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         }

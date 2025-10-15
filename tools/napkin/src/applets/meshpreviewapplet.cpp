@@ -78,6 +78,10 @@ namespace napkin
 		if (!error.check(mOrthographicCamEntity != nullptr, "Missing 'OrthographicCamera' entity"))
 			return false;
 
+		mLightsEntity = scene->findEntity("Lights");
+		if (!error.check(mLightsEntity != nullptr, "Missing 'DirectionalLight' entity"))
+			return false;
+
 		// Create GUI
 		mGUI = std::make_unique<MeshPreviewAppletGUI>(*this);
 		mGUI->init();

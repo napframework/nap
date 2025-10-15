@@ -7,6 +7,7 @@
 // External includes
 #include <utility/errorstate.h>
 #include <rtti/typeinfo.h>
+#include <glm/vec3.hpp>
 
 namespace napkin
 {
