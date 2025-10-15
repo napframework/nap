@@ -82,9 +82,7 @@ namespace napkin
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		// Our scene contains a `nap::CubeMapFromFile` which must be pre-rendered in a headless render pass. This only needs to happen once, and there
-		// are no other objects that require headless rendering each frame. Therefore, `isHeadlessCommandQueued` should only be true in the first frame
-		// of rendering and record pre-render operations for our cube map resources.
+		// Process headless commands
 		if (mRenderService->isHeadlessCommandQueued())
 		{
 			if (mRenderService->beginHeadlessRecording())
@@ -106,7 +104,7 @@ namespace napkin
 			else
 			{
 				// Otherwise notify user we can select a texture
-				Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+				auto& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 				render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
 				render_text.draw(render_window);
 			}

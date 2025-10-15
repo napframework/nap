@@ -37,6 +37,7 @@ namespace napkin
 		ComponentPtr<RenderableMeshComponent> mShadedRenderer;		///< Property: 'ShadedRenderer' shaded light renderer
 		ComponentPtr<TransformComponent> mMeshTransform;			///< Property: 'MeshTransform' global mesh render xform
 		ComponentPtr<RotateComponent> mMeshRotate;					///< Property: 'Rotator' mesh rotate component
+		ComponentPtr<RenderableMeshComponent> mWireRenderer;		///< Property: 'WireRenderer' wire render component
 	};
 
 
@@ -208,6 +209,7 @@ namespace napkin
 		ComponentInstancePtr<RenderableMeshComponent> mShadedRenderer		= { this, &napkin::FrameMeshComponent::mShadedRenderer };
 		ComponentInstancePtr<TransformComponent> mMeshTransform				= { this, &napkin::FrameMeshComponent::mMeshTransform };
 		ComponentInstancePtr<RotateComponent> mMeshRotate					= { this, &napkin::FrameMeshComponent::mMeshRotate };
+		ComponentInstancePtr<RenderableMeshComponent> mWireRenderer			= { this, &napkin::FrameMeshComponent::mWireRenderer };
 
 	private:
 		std::unique_ptr<IMesh> mMesh = nullptr;
@@ -224,19 +226,24 @@ namespace napkin
 		UniformVec3Instance* mShadedDiffuseUniform = nullptr;
 		UniformFloatInstance* mShadedAlphaUniform = nullptr;
 		UniformVec3Instance* mBBoxColorUniform = nullptr;
+		UniformVec3Instance* mWireColorUniform = nullptr;
+		UniformFloatInstance* mWireAlphaUniform = nullptr;
+		UniformFloatInstance* mWireDisplacementUniform = nullptr;
 		RenderService* mRenderService = nullptr;
 
 		// Colors
-		EBlendMode mBlendMode = EBlendMode::Opaque;
+		EBlendMode mBlendMode = EBlendMode::Additive;
 		RGBAColorFloat mMeshColor = { 0.682352960, 0.674509823, 0.643137276, 0.45f};
-		RGBAColorFloat mWireColor = {0.18f, 0.18f, 0.18f, 0.2f};
+		RGBAColorFloat mWireColor = {1.0f, 1.0f, 1.0f, 0.098f};
 		RGBColorFloat mBBoxColor = { 1.0f, 1.0f, 1.0f };
 
 		// Service
 		RenderAdvancedService* mRenderAdvancedService = nullptr;
 		RenderableMesh mFlatRenderMesh;
 		RenderableMesh mShadedRenderMesh;
+		RenderableMesh mWireRenderMesh;
 		bool mDrawWireframe = false;
 		bool mDrawBounds = true;
 	};
 }
+

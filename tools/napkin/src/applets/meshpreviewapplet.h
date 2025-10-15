@@ -94,3 +94,4 @@ namespace napkin
 		std::unique_ptr<MeshPreviewAppletGUI> mGUI;						//< Applet gui helper class
 	};
 }
+

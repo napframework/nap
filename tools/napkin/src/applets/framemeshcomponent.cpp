@@ -25,6 +25,7 @@ RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
 	RTTI_PROPERTY("ShadedRenderer",		&napkin::FrameMeshComponent::mShadedRenderer,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshTransform",		&napkin::FrameMeshComponent::mMeshTransform,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshRotate",			&napkin::FrameMeshComponent::mMeshRotate,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("WireRenderer",		&napkin::FrameMeshComponent::mWireRenderer,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::framemeshcomponentInstance run time class definition 
@@ -55,7 +56,7 @@ namespace napkin
 		// Fetch normalized rotation speed
 		mSpeedReference = mOrbitController->getMovementSpeed();
 
-		// Fetch mesh uniforms
+		// Fetch constant (flat) uniforms
 		auto* ubo = mFlatRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
 		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
 			return false;
@@ -68,6 +69,7 @@ namespace napkin
 		if (!errorState.check(mFlatAlphaUniform != nullptr, "Missing '%s' uniform", uniform::constant::alpha))
 			return false;
 
+		// Fetch shaded uniforms
 		ubo = mShadedRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
 		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
 			return false;
@@ -80,13 +82,30 @@ namespace napkin
 		if (!errorState.check(mShadedAlphaUniform != nullptr, "Missing '%s' uniform", uniform::blinnphongcolor::alpha))
 			return false;
 
+		// Fetch bbox uniforms
 		ubo = mBBoxRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
 		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
 			return false;
 
-		// Fetch bbox uniforms
 		mBBoxColorUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::constant::color);
 		if (!errorState.check(mBBoxColorUniform != nullptr, "Missing '%s' uniform", uniform::constant::color))
+			return false;
+
+		// Fetch wire uniforms
+		ubo = mWireRenderer->getMaterialInstance().getOrCreateUniform(uniform::constant::uboStruct);
+		if (!errorState.check(ubo != nullptr, "Missing '%s' struct uniform", uniform::constant::uboStruct))
+			return false;
+
+		mWireColorUniform = ubo->getOrCreateUniform<UniformVec3Instance>(uniform::constant::color);
+		if (!errorState.check(mWireColorUniform != nullptr, "Missing '%s' uniform", uniform::constant::color))
+			return false;
+
+		mWireAlphaUniform = ubo->getOrCreateUniform<UniformFloatInstance>(uniform::constant::alpha);
+		if (!errorState.check(mWireAlphaUniform != nullptr, "Missing '%s' uniform", uniform::constant::alpha))
+			return false;
+
+		mWireDisplacementUniform = ubo->getOrCreateUniform<UniformFloatInstance>("displacement");
+		if (!errorState.check(mWireDisplacementUniform != nullptr, "Missing 'displacement' uniform"))
 			return false;
 
 		// bbox min, max, center
@@ -110,18 +129,18 @@ namespace napkin
 		mFlatRenderMesh = mFlatRenderer->createRenderableMesh(*mesh, error);
 		if (!mFlatRenderMesh.isValid())
 			return false;
-
 		mFlatRenderer->setMesh(mFlatRenderMesh);
 
 		// Attempt to create shaded mesh to render -> allowed to fail
-		utility::ErrorState shaded_error;
-		mShadedRenderMesh = mShadedRenderer->createRenderableMesh(*mesh, shaded_error);
-		if (mShadedRenderMesh.isValid()) {
+		utility::ErrorState render_error;
+		mShadedRenderMesh = mShadedRenderer->createRenderableMesh(*mesh, render_error);
+		if (mShadedRenderMesh.isValid())
 			mShadedRenderer->setMesh(mShadedRenderMesh);
-		}
-		else {
-			nap::Logger::warn("Shaded preview not available:\n%s", error.toString().c_str());
-		}
+
+		// Attempt to create wireframe mesh to render -> allowed to fail
+		mWireRenderMesh = mWireRenderer->createRenderableMesh(*mesh, render_error);
+		if (mWireRenderMesh.isValid())
+			mWireRenderer->setMesh(mWireRenderMesh);
 
 		// Compute and cache some properties
 		mObjectBounds = utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance());
@@ -174,31 +193,41 @@ namespace napkin
 		float cam_distance = utility::computeCameraDistance(obj_radius, mCamera->getFieldOfView());
 
 		// Setup camera orbit controller
-		auto world_center = mWorldBounds.getCenter();
-		glm::vec3 camera_pos = {
-			world_center.x,
-			world_center.y,
-			world_center.z + (mWorldBounds.getDepth() / 2.0f + cam_distance)
+		glm::vec3 camera_vec = {
+			0.0f,
+			0.0f,
+			mWorldBounds.getDepth() / 2.0f + cam_distance,
 		};
+
+		// Rotate camera vector
+		auto cam_rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(-25.0f), math::X_AXIS);
+		camera_vec = cam_rotate * glm::vec4(camera_vec, 1.0f);
+
+		// Position camera and point
+		auto world_center = mWorldBounds.getCenter();
+		glm::vec3 camera_pos = world_center + camera_vec;
 		mOrbitController->enable(camera_pos, world_center);
 		mOrbitController->setMovementSpeed(mObjectBounds.getDiagonal() * mSpeedReference);
 
 		// Compute camera clip planes
-		float clip_scale = math::max<float>(1000.0f, mObjectBounds.getDiagonal() * 1000.0f);
 		auto props = mCamera->getProperties();
-		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.1f);
-		props.mFarClippingPlane = clip_scale;
+		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.075f);
+		props.mFarClippingPlane  = math::max<float>(1000.0f, mObjectBounds.getDiagonal() * 100.0f);;
 		mCamera->setProperties(props);
 
 		// Stop rotation
 		mMeshRotate->reset();
 		mMeshRotate->setSpeed(0.0f);
+
+		// Change wire offset
+		mWireDisplacementUniform->setValue(mObjectBounds.getDiagonal() / 10000.0f);
 	}
 
 
 	void FrameMeshComponentInstance::setWireWidth(float width)
 	{
 		mFlatRenderer->setLineWidth(width);
+		mWireRenderer->setLineWidth(width);
 		mWireWidth = width;
 	}
 
@@ -234,6 +263,7 @@ namespace napkin
 			std::vector<RenderableComponentInstance*> render_comp = { mShadedRenderer.get() };
 			mRenderAdvancedService->pushLights(render_comp);
 			mRenderService->renderObjects(*window, *mCamera, render_comp);
+			return;
 		}
 		else
 		{
@@ -255,12 +285,24 @@ namespace napkin
 		auto* window = mRenderService->getCurrentRenderWindow();
 		assert(window != nullptr);
 
-		mFlatColorUniform->setValue(mWireColor.toVec4());
-		mFlatAlphaUniform->setValue(mWireColor.getAlpha());
-		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
-		mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::NoReadWrite);
-		std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
-		mRenderService->renderObjects(*window, *mCamera, render_comp);
+		if (mWireRenderMesh.isValid())
+		{
+			mWireColorUniform->setValue(mWireColor.toVec4());
+			mWireAlphaUniform->setValue(mWireColor.getAlpha());
+			mWireRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
+			mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::InheritFromBlendMode);
+			std::vector<RenderableComponentInstance*> render_comp = { mWireRenderer.get() };
+			mRenderService->renderObjects(*window, *mCamera, render_comp);
+		}
+		else
+		{
+			mFlatColorUniform->setValue(mWireColor.toVec4());
+			mFlatAlphaUniform->setValue(mWireColor.getAlpha());
+			mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
+			mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::NoReadWrite);
+			std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
+			mRenderService->renderObjects(*window, *mCamera, render_comp);
+		}
 	}
 
 

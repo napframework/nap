@@ -105,8 +105,8 @@ namespace napkin
 			// Blend mode selection options
 			static const std::array<const char*, 2> blend_labels =
 			{
-				RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Opaque).data(),
-				RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Additive).data()
+				RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Additive).data(),
+				RTTI_OF(EBlendMode).get_enumeration().value_to_name(EBlendMode::Opaque).data()
 			};
 
 			// Modes

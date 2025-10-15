@@ -195,7 +195,7 @@
                         "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "ConstantMaterial",
+                        "Material": "WireMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -373,7 +373,8 @@
             ],
             "Children": [
                 "FlatRenderer",
-                "ShadedRenderer"
+                "ShadedRenderer",
+                "WireRenderer"
             ]
         },
         {
@@ -413,7 +414,8 @@
                     "BBoxTextRenderer": "./BoundingBox/BBoxTextComponent",
                     "ShadedRenderer": "./RenderModes/ShadedRenderer/ShadedRenderComponent",
                     "MeshTransform": "./RenderModes/RenderModesXFormComponent",
-                    "MeshRotate": "./RotateComponent"
+                    "MeshRotate": "./RotateComponent",
+                    "WireRenderer": "./RenderModes/WireRenderer/WireRenderComponent"
                 },
                 {
                     "Type": "nap::RotateComponent",
@@ -540,6 +542,63 @@
                             "z": 1.0
                         },
                         "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "WireRenderer",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "WireXFormComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "WireRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "WireMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
                     }
                 }
             ],
@@ -720,6 +779,49 @@
                     "Buffers": [],
                     "Constants": [],
                     "Shader": "LightShader",
+                    "VertexAttributeBindings": [],
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
+                },
+                {
+                    "Type": "nap::ShaderFromFile",
+                    "mID": "WireShader",
+                    "VertShader": "shaders/wire.vert",
+                    "FragShader": "shaders/wire.frag",
+                    "RestrictModuleIncludes": false
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "WireMaterial",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "UBO_e0f52b",
+                            "Name": "UBO",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "color_1efe47",
+                                    "Name": "color",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "alpha_646043",
+                                    "Name": "alpha",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ],
+                    "Samplers": [],
+                    "Buffers": [],
+                    "Constants": [],
+                    "Shader": "WireShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "InheritFromBlendMode"
