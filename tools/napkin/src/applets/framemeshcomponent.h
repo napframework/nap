@@ -96,6 +96,11 @@ namespace napkin
 		void setBlendMode(EBlendMode mode) { mBlendMode = mode; }
 
 		/**
+		 * Get current blend mode
+		 */
+		EBlendMode getBlendMode() const { return mBlendMode; }
+
+		/**
 		 * Set wireframe width
 		 */
 		void setWireWidth(float width);
@@ -134,11 +139,6 @@ namespace napkin
 		 * @return bounds color
 		 */
 		const RGBColorFloat& getBoundsColor() const { return mBBoxColor; }
-
-		/**
-		 * @return current blend mode
-		 */
-		EBlendMode getBlendMode() const { return mBlendMode; }
 
 		/**
 		 * @return loaded mesh topology

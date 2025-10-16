@@ -111,6 +111,10 @@ namespace napkin
 		// bbox min, max, center
 		mBBoxTextRenderer->resize(3);
 
+		// set bounding box blend properties
+		mBBoxRenderer->getMaterialInstance().setBlendMode(nap::EBlendMode::Opaque);
+		mBBoxRenderer->getMaterialInstance().setDepthMode(nap::EDepthMode::InheritFromBlendMode);
+
 		// Push wire width
 		setWireWidth(1.0f);
 
@@ -142,7 +146,8 @@ namespace napkin
 
 		// Attempt to create shaded mesh to render -> allowed to fail
 		mShadedRenderMesh = RenderableMesh(); mWireRenderMesh = RenderableMesh();
-		if(utility::isTriangleMesh(mesh->getMeshInstance()))
+		bool triangle_mesh = utility::isTriangleMesh(mesh->getMeshInstance());
+		if(triangle_mesh)
 		{
 			// Render shaded (with lights)
 			utility::ErrorState render_error;
@@ -159,6 +164,7 @@ namespace napkin
 		// Cache some properties
 		mPolyMode = mesh->getMeshInstance().getPolygonMode();
 		mTopology = mesh->getMeshInstance().getDrawMode();
+		mBlendMode = triangle_mesh ? mBlendMode : EBlendMode::Opaque;
 
 		// Move mesh to center
 		auto center_offset = -obj_bounds.getCenter();
@@ -251,13 +257,13 @@ namespace napkin
 	void FrameMeshComponentInstance::draw()
 	{
 		assert(mMesh != nullptr);
-		drawMesh();
-
-		if(hasWireframe() && mDrawWireframe)
-			drawWireframe();
-
 		if (mDrawBounds)
 			drawBounds();
+
+		drawMesh();
+
+		if (hasWireframe() && mDrawWireframe)
+			drawWireframe();
 	}
 
 
@@ -312,7 +318,7 @@ namespace napkin
 		mFlatColorUniform->setValue(mWireColor.toVec4());
 		mFlatAlphaUniform->setValue(mWireColor.getAlpha());
 		mFlatRenderer->getMaterialInstance().setBlendMode(EBlendMode::AlphaBlend);
-		mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::NoReadWrite);
+		mFlatRenderer->getMaterialInstance().setDepthMode(EDepthMode::InheritFromBlendMode);
 		std::vector<RenderableComponentInstance*> render_comp = { mFlatRenderer.get() };
 		mRenderService->renderObjects(*window, *mCamera, render_comp);
 	}

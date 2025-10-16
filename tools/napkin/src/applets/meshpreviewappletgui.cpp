@@ -26,6 +26,22 @@ namespace napkin
 	}
 
 
+	static int getBlendIndex(EBlendMode mode)
+	{
+		// Current blend mode name
+		auto blend_mode = RTTI_OF(EBlendMode).get_enumeration().value_to_name(mode);
+		assert(!blend_mode.empty());
+
+		const auto& options = getBlendOptions();
+		for (int i = 0; i < options.size(); i++)
+		{
+			if (strcmp(options[i], blend_mode.data()) == 0)
+				return i;
+		}
+		return -1;
+	}
+
+
 	MeshPreviewAppletGUI::MeshPreviewAppletGUI(MeshPreviewApplet& applet) :
 		mApplet(applet)
 	{ }
@@ -33,16 +49,9 @@ namespace napkin
 
 	void MeshPreviewAppletGUI::init()
 	{
-		// Get selected blend mode from selection
-		assert(mBlendIndex < getBlendOptions().size());
-		const auto& blend_options = getBlendOptions();
-		auto blend_variant = RTTI_OF(nap::EBlendMode).get_enumeration().name_to_value(blend_options[mBlendIndex]);
-		assert(blend_variant.is_valid());
-		auto blend_value = blend_variant.get_value<nap::EBlendMode>();
-
-		// Push it
+		// Push additive blend mode
 		auto& controller = mApplet.mRenderEntity->getComponent<FrameMeshComponentInstance>();
-		controller.setBlendMode(blend_value);
+		controller.setBlendMode(EBlendMode::Additive);
 	}
 
 
@@ -125,13 +134,17 @@ namespace napkin
 					controller.setDrawWireFrame(draw_wire);
 			}
 
-			// Modes
-			const auto& blend_options = getBlendOptions();
-			if (ImGui::Combo("Blending", &mBlendIndex, blend_options.data(), blend_options.size()))
+			// Handle blending -> controller is leading
+			int blend_index = getBlendIndex(controller.getBlendMode());
+			if (blend_index >= 0)
 			{
-				auto blend_value = RTTI_OF(EBlendMode).get_enumeration().name_to_value(blend_options[mBlendIndex]);
-				auto blend_mode = blend_value.get_value<EBlendMode>();
-				controller.setBlendMode(blend_mode);
+				const auto& blend_options = getBlendOptions();
+				if (ImGui::Combo("Blending", &blend_index, blend_options.data(), blend_options.size()))
+				{
+					auto blend_value = RTTI_OF(EBlendMode).get_enumeration().name_to_value(blend_options[blend_index]);
+					assert(blend_value.is_valid());
+					controller.setBlendMode(blend_value.get_value<EBlendMode>());
+				}
 			}
 
 			// Mesh Color
