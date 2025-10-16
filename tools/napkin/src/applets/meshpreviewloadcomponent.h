@@ -17,15 +17,15 @@
 namespace napkin
 {
 	using namespace nap;
-	class FrameMeshComponentInstance;
+	class MeshPreviewLoadComponentInstance;
 
 	/**
 	 * Binds a mesh to a renderer and frames it in the viewport
 	 */
-	class FrameMeshComponent : public Component
+	class MeshPreviewLoadComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(FrameMeshComponent, FrameMeshComponentInstance)
+		DECLARE_COMPONENT(MeshPreviewLoadComponent, MeshPreviewLoadComponentInstance)
 
 	public:
 		ComponentPtr<OrbitController> mOrbitController;				///< Property: 'OrbitController' Camera orbit controller
@@ -45,11 +45,11 @@ namespace napkin
 	/**
 	 * Binds a mesh to a renderer and frames it in the viewport
 	 */
-	class FrameMeshComponentInstance : public ComponentInstance
+	class MeshPreviewLoadComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		FrameMeshComponentInstance(EntityInstance& entity, Component& resource);
+		MeshPreviewLoadComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initialize based on the resource
@@ -236,17 +236,17 @@ namespace napkin
 		 */
 		void clear();
 
-		ComponentInstancePtr<OrbitController> mOrbitController				= { this, &napkin::FrameMeshComponent::mOrbitController };
-		ComponentInstancePtr<PerspCameraComponent> mCamera					= { this, &napkin::FrameMeshComponent::mCamera };
-		ComponentInstancePtr<RenderableMeshComponent> mFlatRenderer			= { this, &napkin::FrameMeshComponent::mFlatRenderer };
-		ComponentInstancePtr<TransformComponent> mBBoxTransform				= { this, &napkin::FrameMeshComponent::mBBoxTransform };
-		ComponentInstancePtr<RenderableMeshComponent> mBBoxRenderer			= { this, &napkin::FrameMeshComponent::mBBoxRenderer };
-		ComponentInstancePtr<Renderable2DTextComponent> mBBoxTextRenderer	= { this, &napkin::FrameMeshComponent::mBBoxTextRenderer };
-		ComponentInstancePtr<RenderableMeshComponent> mShadedRenderer		= { this, &napkin::FrameMeshComponent::mShadedRenderer };
-		ComponentInstancePtr<TransformComponent> mObjectTransform			= { this, &napkin::FrameMeshComponent::mObjectTransform };
-		ComponentInstancePtr<RotateComponent> mRotator						= { this, &napkin::FrameMeshComponent::mRotator };
-		ComponentInstancePtr<RenderableMeshComponent> mWireRenderer			= { this, &napkin::FrameMeshComponent::mWireRenderer };
-		ComponentInstancePtr<TransformComponent> mWorldTransform			= { this, &napkin::FrameMeshComponent::mWorldTransform };
+		ComponentInstancePtr<OrbitController> mOrbitController				= { this, &napkin::MeshPreviewLoadComponent::mOrbitController };
+		ComponentInstancePtr<PerspCameraComponent> mCamera					= { this, &napkin::MeshPreviewLoadComponent::mCamera };
+		ComponentInstancePtr<RenderableMeshComponent> mFlatRenderer			= { this, &napkin::MeshPreviewLoadComponent::mFlatRenderer };
+		ComponentInstancePtr<TransformComponent> mBBoxTransform				= { this, &napkin::MeshPreviewLoadComponent::mBBoxTransform };
+		ComponentInstancePtr<RenderableMeshComponent> mBBoxRenderer			= { this, &napkin::MeshPreviewLoadComponent::mBBoxRenderer };
+		ComponentInstancePtr<Renderable2DTextComponent> mBBoxTextRenderer	= { this, &napkin::MeshPreviewLoadComponent::mBBoxTextRenderer };
+		ComponentInstancePtr<RenderableMeshComponent> mShadedRenderer		= { this, &napkin::MeshPreviewLoadComponent::mShadedRenderer };
+		ComponentInstancePtr<TransformComponent> mObjectTransform			= { this, &napkin::MeshPreviewLoadComponent::mObjectTransform };
+		ComponentInstancePtr<RotateComponent> mRotator						= { this, &napkin::MeshPreviewLoadComponent::mRotator };
+		ComponentInstancePtr<RenderableMeshComponent> mWireRenderer			= { this, &napkin::MeshPreviewLoadComponent::mWireRenderer };
+		ComponentInstancePtr<TransformComponent> mWorldTransform			= { this, &napkin::MeshPreviewLoadComponent::mWorldTransform };
 
 	private:
 		std::unique_ptr<IMesh> mMesh = nullptr;

@@ -13,12 +13,10 @@
 #include <rtti/jsonreader.h>
 #include <mesh.h>
 
-// nap::meshpreviewapicomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::MeshPreviewAPIcomponent)
-	RTTI_PROPERTY("FrameMesh", &napkin::MeshPreviewAPIcomponent::mFrameMeshComponent, nap::rtti::EPropertyMetaData::Required, "Binds a mesh to a renderer and frames it in the viewport")
+	RTTI_PROPERTY("Loader", &napkin::MeshPreviewAPIcomponent::mLoader, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-// nap::meshpreviewapicomponentInstance run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::MeshPreviewAPIComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
@@ -121,7 +119,7 @@ namespace napkin
 
 		// Load it
 		std::unique_ptr<IMesh> mesh(static_cast<IMesh*>(object.release()));
-		if (!mFrameMeshComponent->load(std::move(mesh), error))
+		if (!mLoader->load(std::move(mesh), error))
 		{
 			nap::Logger::error(error.toString());
 			return;
@@ -130,13 +128,13 @@ namespace napkin
 		// Frame when requested
 		auto* frame_arg = apiEvent.getArgumentByName(MeshPreviewAPIcomponent::loadMeshArg2);
 		if (frame_arg->asBool())
-			mFrameMeshComponent->frame();
+			mLoader->frame();
 	}
 
 
 	void MeshPreviewAPIComponentInstance::clear(const nap::APIEvent& apiEvent)
 	{
-		mFrameMeshComponent->clear();
+		mLoader->clear();
 	}
 
 

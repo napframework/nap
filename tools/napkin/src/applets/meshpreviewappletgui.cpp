@@ -4,7 +4,7 @@
 
 // Local includes
 #include "meshpreviewappletgui.h"
-#include "framemeshcomponent.h"
+#include "meshpreviewloadcomponent.h"
 #include "meshpreviewapplet.h"
 
 // External includes
@@ -50,7 +50,7 @@ namespace napkin
 	void MeshPreviewAppletGUI::init()
 	{
 		// Push additive blend mode
-		auto& controller = mApplet.mLoaderEntity->getComponent<FrameMeshComponentInstance>();
+		auto& controller = mApplet.mLoaderEntity->getComponent<MeshPreviewLoadComponentInstance>();
 		controller.setBlendMode(EBlendMode::Additive);
 	}
 
@@ -58,7 +58,7 @@ namespace napkin
 	void MeshPreviewAppletGUI::update(double elapsedTime)
 	{
 		// Fetch loaded texture
-		auto& controller = mApplet.mLoaderEntity->getComponent<FrameMeshComponentInstance>();
+		auto& controller = mApplet.mLoaderEntity->getComponent<MeshPreviewLoadComponentInstance>();
 		auto* loaded_mesh = controller.getMesh();
 
 		// Setup GUI for window

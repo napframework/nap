@@ -5,7 +5,7 @@
 #pragma once
 
 // Local includes
-#include "framemeshcomponent.h"
+#include "meshpreviewloadcomponent.h"
 
 // External includes
 #include <apicomponent.h>
@@ -23,7 +23,7 @@ namespace napkin
 	class AppletExtension;
 
 	/**
-	 * Loads and sets a mesh from an API command received from Napkin.
+	 * De-serializes and loads a mesh from an API command received from Napkin.
 	 */
 	class MeshPreviewAPIcomponent : public Component
 	{
@@ -43,14 +43,14 @@ namespace napkin
 		static constexpr const char* changeThemeArg1 = "theme";
 
 		// Requires API component
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ComponentPtr<FrameMeshComponent> mFrameMeshComponent;		///< Property: 'FrameMesh' the frame mesh component
+		ComponentPtr<MeshPreviewLoadComponent> mLoader;		///< Property: 'Loader' the load and frame component
 	};
 
 
 	/**
-	 * Loads and sets a mesh from an API command received from Napkin.
+	 * De-serializes and loads a mesh from an API command received from Napkin.
 	 */
 	class MeshPreviewAPIComponentInstance : public ComponentInstance
 	{
@@ -64,10 +64,10 @@ namespace napkin
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState) override;
 
 		// Resolved link to the frame mesh component
-		ComponentInstancePtr<FrameMeshComponent> mFrameMeshComponent =	{ this, &MeshPreviewAPIcomponent::mFrameMeshComponent };
+		ComponentInstancePtr<MeshPreviewLoadComponent> mLoader = { this, &MeshPreviewAPIcomponent::mLoader };
 
 	private:
 		// Callbacks

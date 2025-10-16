@@ -4,7 +4,7 @@
 
 // Local includes
 #include "meshpreviewapplet.h"
-#include "framemeshcomponent.h"
+#include "meshpreviewloadcomponent.h"
 
 // External includes
 #include <utility/fileutils.h>
@@ -119,7 +119,7 @@ namespace napkin
 			render_window.beginRendering();
 
 			// Render selected mesh
-			auto& controller = mLoaderEntity->getComponent<FrameMeshComponentInstance>();
+			auto& controller = mLoaderEntity->getComponent<MeshPreviewLoadComponentInstance>();
 			if (controller.hasMesh())
 			{
 				controller.draw();

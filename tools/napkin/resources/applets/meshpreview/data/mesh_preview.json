@@ -16,7 +16,7 @@
                 {
                     "Type": "napkin::MeshPreviewAPIcomponent",
                     "mID": "APIComponentHandler",
-                    "FrameMesh": "../Loader/LoadFrameComponent"
+                    "Loader": "../Loader/LoadMeshComponent"
                 }
             ],
             "Children": []
@@ -265,8 +265,8 @@
                     }
                 },
                 {
-                    "Type": "napkin::FrameMeshComponent",
-                    "mID": "LoadFrameComponent",
+                    "Type": "napkin::MeshPreviewLoadComponent",
+                    "mID": "LoadMeshComponent",
                     "OrbitController": "../PerspectiveCamera/CameraControllerComponent",
                     "Camera": "../PerspectiveCamera/CameraComponent",
                     "FlatRenderer": "./Renderer/RenderModes/FlatRenderer/FlatRenderComponent",

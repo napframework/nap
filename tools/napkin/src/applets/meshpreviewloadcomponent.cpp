@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
-#include "framemeshcomponent.h"
+#include "meshpreviewloadcomponent.h"
 
 // External Includes
 #include <entity.h>
@@ -14,23 +14,21 @@
 #include <renderservice.h>
 #include <blinnphongcolorshader.h>
 
-// nap::framemeshcomponent run time class definition 
-RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
-	RTTI_PROPERTY("OrbitController",	&napkin::FrameMeshComponent::mOrbitController,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Camera",				&napkin::FrameMeshComponent::mCamera,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FlatRenderer",		&napkin::FrameMeshComponent::mFlatRenderer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BBoxTransform",		&napkin::FrameMeshComponent::mBBoxTransform,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BBoxRenderer",		&napkin::FrameMeshComponent::mBBoxRenderer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BBoxTextRenderer",	&napkin::FrameMeshComponent::mBBoxTextRenderer, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ShadedRenderer",		&napkin::FrameMeshComponent::mShadedRenderer,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ObjectTransform",	&napkin::FrameMeshComponent::mObjectTransform,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Rotator",			&napkin::FrameMeshComponent::mRotator,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("WireRenderer",		&napkin::FrameMeshComponent::mWireRenderer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("WorldTransform",		&napkin::FrameMeshComponent::mWorldTransform,	nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(napkin::MeshPreviewLoadComponent)
+	RTTI_PROPERTY("OrbitController",	&napkin::MeshPreviewLoadComponent::mOrbitController,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Camera",				&napkin::MeshPreviewLoadComponent::mCamera,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FlatRenderer",		&napkin::MeshPreviewLoadComponent::mFlatRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BBoxTransform",		&napkin::MeshPreviewLoadComponent::mBBoxTransform,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BBoxRenderer",		&napkin::MeshPreviewLoadComponent::mBBoxRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BBoxTextRenderer",	&napkin::MeshPreviewLoadComponent::mBBoxTextRenderer, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShadedRenderer",		&napkin::MeshPreviewLoadComponent::mShadedRenderer,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ObjectTransform",	&napkin::MeshPreviewLoadComponent::mObjectTransform,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Rotator",			&napkin::MeshPreviewLoadComponent::mRotator,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("WireRenderer",		&napkin::MeshPreviewLoadComponent::mWireRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("WorldTransform",		&napkin::MeshPreviewLoadComponent::mWorldTransform,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-// nap::framemeshcomponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::FrameMeshComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::MeshPreviewLoadComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -40,11 +38,11 @@ RTTI_END_CLASS
 namespace napkin
 {
 
-	FrameMeshComponentInstance::FrameMeshComponentInstance(EntityInstance& entity, Component& resource) :
+	MeshPreviewLoadComponentInstance::MeshPreviewLoadComponentInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource) { }
 
 
-	bool FrameMeshComponentInstance::init(utility::ErrorState& errorState)
+	bool MeshPreviewLoadComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Fetch render service
 		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
@@ -123,7 +121,7 @@ namespace napkin
 	}
 
 
-	bool FrameMeshComponentInstance::load(std::unique_ptr<IMesh>&& mesh, utility::ErrorState& error)
+	bool MeshPreviewLoadComponentInstance::load(std::unique_ptr<IMesh>&& mesh, utility::ErrorState& error)
 	{
 		// Create flat mesh -> must be valid
 		auto flat_mesh = mFlatRenderer->createRenderableMesh(*mesh, error);
@@ -193,7 +191,7 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::frame()
+	void MeshPreviewLoadComponentInstance::frame()
 	{
 		// Don't frame if there's no object
 		if (mMesh == nullptr)
@@ -239,7 +237,7 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::setWireWidth(float width)
+	void MeshPreviewLoadComponentInstance::setWireWidth(float width)
 	{
 		mFlatRenderer->setLineWidth(width);
 		mWireRenderer->setLineWidth(width);
@@ -247,27 +245,27 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::setRotate(const glm::vec3& eulerAngles)
+	void MeshPreviewLoadComponentInstance::setRotate(const glm::vec3& eulerAngles)
 	{
 		mWorldTransform->setRotate(math::eulerToQuat(math::radians(eulerAngles)));
 		mRotate = eulerAngles;
 	}
 
 
-	bool FrameMeshComponentInstance::isTriangleMesh() const
+	bool MeshPreviewLoadComponentInstance::isTriangleMesh() const
 	{
 		return mMesh != nullptr && utility::isTriangleMesh(mMesh->getMeshInstance());
 	}
 
 
-	int FrameMeshComponentInstance::getTriangleCount() const
+	int MeshPreviewLoadComponentInstance::getTriangleCount() const
 	{
 		return isTriangleMesh() ?
 			utility::getTriangleCount(mMesh->getMeshInstance()) : 0;
 	}
 
 
-	void FrameMeshComponentInstance::draw()
+	void MeshPreviewLoadComponentInstance::draw()
 	{
 		assert(mMesh != nullptr);
 		if (mDrawBounds)
@@ -280,7 +278,7 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::drawMesh()
+	void MeshPreviewLoadComponentInstance::drawMesh()
 	{
 		assert(mMesh != nullptr);
 		mMesh->getMeshInstance().setPolygonMode(mPolyMode);
@@ -309,7 +307,7 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::drawWireframe()
+	void MeshPreviewLoadComponentInstance::drawWireframe()
 	{
 		assert(mMesh != nullptr);
 		mMesh->getMeshInstance().setPolygonMode(EPolygonMode::Line);
@@ -337,7 +335,7 @@ namespace napkin
 	}
 
 
-	bool FrameMeshComponentInstance::hasWireframe() const
+	bool MeshPreviewLoadComponentInstance::hasWireframe() const
 	{
 		return mMesh != nullptr ?
 			utility::isTriangleMesh(mMesh->getMeshInstance()) && mPolyMode == EPolygonMode::Fill:
@@ -345,7 +343,7 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::drawBounds()
+	void MeshPreviewLoadComponentInstance::drawBounds()
 	{
 		// Draw bounds mesh
 		auto* window = mRenderService->getCurrentRenderWindow();
@@ -380,7 +378,7 @@ namespace napkin
 	}
 
 
-	void FrameMeshComponentInstance::clear()
+	void MeshPreviewLoadComponentInstance::clear()
 	{
 		mWireRenderMesh = RenderableMesh();
 		mShadedRenderMesh = RenderableMesh();
