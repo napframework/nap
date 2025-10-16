@@ -421,22 +421,21 @@ void MainWindow::onStageRequested(const PropertyPath& path, const StageOption& s
 	if (stage_widget == nullptr)
 		return;
 
+	// Show and raise docked widget
+	auto* parent = qobject_cast<QWidget*>(stage_widget->parent());
+	if (parent != nullptr)
+	{
+		parent->show();
+		parent->activateWindow();
+		parent->raise();
+	}
+
 	// Try to load path
 	utility::ErrorState error;
 	if (!stage_widget->loadPath(path, error))
 	{
 		nap::Logger::error("Unable to load path: %s", path.toString().c_str());
 		nap::Logger::error(error.toString());
-		return;
-	}
-
-	// Show and raise in docked widget
-	auto* dock_widget = qobject_cast<QDockWidget*>(stage_widget->parent());
-	if (dock_widget != nullptr)
-	{
-		dock_widget->show();
-		dock_widget->activateWindow();
-		dock_widget->raise();
 	}
 }
 

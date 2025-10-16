@@ -4,6 +4,7 @@
 
 #pragma once
 
+// External includes
 #include <component.h>
 #include <orthocameracomponent.h>
 #include <zoompancontroller.h>
@@ -20,15 +21,15 @@
 namespace napkin
 {
 	using namespace nap;
-	class Frame2DTextureComponentInstance;
+	class TexturePreviewLoad2DComponentInstance;
 
 	/**
 	 * Binds and frames a 2D texture in the viewport
 	 */
-	class Frame2DTextureComponent : public Component
+	class TexturePreviewLoad2DComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(Frame2DTextureComponent, Frame2DTextureComponentInstance)
+		DECLARE_COMPONENT(TexturePreviewLoad2DComponent, TexturePreviewLoad2DComponentInstance)
 	public:
 
 		// Properties
@@ -49,7 +50,7 @@ namespace napkin
 	/**
 	 * Binds and frames a 2D texture in the viewport
 	 */
-	class Frame2DTextureComponentInstance : public ComponentInstance
+	class TexturePreviewLoad2DComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(nap::ComponentInstance)
 	public:
@@ -61,18 +62,18 @@ namespace napkin
 		};
 
 		// Constructor
-		Frame2DTextureComponentInstance(EntityInstance& entity, Component& resource) :
+		TexturePreviewLoad2DComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)					{ }
 
 		// Destructor
-		virtual ~Frame2DTextureComponentInstance()				{ mTexture.reset(nullptr); }
+		virtual ~TexturePreviewLoad2DComponentInstance()				{ mTexture.reset(nullptr); }
 
 		/**
 		 * Initialize this component
 		 * @param errorState error if initialization fails
 		 * @return if it initialized successfully
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Loads and binds a 2D texture.
@@ -185,31 +186,31 @@ namespace napkin
 		void draw(RenderService& renderService, RenderWindow& window);
 
 		// Resolved zoom & pan controller
-		ComponentInstancePtr<nap::ZoomPanController> mZoomPanController = { this, &Frame2DTextureComponent::mZoomPanController };
+		ComponentInstancePtr<nap::ZoomPanController> mZoomPanController = { this, &TexturePreviewLoad2DComponent::mZoomPanController };
 
 		// Resolved plane transform
-		ComponentInstancePtr<TransformComponent> mPlaneTransform = { this, &Frame2DTextureComponent::mPlaneTransform };
+		ComponentInstancePtr<TransformComponent> mPlaneTransform = { this, &TexturePreviewLoad2DComponent::mPlaneTransform };
 
 		// Resolved plane renderer
-		ComponentInstancePtr<RenderableMeshComponent> mPlaneRenderer = { this, &Frame2DTextureComponent::mPlaneRenderer };
+		ComponentInstancePtr<RenderableMeshComponent> mPlaneRenderer = { this, &TexturePreviewLoad2DComponent::mPlaneRenderer };
 
 		// Resolved plane camera
-		ComponentInstancePtr<OrthoCameraComponent> mPlaneCamera = { this, &Frame2DTextureComponent::mPlaneCamera };
+		ComponentInstancePtr<OrthoCameraComponent> mPlaneCamera = { this, &TexturePreviewLoad2DComponent::mPlaneCamera };
 
 		// Resolved mesh renderer
-		ComponentInstancePtr<RenderableMeshComponent> mMeshRenderer = { this, &Frame2DTextureComponent::mMeshRenderer };
+		ComponentInstancePtr<RenderableMeshComponent> mMeshRenderer = { this, &TexturePreviewLoad2DComponent::mMeshRenderer };
 
 		// Resolved mesh camera
-		ComponentInstancePtr<PerspCameraComponent> mMeshCamera = { this, &Frame2DTextureComponent::mMeshCamera };
+		ComponentInstancePtr<PerspCameraComponent> mMeshCamera = { this, &TexturePreviewLoad2DComponent::mMeshCamera };
 
 		// Resolved mesh rotate component
-		ComponentInstancePtr<RotateComponent> mMeshRotate = { this, &Frame2DTextureComponent::mMeshRotate};
+		ComponentInstancePtr<RotateComponent> mMeshRotate = { this, &TexturePreviewLoad2DComponent::mMeshRotate};
 
 		// Resolved mesh orbit component
-		ComponentInstancePtr<OrbitController> mMeshOrbit = { this, &Frame2DTextureComponent::mMeshOrbit };
+		ComponentInstancePtr<OrbitController> mMeshOrbit = { this, &TexturePreviewLoad2DComponent::mMeshOrbit };
 
 		// Resolved mesh transform component
-		ComponentInstancePtr<TransformComponent> mMeshTransform = { this, &Frame2DTextureComponent::mMeshTransform };
+		ComponentInstancePtr<TransformComponent> mMeshTransform = { this, &TexturePreviewLoad2DComponent::mMeshTransform };
 
 	private:
 

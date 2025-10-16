@@ -123,18 +123,18 @@ namespace napkin
 	{
 		// Show and set display mode
 		static const std::array<const char*, 2> mode_labels = { "Zoom & Pan", "3D Mesh" };
-		int display_idx = static_cast<int>(controller.mFrame2DTextureComponent->getMode());
+		int display_idx = static_cast<int>(controller.mLoad2DComponent->getMode());
 		if (ImGui::Combo("Display Mode", &display_idx, mode_labels.data(), mode_labels.size()))
 		{
-			auto display_mode = static_cast<Frame2DTextureComponentInstance::EMode>(display_idx);
-			controller.mFrame2DTextureComponent->setMode(display_mode);
+			auto display_mode = static_cast<TexturePreviewLoad2DComponentInstance::EMode>(display_idx);
+			controller.mLoad2DComponent->setMode(display_mode);
 			controller.frame();
 		}
 
 		// Update based on selected 2D texture display mode
-		switch (static_cast<Frame2DTextureComponentInstance::EMode>(display_idx))
+		switch (static_cast<TexturePreviewLoad2DComponentInstance::EMode>(display_idx))
 		{
-			case Frame2DTextureComponentInstance::EMode::Plane:
+			case TexturePreviewLoad2DComponentInstance::EMode::Plane:
 			{
 				// Texture opacity
 				float opacity = controller.getOpacity();
@@ -142,19 +142,19 @@ namespace napkin
 					controller.setOpacity(opacity);
 				break;
 			}
-			case Frame2DTextureComponentInstance::EMode::Mesh:
+			case TexturePreviewLoad2DComponentInstance::EMode::Mesh:
 			{
 				// Mesh selection labels
-				const auto& meshes = controller.mFrame2DTextureComponent->getMeshes();
+				const auto& meshes = controller.mLoad2DComponent->getMeshes();
 				std::vector<const char*> labels; labels.reserve(meshes.size());
 				for (const auto& mesh : meshes)
 					labels.emplace_back(mesh.getMesh().mID.c_str());
 
 				// Add mesh combo selection
-				int current_idx = controller.mFrame2DTextureComponent->getMeshIndex();
+				int current_idx = controller.mLoad2DComponent->getMeshIndex();
 				if (ImGui::Combo("Preview Mesh", &current_idx, labels.data(), meshes.size()))
 				{
-					controller.mFrame2DTextureComponent->setMeshIndex(current_idx);
+					controller.mLoad2DComponent->setMeshIndex(current_idx);
 					controller.frame();
 				}
 
@@ -173,21 +173,21 @@ namespace napkin
 	void TexturePreviewAppletGUI::updateTextureCube(TexturePreviewAPIComponentInstance& controller)
 	{
 		// Mesh visibility
-		auto& render_mesh_comp = *controller.mFrameCubeComponent->mMeshRenderer;
+		auto& render_mesh_comp = *controller.mLoadCubeComponent->mMeshRenderer;
 		bool visible = render_mesh_comp.isVisible();
 		if (ImGui::Checkbox("Show Mesh", &visible))
 			render_mesh_comp.setVisible(!render_mesh_comp.isVisible());
 
-		const auto& meshes = controller.mFrameCubeComponent->getMeshes();
+		const auto& meshes = controller.mLoadCubeComponent->getMeshes();
 		std::vector<const char*> labels; labels.reserve(meshes.size());
 		for (const auto& mesh : meshes)
 			labels.emplace_back(mesh.getMesh().mID.c_str());
 
 		// Add mesh combo selection
-		int current_idx = controller.mFrameCubeComponent->getMeshIndex();
+		int current_idx = controller.mLoadCubeComponent->getMeshIndex();
 		if (ImGui::Combo("Preview Mesh", &current_idx, labels.data(), meshes.size()))
 		{
-			controller.mFrameCubeComponent->setMeshIndex(current_idx);
+			controller.mLoadCubeComponent->setMeshIndex(current_idx);
 			controller.frame();
 		}
 

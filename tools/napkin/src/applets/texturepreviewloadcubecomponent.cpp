@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "framecubemapcomponent.h"
+#include "texturepreviewloadcubecomponent.h"
 
 // External Includes
 #include <entity.h>
@@ -14,20 +14,20 @@
 #include <spheremesh.h>
 
 // nap::framecubemapcomponent run time class definition 
-RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
-	RTTI_PROPERTY("SkyboxRenderer",			&napkin::FrameCubemapComponent::mSkyRenderer,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SkboxTransform",			&napkin::FrameCubemapComponent::mSkyTransform,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("CameraComponent",		&napkin::FrameCubemapComponent::mCameraComponent,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshOrbit",				&napkin::FrameCubemapComponent::mMeshOrbit,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshRenderer",			&napkin::FrameCubemapComponent::mMeshRenderer,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshRotate",				&napkin::FrameCubemapComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshTransform",			&napkin::FrameCubemapComponent::mMeshTransform,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FallbackTexture",		&napkin::FrameCubemapComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Meshes",					&napkin::FrameCubemapComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(napkin::TexturePreviewLoadCubeComponent)
+	RTTI_PROPERTY("SkyboxRenderer",			&napkin::TexturePreviewLoadCubeComponent::mSkyRenderer,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkboxTransform",			&napkin::TexturePreviewLoadCubeComponent::mSkyTransform,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CameraComponent",		&napkin::TexturePreviewLoadCubeComponent::mCameraComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshOrbit",				&napkin::TexturePreviewLoadCubeComponent::mMeshOrbit,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshRenderer",			&napkin::TexturePreviewLoadCubeComponent::mMeshRenderer,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshRotate",				&napkin::TexturePreviewLoadCubeComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshTransform",			&napkin::TexturePreviewLoadCubeComponent::mMeshTransform,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FallbackTexture",		&napkin::TexturePreviewLoadCubeComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Meshes",					&napkin::TexturePreviewLoadCubeComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::framecubemapcomponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::FrameCubemapComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::TexturePreviewLoadCubeComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -37,7 +37,7 @@ RTTI_END_CLASS
 namespace napkin
 {
 
-	bool FrameCubemapComponentInstance::init(utility::ErrorState& errorState)
+	bool TexturePreviewLoadCubeComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Fetch reflective mesh cubemap sampler input
 		mReflectiveCubeSampler = mMeshRenderer->getMaterialInstance().getOrCreateSampler<SamplerCubeInstance>("environmentMap");
@@ -48,7 +48,7 @@ namespace napkin
 		// Create a link between the material and mesh for every mesh you can select from
 		// This RenderableMesh objects bind a mesh to material and allow it to be rendered
 		// Using the render component
-		FrameCubemapComponent* resource = getComponent<FrameCubemapComponent>();
+		TexturePreviewLoadCubeComponent* resource = getComponent<TexturePreviewLoadCubeComponent>();
 		for (auto& mesh : resource->mMeshes)
 		{
 			// Create mesh / material combo
@@ -71,7 +71,7 @@ namespace napkin
 			return false;
 
 		// Fetch and bind texture fallback
-		mTextureFallback = getComponent<FrameCubemapComponent>()->mFallbackTexture.get();
+		mTextureFallback = getComponent<TexturePreviewLoadCubeComponent>()->mFallbackTexture.get();
 
 		// Fetch normalized rotation speed
 		mSpeedReference = mMeshOrbit->getMovementSpeed();
@@ -84,7 +84,7 @@ namespace napkin
 	}
 
 
-	void FrameCubemapComponentInstance::load(std::unique_ptr<TextureCube> texure)
+	void TexturePreviewLoadCubeComponentInstance::load(std::unique_ptr<TextureCube> texure)
 	{
 		// Bind new texture
 		bind(*texure);
@@ -94,7 +94,7 @@ namespace napkin
 	}
 
 
-	int FrameCubemapComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
+	int TexturePreviewLoadCubeComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
 	{
 		// Catch most obvious explicit error -> missing uv attribute
 		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::normal) != nullptr,
@@ -129,14 +129,14 @@ namespace napkin
 	}
 
 
-	void FrameCubemapComponentInstance::bind(TextureCube& texture)
+	void TexturePreviewLoadCubeComponentInstance::bind(TextureCube& texture)
 	{
 		mSkyRenderer->setTexture(texture);
 		mReflectiveCubeSampler->setTexture(texture);
 	}
 
 
-	void FrameCubemapComponentInstance::frame()
+	void TexturePreviewLoadCubeComponentInstance::frame()
 	{
 		// Get object radius -> bounding-sphere or radius of sphere
 		auto bounds = getBounds();
@@ -170,46 +170,46 @@ namespace napkin
 	}
 
 
-	void FrameCubemapComponentInstance::clear()
+	void TexturePreviewLoadCubeComponentInstance::clear()
 	{
 		bind(*mTextureFallback);
 	}
 
 
-	const nap::TextureCube& FrameCubemapComponentInstance::getTexture() const
+	const nap::TextureCube& TexturePreviewLoadCubeComponentInstance::getTexture() const
 	{
 		return mSkyRenderer->getTexture();
 	}
 
 
-	void FrameCubemapComponentInstance::setMeshIndex(int index)
+	void TexturePreviewLoadCubeComponentInstance::setMeshIndex(int index)
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mMeshRenderer->setMesh(mMeshes[mMeshIndex]);
 	}
 
 
-	const IMesh& FrameCubemapComponentInstance::getMesh()
+	const IMesh& TexturePreviewLoadCubeComponentInstance::getMesh()
 	{
 		assert(mMeshes.size() > mMeshIndex);
 		return mMeshes[mMeshIndex].getMesh();
 	}
 
 
-	bool FrameCubemapComponentInstance::hasMeshLoaded() const
+	bool TexturePreviewLoadCubeComponentInstance::hasMeshLoaded() const
 	{
 		return mMesh != nullptr;
 	}
 
 
-	void FrameCubemapComponentInstance::processWindowEvents(nap::InputService& inputService, nap::RenderWindow& window)
+	void TexturePreviewLoadCubeComponentInstance::processWindowEvents(nap::InputService& inputService, nap::RenderWindow& window)
 	{
 		static DefaultInputRouter input_router;
 		inputService.processWindowEvents(window, input_router, { mCameraComponent->getEntityInstance() });
 	}
 
 
-	void FrameCubemapComponentInstance::draw(RenderService& renderService, RenderWindow& window)
+	void TexturePreviewLoadCubeComponentInstance::draw(RenderService& renderService, RenderWindow& window)
 	{
 		// First draw skybox, then reflective mesh
 		renderService.renderObjects(window, *mCameraComponent,  { mSkyRenderer.get() });

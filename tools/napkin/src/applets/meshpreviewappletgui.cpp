@@ -140,15 +140,15 @@ namespace napkin
 			if (ImGui::ColorEdit4("Color", color.getData()))
 				controller.setMeshColor(color);
 
-			// Mesh scale
-			glm::vec3 scale = controller.getScale();
-			if (ImGui::InputFloat3("Scale", &scale.x, 2))
-				controller.setScale(scale);
-
 			// Mesh rotate
 			glm::vec3 rotate = controller.getRotate();
 			if (ImGui::InputFloat3("Rotate", &rotate.x, 2))
 				controller.setRotate(rotate);
+
+			// Mesh scale
+			glm::vec3 scale = controller.getScale();
+			if (ImGui::InputFloat3("Scale", &scale.x, 2))
+				controller.setScale(scale);
 
 			// Mesh rotation speed
 			float rotate_speed = controller.getRotateSpeed();
