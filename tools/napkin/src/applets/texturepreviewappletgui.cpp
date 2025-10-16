@@ -82,7 +82,7 @@ namespace napkin
 
 		// Add frame icon
 		if (loaded_tex != nullptr &&
-			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Selection"))
+			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Texture"))
 		{
 			// Frame object & reset rotation
 			tex_controller.frame();
@@ -138,7 +138,7 @@ namespace napkin
 			{
 				// Texture opacity
 				float opacity = controller.getOpacity();
-				if (ImGui::SliderFloat("Texture Opacity", &opacity, 0.0f, 1.0f))
+				if (ImGui::SliderFloat("Opacity", &opacity, 0.0f, 1.0f))
 					controller.setOpacity(opacity);
 				break;
 			}

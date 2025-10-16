@@ -36,8 +36,9 @@ namespace napkin
 		ComponentPtr<Renderable2DTextComponent> mBBoxTextRenderer;	///< Property: 'BBoxTextRenderer' bounding box text renderer
 		ComponentPtr<RenderableMeshComponent> mShadedRenderer;		///< Property: 'ShadedRenderer' shaded light renderer
 		ComponentPtr<TransformComponent> mMeshTransform;			///< Property: 'MeshTransform' global mesh render xform
-		ComponentPtr<RotateComponent> mMeshRotate;					///< Property: 'Rotator' mesh rotate component
+		ComponentPtr<RotateComponent> mRotator;						///< Property: 'Rotator' mesh rotate component
 		ComponentPtr<RenderableMeshComponent> mWireRenderer;		///< Property: 'WireRenderer' wire render component
+		ComponentPtr<TransformComponent> mRenderTransform;			///< Property: 'RenderTransform' final render transform 
 	};
 
 
@@ -168,12 +169,32 @@ namespace napkin
 		/**
 		 * Set rotate speed in seconds
 		 */
-		void setRotate(float speed) { mMeshRotate->setSpeed(speed); }
+		void setRotateSpeed(float speed) { mRotator->setSpeed(speed); }
 
 		/**
 		 * @return mesh rotate speed in seconds
 		 */
-		float getRotate() { return mMeshRotate->getSpeed(); }
+		float getRotateSpeed() { return mRotator->getSpeed(); }
+
+		/**
+		 * Set mesh scale
+		 */
+		void setScale(const glm::vec3& scale) { mRenderTransform->setScale(scale); }
+
+		/**
+		 * @return current mesh scale
+		 */
+		const glm::vec3& getScale() { return mRenderTransform->getScale(); }
+
+		/**
+		 * Set mesh rotate per axis in degrees
+		 */
+		void setRotate(const glm::vec3& eulerAngles);
+
+		/**
+		 * @return rotation per axis in degrees
+		 */
+		const glm::vec3& getRotate() const { return mRotate; }
 
 		/**
 		 * @return if a triangle mesh is loaded
@@ -186,7 +207,7 @@ namespace napkin
 		int getTriangleCount() const;
 
 		/**
-		 * Draws mesh, wireframe and bounds
+		 * Draws mesh, wire-frame and bounds
 		 */
 		void draw();
 
@@ -196,12 +217,12 @@ namespace napkin
 		void drawMesh();
 
 		/**
-		 * Draws wireframe overlay if possible
+		 * Draws wire-frame overlay
 		 */
 		void drawWireframe();
 
 		/**
-		 * @return if the current selection has a wireframe
+		 * @return if the current selection has a wire-frame
 		 */
 		bool hasWireframe() const;
 
@@ -223,8 +244,9 @@ namespace napkin
 		ComponentInstancePtr<Renderable2DTextComponent> mBBoxTextRenderer	= { this, &napkin::FrameMeshComponent::mBBoxTextRenderer };
 		ComponentInstancePtr<RenderableMeshComponent> mShadedRenderer		= { this, &napkin::FrameMeshComponent::mShadedRenderer };
 		ComponentInstancePtr<TransformComponent> mMeshTransform				= { this, &napkin::FrameMeshComponent::mMeshTransform };
-		ComponentInstancePtr<RotateComponent> mMeshRotate					= { this, &napkin::FrameMeshComponent::mMeshRotate };
+		ComponentInstancePtr<RotateComponent> mRotator						= { this, &napkin::FrameMeshComponent::mRotator };
 		ComponentInstancePtr<RenderableMeshComponent> mWireRenderer			= { this, &napkin::FrameMeshComponent::mWireRenderer };
+		ComponentInstancePtr<TransformComponent> mRenderTransform			= { this, &napkin::FrameMeshComponent::mRenderTransform };
 
 	private:
 		std::unique_ptr<IMesh> mMesh = nullptr;
@@ -234,6 +256,7 @@ namespace napkin
 		float mWireWidth = 1.0f;
 		EPolygonMode mPolyMode = EPolygonMode::Fill;
 		EDrawMode mTopology = EDrawMode::Unknown;
+		glm::vec3 mRotate = { 0.0f, 0.0f, 0.0f };
 
 		// Uniforms
 		UniformVec3Instance* mFlatColorUniform = nullptr;
@@ -260,4 +283,3 @@ namespace napkin
 		bool mDrawBounds = true;
 	};
 }
-

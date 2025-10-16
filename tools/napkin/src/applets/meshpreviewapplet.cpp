@@ -61,12 +61,8 @@ namespace napkin
 			return false;
 
 		// Get the render entity
-		mRenderEntity = scene->findEntity("Renderer");
-		if (!error.check(mRenderEntity != nullptr, "Mussing 'Renderer' entity"))
-			return false;
-
-		mFlatEntity = scene->findEntity("FlatRenderer");
-		if (!error.check(mRenderEntity != nullptr, "Mussing 'FlatRenderer' entity"))
+		mLoaderEntity = scene->findEntity("Loader");
+		if (!error.check(mLoaderEntity != nullptr, "Mussing 'Loader' entity"))
 			return false;
 
 		// Fetch the two different cameras
@@ -123,7 +119,7 @@ namespace napkin
 			render_window.beginRendering();
 
 			// Render selected mesh
-			auto& controller = mRenderEntity->getComponent<FrameMeshComponentInstance>();
+			auto& controller = mLoaderEntity->getComponent<FrameMeshComponentInstance>();
 			if (controller.hasMesh())
 			{
 				controller.draw();

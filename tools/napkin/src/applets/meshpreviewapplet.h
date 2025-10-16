@@ -82,13 +82,12 @@ namespace napkin
 		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
 		RenderAdvancedService*		mRenderAdvancedService = nullptr;	///< Render advanced service
 
-		ObjectPtr<EntityInstance>	mRenderEntity = nullptr;			//< Pointer to the render entity
-		ObjectPtr<EntityInstance>	mFlatEntity = nullptr;				//< Pointer to the constant entity
+		ObjectPtr<EntityInstance>	mLoaderEntity = nullptr;			//< Pointer to the render entity
 		ObjectPtr<EntityInstance>	mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
-		ObjectPtr<EntityInstance>	mLightsEntity = nullptr;				//< Pointer to the light entity
+		ObjectPtr<EntityInstance>	mLightsEntity = nullptr;			//< Pointer to the light entity
 
 		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
 		std::unique_ptr<MeshPreviewAppletGUI> mGUI;						//< Applet gui helper class

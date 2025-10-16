@@ -50,7 +50,7 @@ namespace napkin
 	void MeshPreviewAppletGUI::init()
 	{
 		// Push additive blend mode
-		auto& controller = mApplet.mRenderEntity->getComponent<FrameMeshComponentInstance>();
+		auto& controller = mApplet.mLoaderEntity->getComponent<FrameMeshComponentInstance>();
 		controller.setBlendMode(EBlendMode::Additive);
 	}
 
@@ -58,7 +58,7 @@ namespace napkin
 	void MeshPreviewAppletGUI::update(double elapsedTime)
 	{
 		// Fetch loaded texture
-		auto& controller = mApplet.mRenderEntity->getComponent<FrameMeshComponentInstance>();
+		auto& controller = mApplet.mLoaderEntity->getComponent<FrameMeshComponentInstance>();
 		auto* loaded_mesh = controller.getMesh();
 
 		// Setup GUI for window
@@ -121,25 +121,13 @@ namespace napkin
 
 		if (ImGui::BeginMenu("Mesh", loaded_mesh != nullptr))
 		{
-			// If bounding box is visible
-			bool draw_bounds = controller.getDrawBounds();
-			if (ImGui::Checkbox("Show Bounds", &draw_bounds))
-				controller.setDrawBounds(draw_bounds);
-
-			// If wireframe should be visible
-			if (controller.hasWireframe())
-			{
-				bool draw_wire = controller.getDrawWireframe();
-				if (ImGui::Checkbox("Show Wireframe", &draw_wire))
-					controller.setDrawWireFrame(draw_wire);
-			}
-
 			// Handle blending -> controller is leading
+			ImGui::PushID("mesh");
 			int blend_index = getBlendIndex(controller.getBlendMode());
 			if (blend_index >= 0)
 			{
 				const auto& blend_options = getBlendOptions();
-				if (ImGui::Combo("Blending", &blend_index, blend_options.data(), blend_options.size()))
+				if (ImGui::Combo("Blend Mode", &blend_index, blend_options.data(), blend_options.size()))
 				{
 					auto blend_value = RTTI_OF(EBlendMode).get_enumeration().name_to_value(blend_options[blend_index]);
 					assert(blend_value.is_valid());
@@ -149,32 +137,63 @@ namespace napkin
 
 			// Mesh Color
 			auto color = controller.getMeshColor();
-			if (ImGui::ColorEdit4("Mesh Color", color.getData()))
+			if (ImGui::ColorEdit4("Color", color.getData()))
 				controller.setMeshColor(color);
 
-			// Bounding box color
-			auto bounds_color = controller.getBoundsColor();
-			if (ImGui::ColorEdit3("Bounds Color", bounds_color.getData()))
-				controller.setBoundsColor(bounds_color);
+			// Mesh scale
+			glm::vec3 scale = controller.getScale();
+			if (ImGui::InputFloat3("Scale", &scale.x, 2))
+				controller.setScale(scale);
 
-			// Mesh rotation
-			float rotate_speed = controller.getRotate();
+			// Mesh rotate
+			glm::vec3 rotate = controller.getRotate();
+			if (ImGui::InputFloat3("Rotate", &rotate.x, 2))
+				controller.setRotate(rotate);
+
+			// Mesh rotation speed
+			float rotate_speed = controller.getRotateSpeed();
 			if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f, "%.3f", 2.0f))
-				controller.setRotate(rotate_speed);
+				controller.setRotateSpeed(rotate_speed);
 
-			// Wireframe
-			if (controller.hasWireframe() && controller.getDrawWireframe())
+			// Bounds
+			if (ImGui::CollapsingHeader("Bounds"))
 			{
-				color = controller.getWireColor();
-				if (ImGui::ColorEdit4("Wire Color", color.getData()))
-					controller.setWireColor(color);
+				// If bounding box is visible
+				ImGui::PushID("bounds");
+				bool draw_bounds = controller.getDrawBounds();
+				if (ImGui::Checkbox("Show", &draw_bounds))
+					controller.setDrawBounds(draw_bounds);
 
-				// Wireframe line width
-				auto width = controller.getWireWidth();
-				if (ImGui::SliderFloat("Wire Width", &width, 1.0f, 5.0f))
-					controller.setWireWidth(width);
+				// Bounding box color
+				auto bounds_color = controller.getBoundsColor();
+				if (ImGui::ColorEdit3("Color", bounds_color.getData()))
+					controller.setBoundsColor(bounds_color);
+				ImGui::PopID();
 			}
 
+			// Wireframe
+			if (controller.hasWireframe())
+			{
+				if (ImGui::CollapsingHeader("Wireframe"))
+				{
+					ImGui::PushID("wireframe");
+					bool draw_wire = controller.getDrawWireframe();
+					if (ImGui::Checkbox("Show", &draw_wire))
+						controller.setDrawWireFrame(draw_wire);
+
+					color = controller.getWireColor();
+					if (ImGui::ColorEdit4("Color", color.getData()))
+						controller.setWireColor(color);
+
+					// Wireframe line width
+					auto width = controller.getWireWidth();
+					if (ImGui::SliderFloat("Width", &width, 1.0f, 5.0f))
+						controller.setWireWidth(width);
+					ImGui::PopID();
+				}
+			}
+
+			ImGui::PopID();
 			ImGui::EndMenu();
 		}
 
@@ -211,7 +230,7 @@ namespace napkin
 
 		// Add frame icon
 		if (loaded_mesh != nullptr &&
-			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Selection"))
+			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Mesh"))
 		{
 			// Frame object & reset rotation
 			controller.frame();

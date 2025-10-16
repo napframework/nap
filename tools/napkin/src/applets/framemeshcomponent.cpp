@@ -24,8 +24,9 @@ RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
 	RTTI_PROPERTY("BBoxTextRenderer",	&napkin::FrameMeshComponent::mBBoxTextRenderer, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShadedRenderer",		&napkin::FrameMeshComponent::mShadedRenderer,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshTransform",		&napkin::FrameMeshComponent::mMeshTransform,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshRotate",			&napkin::FrameMeshComponent::mMeshRotate,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Rotator",			&napkin::FrameMeshComponent::mRotator,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("WireRenderer",		&napkin::FrameMeshComponent::mWireRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RenderTransform",	&napkin::FrameMeshComponent::mRenderTransform,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::framemeshcomponentInstance run time class definition 
@@ -180,6 +181,9 @@ namespace napkin
 			obj_bounds.getMax() + center_offset
 		);
 
+		// Change wire offset
+		mWireDisplacementUniform->setValue(obj_bounds.getDiagonal() / 10000.0f);
+
 		// Take ownership of mesh
 		mMesh = std::move(mesh);
 		mFlatRenderer->setMesh(flat_mesh);
@@ -225,11 +229,13 @@ namespace napkin
 		mCamera->setProperties(props);
 
 		// Stop rotation
-		mMeshRotate->reset();
-		mMeshRotate->setSpeed(0.0f);
+		mRotator->reset();
+		mRotator->setSpeed(0.0f);
 
-		// Change wire offset
-		mWireDisplacementUniform->setValue(mObjectBounds.getDiagonal() / 10000.0f);
+		// Reset transform
+		mRenderTransform->setScale({ 1.0f, 1.0f, 1.0f });
+		mRenderTransform->setRotate(glm::identity<glm::quat>());
+		mRotate = { 0.0f, 0.0f, 0.0f };
 	}
 
 
@@ -238,6 +244,13 @@ namespace napkin
 		mFlatRenderer->setLineWidth(width);
 		mWireRenderer->setLineWidth(width);
 		mWireWidth = width;
+	}
+
+
+	void FrameMeshComponentInstance::setRotate(const glm::vec3& eulerAngles)
+	{
+		mRenderTransform->setRotate(math::eulerToQuat(math::radians(eulerAngles)));
+		mRotate = eulerAngles;
 	}
 
 
@@ -374,4 +387,3 @@ namespace napkin
 		mMesh.reset(nullptr);
 	}
 }
-
