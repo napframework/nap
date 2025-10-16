@@ -637,13 +637,6 @@
             "Children": []
         },
         {
-            "Type": "nap::LucyMesh",
-            "mID": "LucyMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill"
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Borderless": false,

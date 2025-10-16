@@ -67,6 +67,11 @@ namespace napkin
 					return;
 				}
 
+				// Sync theme
+				const auto* theme = AppContext::get().getThemeManager().getCurrentTheme();
+				assert(theme != nullptr);
+				themeChanged(*theme);
+
 				// Install layout
 				assert(layout() == nullptr);
 				mMasterLayout.setContentsMargins(0, 0, 0, 0);
