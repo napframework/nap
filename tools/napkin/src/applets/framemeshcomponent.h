@@ -35,10 +35,10 @@ namespace napkin
 		ComponentPtr<RenderableMeshComponent> mBBoxRenderer;		///< Property: 'BBoxRenderer' bounding box renderer
 		ComponentPtr<Renderable2DTextComponent> mBBoxTextRenderer;	///< Property: 'BBoxTextRenderer' bounding box text renderer
 		ComponentPtr<RenderableMeshComponent> mShadedRenderer;		///< Property: 'ShadedRenderer' shaded light renderer
-		ComponentPtr<TransformComponent> mMeshTransform;			///< Property: 'MeshTransform' global mesh render xform
+		ComponentPtr<TransformComponent> mObjectTransform;			///< Property: 'MeshTransform' global mesh render xform
 		ComponentPtr<RotateComponent> mRotator;						///< Property: 'Rotator' mesh rotate component
 		ComponentPtr<RenderableMeshComponent> mWireRenderer;		///< Property: 'WireRenderer' wire render component
-		ComponentPtr<TransformComponent> mRenderTransform;			///< Property: 'RenderTransform' final render transform 
+		ComponentPtr<TransformComponent> mWorldTransform;			///< Property: 'RenderTransform' final render transform 
 	};
 
 
@@ -179,12 +179,12 @@ namespace napkin
 		/**
 		 * Set mesh scale
 		 */
-		void setScale(const glm::vec3& scale) { mRenderTransform->setScale(scale); }
+		void setScale(const glm::vec3& scale) { mWorldTransform->setScale(scale); }
 
 		/**
 		 * @return current mesh scale
 		 */
-		const glm::vec3& getScale() { return mRenderTransform->getScale(); }
+		const glm::vec3& getScale() { return mWorldTransform->getScale(); }
 
 		/**
 		 * Set mesh rotate per axis in degrees
@@ -243,10 +243,10 @@ namespace napkin
 		ComponentInstancePtr<RenderableMeshComponent> mBBoxRenderer			= { this, &napkin::FrameMeshComponent::mBBoxRenderer };
 		ComponentInstancePtr<Renderable2DTextComponent> mBBoxTextRenderer	= { this, &napkin::FrameMeshComponent::mBBoxTextRenderer };
 		ComponentInstancePtr<RenderableMeshComponent> mShadedRenderer		= { this, &napkin::FrameMeshComponent::mShadedRenderer };
-		ComponentInstancePtr<TransformComponent> mMeshTransform				= { this, &napkin::FrameMeshComponent::mMeshTransform };
+		ComponentInstancePtr<TransformComponent> mObjectTransform			= { this, &napkin::FrameMeshComponent::mObjectTransform };
 		ComponentInstancePtr<RotateComponent> mRotator						= { this, &napkin::FrameMeshComponent::mRotator };
 		ComponentInstancePtr<RenderableMeshComponent> mWireRenderer			= { this, &napkin::FrameMeshComponent::mWireRenderer };
-		ComponentInstancePtr<TransformComponent> mRenderTransform			= { this, &napkin::FrameMeshComponent::mRenderTransform };
+		ComponentInstancePtr<TransformComponent> mWorldTransform			= { this, &napkin::FrameMeshComponent::mWorldTransform };
 
 	private:
 		std::unique_ptr<IMesh> mMesh = nullptr;

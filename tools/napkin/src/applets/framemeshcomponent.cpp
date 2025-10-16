@@ -23,10 +23,10 @@ RTTI_BEGIN_CLASS(napkin::FrameMeshComponent)
 	RTTI_PROPERTY("BBoxRenderer",		&napkin::FrameMeshComponent::mBBoxRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BBoxTextRenderer",	&napkin::FrameMeshComponent::mBBoxTextRenderer, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShadedRenderer",		&napkin::FrameMeshComponent::mShadedRenderer,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshTransform",		&napkin::FrameMeshComponent::mMeshTransform,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ObjectTransform",	&napkin::FrameMeshComponent::mObjectTransform,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Rotator",			&napkin::FrameMeshComponent::mRotator,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("WireRenderer",		&napkin::FrameMeshComponent::mWireRenderer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RenderTransform",	&napkin::FrameMeshComponent::mRenderTransform,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("WorldTransform",		&napkin::FrameMeshComponent::mWorldTransform,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::framemeshcomponentInstance run time class definition 
@@ -169,7 +169,7 @@ namespace napkin
 
 		// Move mesh to center
 		auto center_offset = -obj_bounds.getCenter();
-		mMeshTransform->setTranslate(center_offset);
+		mObjectTransform->setTranslate(center_offset);
 
 		// Compute bounding box xform
 		mBBoxTransform->setTranslate({0.0f, 0.0f, 0.0f});
@@ -233,8 +233,8 @@ namespace napkin
 		mRotator->setSpeed(0.0f);
 
 		// Reset transform
-		mRenderTransform->setScale({ 1.0f, 1.0f, 1.0f });
-		mRenderTransform->setRotate(glm::identity<glm::quat>());
+		mWorldTransform->setScale({ 1.0f, 1.0f, 1.0f });
+		mWorldTransform->setRotate(glm::identity<glm::quat>());
 		mRotate = { 0.0f, 0.0f, 0.0f };
 	}
 
@@ -249,7 +249,7 @@ namespace napkin
 
 	void FrameMeshComponentInstance::setRotate(const glm::vec3& eulerAngles)
 	{
-		mRenderTransform->setRotate(math::eulerToQuat(math::radians(eulerAngles)));
+		mWorldTransform->setRotate(math::eulerToQuat(math::radians(eulerAngles)));
 		mRotate = eulerAngles;
 	}
 
@@ -355,7 +355,7 @@ namespace napkin
 		mRenderService->renderObjects(*window, *mCamera, render_comps);
 
 		// Draw min bbox coordinates
-		auto min_xform = mMeshTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getMin(), 1.0f);
+		auto min_xform = mObjectTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getMin(), 1.0f);
 		auto min_screen = mCamera->worldToScreen(min_xform, window->getRect());
 		min_screen += 5.0f * window->getDisplayScale();
 		mBBoxTextRenderer->setLineIndex(0);
@@ -364,7 +364,7 @@ namespace napkin
 		mBBoxTextRenderer->draw(*window);
 
 		// Draw max bbox coordinates
-		auto max_xform = mMeshTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getMax(), 1.0f);
+		auto max_xform = mObjectTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getMax(), 1.0f);
 		auto max_screen = mCamera->worldToScreen(max_xform, window->getRect());
 		max_screen += 5.0f * window->getDisplayScale();
 		mBBoxTextRenderer->setLineIndex(1);
@@ -372,7 +372,7 @@ namespace napkin
 		mBBoxTextRenderer->draw(*window);
 
 		// Draw center bbox coordinates
-		auto cen_xform = mMeshTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getCenter(), 1.0f);
+		auto cen_xform = mObjectTransform->getGlobalTransform() * glm::vec4(mObjectBounds.getCenter(), 1.0f);
 		auto cen_screen = mCamera->worldToScreen(cen_xform, window->getRect());
 		mBBoxTextRenderer->setLineIndex(2);
 		mBBoxTextRenderer->setLocation(cen_screen);

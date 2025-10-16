@@ -16,7 +16,7 @@
                 {
                     "Type": "napkin::MeshPreviewAPIcomponent",
                     "mID": "APIComponentHandler",
-                    "FrameMesh": "../Renderer/FrameMeshComponent"
+                    "FrameMesh": "../Loader/LoadFrameComponent"
                 }
             ],
             "Children": []
@@ -226,6 +226,66 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "Loader",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "LoadXFormComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "LoadRotateComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 1.0,
+                        "Offset": 0.0
+                    }
+                },
+                {
+                    "Type": "napkin::FrameMeshComponent",
+                    "mID": "LoadFrameComponent",
+                    "OrbitController": "../PerspectiveCamera/CameraControllerComponent",
+                    "Camera": "../PerspectiveCamera/CameraComponent",
+                    "FlatRenderer": "./Renderer/RenderModes/FlatRenderer/FlatRenderComponent",
+                    "BBoxTransform": "./Renderer/BoundingBox/BBoxXformComponent",
+                    "BBoxRenderer": "./Renderer/BoundingBox/BBoxRenderComponent",
+                    "BBoxTextRenderer": "./Renderer/BoundingBox/BBoxTextComponent",
+                    "ShadedRenderer": "./Renderer/RenderModes/ShadedRenderer/ShadedRenderComponent",
+                    "ObjectTransform": "./Renderer/RenderModes/RenderModesXFormComponent",
+                    "Rotator": "./LoadRotateComponent",
+                    "WireRenderer": "./Renderer/RenderModes/WireRenderer/WireRenderComponent",
+                    "WorldTransform": "./Renderer/RendererXformComponent"
+                }
+            ],
+            "Children": [
+                "Renderer"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "OrthographicCamera",
             "Components": [
                 {
@@ -402,34 +462,6 @@
                         },
                         "UniformScale": 1.0
                     }
-                },
-                {
-                    "Type": "napkin::FrameMeshComponent",
-                    "mID": "FrameMeshComponent",
-                    "OrbitController": "../PerspectiveCamera/CameraControllerComponent",
-                    "Camera": "../PerspectiveCamera/CameraComponent",
-                    "FlatRenderer": "./RenderModes/FlatRenderer/FlatRenderComponent",
-                    "BBoxTransform": "./BoundingBox/BBoxXformComponent",
-                    "BBoxRenderer": "./BoundingBox/BBoxRenderComponent",
-                    "BBoxTextRenderer": "./BoundingBox/BBoxTextComponent",
-                    "ShadedRenderer": "./RenderModes/ShadedRenderer/ShadedRenderComponent",
-                    "MeshTransform": "./RenderModes/RenderModesXFormComponent",
-                    "MeshRotate": "./RotateComponent",
-                    "WireRenderer": "./RenderModes/WireRenderer/WireRenderComponent"
-                },
-                {
-                    "Type": "nap::RotateComponent",
-                    "mID": "RotateComponent",
-                    "Enabled": true,
-                    "Properties": {
-                        "Axis": {
-                            "x": 0.0,
-                            "y": 1.0,
-                            "z": 0.0
-                        },
-                        "Speed": 0.10000000149011612,
-                        "Offset": 0.0
-                    }
                 }
             ],
             "Children": [
@@ -603,6 +635,13 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::LucyMesh",
+            "mID": "LucyMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Fill"
         },
         {
             "Type": "nap::RenderWindow",
@@ -925,10 +964,6 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "Renderer",
-                    "InstanceProperties": []
-                },
-                {
                     "Entity": "OrthographicCamera",
                     "InstanceProperties": []
                 },
@@ -996,6 +1031,10 @@
                             ]
                         }
                     ]
+                },
+                {
+                    "Entity": "Loader",
+                    "InstanceProperties": []
                 }
             ]
         }
