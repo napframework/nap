@@ -18,7 +18,7 @@
 	*	[Run a Demo](#run-a-demo)
 	*	[Work Against Source](#work-against-source)
 	*	[Package](#build-distributable-nap-package)
- 	*	[Branches](#branches) 
+ 	*	[Forks](#forks) 
 *	[Contributing](#contributing)
 *	[License](#license)
 	
@@ -59,6 +59,8 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_applets.jpg)
+[NAP Framework](https://nap-framework.tech) editor & applets
 ![NAP Framework](https://download.nap-labs.tech/shared/napkin_interface.jpg)
 [NAP Framework](https://nap-framework.tech) editor & audiovisualfft demo
 
@@ -220,19 +222,9 @@ Some other useful flags:
 
 More options for packaging can be queried by adding the flag `--help` when running the script.
 
-## Branches
+## Forks
 
-### main
-
-The current [stable branch](https://github.com/napframework/nap/tree/main): It generally reflects the latest release, plus a few critical bug-fixes.
-
-### 0.8
-
-The bleeding edge: [0.8](https://github.com/napframework/nap/tree/0.8) introduces many new features, improvements and portential fixes that are scheduled for a new official release.
-
-### build
-
-An [alternative build system](https://github.com/napframework/nap/tree/build-system): Including support for macOS and a simplified CMAKE interface, developed by [Stijn van Beek](https://github.com/stijnvanbeek).
+An [alternative build system](https://github.com/stijnvanbeek/nap): Including support for macOS and a simplified CMAKE interface, developed by [Stijn van Beek](https://github.com/stijnvanbeek). This fork is *not* officially supported by us.
 
 # Contributing
 
