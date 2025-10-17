@@ -30,6 +30,10 @@ namespace napkin
 
 	void TexturePreviewPanel::init(const nap::ProjectInfo& info)
 	{
+		// Don't do anything if textures aren't supported
+		if (!isSupported(info))
+			return;
+
 		// Should only be initialized once, after the project is loaded
 		assert(mPanel == nullptr);
 

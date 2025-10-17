@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QList>
 #include <rtti/typeinfo.h>
+#include <nap/projectinfo.h>
 
 namespace napkin
 {
@@ -80,6 +81,13 @@ namespace napkin
 		 * @param path the path to load
 		 */
 		bool loadPath(const PropertyPath& path, nap::utility::ErrorState& error);
+
+		/**
+		 * Checks if this widget supports types from the given project.
+		 * Note that this call is not fast and shouldn't be called frequently.
+		 * @return if the staging widget can be used with the given project
+		 */
+		bool isSupported(const nap::ProjectInfo& info) const;
 
 	protected:
 		// Implement in derived classes to load validated path

@@ -39,6 +39,10 @@ namespace napkin
 
 	void MeshPreviewPanel::init(const nap::ProjectInfo& info)
 	{
+		// Don't do anything if  meshes aren't supported
+		if (!isSupported(info))
+			return;
+
 		// Signals completion setup resources gui thread
 		assert(mPanel == nullptr);
 

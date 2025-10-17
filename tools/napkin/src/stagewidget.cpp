@@ -1,5 +1,7 @@
 #include "stagewidget.h"
 #include "appcontext.h"
+#include "naputils.h"
+#include <nap/projectinfo.h>
 
 namespace napkin
 {
@@ -16,10 +18,7 @@ namespace napkin
 
 	StageWidget::StageWidget(std::string&& displayName, StageOption::Types&& types, QWidget* parent /*= nullptr*/) : QWidget(parent),
 		mDisplayName(displayName), mTypes(types)
-	{
-		//connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &StageWidget::onPropertyValueChanged);
-		//connect(&AppContext::get(), &AppContext::objectRemoved, this, &StageWidget::onObjectRemoved);
-	}
+	{ }
 
 
 	bool StageWidget::loadPath(const PropertyPath& path, nap::utility::ErrorState& error)
@@ -27,5 +26,18 @@ namespace napkin
 		assert(path.getObject() != nullptr);
 		assert(toOption().isCompatible(path.getObject()->get_type()));
 		return onLoadPath(path, error);
+	}
+
+
+	bool StageWidget::isSupported(const nap::ProjectInfo& info) const
+	{
+		return !getTypes([this](const auto& ctype) 
+			{
+				for (const auto& stype : mTypes)
+				{
+					if (ctype.is_derived_from(stype))
+						return true;
+				} return false;
+			}).empty();
 	}
 }
