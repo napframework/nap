@@ -15,7 +15,7 @@ namespace napkin
 	static constexpr const char* sPanelName = "Texture Preview";
 
 	TexturePreviewPanel::TexturePreviewPanel(QWidget* parent) : StageWidget(sPanelName,
-		{ RTTI_OF(nap::Texture), RTTI_OF(nap::IMesh)}, parent)
+		{ RTTI_OF(nap::Texture), RTTI_OF(nap::IMesh)}, RTTI_OF(nap::Texture), parent)
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePreviewPanel::init);
@@ -127,9 +127,11 @@ namespace napkin
 	bool TexturePreviewPanel::loadMesh(const PropertyPath& path, bool frame, nap::utility::ErrorState& error)
 	{
 		// Bail if no texture is loaded
-		if (!error.check(mLoadedTexture != nullptr, "%s cmd failed: can't assign mesh, no texture loaded",
-			TexturePreviewAPIComponent::loadMeshCmd))
-			return false;
+		if (mLoadedTexture == nullptr)
+		{
+			nap::Logger::warn("Unable to assign mesh: a texture must be loaded first");
+			return true;
+		}
 
 		// Serialize to JSON
 		nap::rtti::JSONWriter writer;

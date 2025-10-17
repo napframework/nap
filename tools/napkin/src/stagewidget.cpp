@@ -16,9 +16,21 @@ namespace napkin
 	}
 
 
-	StageWidget::StageWidget(std::string&& displayName, StageOption::Types&& types, QWidget* parent /*= nullptr*/) : QWidget(parent),
-		mDisplayName(displayName), mTypes(types)
+	StageWidget::StageWidget(std::string&& displayName, StageOption::Types&& types, nap::rtti::TypeInfo&& iconType, QWidget* parent) : QWidget(parent),
+		mDisplayName(displayName), mTypes(types), mIconType(iconType)
 	{ }
+
+
+	napkin::StageOption StageWidget::toOption() const
+	{
+		return
+		{
+			objectName().toStdString(),
+			mDisplayName,
+			mTypes,
+			AppContext::get().getResourceFactory().getIcon(mIconType)
+		};
+	}
 
 
 	bool StageWidget::loadPath(const PropertyPath& path, nap::utility::ErrorState& error)
@@ -41,3 +53,4 @@ namespace napkin
 			}).empty();
 	}
 }
+

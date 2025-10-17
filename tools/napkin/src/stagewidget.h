@@ -21,16 +21,18 @@ namespace napkin
 
 		/**
 		 * Called by StageWidget::toOption()
-		 * @param widgetName widget object name 
+		 * @param widgetName widget object name
 		 * @param displayName widget display name
 		 * @param types list of compatible types
+		 * @param icon stage icon
 		 */
-		StageOption(const std::string& widgetName, const std::string& displayName, const Types& types) :
-			mWidgetName(widgetName), mDisplayName(displayName), mTypes(types) { }
+		StageOption(const std::string& widgetName, const std::string& displayName, const Types& types, const QIcon& icon) :
+			mWidgetName(widgetName), mDisplayName(displayName), mTypes(types), mIcon(icon) {}
 
 		std::string mDisplayName;	///< Widget display name
 		std::string mWidgetName;	///< Widget object name
 		Types mTypes;				///< Available preview types
+		QIcon mIcon;				///< Stage icon
 
 		/**
 		 * Checks if the given type can be staged (previewed) by this option.
@@ -63,13 +65,13 @@ namespace napkin
 		 * @param types compatible types
 		 * @param parent widget parent
 		 */
-		StageWidget(std::string&& displayName, StageOption::Types&& types, QWidget* parent = nullptr);
+		StageWidget(std::string&& displayName, StageOption::Types&& types, nap::rtti::TypeInfo&& iconType, QWidget* parent = nullptr);
 
 		/**
 		 * Converts this staging widget into an option that can be used to find and load matching types. 
 		 * @return Staging option
 		 */
-		StageOption toOption() const					{ return StageOption(objectName().toStdString(), mDisplayName, mTypes); }
+		StageOption toOption() const;
 
 		/**
 		 * @return Widget display name
@@ -96,6 +98,7 @@ namespace napkin
 	private:
 		std::string mDisplayName;
 		StageOption::Types mTypes;
+		nap::rtti::TypeInfo mIconType;
 	};
 }
 
