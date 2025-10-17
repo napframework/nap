@@ -374,7 +374,7 @@ namespace nap
 		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
 
 		/**
-		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
+		 * Calculates and applies a gui scaling factor based for the given window
 		 */
 		void pushScale(GUIContext& context, const nap::RenderWindow& window);
 

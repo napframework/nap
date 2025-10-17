@@ -75,7 +75,7 @@ namespace napkin
 			return false;
 
 		mLightsEntity = scene->findEntity("Lights");
-		if (!error.check(mLightsEntity != nullptr, "Missing 'DirectionalLight' entity"))
+		if (!error.check(mLightsEntity != nullptr, "Missing 'Lights' entity"))
 			return false;
 
 		// Create GUI
