@@ -197,7 +197,7 @@ namespace napkin
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Lights"))
+		if (ImGui::BeginMenu("Lights", loaded_mesh != nullptr))
 		{
 			auto& children = mApplet.mLightsEntity->getChildren(); 
 			int i = 1;
