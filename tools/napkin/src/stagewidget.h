@@ -26,12 +26,13 @@ namespace napkin
 		 * @param types list of compatible types
 		 * @param icon stage icon
 		 */
-		StageOption(const std::string& widgetName, const std::string& displayName, const Types& types, const QIcon& icon) :
-			mWidgetName(widgetName), mDisplayName(displayName), mTypes(types), mIcon(icon) {}
+		StageOption(const std::string& widgetName, const std::string& displayName, const Types& types, const Types& excludeTypes, const QIcon& icon) :
+			mWidgetName(widgetName), mDisplayName(displayName), mTypes(types), mExcludeTypes(excludeTypes), mIcon(icon) {}
 
 		std::string mDisplayName;	///< Widget display name
 		std::string mWidgetName;	///< Widget object name
 		Types mTypes;				///< Available preview types
+		Types mExcludeTypes;		///< Exclude preview types
 		QIcon mIcon;				///< Stage icon
 
 		/**
@@ -65,7 +66,7 @@ namespace napkin
 		 * @param types compatible types
 		 * @param parent widget parent
 		 */
-		StageWidget(std::string&& displayName, StageOption::Types&& types, nap::rtti::TypeInfo&& iconType, QWidget* parent = nullptr);
+		StageWidget(std::string&& displayName, StageOption::Types&& types, StageOption::Types&& excludeTypes, nap::rtti::TypeInfo&& iconType, QWidget* parent = nullptr);
 
 		/**
 		 * Converts this staging widget into an option that can be used to find and load matching types. 
@@ -98,6 +99,7 @@ namespace napkin
 	private:
 		std::string mDisplayName;
 		StageOption::Types mTypes;
+		StageOption::Types mExcludeTypes;
 		nap::rtti::TypeInfo mIconType;
 	};
 }

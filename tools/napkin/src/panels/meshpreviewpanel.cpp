@@ -11,13 +11,14 @@
 #include <apiservice.h>
 #include <rtti/jsonwriter.h>
 #include <apievent.h>
+#include <trianglemesh.h>
 
 namespace napkin
 {
 	static constexpr const char* sPanelName = "Mesh Preview";
 
 	MeshPreviewPanel::MeshPreviewPanel(QWidget * parent) : StageWidget(sPanelName,
-		{ RTTI_OF(nap::IMesh) }, RTTI_OF(nap::IMesh), parent)
+		{ RTTI_OF(nap::IMesh) }, { RTTI_OF(TriangleMesh) }, RTTI_OF(nap::IMesh), parent)
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &MeshPreviewPanel::init);

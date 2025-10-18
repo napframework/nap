@@ -385,3 +385,4 @@ namespace napkin
 		mMesh.reset(nullptr);
 	}
 }
+

@@ -12,9 +12,6 @@
 #include "../stagewidget.h"
 #include "../thememanager.h"
 
-// External includes
-#include <rendertexture2d.h>
-
 namespace napkin
 {
 	// The applet this panel runs & embeds

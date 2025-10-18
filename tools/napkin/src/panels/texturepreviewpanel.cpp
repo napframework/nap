@@ -8,14 +8,43 @@
 
 // External includes
 #include <rtti/jsonwriter.h>
+#include <trianglemesh.h>
+#include <image.h>
+#include <rendertexturecube.h>
 
 namespace napkin
 {
 	// Widget name
 	static constexpr const char* sPanelName = "Texture Preview";
 
+	// Included types
+	static StageOption::Types getTypes()
+	{
+		return
+		{
+			RTTI_OF(nap::Texture2D),
+			RTTI_OF(nap::TextureCube),
+			RTTI_OF(nap::IMesh)
+		};
+	}
+
+	// Explicit excluded types
+	static StageOption::Types getExcludedTypes()
+	{
+		return
+		{
+			 RTTI_OF(nap::TriangleMesh),
+			 RTTI_OF(nap::Image),
+			 RTTI_OF(nap::RenderTexture2D),
+			 RTTI_OF(nap::DepthRenderTexture2D),
+			 RTTI_OF(nap::RenderTextureCube),
+			 RTTI_OF(nap::DepthRenderTextureCube)
+		};
+	}
+
+
 	TexturePreviewPanel::TexturePreviewPanel(QWidget* parent) : StageWidget(sPanelName,
-		{ RTTI_OF(nap::Texture), RTTI_OF(nap::IMesh)}, RTTI_OF(nap::Texture), parent)
+		getTypes(), getExcludedTypes(), RTTI_OF(nap::Texture), parent)
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePreviewPanel::init);
