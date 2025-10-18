@@ -158,4 +158,3 @@ namespace napkin
 		mInputService->addEvent(std::move(inputEvent));
 	}
 }
-

@@ -729,93 +729,6 @@
                     "DepthMode": "InheritFromBlendMode"
                 },
                 {
-                    "Type": "nap::BlinnPhongColorShader",
-                    "mID": "LightShader"
-                },
-                {
-                    "Type": "nap::Material",
-                    "mID": "LightMaterial",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformStruct",
-                            "mID": "UBO_8d251f",
-                            "Name": "UBO",
-                            "Uniforms": [
-                                {
-                                    "Type": "nap::UniformVec3",
-                                    "mID": "ambient",
-                                    "Name": "ambient",
-                                    "Value": {
-                                        "x": 0.05000000074505806,
-                                        "y": 0.05000000074505806,
-                                        "z": 0.05000000074505806
-                                    }
-                                },
-                                {
-                                    "Type": "nap::UniformVec3",
-                                    "mID": "diffuse",
-                                    "Name": "diffuse",
-                                    "Value": {
-                                        "x": 0.6823529601097107,
-                                        "y": 0.6745098233222961,
-                                        "z": 0.6431372761726379
-                                    }
-                                },
-                                {
-                                    "Type": "nap::UniformFloat",
-                                    "mID": "alpha_9cd81f",
-                                    "Name": "alpha",
-                                    "Value": 1.0
-                                },
-                                {
-                                    "Type": "nap::UniformFloat",
-                                    "mID": "reflection",
-                                    "Name": "reflection",
-                                    "Value": 0.0
-                                },
-                                {
-                                    "Type": "nap::UniformUInt",
-                                    "mID": "environment",
-                                    "Name": "environment",
-                                    "Value": 0
-                                },
-                                {
-                                    "Type": "nap::UniformFloat",
-                                    "mID": "shininess",
-                                    "Name": "shininess",
-                                    "Value": 5.0
-                                },
-                                {
-                                    "Type": "nap::UniformVec3",
-                                    "mID": "specular",
-                                    "Name": "specular",
-                                    "Value": {
-                                        "x": 0.0,
-                                        "y": 0.0,
-                                        "z": 0.0
-                                    }
-                                },
-                                {
-                                    "Type": "nap::UniformVec2",
-                                    "mID": "fresnel",
-                                    "Name": "fresnel",
-                                    "Value": {
-                                        "x": 0.0,
-                                        "y": 0.0
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-                    "Samplers": [],
-                    "Buffers": [],
-                    "Constants": [],
-                    "Shader": "LightShader",
-                    "VertexAttributeBindings": [],
-                    "BlendMode": "Opaque",
-                    "DepthMode": "InheritFromBlendMode"
-                },
-                {
                     "Type": "nap::ShaderFromFile",
                     "mID": "WireShader",
                     "VertShader": "shaders/wire.vert",
@@ -854,6 +767,75 @@
                     "Buffers": [],
                     "Constants": [],
                     "Shader": "WireShader",
+                    "VertexAttributeBindings": [],
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
+                },
+                {
+                    "Type": "nap::ShaderFromFile",
+                    "mID": "LightShader",
+                    "VertShader": "shaders/light.vert",
+                    "FragShader": "shaders/light.frag",
+                    "RestrictModuleIncludes": false
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "LightMaterial",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "UBO_492da6",
+                            "Name": "UBO",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "ambient",
+                                    "Name": "ambient",
+                                    "Value": {
+                                        "x": 0.05000000074505806,
+                                        "y": 0.05000000074505806,
+                                        "z": 0.05000000074505806
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "diffuse",
+                                    "Name": "diffuse",
+                                    "Value": {
+                                        "x": 0.6822999715805054,
+                                        "y": 0.6744999885559082,
+                                        "z": 0.6431000232696533
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "specular",
+                                    "Name": "specular",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "shininess",
+                                    "Name": "shininess",
+                                    "Value": 5.0
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "alpha_d94341",
+                                    "Name": "alpha",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ],
+                    "Samplers": [],
+                    "Buffers": [],
+                    "Constants": [],
+                    "Shader": "LightShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "InheritFromBlendMode"
