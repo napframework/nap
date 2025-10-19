@@ -1,7 +1,7 @@
-prefix=/home/roy/nap/system_modules/napaudio/thirdparty/libsndfile/source/build/install
+prefix=/tmp/out
 exec_prefix=${prefix}
-libdir=/home/roy/nap/system_modules/napaudio/thirdparty/libsndfile/source/build/install/lib
-includedir=/home/roy/nap/system_modules/napaudio/thirdparty/libsndfile/source/build/install/include
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
 Name: sndfile
 Description: A library for reading and writing audio files
