@@ -1040,15 +1040,16 @@ namespace nap
 		if (other_palette == mColorPalette)
 			return;
 
-		// If so apply
+		// Apply palette to style template
 		gui::applyPalette(*other_palette, *mStyle);
-		auto* cur_ctx = ImGui::GetCurrentContext();
+
+		// Apply palette to active contexts
 		for (auto& iter : mContexts)
 		{
 			// Push palette for context
 			auto& ctx = *iter.second;
 			ctx.activate();
-			ImGui::GetStyle() = *ctx.mStyle;
+			gui::applyPalette(*other_palette, ImGui::GetStyle());
 			ctx.deactivate();
 		}
 

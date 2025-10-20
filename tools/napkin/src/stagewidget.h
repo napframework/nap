@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QList>
 #include <rtti/typeinfo.h>
+#include <nap/projectinfo.h>
 
 namespace napkin
 {
@@ -20,16 +21,19 @@ namespace napkin
 
 		/**
 		 * Called by StageWidget::toOption()
-		 * @param widgetName widget object name 
+		 * @param widgetName widget object name
 		 * @param displayName widget display name
 		 * @param types list of compatible types
+		 * @param icon stage icon
 		 */
-		StageOption(const std::string& widgetName, const std::string& displayName, const Types& types) :
-			mWidgetName(widgetName), mDisplayName(displayName), mTypes(types) { }
+		StageOption(const std::string& widgetName, const std::string& displayName, const Types& types, const Types& excludeTypes, const QIcon& icon) :
+			mWidgetName(widgetName), mDisplayName(displayName), mTypes(types), mExcludeTypes(excludeTypes), mIcon(icon) {}
 
 		std::string mDisplayName;	///< Widget display name
 		std::string mWidgetName;	///< Widget object name
 		Types mTypes;				///< Available preview types
+		Types mExcludeTypes;		///< Exclude preview types
+		QIcon mIcon;				///< Stage icon
 
 		/**
 		 * Checks if the given type can be staged (previewed) by this option.
@@ -62,13 +66,13 @@ namespace napkin
 		 * @param types compatible types
 		 * @param parent widget parent
 		 */
-		StageWidget(std::string&& displayName, StageOption::Types&& types, QWidget* parent = nullptr);
+		StageWidget(std::string&& displayName, StageOption::Types&& types, StageOption::Types&& excludeTypes, nap::rtti::TypeInfo&& iconType, QWidget* parent = nullptr);
 
 		/**
 		 * Converts this staging widget into an option that can be used to find and load matching types. 
 		 * @return Staging option
 		 */
-		StageOption toOption() const					{ return StageOption(objectName().toStdString(), mDisplayName, mTypes); }
+		StageOption toOption() const;
 
 		/**
 		 * @return Widget display name
@@ -81,6 +85,13 @@ namespace napkin
 		 */
 		bool loadPath(const PropertyPath& path, nap::utility::ErrorState& error);
 
+		/**
+		 * Checks if this widget supports types from the given project.
+		 * Note that this call is not fast and shouldn't be called frequently.
+		 * @return if the staging widget can be used with the given project
+		 */
+		bool isSupported(const nap::ProjectInfo& info) const;
+
 	protected:
 		// Implement in derived classes to load validated path
 		virtual bool onLoadPath(const PropertyPath& path, nap::utility::ErrorState& error) = 0;
@@ -88,6 +99,8 @@ namespace napkin
 	private:
 		std::string mDisplayName;
 		StageOption::Types mTypes;
+		StageOption::Types mExcludeTypes;
+		nap::rtti::TypeInfo mIconType;
 	};
 }
 

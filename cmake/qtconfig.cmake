@@ -20,10 +20,7 @@ macro(nap_qt_pre)
     endif()
 
     # Set vulkan SDK environment variable so QT to can find and use Vulkan
-    if(NOT DEFINED ENV{VULKAN_SDK})
-        set(ENV{VULKAN_SDK} "${NAP_ROOT}/system_modules/naprender/thirdparty/vulkansdk/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}")
-        message(STATUS "Using VULKAN_SDK environment variable: $ENV{VULKAN_SDK}")
-    endif()
+    set(ENV{VULKAN_SDK} "${NAP_ROOT}/system_modules/naprender/thirdparty/vulkansdk/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}")
 
     # Add possible Qt installation paths to the HINTS section
     # The version probably doesn't have to match exactly (5.8.? is probably fine)

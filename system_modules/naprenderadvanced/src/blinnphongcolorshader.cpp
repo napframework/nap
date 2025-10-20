@@ -32,8 +32,9 @@ namespace nap
 
 	bool BlinnPhongColorShader::init(utility::ErrorState& errorState)
 	{
+		assert(mRenderAdvancedService != nullptr);
         std::string shader_name = mRenderAdvancedService->isShadowMappingEnabled() ?
-                                  shader::blinnphongcolor : shader::blinnphongcolornoshadow;
+			shader::blinnphongcolor : shader::blinnphongcolornoshadow;
 
 		std::string relative_path = utility::joinPath({ "shaders", utility::appendFileExtension(shader_name, "vert") });
 		const std::string vertex_shader_path = mRenderAdvancedService->getModule().findAsset(relative_path);

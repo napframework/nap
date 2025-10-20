@@ -209,7 +209,7 @@ void napkin::ResourcePanel::createMenuCallbacks()
 			if (stage_option.isCompatible(object_item->getObject().get_type()))
 			{
 				// Add action as lambda -> prevents us from having to pass around the resource panel
-				auto icon = QIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_URL));
+				auto icon = stage_option.mIcon;
 				auto text = QString("Load into '%1'").arg(stage_option.mDisplayName.c_str());
 				menu.addAction(icon, text, [this, obj_path = object_item->propertyPath(), stage_option]()
 				{

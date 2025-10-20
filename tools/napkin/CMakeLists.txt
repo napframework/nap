@@ -17,7 +17,7 @@ add_source_dir("napkin" "src")
 
 # Uncomment 'NAP_DEV' to enable working on applets within Napkin! 
 # This will make applet specific resources and components accessible and editable in Napkin.
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_DEV)
+# target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_DEV)
 
 if(MSVC)
     if(NOT DEFINED NAP_PACKAGED_BUILD)

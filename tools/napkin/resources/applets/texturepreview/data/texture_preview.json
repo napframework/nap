@@ -5,8 +5,8 @@
             "mID": "2DEntity",
             "Components": [
                 {
-                    "Type": "napkin::Frame2DTextureComponent",
-                    "mID": "Frame2DTextureComponent",
+                    "Type": "napkin::TexturePreviewLoad2DComponent",
+                    "mID": "Load2DComponent",
                     "ZoomPanController": "./2DPlaneEntity/2DOrthoCameraEntity/2DOrthoCameraPanController",
                     "PlaneTransform": "./2DPlaneEntity/2DPlaneTextureEntity/2DPlaneTransformComponent",
                     "PlaneRenderer": "./2DPlaneEntity/2DPlaneTextureEntity/2DPlaneRenderComponent",
@@ -388,8 +388,8 @@
                 {
                     "Type": "napkin::TexturePreviewAPIComponent",
                     "mID": "TexturePreviewAPIComponent",
-                    "Frame2DTextureComponent": "../2DEntity/Frame2DTextureComponent",
-                    "FrameCubemapComponent": "../CubeEntity/CubeFrameComponent"
+                    "Load2DTextureComponent": "../2DEntity/Load2DComponent",
+                    "LoadCubemapComponent": "../CubeEntity/LoadCubeComponent"
                 }
             ],
             "Children": []
@@ -399,8 +399,8 @@
             "mID": "CubeEntity",
             "Components": [
                 {
-                    "Type": "napkin::FrameCubemapComponent",
-                    "mID": "CubeFrameComponent",
+                    "Type": "napkin::TexturePreviewLoadCubeComponent",
+                    "mID": "LoadCubeComponent",
                     "SkyboxRenderer": "./CubeTextureEntity/CubeTextureRenderComponent",
                     "SkboxTransform": "./CubeTextureEntity/CubeTextureTransformComponent",
                     "CameraComponent": "./CubePerspCameraEntity/CubePerspCameraComponent",

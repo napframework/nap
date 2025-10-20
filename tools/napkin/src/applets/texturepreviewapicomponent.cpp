@@ -17,8 +17,8 @@
 
 // nap::loadtexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::TexturePreviewAPIComponent)
-	RTTI_PROPERTY("Frame2DTextureComponent",	&napkin::TexturePreviewAPIComponent::mFrame2DTextureComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FrameCubemapComponent",		&napkin::TexturePreviewAPIComponent::mFrameCubemapComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Load2DTextureComponent",	&napkin::TexturePreviewAPIComponent::mLoad2DTextureComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LoadCubemapComponent",	&napkin::TexturePreviewAPIComponent::mLoadCubeTextureComponent,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::loadtexturecomponentInstance run time class definition 
@@ -95,7 +95,7 @@ namespace napkin
 		}
 
 		// Ensure there's at least 1 object and it's of type texture
-		if (result.mReadObjects.size() == 0)
+		if (result.mReadObjects.empty())
 		{
 			nap::Logger::error("%s cmd failed: invalid payload", TexturePreviewAPIComponent::loadTextureCmd);
 			return;
@@ -131,22 +131,22 @@ namespace napkin
 		if (result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(Texture2D)))
 		{
 			std::unique_ptr<Texture2D> tex = rtti_cast<Texture2D>(result.mReadObjects[0]);
-			mFrame2DTextureComponent->load(std::move(tex));
+			mLoad2DComponent->load(std::move(tex));
 			mSelectedType = EType::Texture2D;
 			if(frame_arg->asBool())
 			{
-				mFrame2DTextureComponent->setMode(Frame2DTextureComponentInstance::EMode::Plane);
-				mFrame2DTextureComponent->frame();
+				mLoad2DComponent->setMode(TexturePreviewLoad2DComponentInstance::EMode::Plane);
+				mLoad2DComponent->frame();
 			}
 		}
 		else
 		{
 			std::unique_ptr<TextureCube> tex = rtti_cast<TextureCube>(result.mReadObjects[0]);
 			assert(tex != nullptr);
-			mFrameCubeComponent->load(std::move(tex));
+			mLoadCubeComponent->load(std::move(tex));
 			mSelectedType = EType::Cubemap;
 			if (frame_arg->asBool())
-				mFrameCubeComponent->frame();
+				mLoadCubeComponent->frame();
 		}
 	}
 
@@ -172,6 +172,13 @@ namespace napkin
 		{
 			error.fail("%s cmd failed", TexturePreviewAPIComponent::loadMeshCmd);
 			nap::Logger::error(error.toString());
+			return;
+		}
+
+		// Ensure there's at least one object
+		if (result.mReadObjects.empty())
+		{
+			nap::Logger::error("%s cmd failed: invalid payload", TexturePreviewAPIComponent::loadMeshCmd);
 			return;
 		}
 
@@ -203,7 +210,7 @@ namespace napkin
 			case EType::Texture2D:
 			{
 				// Load user mesh into 2D texture visualizer -> bail if mesh can't be loaded
-				int idx = mFrame2DTextureComponent->load(std::move(new_mesh), error);
+				int idx = mLoad2DComponent->load(std::move(new_mesh), error);
 				if (idx < 0)
 				{
 					nap::Logger::error("%s cmd failed: %s", TexturePreviewAPIComponent::loadMeshCmd, error.toString().c_str());
@@ -214,16 +221,16 @@ namespace napkin
 				auto* frame_arg = apiEvent.getArgumentByName(TexturePreviewAPIComponent::loadMeshArg2);
 				if (frame_arg->asBool())
 				{
-					mFrame2DTextureComponent->setMode(Frame2DTextureComponentInstance::EMode::Mesh);
-					mFrame2DTextureComponent->setMeshIndex(idx);
-					mFrame2DTextureComponent->frame();
+					mLoad2DComponent->setMode(TexturePreviewLoad2DComponentInstance::EMode::Mesh);
+					mLoad2DComponent->setMeshIndex(idx);
+					mLoad2DComponent->frame();
 				}
 				break;
 			}
 			case EType::Cubemap:
 			{
 				// Load user mesh into cubemap visualizer
-				int idx = mFrameCubeComponent->load(std::move(new_mesh), error);
+				int idx = mLoadCubeComponent->load(std::move(new_mesh), error);
 				if (idx < 0)
 				{
 					nap::Logger::error("%s cmd failed: %s", TexturePreviewAPIComponent::loadMeshCmd, error.toString().c_str());
@@ -234,8 +241,8 @@ namespace napkin
 				auto* frame_arg = apiEvent.getArgumentByName(TexturePreviewAPIComponent::loadMeshArg2);
 				if (frame_arg->asBool())
 				{
-					mFrameCubeComponent->setMeshIndex(idx);
-					mFrameCubeComponent->frame();
+					mLoadCubeComponent->setMeshIndex(idx);
+					mLoadCubeComponent->frame();
 				}
 				break;
 			}
@@ -253,10 +260,10 @@ namespace napkin
 		switch (getType())
 		{
 		case EType::Texture2D:
-			return &mFrame2DTextureComponent->getTexture();
+			return &mLoad2DComponent->getTexture();
 			break;
 		case EType::Cubemap:
-			return &mFrameCubeComponent->getTexture();
+			return &mLoadCubeComponent->getTexture();
 			break;
 		case EType::None:
 			return nullptr;
@@ -274,10 +281,10 @@ namespace napkin
 		switch (getType())
 		{
 		case EType::Texture2D:
-			return &mFrame2DTextureComponent->getMesh();
+			return &mLoad2DComponent->getMesh();
 			break;
 		case EType::Cubemap:
-			return &mFrameCubeComponent->getMesh();
+			return &mLoadCubeComponent->getMesh();
 			break;
 		case EType::None:
 			return nullptr;
@@ -295,9 +302,9 @@ namespace napkin
 		switch (getType())
 		{
 		case EType::Texture2D:
-			return mFrame2DTextureComponent->getBounds();
+			return mLoad2DComponent->getBounds();
 		case EType::Cubemap:
-			return mFrameCubeComponent->getBounds();
+			return mLoadCubeComponent->getBounds();
 		default:
 			assert(false);
 			break;
@@ -312,10 +319,10 @@ namespace napkin
 		switch (getType())
 		{
 			case EType::Texture2D:
-				mFrame2DTextureComponent->frame();
+				mLoad2DComponent->frame();
 				break;
 			case EType::Cubemap:
-				mFrameCubeComponent->frame();
+				mLoadCubeComponent->frame();
 				break;
 			default:
 				assert(false);
@@ -329,9 +336,9 @@ namespace napkin
 		switch (getType())
 		{
 			case EType::Texture2D:
-				return mFrame2DTextureComponent->getOpacity();
+				return mLoad2DComponent->getOpacity();
 			case EType::Cubemap:
-				return mFrameCubeComponent->getOpacity();
+				return mLoadCubeComponent->getOpacity();
 			default:
 				assert(false);
 				return 1.0f;
@@ -344,9 +351,9 @@ namespace napkin
 		switch (getType())
 		{
 		case EType::Cubemap:
-			return mFrameCubeComponent->getRotation();
+			return mLoadCubeComponent->getRotation();
 		case EType::Texture2D:
-			return mFrame2DTextureComponent->getRotation();
+			return mLoad2DComponent->getRotation();
 		default:
 			assert(false);
 			return 0.0f;
@@ -359,10 +366,10 @@ namespace napkin
 		switch (getType())
 		{
 		case EType::Texture2D:
-			mFrame2DTextureComponent->processWindowEvents(inputService, window);
+			mLoad2DComponent->processWindowEvents(inputService, window);
 			break;
 		case EType::Cubemap:
-			mFrameCubeComponent->processWindowEvents(inputService, window);
+			mLoadCubeComponent->processWindowEvents(inputService, window);
 			break;
 		case EType::None:
 			break;
@@ -378,10 +385,10 @@ namespace napkin
 		switch (getType())
 		{
 		case EType::Texture2D:
-			mFrame2DTextureComponent->draw(renderService, window);
+			mLoad2DComponent->draw(renderService, window);
 			break;
 		case EType::Cubemap:
-			mFrameCubeComponent->draw(renderService, window);
+			mLoadCubeComponent->draw(renderService, window);
 			break;
 		case EType::None:
 			break;
@@ -397,10 +404,10 @@ namespace napkin
 		switch (getType())
 		{
 			case EType::Texture2D:
-				mFrame2DTextureComponent->setOpacity(alpha);
+				mLoad2DComponent->setOpacity(alpha);
 				break;
 			case EType::Cubemap:
-				mFrameCubeComponent->setOpacity(alpha);
+				mLoadCubeComponent->setOpacity(alpha);
 				break;
 			default:
 				assert(false);
@@ -414,10 +421,10 @@ namespace napkin
 		switch (getType())
 		{
 			case EType::Cubemap:
-				mFrameCubeComponent->setRotation(speed);
+				mLoadCubeComponent->setRotation(speed);
 				break;
 			case EType::Texture2D:
-				mFrame2DTextureComponent->setRotation(speed);
+				mLoad2DComponent->setRotation(speed);
 				break;
 			default:
 				assert(false);

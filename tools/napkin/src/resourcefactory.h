@@ -5,8 +5,8 @@
 #pragma once
 
 #include <QtGui/QIcon>
-#include <rtti/object.h>
 #include <QtCore/QMap>
+#include <rtti/object.h>
 
 namespace napkin 
 {

@@ -30,7 +30,7 @@ namespace nap
 	{
 		return utility::stringFormat
 		(
-			"Display: %d, %s, scale: %.1f, min: %d-%d, max: %d-%d",
+			"Display: %d, %s, scale: %.1f, min: %d %d, max: %d %d",
 			mIndex,
 			mName.c_str(),
 			mScale,

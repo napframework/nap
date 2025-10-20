@@ -275,39 +275,39 @@ namespace nap
 		 * @param error contains the error message if the lib could not be initialized correctly
 		 * @return if the lib was initialized successfully
 		 */
-		virtual bool init(utility::ErrorState& error) override;
+		bool init(utility::ErrorState& error) override;
 
 		/**
 		 * ImGui depends on the renderer
 		 * @param dependencies the type of services this service depends on
 		 */
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+		void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
 		 * Allows IMGUI to draw a new frame. This is called automatically by core in the app loop
 		 * @param deltaTime the time in seconds between ticks
 		 */
-		virtual void update(double deltaTime) override;
+		void update(double deltaTime) override;
 
 		/**
 		 * Ends frame operation for all contexts.
 		 */
-		virtual void postUpdate(double deltaTime) override;
+		void postUpdate(double deltaTime) override;
 
 		/**
 		 * Saves all gui .ini files
 		 */
-		virtual void preShutdown() override;
+		void preShutdown() override;
 
 		/**
 		 *	Deletes all GUI related resources
 		 */
-		virtual void shutdown() override;
+		void shutdown() override;
 
 		/**
 		 * Registers all gui object creation objects
 		 */
-		virtual void registerObjectCreators(rtti::Factory& factory) override;
+		void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
 		/**
@@ -374,7 +374,7 @@ namespace nap
 		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
 
 		/**
-		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
+		 * Calculates and applies a gui scaling factor based for the given window
 		 */
 		void pushScale(GUIContext& context, const nap::RenderWindow& window);
 
