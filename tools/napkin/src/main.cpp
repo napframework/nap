@@ -128,8 +128,9 @@ int main(int argc, char* argv[])
 	// Applets are NAP applications that run inside NAPKIN and use X11 for compatibility.
 	// Note that applets do work with Qt Wayland, but we currently can't embed them in a docked widget.
 #ifdef __linux__
-	napkin::env::set(napkin::env::option::QT_QPA_PLATFORM, "xcb");
-#endif
+	if (napkin::env::get(napkin::env::option::QT_QPA_PLATFORM).empty())
+		napkin::env::set(napkin::env::option::QT_QPA_PLATFORM, "xcb");
+#endif // __linux__
 
 	// Start logging to file next to console
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
