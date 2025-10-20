@@ -89,9 +89,9 @@ The default `CMake` generator is `Make`.
 
 Other Linux distributions *may* work, but they have not been tested and are not officially supported.
 
-#### Display Server
+#### Display Server 
 
-When `Wayland` is configured as the display server, NAP applications and Napkin (the editor) will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is fully supported.
+When `Wayland` is configured as the display server, NAP applications will run in native wayland mode if the compositor supports `wp_fifo_manager_v1`; otherwise the system will revert back to `XWayland` for performance reasons. You can force applications to run in native wayland mode by selecting `wayland` as the `Video Driver` in the `nap::RenderServiceConfiguration`. Napkin is set up to always use `XWayland` for compatibility, but it can be run as a native Wayland application by setting the `QT_QPA_PLATFORM` environment variable to `wayland`.
 
 #### Raspberry Pi
 
