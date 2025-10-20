@@ -10,7 +10,7 @@ ARG extra_installs
 
 # Build and codec deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake git pkg-config ca-certificates \
+    build-essential pkg-config ca-certificates \
     autoconf automake libtool \
     libasound2-dev \
     libflac-dev libogg-dev libvorbis-dev libopus-dev \
