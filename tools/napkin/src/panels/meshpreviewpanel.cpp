@@ -50,7 +50,7 @@ namespace napkin
 		// Create the window
 		nap::utility::ErrorState error;
 		mPanel = RenderPanel::create(mRunner, *this, error);
-		if (mPanel == nullptr)
+		if (!error.check(mPanel != nullptr, "Unable to create '%s' render panel", sPanelName))
 		{
 			nap::Logger::error(error.toString());
 			return;
