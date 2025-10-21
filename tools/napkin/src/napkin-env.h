@@ -47,6 +47,6 @@ namespace napkin
 		 * @param env the environment variable to check
 		 * @return environment value, empty if it does not exist
 		 */
-		inline std::string get(const char* env) { auto v = qgetenv(env); env != nullptr ? v.toStdString() : std::string(); }
+		inline std::string get(const char* env) { auto v = qgetenv(env); return env != nullptr ? v.toStdString() : std::string(); }
 	}
 }
