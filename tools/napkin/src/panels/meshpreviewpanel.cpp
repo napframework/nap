@@ -34,7 +34,7 @@ namespace napkin
 	void MeshPreviewPanel::closeEvent(QCloseEvent* event)
 	{
 		mRunner.abort();
-		return QWidget::closeEvent(event);
+		QWidget::closeEvent(event);
 	}
 
 
