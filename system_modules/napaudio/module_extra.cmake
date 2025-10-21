@@ -83,7 +83,7 @@ if (NAP_AUDIOFILE_SUPPORT)
 
          # Package libsamplerate into platform release
         install(FILES ${LIBSAMPLERATE_LICENSE_FILES} DESTINATION ${dest_thirdparty}/libsamplerate/source)
-        install(FILES ${LIBSAMPLERATE_INCLUDE_DIR}/samplerate.h ${LIBSAMPLERATE_INCLUDE_DIR}/samplerate.hh
+        install(FILES ${LIBSAMPLERATE_INCLUDE_DIR}/samplerate.h
                 DESTINATION ${dest_thirdparty}/libsamplerate/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/include)
         if(WIN32)
             file(GLOB LIBSAMPLERATE_DYLIBS ${LIBSAMPLERATE_LIB_DIR}/*snd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
