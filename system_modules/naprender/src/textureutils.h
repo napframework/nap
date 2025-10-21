@@ -7,14 +7,17 @@
 // External Includes
 #include <vulkan/vulkan_core.h>
 #include <utility/dllexport.h>
-#include <nap/numeric.h>
 #include <utility/errorstate.h>
+#include <nap/numeric.h>
 
 // Local Includes
 #include "surfacedescriptor.h"
 
 namespace nap
 {
+    // Forward declaration
+    class Texture2D;
+
 	namespace utility
 	{
 		/**
@@ -30,33 +33,47 @@ namespace nap
 		/**
 		 * Transition image to a new layout using an image barrier.
 		 */
-		void NAPAPI transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
+		void NAPAPI transitionImageLayout(VkCommandBuffer commandBuffer, ImageData& image, VkImageLayout newLayout,
 			VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, uint mipLevel, uint mipLevelCount, VkImageAspectFlags aspect);
 
 		/**
 		 * Transition image to a new layout using an image barrier.
 		 */
-		void NAPAPI transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
+		void NAPAPI transitionImageLayout(VkCommandBuffer commandBuffer, ImageData& image, VkImageLayout newLayout,
 			VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, uint mipLevel, uint mipLevelCount, uint layer, uint layerCount, VkImageAspectFlags aspect);
 
 		/**
-		 * Creates mip maps for the specified Vulkan image.
+		 * Compute maximum texture level of detail
 		 */
-		void NAPAPI createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels);
+		int NAPAPI computeMipLevel(const SurfaceDescriptor& descriptor);
 
 		/**
 		 * Creates mip maps for the specified Vulkan image.
 		 */
-		void NAPAPI createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels, uint layer, uint layerCount);
+		void NAPAPI createMipmaps(VkCommandBuffer buffer, ImageData& image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels);
+
+		/**
+		 * Creates mip maps for the specified Vulkan image.
+		 */
+		void NAPAPI createMipmaps(VkCommandBuffer buffer, ImageData& image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels, uint layer, uint layerCount);
 
 		/**
 		 * Pushes a full-size blit to the command buffer. Must be called inside a render pass, in onDraw().
-		 * Assumes a color texture without mip-maps. The layouts of srcTexture and dstTexture are
-		 * transferred to SHADER_READ after the blit operation.
+		 * Assumes a color texture without mip-maps.
 		 * @param commandBuffer the command buffer to push the blit operation to
 		 * @param srcTexture the source texture
 		 * @param dstTexture the destination texture
 		 */
-		void NAPAPI blit(VkCommandBuffer commandBuffer, const Texture2D& srcTexture, const Texture2D& dstTexture);
+		void NAPAPI blit(VkCommandBuffer commandBuffer, Texture2D& srcTexture, Texture2D& dstTexture);
+
+		/**
+		 * Pushes a full-size color copy to the command buffer. Must be called inside a render pass, 
+		 * in onDraw(). Assumes a color texture without mip-maps. Asserts the src and dest texture 
+		 * are exactly the same size and format.
+		 * @param commandBuffer the command buffer to push the blit operation to
+		 * @param srcTexture the source texture
+		 * @param dstTexture the destination texture
+		 */
+		void NAPAPI copy(VkCommandBuffer commandBuffer, Texture2D& srcTexture, Texture2D& dstTexture);
 	}
 }

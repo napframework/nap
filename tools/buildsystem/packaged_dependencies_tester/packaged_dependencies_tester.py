@@ -17,12 +17,15 @@ import shutil
 import time
 import sys
 
+# Quicker iteration when debugging this script
+SCRIPT_DEBUG_ONE_APP_ONLY = False
+
 # Import utilities
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
 from nap_shared import BuildType
 
 # How long to wait for the process to run. This should be long enough that we're sure
-# it will have completed initialisation.
+# it will have completed initialization.
 WAIT_SECONDS_FOR_PROCESS_HEALTH = 10
 
 # Name for app created from template
@@ -53,7 +56,6 @@ if sys.platform.startswith('linux') and not machine() == 'x86_64':
 
 # Build directory names
 LINUX_BUILD_DIR = 'build'
-MACOS_BUILD_DIR = 'xcode'
 MSVC_BUILD_DIR = 'msvc64'
 
 # List of locations on a Ubuntu system where we're happy to find system libraries. Restricting
@@ -333,23 +335,6 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libOpenGL'
 ]
 
-# List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
-# above, restricting to these paths helps us identify libraries being source from strange 
-# locations. However on macOS, unlike on Linux, we trust any libraries we find within these folders.
-# The logic here is that on macOS you're typically going to install custom locations via Brew or
-# MacPorts etc and are less likely to end up within these system paths. If that logic doesn't hold
-# up we'll need to define a list like above for Linux, or use another approach.
-MACOS_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/', 
-                                   '/System/Library/Frameworks/', 
-                                   '/System/Library/PrivateFrameworks/', 
-                                   '/System/Library/Extensions/', 
-                                   '/System/Library/Components/',
-                                   '/Library/CoreMediaIO/'
-                                   ]
-
-# Quicker iteration when debugging this script
-SCRIPT_DEBUG_ONE_APP_ONLY = False
-
 # Whether to treat unexpected libs as an error
 # TODO Temporary global until upcoming small restructure
 TREAT_UNEXPECTED_LIBS_AS_ERROR = True
@@ -473,7 +458,7 @@ def force_quit(process):
         time.sleep(1);
         process.poll();
 
-def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, expect_early_closure=False, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
+def run_process_then_stop(cmd, accepted_shared_libs_path=None, expect_early_closure=False, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
        still running before closing it
 
@@ -485,8 +470,6 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         Absolute path to directory which we're happy to see any shared libraries source from. 
         Typically NAP framework for build programs running from framework, or the packaged app for 
         single apps.
-    testing_napkin : bool
-        Whether testing Napkin
     expect_early_closure : bool
         Whether process having closed before we kill it is OK
     success_exit_code : int
@@ -511,66 +494,37 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
 
     # Launch the app
     my_env = os.environ.copy()
-    # For shared libraries tracking on macOS
-    if sys.platform == 'darwin':
-        my_env['DYLD_PRINT_LIBRARIES'] = '1'
+
     # Split command on Unix
     if sys.platform != 'win32':
         cmd = shlex.split(cmd)
 
-    # If running Napkin on Windows don't capture STDOUT when running from a packaged app after 
-    # issues seen 20/08/2020 with Napkin effectively locking up and returning an error code when 
-    # opening apps with either a service config or using the video module while piping STDOUT. 
-    # Hopefully temporary.
-    if testing_napkin and sys.platform == 'win32' and '..\\%s' % APP_FILENAME in cmd:
-        p = Popen(cmd, stderr=PIPE, env=my_env)
-    else:
-        p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=my_env)
-
-    # Wait for the app to initialise
-    waited_time = 0
-    while waited_time < wait_for_seconds and p.returncode is None:
-        time.sleep(0.5)
-        waited_time += 0.5
-        p.poll()
-
-
-    # Track success
+    # Open and capture error
     success = False
     unexpected_libraries = []
-
-    # Process running
-    if p.poll() == None:
-
-        # Get unexpected libs
-        if is_linux():
-            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
-
-        # Send SIGTERM and wait a moment to close. Use force quit if wait timer expires.
+    
+    # Run until terminated, either by the process or after x amount of time.
+    # If the process can't terminate it is killed.
+    p = Popen(cmd, stderr=PIPE, env=my_env)
+    try:
+        stdout, stderr = p.communicate(timeout=wait_for_seconds)
+        success = p.returncode == success_exit_code
+    except TimeoutExpired:
         try:
             p.terminate()
             p.wait(10)
+            stdout, stderr = p.communicate()
             success = not expect_early_closure
         except TimeoutExpired:
-            print("  Failed to close on terminate, sending kill signal")
+            print("Failed to close on terminate, sending kill signal")
             force_quit(p)
-            pass
-    # Process done
-    else:
-        # Exit code must be 'success_exit_code'. 
-        # If an application crashed or failed on initialization the exit code will not be 'success_exit_code'.
-        success = p.returncode == success_exit_code
+            stdout, stderr = ""
 
     # Gather info from stream
-    (stdout, stderr) = p.communicate()
     if type(stdout) == bytes:
         stdout = stdout.decode('utf8')
     if type(stderr) == bytes:
-        stderr = stderr.decode('utf8')    
-        
-    # Check for unexpected libraries
-    if sys.platform == 'darwin':
-        unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
+        stderr = stderr.decode('utf8')
 
     # Done
     return (success, stdout, stderr, unexpected_libraries, p.returncode)
@@ -612,40 +566,6 @@ def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path):
             if linux_file_is_shared_lib(path):
                 if not shared_lib_accepted(path, accepted_shared_libs_path):
                     unexpected_libs.append(path)
-
-    return unexpected_libs
-
-def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path):
-    """Check whether the a NAP process has used unexpected libraries on macOS
-
-    Parameters
-    ----------
-    stdout : str
-        STDOUT from the process
-    accepted_shared_libs_path : str
-        Absolute path to directory which we're happy to see any shared libraries source from.
-        Typically NAP framework for build programs running from framework, or the packaged app for
-        single apps.
-
-    Returns
-    -------
-    list
-        List of paths to unexpected libraries used
-    """
-
-    unexpected_libs = []
-    # Iterate STDOUT lines for shared libraries loaded and logged via DYLD_PRINT_LIBRARIES env. var
-    for line in stdout.split('\n'):
-        if line.startswith('dyld: loaded:'):
-            # Parse library path
-            lib = ':'.join(line.split(':')[2:]).strip()
-
-            # Get absolute path
-            libs_abs_path = os.path.abspath(lib)
-
-            # Check if library is accepted
-            if not shared_lib_accepted(libs_abs_path, accepted_shared_libs_path):
-                unexpected_libs.append(libs_abs_path)
 
     return unexpected_libs
 
@@ -705,30 +625,21 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
     accepted = False
 
     # Check if it's within the system libs paths
-    if is_linux():
-        for system_path in LINUX_ACCEPTED_SYSTEM_LIB_PATHS:
-            if file_path.startswith(system_path):
-                in_system_path = True
+    for system_path in LINUX_ACCEPTED_SYSTEM_LIB_PATHS:
+        if file_path.startswith(system_path):
+            in_system_path = True
 
-                if not ".so" in filename:
-                    eprint("Error: Unhandled Linux library due to lacking .so: %s" % path)
-                    return False
+            if not ".so" in filename:
+                eprint("Error: Unhandled Linux library due to lacking .so: %s" % path)
+                return False
 
-                # Get short library name used for verification
-                filename_parts = filename.split(".so")
-                short_lib_name = filename_parts[0]
+            # Get short library name used for verification
+            filename_parts = filename.split(".so")
+            short_lib_name = filename_parts[0]
 
-                # Verify against system library list
-                accepted = linux_system_library_accepted(short_lib_name)
-                break
-    else:
-        for system_path in MACOS_ACCEPTED_SYSTEM_LIB_PATHS:
-            if file_path.startswith(system_path):
-                # on macOS if it's within one of our system paths accept the library. See notes
-                # above with MACOS_ACCEPTED_SYSTEM_LIB_PATHS definition.
-                in_system_path = True
-                accepted = True
-                break
+            # Verify against system library list
+            accepted = linux_system_library_accepted(short_lib_name)
+            break
 
     if in_system_path:
         if accepted:
@@ -819,10 +730,7 @@ def build_cwd_app(app_name, build_type=APP_BUILD_TYPE):
     print("- Building...")
 
     # Build build command
-    if sys.platform.startswith('darwin'):
-        os.chdir(MACOS_BUILD_DIR)
-        cmd = 'xcodebuild -configuration %s -jobs %s' % (build_type, cpu_count())
-    elif is_linux():
+    if is_linux():
         os.chdir(LINUX_BUILD_DIR)
         cmd = 'make all . -j%s' % cpu_count()
     else:
@@ -1370,9 +1278,8 @@ def open_napkin_from_framework_release_without_app(napkin_results, nap_framework
 
     # Change directory and run
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen',
-                                                                                    nap_framework_full_path,
-                                                                                    True)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen --exit-after-load',
+                                                                                    nap_framework_full_path)
 
     napkin_results['runFromFrameworkRelease']['success'] = success
     napkin_results['runFromFrameworkRelease']['stdout'] = stdout
@@ -1418,7 +1325,6 @@ def open_apps_in_napkin_from_framework_release(demo_results, nap_framework_full_
         (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_app_json,
                                                                                         nap_framework_full_path,
                                                                                         True,
-                                                                                        True,
                                                                                         SUCCESS_EXIT_CODE,
                                                                                         NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
@@ -1463,7 +1369,6 @@ def open_template_app_in_napkin_from_framework_release(template_results, nap_fra
         template_app_json = os.path.join(nap_framework_full_path, 'apps', TEMPLATE_APP_NAME, APP_FILENAME)
         (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % template_app_json,
                                                                                         nap_framework_full_path,
-                                                                                        True,
                                                                                         True,
                                                                                         SUCCESS_EXIT_CODE,
                                                                                         NAPKIN_SECONDS_WAIT_FOR_PROCESS)
@@ -1519,9 +1424,8 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     # Run demo from packaged app
     print("- Run Napkin from packaged app...")
     demo_app_json = os.path.join(os.pardir, APP_FILENAME)
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen',
-                                                                                    os.path.abspath(os.pardir),
-                                                                                    True)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen --exit-after-load',
+                                                                                    os.path.abspath(os.pardir))
 
     napkin_results['runFromPackagedOutput'] = {}
     napkin_results['runFromPackagedOutput']['success'] = success
@@ -1564,7 +1468,6 @@ def open_app_in_napkin_from_packaged_app(results, app_name, root_output_dir, tim
     demo_app_json = os.path.join(os.pardir, APP_FILENAME)
     (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_app_json,
                                                                                     os.path.abspath(os.pardir),
-                                                                                    True,
                                                                                     True,
                                                                                     SUCCESS_EXIT_CODE,
                                                                                     NAPKIN_SECONDS_WAIT_FOR_PROCESS)

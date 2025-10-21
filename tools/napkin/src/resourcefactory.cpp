@@ -66,20 +66,27 @@ QIcon napkin::Icon::inverted() const
 }
 
 
-const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::Object& object) const
+QIcon napkin::ResourceFactory::getIcon(const nap::rtti::Object& object) const
 {
 	return getIcon(object.get_type());
 }
 
 
-const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::TypeInfo& type) const
+QIcon napkin::ResourceFactory::getIcon(const nap::rtti::TypeInfo& type) const
 {
 	const static std::vector<std::pair<nap::rtti::TypeInfo, QString>> icon_map =
 	{
-		{ RTTI_OF(Entity),		QRC_ICONS_ENTITY },
-		{ RTTI_OF(Component),	QRC_ICONS_COMPONENT },
-		{ RTTI_OF(Scene),		QRC_ICONS_SCENE },
-		{ RTTI_OF(Object),		QRC_ICONS_RTTIOBJECT },
+		{ RTTI_OF(Entity),			QRC_ICONS_ENTITY },
+		{ RTTI_OF(Component),		QRC_ICONS_COMPONENT },
+		{ RTTI_OF(Scene),			QRC_ICONS_SCENE },
+		{ RTTI_OF(Texture),			QRC_ICONS_TEXTURE },
+		{ RTTI_OF(IMesh),			QRC_ICONS_MESH },
+		{ RTTI_OF(Shader),			QRC_ICONS_SHADER },
+		{ RTTI_OF(Material),		QRC_ICONS_MATERIAL },
+		{ RTTI_OF(ComputeMaterial),	QRC_ICONS_MATERIAL },
+		{ RTTI_OF(Window),			QRC_ICONS_WINDOW },
+		{ RTTI_OF(IGroup),			QRC_ICONS_GROUP},
+		{ RTTI_OF(Object),			QRC_ICONS_RTTIOBJECT }
 	};
 
 	// Try to find an icon.
@@ -95,7 +102,7 @@ const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::TypeInfo& type) co
 }
 
 
-const QIcon napkin::ResourceFactory::getIcon(const QString& path) const
+QIcon napkin::ResourceFactory::getIcon(const QString& path) const
 {
 	// Find icon, if not part of set add & update iterator
 	auto it = mIcons.find(path.toStdString());
@@ -111,7 +118,7 @@ const QIcon napkin::ResourceFactory::getIcon(const QString& path) const
 }
 
 
-const QString napkin::ResourceFactory::getFileFilter(const nap::rtti::Property& prop) const
+QString napkin::ResourceFactory::getFileFilter(const nap::rtti::Property& prop) const
 {
 	QStringList wildcards;
 	FileType type = getFiletype(prop);
@@ -132,7 +139,6 @@ const napkin::FileType& napkin::ResourceFactory::getFiletype(const nap::rtti::Pr
 		{EPropertyFileType::Image,			"Image Files",      { }},
 		{EPropertyFileType::FragShader,		"Fragment Shaders", {"frag"}},
 		{EPropertyFileType::VertShader,		"Vertex Shaders",   {"vert"}},
-		{EPropertyFileType::Python,			"Python Files",     {"py"}},
 		{EPropertyFileType::Mesh,			"NAP Mesh Files",   {"mesh"}},
 		{EPropertyFileType::Video,			"Video Files",      {} },
 		{EPropertyFileType::ImageSequence,	"Image Sequence",	{} },

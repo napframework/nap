@@ -14,59 +14,13 @@
 #include <nap/core.h>
 #include <color.h>
 #include <SDL_clipboard.h>
-#include <SDL_syswm.h>
+#include <SDL_properties.h>
 #include <SDL_mouse.h>
 #include <SDL_keyboard.h>
 #include <nap/logger.h>
 #include <materialcommon.h>
 #include <sdlhelpers.h>
 #include <nap/modulemanager.h>
-
-RTTI_BEGIN_ENUM(nap::gui::EColorScheme)
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Light,		"Light"),
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Dark,		"Dark"),
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::HyperDark,	"HyperDark"),
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Classic,	"Classic"),
-	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Custom,		"Custom")
-RTTI_END_ENUM
-
-RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
-	RTTI_PROPERTY("BackgroundColor",	&nap::gui::ColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DarkColor",			&nap::gui::ColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MenuColor",			&nap::gui::ColorPalette::mMenuColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor1",		&nap::gui::ColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor2",		&nap::gui::ColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor3",		&nap::gui::ColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor4",		&nap::gui::ColorPalette::mFront4Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor1",	&nap::gui::ColorPalette::mHighlightColor1,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor2",	&nap::gui::ColorPalette::mHighlightColor2,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor3",	&nap::gui::ColorPalette::mHighlightColor3,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor4",	&nap::gui::ColorPalette::mHighlightColor4,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InvertIcons",		&nap::gui::ColorPalette::mInvertIcon,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
-RTTI_BEGIN_STRUCT(nap::gui::Style)
-	RTTI_PROPERTY("AntiAliasedLines",	&nap::gui::Style::mAntiAliasedLines,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AntiAliasedFill",	&nap::gui::Style::mAntiAliasedFill,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WindowPadding",		&nap::gui::Style::mWindowPadding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WindowRounding",		&nap::gui::Style::mWindowRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FramePadding",		&nap::gui::Style::mFramePadding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrameRounding",		&nap::gui::Style::mFrameRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ItemSpacing",		&nap::gui::Style::mItemSpacing,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ItemInnerSpacing",	&nap::gui::Style::mItemInnerSpacing,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("IndentSpacing",		&nap::gui::Style::mIndentSpacing,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ScrollbarSize",		&nap::gui::Style::mScrollbarSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ScrollbarRounding",	&nap::gui::Style::mScrollbarRounding,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GrabMinSize",		&nap::gui::Style::mGrabMinSize,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GrabRounding",		&nap::gui::Style::mGrabRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WindowBorderSize",	&nap::gui::Style::mWindowBorderSize,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PopupRounding",		&nap::gui::Style::mPopupRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ChildRounding",		&nap::gui::Style::mChildRounding,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WindowTitleAlign",	&nap::gui::Style::mWindowTitleAlign,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PopupBorderSize",	&nap::gui::Style::mPopupBorderSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TabRounding",		&nap::gui::Style::mTabRounding,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TouchExtraPadding",	&nap::gui::Style::mTouchExtraPadding,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("ColorScheme",		&nap::IMGuiServiceConfiguration::mColorScheme,		nap::rtti::EPropertyMetaData::Default,	"Global GUI color scheme to use")
@@ -83,10 +37,12 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService, "Manages the global G
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
-// Static data associated with IMGUI
-static VkDescriptorPool			gDescriptorPool = VK_NULL_HANDLE;
-static VkDescriptorSetLayout    gDescriptorSetLayout = VK_NULL_HANDLE;
-static VkSampler                gSampler = VK_NULL_HANDLE;
+//////////////////////////////////////////////////////////////////////////
+// Define thread local ImGUI context (Important!)
+// Ensures the current enabled context is local to the thread accessing it
+// Without thread local access the context is shared among gui instances
+//////////////////////////////////////////////////////////////////////////
+thread_local ImGuiContext* ImGuiTLS = nullptr;
 
 namespace nap
 {
@@ -120,50 +76,10 @@ namespace nap
 				icon::remove,
 				icon::add,
 				icon::change,
-				icon::subtract
+				icon::subtract,
+				icon::frame
 			};
 			return map;
-		}
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// GUI
-	//////////////////////////////////////////////////////////////////////////
-
-	namespace gui
-	{
-		static const ColorPalette& getColorPalette(EColorScheme colorScheme, const gui::ColorPalette& customPalette)
-		{
-			static std::unordered_map<EColorScheme, ColorPalette> scheme_map =
-			{
-				{EColorScheme::Light, {
-					{ 0xCD, 0xCD, 0xC3 }, { 0xF5, 0xF5, 0xF3 }, { 0xa4, 0xa3, 0x9b },
-					{ 0xEC, 0xFF, 0xD3 }, { 0x8D, 0x8B, 0x84 }, { 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
-					{ 0x29, 0x58, 0xff }, { 0x8D, 0x8B, 0x84 }, { 0xFF, 0xA8, 0x00 }, { 0xFF, 0x50, 0x50 }, true}
-				},
-				{EColorScheme::Dark, {
-					{ 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 }, { 0x4F, 0x4E, 0x4C },
-					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
-					{ 0x29, 0x58, 0xff }, { 0xD6, 0xFF, 0xA3 }, { 0xFF, 0xEA, 0x30 }, { 0xFF, 0x50, 0x50 }, false}
-				},
-				{EColorScheme::HyperDark, {
-					{ 0x00, 0x00, 0x00 }, { 0x2D, 0x2D, 0x2D }, { 0x8D, 0x8B, 0x84 },
-					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
-					{ 0x29, 0x58, 0xff }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }, { 0xFF, 0x34, 0x7D }, false}
-				},
-				{EColorScheme::Classic, {
-					{ 0x2D, 0x2E, 0x42 }, { 0x11, 0x14, 0x26 }, { 0x52, 0x54, 0x6A },
-					{ 0x52, 0x54, 0x6A }, { 0x5D, 0x5E, 0x73 }, { 0x8B, 0x8C, 0xA0 }, { 0xFF, 0xFF, 0xFF },
-					{ 0x8B, 0x8C, 0xA0 }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }, { 0xC8, 0x69, 0x69 }, false}
-				},
-			};
-
-			// Add custom scheme if not present
-			scheme_map.emplace(std::make_pair(EColorScheme::Custom, customPalette));
-
-			// Return color palette
-			assert(scheme_map.find(colorScheme) != scheme_map.end());
-			return scheme_map[colorScheme];
 		}
 	}
 
@@ -171,7 +87,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Static / Local methods
 	//////////////////////////////////////////////////////////////////////////
-
 
 	static void checkVKResult(VkResult err)
 	{
@@ -224,7 +139,7 @@ namespace nap
 	}
 
 
-	static void createDeviceObjects(RenderService& renderService)
+	static void createDeviceObjects(RenderService& renderService, VkSampler& sampler, VkDescriptorSetLayout& layout)
 	{
 		VkResult err;
 
@@ -240,7 +155,7 @@ namespace nap
 		info.minLod = -1000;
 		info.maxLod = 1000;
 		info.maxAnisotropy = 1.0f;
-		err = vkCreateSampler(renderService.getDevice(), &info, nullptr, &gSampler);
+		err = vkCreateSampler(renderService.getDevice(), &info, nullptr, &sampler);
 		checkVKResult(err);
 
 		// Create a descriptor set layout for the images we want to display
@@ -254,20 +169,25 @@ namespace nap
 		set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		set_info.bindingCount = 1;
 		set_info.pBindings = binding;
-		err = vkCreateDescriptorSetLayout(renderService.getDevice(), &set_info, nullptr, &gDescriptorSetLayout);
+		err = vkCreateDescriptorSetLayout(renderService.getDevice(), &set_info, nullptr, &layout);
 		checkVKResult(err);
 	}
 
 
-	static void destroyDeviceObjects(RenderService& renderService)
+	static void destroyDeviceObjects(RenderService& renderService, VkSampler sampler, VkDescriptorSetLayout layout)
 	{
-		if (gDescriptorSetLayout) { vkDestroyDescriptorSetLayout(renderService.getDevice(), gDescriptorSetLayout, nullptr); }
-		if (gSampler) { vkDestroySampler(renderService.getDevice(), gSampler, nullptr); }
+		if (layout != VK_NULL_HANDLE) {
+			vkDestroyDescriptorSetLayout(renderService.getDevice(), layout, nullptr);
+		}
+
+		if (sampler != VK_NULL_HANDLE) {
+			vkDestroySampler(renderService.getDevice(), sampler, nullptr);
+		}
 	}
 
 
 	// Create descriptor pool for imgui vulkan implementation, allows creation / allocation right resources on that side
-	static void createFontDescriptorPool(RenderService& renderService)
+	static void createFontDescriptorPool(RenderService& renderService, VkDescriptorPool& pool)
 	{
 		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
 
@@ -278,14 +198,14 @@ namespace nap
 		poolInfo.maxSets = 1;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-		VkResult result = vkCreateDescriptorPool(renderService.getDevice(), &poolInfo, nullptr, &gDescriptorPool);
+		VkResult result = vkCreateDescriptorPool(renderService.getDevice(), &poolInfo, nullptr, &pool);
 		assert(result == VK_SUCCESS);
 	}
 
 
-	static void destroyFontDescriptorPool(RenderService& renderService)
+	static void destroyFontDescriptorPool(RenderService& renderService, VkDescriptorPool pool)
 	{
-		vkDestroyDescriptorPool(renderService.getDevice(), gDescriptorPool, nullptr);
+		vkDestroyDescriptorPool(renderService.getDevice(), pool, nullptr);
 	}
 
 
@@ -298,100 +218,6 @@ namespace nap
 	static void setClipboardText(void*, const char* text)
 	{
 		SDL_SetClipboardText(text);
-	}
-
-
-	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette, const gui::Style& style)
-	{
-		// Get ImGUI colors
-		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
-		ImVec4 IMGUI_NAPDARK(palette.mDarkColor, 0.66f);
-		ImVec4 IMGUI_NAPMODA(palette.mDarkColor, 0.85f);
-		ImVec4 IMGUI_NAPMENU(palette.mMenuColor, 0.66f);
-		ImVec4 IMGUI_NAPFRO1(palette.mFront1Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO2(palette.mFront2Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO3(palette.mFront3Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO4(palette.mFront4Color, 1.0f);
-		ImVec4 IMGUI_NAPHIG1(palette.mHighlightColor1, 1.0f);
-		ImVec4 IMGUI_NAPHIG2(palette.mHighlightColor2, 1.0f);
-		ImVec4 IMGUI_NAPHIG3(palette.mHighlightColor3, 1.0f);
-
-		// Create style
-		std::unique_ptr<ImGuiStyle> gui_style = std::make_unique<ImGuiStyle>();
-
-		// Apply colors
-		gui_style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
-		gui_style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
-		gui_style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
-		gui_style->Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
-		gui_style->Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPMENU;
-		gui_style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPMENU;
-		gui_style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
-		gui_style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
-		gui_style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPMENU;
-		gui_style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
-		gui_style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
-		gui_style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
-		gui_style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
-		gui_style->Colors[ImGuiCol_Separator] = IMGUI_NAPDARK;
-		gui_style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
-		gui_style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
-		gui_style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
-
-		// Apply style settings
-		gui_style->AntiAliasedFill = style.mAntiAliasedFill;
-		gui_style->AntiAliasedLines = style.mAntiAliasedLines;
-		gui_style->WindowPadding = { style.mWindowPadding.x, style.mWindowPadding.y };
-		gui_style->WindowRounding = style.mWindowRounding;
-		gui_style->FramePadding = { style.mFramePadding.x, style.mFramePadding.y };
-		gui_style->FrameRounding = style.mFrameRounding;
-		gui_style->ItemSpacing = { style.mItemSpacing.x, style.mItemSpacing.y };
-		gui_style->ItemInnerSpacing = { style.mItemInnerSpacing.x, style.mItemInnerSpacing.y };
-		gui_style->IndentSpacing = style.mIndentSpacing;
-		gui_style->ScrollbarSize = style.mScrollbarSize;
-		gui_style->ScrollbarRounding = style.mScrollbarRounding;
-		gui_style->GrabMinSize = style.mGrabMinSize;
-		gui_style->GrabRounding = style.mGrabRounding;
-		gui_style->WindowBorderSize = style.mWindowBorderSize;
-		gui_style->PopupRounding = style.mPopupRounding;
-		gui_style->ChildRounding = style.mChildRounding;
-		gui_style->WindowTitleAlign = { style.mWindowTitleAlign.x, style.mWindowTitleAlign.y };
-		gui_style->PopupBorderSize = style.mPopupBorderSize;
-		gui_style->TabRounding = style.mTabRounding;
-		gui_style->TouchExtraPadding = { style.mTouchExtraPadding.x, style.mTouchExtraPadding.y };
-
-		return gui_style;
 	}
 
 
@@ -415,9 +241,10 @@ namespace nap
 		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
 		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
 		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
+		io.KeyMap[ImGuiKey_Space] = (int)EKeyCode::KEY_SPACE;
 		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_RETURN;
 		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
-        io.KeyMap[ImGuiKey_Space] = (int)EKeyCode::KEY_SPACE;
+		io.KeyMap[ImGuiKey_KeyPadEnter] = (int)EKeyCode::KEY_KP_ENTER;
 		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
 		io.KeyMap[ImGuiKey_C] = (int)EKeyCode::KEY_c;
 		io.KeyMap[ImGuiKey_V] = (int)EKeyCode::KEY_v;
@@ -469,11 +296,9 @@ namespace nap
 	static void setGuiWindow(SDL_Window* window)
 	{
 #ifdef _WIN32
+		auto hwnd = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 		ImGuiIO& io = ImGui::GetIO();
-		SDL_SysWMinfo wmInfo;
-		SDL_VERSION(&wmInfo.version);
-		SDL_GetWindowWMInfo(window, &wmInfo);
-		io.ImeWindowHandle = wmInfo.info.win.window;
+		io.ImeWindowHandle = hwnd;
 #else
 		(void)window;
 #endif
@@ -638,11 +463,7 @@ namespace nap
 		else if (event.get_type().is_derived_from(RTTI_OF(MouseWheelEvent)))
 		{
 			const auto& wheel_event = static_cast<const MouseWheelEvent&>(event);
-#ifdef __APPLE__
-			int delta = ImGui::GetIO().KeyShift ? wheel_event.mX * -1 : wheel_event.mY;
-#else
 			int delta = wheel_event.mY;
-#endif
 			context->second->mMouseWheel = delta > 0 ? 1.0f : -1.0f;
 		}
 
@@ -668,6 +489,14 @@ namespace nap
 	}
 
 
+	void IMGuiService::addInputCharachter(ImGuiContext* context, nap::uint character)
+	{
+		ImGui::SetCurrentContext(context);
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddInputCharacter(character);
+	}
+
+
 	ImTextureID IMGuiService::getTextureHandle(const nap::Texture2D& texture) const
 	{
 		// Check if the texture has been requested before
@@ -676,11 +505,11 @@ namespace nap
 			return (ImTextureID)(it->second);
 
 		// Allocate new description set
-		VkDescriptorSet descriptor_set = mAllocator->allocate(gDescriptorSetLayout, 0, 0, 1);
+		VkDescriptorSet descriptor_set = mAllocator->allocate(mDescriptorSetLayout, 0, 0, 1);
 
 		// Update description set
 		VkDescriptorImageInfo desc_image[1] = {};
-		desc_image[0].sampler = gSampler;
+		desc_image[0].sampler = mSampler;
 		desc_image[0].imageView = texture.getHandle().getView();
 		desc_image[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -717,7 +546,6 @@ namespace nap
 		if (!new_icon->init(error))
 			return false;
 
-		// Add icon, issue warning if the icon is not unique
 		auto ret = mIcons.emplace(std::make_pair(name, std::move(new_icon)));
 		if (!error.check(ret.second, "Icon duplication, %s already found in: %s",
 			name.c_str(), utility::forceSeparator(ret.first->second->getPath()).c_str()))
@@ -748,13 +576,14 @@ namespace nap
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
 
 		// Global GUI & DPI scale
-		mGuiScale = math::max<float>(mConfiguration->mScale, 0.05f);
+		mGuiScale = math::max<float>(mConfiguration->mScale, math::epsilon<float>());
 
 		// Get palette associated with scheme
-		mColorPalette = &getColorPalette(mConfiguration->mColorScheme, mConfiguration->mCustomColors);
+		nap::gui::registerCustomPalette(mConfiguration->mCustomColors);
+		mColorPalette = gui::getPalette(mConfiguration->mColorScheme);
+		assert(mColorPalette != nullptr);
 
 		// Load all the default icons, bail if any of them fails to load
-		bool icons_loaded = true;
 		const auto& default_icons = icon::getDefaults();
 		for (const auto& icon_name : default_icons)
 		{
@@ -820,8 +649,8 @@ namespace nap
 		{
 			// Destroy vulkan resources
 			ImGui_ImplVulkan_Shutdown();
-			destroyDeviceObjects(*mRenderService);
-			destroyFontDescriptorPool(*mRenderService);
+			destroyDeviceObjects(*mRenderService, mSampler, mDescriptorSetLayout);
+			destroyFontDescriptorPool(*mRenderService, mDescriptorPool);
 			mAllocator.reset(nullptr);
 		}
 
@@ -849,24 +678,20 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
-			// Calculate max dpi scale if high dpi rendering is enabled
-			if (mRenderService->getHighDPIEnabled())
-			{
-				for (const auto& display : mRenderService->getDisplays())
-				{
-					float dpi_scale = math::max<float>(display.getHorizontalDPI(), gui::dpi) / gui::dpi;
-					mDPIScale = dpi_scale > mDPIScale ? dpi_scale : mDPIScale;
-				}
-			}
+			// Calculate reference scaling factor based on reference display
+			// TODO: a different font atlas should be created for every variation in scale,
+			// TODO: and dynamically bound every frame, based on active window scaling factor.
+			mReferenceScale = math::max<float>(window.getDisplayScale(), 1.0f);
 
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
-			float font_size = mConfiguration->mFontSize * mDPIScale * mGuiScale;
+			float font_size = mConfiguration->mFontSize * mReferenceScale * mGuiScale;
 			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
 			assert(mConfiguration != nullptr);
-			mStyle = createStyle(getPalette(), mConfiguration->mStyle);
+			assert(mColorPalette  != nullptr);
+			mStyle = gui::createStyle(*mColorPalette, mConfiguration->mStyle);
 
 			// Create context using font & style
 			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
@@ -882,9 +707,7 @@ namespace nap
 
 		// Add context, set display index & push scale accordingly
 		auto it = mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context, mStyle.get())));
-		const auto* display = mRenderService->findDisplay(window);
-		assert(display != nullptr);
-		pushScale(*it.first->second, *display);
+		pushScale(*it.first->second, window);
 
 		// Connect so we can listen to window events such as move
 		window.mWindowEvent.connect(mWindowEventSlot);
@@ -911,23 +734,21 @@ namespace nap
 		if (windowEvent.get_type().is_derived_from(RTTI_OF(nap::WindowMovedEvent)))
 		{
 			// Get display
-			nap::RenderWindow* window = mRenderService->findWindow(windowEvent.mWindow);
-			assert(window != nullptr);
-			const Display* display = mRenderService->findDisplay(*window);
-			assert(display != nullptr);
+			nap::RenderWindow* window = mRenderService->findWindow(windowEvent.mWindow); assert(window != nullptr);
+			auto display_index = window->getDisplayIndex(); assert(display_index >= 0);
 
 			// Get cached display
 			auto it = mContexts.find(window);
 			assert(it != mContexts.end());
-			assert(it->second->mDisplay != nullptr);
-			const auto& cached_display = *it->second->mDisplay;
+			const auto& gui_ctx = *it->second;
 
 			// Check if changed, if so update (push) scale
-			if (cached_display != *display)
+			if (gui_ctx.mDisplayIndex != display_index)
 			{
 				// Display Changed!
-				//nap::Logger::info("Display changed from: %d to %d", cached_display.getIndex(), display->getIndex());
-				pushScale(*it->second, *display);
+				nap::Logger::debug("Window '%s': Display changed from index %d to %d", window->mID.c_str(),
+					gui_ctx.mDisplayIndex, display_index);
+				pushScale(*it->second, *window);
 			}
 		}
 	}
@@ -940,10 +761,10 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		// Create descriptor set pool for ImGUI to use, capped at 1 set, used by font texture
-		createFontDescriptorPool(*mRenderService);
+		createFontDescriptorPool(*mRenderService, mDescriptorPool);
 
 		// Create all required vulkan resources
-		createDeviceObjects(*mRenderService);
+		createDeviceObjects(*mRenderService, mSampler, mDescriptorSetLayout);
 
 		// Create description set allocator for displaying custom NAP textures in ImGUI
 		mAllocator = std::make_unique<DescriptorSetAllocator>(mRenderService->getDevice());
@@ -960,7 +781,7 @@ namespace nap
 		init_info.QueueFamily = mRenderService->getQueueIndex();
 		init_info.Queue = mRenderService->getQueue();
 		init_info.PipelineCache = VK_NULL_HANDLE;
-		init_info.DescriptorPool = gDescriptorPool;
+		init_info.DescriptorPool = mDescriptorPool;
 		init_info.Allocator = VK_NULL_HANDLE;
 		init_info.MinImageCount = mRenderService->getMaxFramesInFlight();
 		init_info.ImageCount = mRenderService->getMaxFramesInFlight();
@@ -998,12 +819,10 @@ namespace nap
 			static_cast<float>(window.getHeight() - 1 - context.mMousePosition.y)
 		};
 
-		// Scale mouse coordinates when high dpi rendering is enabled
-		if (mRenderService->getHighDPIEnabled())
-		{
-			io.MousePos.x *= static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth());
-			io.MousePos.y *= static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight());
-		}
+		// Compensate for pixel density
+		auto pixel_density = window.getPixelDensity();
+		io.MousePos.x *= pixel_density;
+		io.MousePos.y *= pixel_density;
 
 		// Tell the system which mouse buttons are pressed
 		for (auto i = 0; i < context.mMousePressed.size(); i++)
@@ -1014,7 +833,7 @@ namespace nap
 			// This is required because the user can release the button outside of SDL window bounds, in which case no release event is generated.
 			bool released = context.mMouseRelease[i];
 			if (!released && io.MouseDown[i] && context.mPointerID[i] == gui::pointerMouseID)
-				released = (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON(i + 1)) == 0;
+				released = (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON_MASK(i + 1)) == 0;
 
 			// If the mouse button was released this frame -> disable the press for next frame.
 			// This ensures that buttons that are pressed and released within the same frame are always registered.
@@ -1034,7 +853,7 @@ namespace nap
 			// This ensures that keys that are pressed and released within the same frame are always registered
 			assert(key < context.mKeyPressed.size());
 			context.mKeyPressed[key] = false;
-		} 
+		}
 		context.mKeyRelease.clear();
 
 		// Update key modifiers
@@ -1064,45 +883,34 @@ namespace nap
 	}
 
 
-	void IMGuiService::pushScale(GUIContext& context, const Display& display)
+	void IMGuiService::pushScale(GUIContext& context, const nap::RenderWindow& window)
 	{
-		// Store display
-		context.mDisplay = &display;
+		// Store display index
+		context.mDisplayIndex = window.getDisplayIndex();
 
-		// Don't scale if high dpi rendering is disabled
-		if (mRenderService->getHighDPIEnabled())
-		{
-			// Compute overall Gui and font scaling factor
-			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
-			float gscale = mGuiScale * (math::max<float>(display.getHorizontalDPI(), gui::dpi) / gui::dpi);
-			float fscale = math::max<float>(display.getHorizontalDPI(), gui::dpi) / (mDPIScale * gui::dpi);
+		// Compute overall Gui and font scaling factor
+		// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
+		float gscale = mGuiScale * window.getDisplayScale();
+		float fscale = window.getDisplayScale() / mReferenceScale;
 
-			// Push scaling for window and font based on new display
-			// We must push the original style first before we can scale
-			context.activate();
-			ImGui::GetStyle() = *context.mStyle;
-			ImGui::GetStyle().ScaleAllSizes(gscale);
-			ImGui::GetIO().FontGlobalScale = fscale;
-			context.deactivate();
+		// Push scaling for window and font based on new display
+		// We must push the original style first before we can scale
+		context.activate();
+		ImGui::GetStyle() = *context.mStyle;
+		ImGui::GetStyle().ScaleAllSizes(gscale);
+		ImGui::GetIO().FontGlobalScale = fscale;
+		context.deactivate();
 
-			// Store scale, ensures custom widgets can scale accordingly
-			context.mScale = gscale;
-		}
-		else
-		{
-			context.activate();
-			ImGui::GetStyle() = *context.mStyle;
-			ImGui::GetStyle().ScaleAllSizes(mGuiScale);
-			context.deactivate();
-
-			// Store scale, ensures custom widgets can scale accordingly
-			context.mScale = mGuiScale;
-		}
+		// Store scale, ensures custom widgets can scale accordingly
+		context.mScale = gscale;
 	}
 
 
 	void IMGuiService::handleKeyEvent(const KeyEvent& keyEvent, GUIContext& context)
 	{
+		if (keyEvent.mKey == EKeyCode::KEY_UNKNOWN)
+			return;
+
 		int key_idx = static_cast<int>(keyEvent.mKey); assert(key_idx < 512);
 		int mod_idx = getModKeyIndex(keyEvent.mKey);
 
@@ -1224,6 +1032,50 @@ namespace nap
 	}
 
 
+	void IMGuiService::setPalette(gui::EColorScheme palette)
+	{
+		// Fetch palette and check if it's different
+		const auto* other_palette = gui::getPalette(palette);
+		assert(other_palette != nullptr);
+		if (other_palette == mColorPalette)
+			return;
+
+		// Apply palette to style template
+		gui::applyPalette(*other_palette, *mStyle);
+
+		// Apply palette to active contexts
+		for (auto& iter : mContexts)
+		{
+			// Push palette for context
+			auto& ctx = *iter.second;
+			ctx.activate();
+			gui::applyPalette(*other_palette, ImGui::GetStyle());
+			ctx.deactivate();
+		}
+
+		// Update icons if palette requires it
+		utility::ErrorState error;
+		if (mColorPalette->mInvertIcon != other_palette->mInvertIcon)
+		{
+			for (auto& icon : mIcons)
+			{
+				// Create
+				auto new_icon = std::make_unique<Icon>(*this, icon.second->getPath());
+				new_icon->mInvert = other_palette->mInvertIcon;
+				if (!new_icon->init(error))
+				{
+					nap::Logger::error("Icon '%s' update failed", icon.first.c_str());
+					continue;
+				}
+
+				// Replace
+				icon.second = std::move(new_icon);
+			}
+		}
+		mColorPalette = other_palette;
+	}
+
+
 	IMGuiService::GUIContext::GUIContext(ImGuiContext* context, ImGuiStyle* style) :
 		mContext(context), mStyle(style)
 	{ }
@@ -1234,7 +1086,6 @@ namespace nap
 	{
 		ImGui::DestroyContext(mContext);
 		mStyle = nullptr;
-		mDisplay = nullptr;
 	}
 
 
@@ -1250,4 +1101,3 @@ namespace nap
 		ImGui::SetCurrentContext(mPreviousContext);
 	}
 }
-

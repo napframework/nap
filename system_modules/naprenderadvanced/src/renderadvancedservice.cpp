@@ -5,6 +5,7 @@
 // Local Includes
 #include "renderadvancedservice.h"
 #include "cubemapshader.h"
+#include "equirectangularcubemap.h"
 
 // External Includes
 #include <renderservice.h>
@@ -18,9 +19,6 @@
 #include <material.h>
 #include <renderglobals.h>
 #include <sceneservice.h>
-#include <parametervec.h>
-#include <parametercolor.h>
-#include <cubemapfromfile.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
 	RTTI_PROPERTY("ShadowDepthFormat",		&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default, "Shadow texture depth format")
@@ -144,7 +142,7 @@ namespace nap
 		mShadowTextureDummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 		mShadowTextureDummy->mWidth = 1;
 		mShadowTextureDummy->mHeight = 1;
-		mShadowTextureDummy->mUsage = Texture::EUsage::Static;
+		mShadowTextureDummy->mUsage = Texture2D::EUsage::Internal;
 		mShadowTextureDummy->mDepthFormat = configuration->mDepthFormat;
 		mShadowTextureDummy->mColorSpace = EColorSpace::Linear;
 		mShadowTextureDummy->mClearValue = 1.0f;
@@ -356,10 +354,8 @@ namespace nap
 		for (auto& material : materials)
 		{
 			// Shader interface for lights
-			auto* light_struct = material->getOrCreateUniform(uniform::lightStruct);
-			assert(light_struct != nullptr);
-			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count);
-			assert(light_count != nullptr);
+			auto* light_struct = material->getOrCreateUniform(uniform::lightStruct); assert(light_struct != nullptr);
+			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count); assert(light_count != nullptr);
 
             light_count->setValue(mLightComponents.size());
 			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
@@ -435,16 +431,14 @@ namespace nap
 								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(uvalue);
 								break;
 							}
-							else if (entry.get_type().is_derived_from(RTTI_OF(glm::vec3)))
+							if (entry.get_type().is_derived_from(RTTI_OF(glm::vec3)))
 							{
 								glm::vec3 uvalue = variant.get_value<glm::vec3>();
 								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(uvalue);
 								break;
 							}
-							else
-							{
-								NAP_ASSERT_MSG(false, "Unsupported member data type");
-							}
+							NAP_ASSERT_MSG(false, "Unsupported member data type");
+							break;
 						}
 						default:
 						{
@@ -463,20 +457,24 @@ namespace nap
         // Shadow data
         for (auto& material : materials)
         {
-			// Ensure the shader interface is valid
-			auto* shadow_struct = material->getOrCreateUniform(uniform::shadowStruct); assert(shadow_struct != nullptr);
-            auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix); assert(view_matrix_array != nullptr);
-            auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar); assert(near_far_array != nullptr);
-            auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength); assert(strength_array != nullptr);
-            auto* spread_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::spread); assert(spread_array != nullptr);
-			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags); assert(shadow_flags != nullptr);
-            auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count); assert(light_count != nullptr);
-
+			// If material isn't using shadows, skip
+			auto* shadow_struct = material->getOrCreateUniform(uniform::shadowStruct);
+			if(shadow_struct == nullptr)
+				continue;
+			
 			// Set number of lights
-            light_count->setValue(mLightComponents.size());
+			auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count); assert(light_count != nullptr);
+			light_count->setValue(mLightComponents.size());
 
 			// Set shadow flags
+			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags); assert(shadow_flags != nullptr);
 			shadow_flags->setValue(getShadowFlags(mLightComponents));
+
+			// Get arrays
+			auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix); assert(view_matrix_array != nullptr);
+			auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar); assert(near_far_array != nullptr);
+			auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength); assert(strength_array != nullptr);
+			auto* spread_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::spread); assert(spread_array != nullptr);
 
             uint light_index = 0;
             for (const auto& light : mLightComponents)
@@ -649,7 +647,7 @@ namespace nap
 				shadow_map->mWidth = light->getShadowMapSize();
 				shadow_map->mHeight = light->getShadowMapSize();
 				shadow_map->mDepthFormat = configuration->mDepthFormat;
-				shadow_map->mUsage = Texture::EUsage::Static;
+				shadow_map->mUsage = Texture2D::EUsage::Internal;
 				shadow_map->mColorSpace = EColorSpace::Linear;
 				shadow_map->mClearValue = 1.0f;
 				shadow_map->mFill = true;
@@ -689,7 +687,6 @@ namespace nap
 				cube_map->mDepthFormat = configuration->mDepthFormatCube;
 				cube_map->mColorSpace = EColorSpace::Linear;
 				cube_map->mClearValue = 1.0f;
-				cube_map->mFill = true;
 
  				if (!cube_map->init(errorState))
 				{
@@ -784,8 +781,8 @@ namespace nap
 	}
 
 
-	void RenderAdvancedService::registerCubeMap(CubeMapFromFile& cubemap)
-	{
+	void RenderAdvancedService::registerEquiRectangularCubeMap(EquiRectangularCubeMap& cubemap)
+{
 		NAP_ASSERT_MSG(mCubeMapTargets.find(&cubemap) == mCubeMapTargets.end(), "Cube map was already registered");		
 
 		// Cube map from file render target
@@ -793,21 +790,22 @@ namespace nap
 		crt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 		crt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 		crt->mSampleShading = cubemap.mSampleShading;
-		crt->mUpdateLODs = cubemap.mGenerateLODs;
+		crt->mUpdateLODs = cubemap.mGenerateLods;
 		crt->mCubeTexture = &cubemap;
 
 		utility::ErrorState error_state;
 		if (!crt->init(error_state))
 		{
-			NAP_ASSERT_MSG(false, utility::stringFormat("%s\n%s: Failed to initialize cube map from file render target", error_state.toString().c_str(), RTTI_OF(RenderAdvancedService).get_name().to_string().c_str()).c_str());
+			NAP_ASSERT_MSG(false, utility::stringFormat("%s\n%s: Failed to initialize cube map from file render target",
+				error_state.toString().c_str(), RTTI_OF(RenderAdvancedService).get_name().to_string().c_str()).c_str());
 			return;
 		}
 		auto entry = mCubeMapTargets.emplace(&cubemap, std::move(crt));
 		assert(entry.second);
 
 		// Queue a graphics command to pre-render the cube map
-		mRenderService->queueHeadlessCommand([this, cm = &cubemap](RenderService& renderService) {
-
+		mRenderService->queueHeadlessCommand([this, cm = &cubemap](RenderService& renderService)
+		{
 			auto it = mCubeMapTargets.find(cm);
 			assert(it != mCubeMapTargets.end());
 
@@ -842,7 +840,7 @@ namespace nap
 	}
 
 
-	void RenderAdvancedService::removeCubeMap(CubeMapFromFile& cubemap)
+	void RenderAdvancedService::removeEquiRectangularCubeMap(EquiRectangularCubeMap& cubemap)
 	{
 		auto found_it = mCubeMapTargets.find(&cubemap);
 		assert(found_it != mCubeMapTargets.end());

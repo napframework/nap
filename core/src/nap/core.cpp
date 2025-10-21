@@ -9,18 +9,12 @@
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
 #include "packaginginfo.h"
-#include "python.h"
 
 // External Includes
 #include <iostream>
 #include <utility/fileutils.h>
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-
-// Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
-#if defined(__APPLE__) || defined(__unix__)
-	#include <stdlib.h>
-#endif
 
 RTTI_BEGIN_CLASS(nap::Core)
 	RTTI_FUNCTION("getService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getService)
@@ -40,7 +34,7 @@ namespace nap
 		// Initialize timer
 		mTimer.reset();
 		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mModuleManager = std::make_unique<ModuleManager>(*this);
+		mModuleManager = std::make_unique<ModuleManager>();
 	}
 
 
@@ -89,15 +83,6 @@ namespace nap
 		if (!loadProjectInfo(projectInfofile, context, error))
 			return false;
 
-		// Ensure our current working directory is where the executable is.
-		// Works around issues with the current working directory not being set as
-		// expected when apps are launched directly from macOS Finder and probably other things too.
-		nap::utility::changeDir(nap::utility::getExecutableDir());
-
-		// Setup our Python environment
-#ifdef NAP_ENABLE_PYTHON
-		setupPythonEnvironment();
-#endif
 		// Apply any platform specific environment setup
 		setupPlatformSpecificEnvironment();
 
@@ -120,21 +105,6 @@ namespace nap
 			return false;
 
 		mInitialized = true;
-		return true;
-	}
-
-
-	bool Core::initializePython(utility::ErrorState& error)
-	{
-#ifdef NAP_ENABLE_PYTHON
-		// Here we register a callback that is called when the nap python module is imported.
-		// We register a 'core' attribute so that we can write nap.core.<function>() in python
-		// to access core functionality as a 'global'.
-		nap::rtti::PythonModule::get("nap").registerImportCallback([this](pybind11::module& module)
-		{
-			module.attr("core") = this;
-		});
-#endif
 		return true;
 	}
 
@@ -237,14 +207,23 @@ namespace nap
 			assert(service_configuration_type.is_valid());
 			assert(service_configuration_type.can_create_instance());
 
-			// Construct the service configuration, store in unique ptr
-			std::unique_ptr<ServiceConfiguration> service_config(service_configuration_type.create<ServiceConfiguration>());
-			rtti::TypeInfo service_type = service_config->getServiceType();
+			// Create service config and store in unique_ptr
+			std::unique_ptr<ServiceConfiguration> service_config (
+				static_cast<ServiceConfiguration*>(mResourceManager->getFactory().create(service_configuration_type))
+			);
 
-			// Check if the service associated with the configuration isn't already part of the map, if so add as default
-			// Config is automatically destructed otherwise.
-			if (findServiceConfig(service_type) == nullptr)
-				addServiceConfig(std::move(service_config));
+			// Multiple nap applications can co-exist in the same runtime environment, it is therefore
+			// important to filter out incompatible ones.
+			rtti::TypeInfo service_type = service_config->getServiceType();
+			if (mModuleManager->findModule(service_type) == nullptr)
+				continue;
+
+			// Add service configuration if not previously loaded from config file.
+			if (findServiceConfig(service_type) == nullptr &&
+				!addServiceConfig(std::move(service_config), errorState))
+			{
+				assert(false); return false;
+			}
 		}
 
 		// First create and add all the services (unsorted)
@@ -368,52 +347,6 @@ namespace nap
 	}
 
 
-	void Core::setupPythonEnvironment()
-	{
-#ifdef _WIN32
-		const std::string platformPrefix = "msvc";
-#elif defined(__APPLE__)
-		const std::string platformPrefix = "macos";
-#else // __unix__
-		const std::string platformPrefix = "linux";
-#endif
-
-#ifdef NAP_PACKAGED_BUILD
-		const bool packagedBuild = true;
-#else
-		const bool packagedBuild = false;
-#endif
-
-		const std::string exeDir = utility::getExecutableDir();
-
-#if _WIN32
-		if (packagedBuild)
-		{
-			// TODO Explore locating Python instead in third party to reduce duplication on disk
-			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
-			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "python36.zip"});
-			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
-		}
-		else {
-			// Set PYTHONPATH for thirdparty location beside NAP source
-			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python", "msvc", "x86_64", "python36.zip"});
-			_putenv_s("PYTHONPATH", pythonHome.c_str());
-		}
-#else
-        // Check for packaged app modules dir
-        const std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
-        if (utility::dirExists(packagedAppPythonPath)) {
-            setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
-        }
-        else {
-            // set PYTHONHOME for thirdparty location within NAP source
-            const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python", platformPrefix, sBuildArch});
-            setenv("PYTHONHOME", pythonHome.c_str(), 1);
-        }
-#endif
-	}
-
-
 	nap::ServiceConfiguration* Core::findServiceConfig(rtti::TypeInfo type) const
 	{
 		auto it = mServiceConfigs.find(type);
@@ -421,11 +354,16 @@ namespace nap
 	}
 
 
-	bool Core::addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
+	bool Core::addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig, utility::ErrorState& error)
 	{
 		rtti::TypeInfo service_type = serviceConfig->getServiceType();
-		auto return_v = mServiceConfigs.emplace(std::make_pair(service_type, std::move(serviceConfig)));
-		return return_v.second;
+		if (!mServiceConfigs.try_emplace(service_type, std::move(serviceConfig)).second)
+		{
+			error.fail("Duplicate service configuration found with id '%s', service type: %s",
+				serviceConfig->mID.c_str(), service_type.get_name().to_string().c_str());
+			return false;
+		}
+		return true;
 	}
 
 
@@ -443,6 +381,7 @@ namespace nap
 			return false;
 
 		// Initialize it
+		nap::Logger::debug("Initializing project '%s'", mProjectInfo->mTitle.c_str());
 		if (!mProjectInfo->init(projectFilename, context, err))
 		{
 			err.fail("Failed to initialize project");
@@ -480,19 +419,15 @@ namespace nap
 					return false;
 
 				// Get type before moving and store pointer for
-                nap::ServiceConfiguration* config_ptr = config.get();
-				bool added = addServiceConfig(std::move(config));
-
-				// Duplicates are not allowed
-				if(!err.check(added, "Duplicate service configuration found with id: %s, type: %s",
-							   config_ptr->mID.c_str(), config_ptr->getServiceType().get_name().to_string().c_str()))
+				if (!addServiceConfig(std::move(config), err))
 					return false;
 			}
 		}
 		else
 		{
 			// File doesn't exist or can't be deserialized
-			nap::Logger::warn(deserialize_error.toString().c_str());
+			deserialize_error.fail("Service config '%s' de-serialization failed", mProjectInfo->mServiceConfigFilename.c_str());
+			Logger::error(deserialize_error.toString().c_str());
 		}
 		return true;
 	}

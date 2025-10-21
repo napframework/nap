@@ -28,6 +28,10 @@ namespace nap
 
 	bool MeshFromFile::init(utility::ErrorState& errorState)
 	{
+		// Ensure we have a path
+		if (!errorState.check(!mPath.empty(), "Unable to load '%s': Path is empty", mID.c_str()))
+			return false;
+
 		// Load our mesh
 		nap::Logger::info("loading mesh: %s", mPath.c_str());
 		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(*mRenderService, mPath, errorState);

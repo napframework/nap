@@ -24,9 +24,7 @@ else()
     install(FILES ${OSCPACK_LICENSE_FILES} DESTINATION licenses/oscpack)
 
     # Install oscpack shared lib into packaged project for Unix
-    if(APPLE)
-        install(FILES ${OSCPACK_LIBS_RELEASE} DESTINATION lib)
-    elseif(UNIX)
+    if(UNIX)
         file(GLOB OSCPACK_DYLIBS ${OSCPACK_LIBS_DIR}/liboscpack*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${OSCPACK_DYLIBS} DESTINATION lib)
     endif()

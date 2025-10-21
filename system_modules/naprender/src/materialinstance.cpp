@@ -725,37 +725,27 @@ namespace nap
 				constant_instance = material->findConstant(declaration.mName);
 			}
 
-			// If a constant is overriden
+			// If a constant is overridden
 			if (constant_instance != nullptr)
 			{		
 				auto it = mShaderStageConstantMap.find(constant_instance->mDeclaration.mStage);
 				if (it != mShaderStageConstantMap.end())
 				{
 					// Insert entry in the constant map associated with the specified stage
-					it->second.insert({ constant_instance->mDeclaration.mConstantID, constant_instance->mValue });
+					it->second.emplace(constant_instance->mDeclaration.mConstantID, constant_instance->mValue);
 				}
 				else
 				{
 					// Create new map for the specified stage and insert entry
 					ShaderConstantMap const_map = { { constant_instance->mDeclaration.mConstantID, constant_instance->mValue } };
-					mShaderStageConstantMap.insert({ constant_instance->mDeclaration.mStage, std::move(const_map) });
+					mShaderStageConstantMap.emplace(constant_instance->mDeclaration.mStage, std::move(const_map));
 				}
 			}
 		}
 
 		// Recompute the shader constant hash used to create a pipeline key
-		mConstantHash = 0;
-		for (const auto& entry : mShaderStageConstantMap)
-		{
-			auto stage = entry.first;
-			const auto& constant_map = entry.second;
-			for (const auto& constant : constant_map)
-			{
-				const auto& value = constant.second;
-				mConstantHash ^= std::hash<uint>{}(value);
-			}
-		}
-		
+		mConstantHash = std::hash<ShaderStageConstantMap>{}(mShaderStageConstantMap);
+
 		return true;
 	}
 
@@ -821,7 +811,7 @@ namespace nap
 			}
 
 			// Verify buffer object type
-			if (!errorState.check(ubo_declaration.mDescriptorType == EDescriptorType::Uniform, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str())))
+			if (!errorState.check(ubo_declaration.mDescriptorType == EDescriptorType::Uniform, "Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str()))
 				return false;
 
 			// Pass 2: gather leaf uniform instances for a single ubo

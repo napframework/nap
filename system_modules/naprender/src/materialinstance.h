@@ -320,19 +320,15 @@ namespace nap
 		EBlendMode getBlendMode() const;
 
 		/**
-		 * Sets the blend mode that is used when rendering an object with this material. Note that frequently changing
-		 * the blend mode on the same MaterialInstance requires a rebuild of the underlying GPU pipeline. When frequent 
-		 * changes are required, it is recommended to use multiple MaterialInstance objects instead.
+		 * Sets the blend mode that is used when rendering an object with this material.
 		 * @param blendMode the new blend mode
 		 */
 		void setBlendMode(EBlendMode blendMode);
 
 		 /**
-		 * Sets the depth mode that is used when rendering an object with this material. Note that frequently changing
-		 * the depth mode on the same MaterialInstance requires a rebuild of the underlying GPU pipeline. When frequent
-		 * changes are required, it is recommended to use multiple MaterialInstance objects instead.
-		 * @param depthMode the new depth mode
-		 */
+		  * Sets the depth mode that is used when rendering an object with this material.
+		  * @param depthMode the new depth mode
+		  */
 		void setDepthMode(EDepthMode depthMode);
 
 		/**
@@ -412,4 +408,41 @@ namespace nap
 	{
 		return rtti_cast<T>(getOrCreateSamplerInternal(resource.mName, &resource));
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Hash functions
+//////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+	/**
+	 * Compute order-dependent hash of shader constant combinations.
+	 * Based on this answer: https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key/12996028#12996028
+	 */
+	template<>
+	struct hash<nap::ShaderStageConstantMap>
+	{
+		size_t operator()(nap::ShaderStageConstantMap const& constants) const
+		{
+			nap::uint count = 0;
+			for (const auto& stage : constants)
+				count += stage.second.size();
+
+			auto seed = static_cast<nap::uint>(count);
+			for (const auto& stage : constants)
+			{
+				for (const auto& entry : stage.second)
+				{
+					nap::uint x = entry.second;
+					x = ((x >> 16) ^ x) * 0x45d9f3b;
+					x = ((x >> 16) ^ x) * 0x45d9f3b;
+					x = (x >> 16) ^ x;
+					seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+				}
+			}
+			return static_cast<size_t>(seed);
+		}
+	};
 }

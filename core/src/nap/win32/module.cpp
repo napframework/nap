@@ -45,27 +45,25 @@ namespace nap
 	// Add dll search paths such that when we load a module, it's dependencies can be resolved by Windows
 	std::vector<DLL_DIRECTORY_COOKIE> addDLLSearchPaths(const std::vector<std::string>& paths)
 	{
-		std::vector<DLL_DIRECTORY_COOKIE> dllDirCookies;
-		for (const auto& searchPath : paths)
+		std::vector<DLL_DIRECTORY_COOKIE> all_cookies;
+		for (const auto& path : paths)
 		{
-			auto abspath = utility::getAbsolutePath(searchPath);
-			auto abspathw = toWStr(abspath);
-
+			auto abspath = utility::getAbsolutePath(path);
+			nap::Logger::debug("Adding library search path: %s", abspath.c_str());
 			if (!utility::fileExists(abspath))
 			{
-				nap::Logger::fine("Path does not exist: %s (resolved from: %s)", abspath.c_str(), searchPath.c_str());
+				nap::Logger::fine("Path does not exist: %s (resolved from: %s)", abspath.c_str(), path.c_str());
 				continue;
 			}
-
-			auto cookie = AddDllDirectory(abspathw.c_str());
+			auto cookie = AddDllDirectory(toWStr(abspath).c_str());
 			if (!cookie)
 			{
 				nap::Logger::error("Failed to add dll path: %s (%s)", abspath.c_str(), getLastErrorStr().c_str());
 				continue;
 			}
-			dllDirCookies.emplace_back(cookie);
+			all_cookies.emplace_back(cookie);
 		}
-		return dllDirCookies;
+		return all_cookies;
 	}
 
 
@@ -75,7 +73,7 @@ namespace nap
 		for (const auto& path : paths)
 		{
 			if (!RemoveDllDirectory(path))
-				nap::Logger::error("Failed to remove path: %s", path);
+				nap::Logger::error("Failed to remove library search path");
 		}
 	}
 
@@ -87,23 +85,17 @@ namespace nap
 	}
 
 
-	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
+	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& library, std::string& outLocation, std::string& errorString)
 	{
-		// Temporarily set search paths for this module's dependencies
-		std::vector<DLL_DIRECTORY_COOKIE> searchPathCookies;
+		// Add library search paths to resolve library location when using napkin
+		std::vector<DLL_DIRECTORY_COOKIE> search_cookies;
 		if (modInfo.getProjectInfo().isEditorMode())
-			searchPathCookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
+			search_cookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
 
-		auto modulefile = utility::getAbsolutePath(modulePath);
-
-		if (!utility::fileExists(modulefile))
-		{
-			errorString = "File not found";
-			return nullptr;
-		}
-
-		// Load our module
-		void* result = LoadLibraryExA(modulefile.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+		// Load our module -> note that we search on file name instead of full path.
+		// This allows the loader to return an already loaded module, speeding up the entire sourcing process
+		// for both applications, the editor and applets.
+		HMODULE result = LoadLibraryExA(library.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 
 		// If we failed to load the module, get the error string
 		if (result == nullptr)
@@ -113,13 +105,18 @@ namespace nap
 			// However: we know the library exists and the issue is most likely related to a mis-configured dll search path.
 			// Therefore, instead of returning the last error code as a string we attempt to be a bit more verbose. 
 			// errorString = getLastErrorStr();
-			errorString += utility::stringFormat("Library can't be loaded, most likely due to missing or mis-configured DLL search paths or a compiler mis-match", modulefile.c_str());
+			errorString += getLastErrorStr();
+			errorString += utility::stringFormat("\n'%s' can't be loaded, most likely due to missing or mis-configured DLL search paths or a compiler mis-match",
+				library.c_str());
 		}
 
-		// Remove temporarily added search paths
-		if (modInfo.getProjectInfo().isEditorMode())
-			removeDLLSearchPaths(searchPathCookies);
+		// Fetch location
+		std::array<char, 256> loc;
+		if (GetModuleFileNameA(result, loc.data(), loc.size()) > 0)
+			outLocation = loc.data();
 
+		// Remove temporarily added search paths
+		removeDLLSearchPaths(search_cookies);
 		return result;
 	}
 

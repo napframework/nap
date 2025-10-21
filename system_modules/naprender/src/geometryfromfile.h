@@ -34,7 +34,34 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		// Constructor
 		GeometryFromFile(Core& core);
+
+		/**
+		 * Collection of geometry import settings used by the loader
+		 */
+		struct ImportSettings
+		{
+			bool mGenerateNormals		= false;	///< If vertex normals are generated when not present
+			bool mGenerateTangents		= false;	///< If tangents and bi-tangents are calculated, void if no normals are present or generated
+			bool mSmoothingAngle		= 60.0f;	///< The maximum angle between two normals at the same vertex position to be considered the same. Only used when normals are generated.
+		};
+
+		/**  
+		 * Utility function that Imports 3D Geometry from file and converts the individual meshes into a single nap::MeshInstance.
+		 * Every extracted mesh becomes a single shape, vertex attributes are shared.
+		 * Many 3D geometry file formats are supported, including '.obj', '.fbx' etc.
+		 * For a full list of supported file formats visit http://assimp.sourceforge.net/
+		 *
+		 * Note that the given instance is not initialized or configured for runtime.
+		 * You must initialize the populated instance after a successful load.
+		 *
+		 * @param file path to the geometry to load, supported types include '.obj', '.fbx' etc.
+		 * @param instance the mesh instance to load geometry into
+		 * @param error holds the error if loading fails
+		 * @return if load operation succeeded
+		 */
+		static bool load(const std::string& path, std::unique_ptr<MeshInstance>& instance, const ImportSettings& settings, nap::utility::ErrorState& error);
 
 		/**
 		 * Loads the 3D geometry from file and creates the mesh instance.
@@ -60,7 +87,7 @@ namespace nap
 		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 		bool			mGenerateNormals = false;				///< Property: 'GenerateNormals' If normals are generated when not present.
 		float			mSmoothingAngle = 60.0f;				///< Property: 'NormalSmoothingAngle' The maximum angle between two normals at the same vertex position to be considered the same. Only used when normals are generated.
-		bool			mCalculateTangents = true;				///< Property: 'CalculateTangents' If tangents and bi-tangents are calculated, does nothing if no normals are present or calculated
+		bool			mCalculateTangents = false;				///< Property: 'CalculateTangents' If tangents and bi-tangents are calculated, does nothing if no normals are present or calculated
 
 	private:
 		RenderService* mRenderService = nullptr;

@@ -82,10 +82,16 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
     endforeach()
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES} ${SDL2_LIBRARY})
+#TODO Remove explicit SDL3 reference, should be implicit
+target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES})
 if(NAP_ENABLE_PYTHON)
     target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARIES})
 endif()
+
+# Explicitly link in SDL
+# TODO: Remove explicit SDL3 reference, should be implicit
+find_sdl()
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3)
 
 # Include any extra app CMake logic
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/app_extra.cmake)
@@ -97,22 +103,6 @@ export_fbx()
 
 if(NAP_BUILD_CONTEXT MATCHES "source")
     add_dependencies(${PROJECT_NAME} fbxconverter)
-endif()
-
-# macOS specifics
-if(APPLE)
-    # Add the runtime paths for RTTR
-    if(NAP_BUILD_CONTEXT MATCHES "source")
-        macos_add_rttr_rpath()
-    endif()
-
-    # Add plist files if found
-    file(GLOB_RECURSE INFO_PLIST macos/*.plist)
-    if(INFO_PLIST)
-        create_hierarchical_source_groups_for_files("${INFO_PLIST}" ${CMAKE_CURRENT_SOURCE_DIR}/macos "PropertyList")
-        target_sources(${PROJECT_NAME} PUBLIC ${INFO_PLIST})
-        copy_files_to_bin(${INFO_PLIST})
-    endif()
 endif()
 
 # Copy path mapping
@@ -135,17 +125,9 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
     install(FILES ${CMAKE_SOURCE_DIR}/app.json DESTINATION .)
     install(FILES ${NAP_ROOT}/cmake/app_creator/NAP.txt DESTINATION .)
 
-    if(NOT WIN32)
+    if(UNIX)
         # Set RPATH to search in ./lib
-        if(APPLE)
-            set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
-            # Install Information Propertly List file if present
-            if(INFO_PLIST)
-                install(FILES ${INFO_PLIST} DESTINATION .)
-            endif()
-        else()
-            set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
-        endif()
+        set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
         install(TARGETS ${PROJECT_NAME} DESTINATION .)
     endif()
 
@@ -158,13 +140,7 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
     if(WIN32)
         install(FILES ${NAP_ROOT}/tools/buildsystem/Microsoft\ Visual\ C++\ Redistributable\ Help.txt DESTINATION .)
     endif()
-
-    # Provide Gatekeeper unquarantine script on macOS
-    if(APPLE)
-        set(app_template_dir "${NAP_ROOT}/cmake/app_creator/template")
-        install(PROGRAMS "${app_template_dir}/Unquarantine App.command" DESTINATION .)
-        install(FILES "${app_template_dir}/Help launching on macOS.txt" DESTINATION .)
-    endif()
+    
 else()
     if(NAP_PACKAGED_BUILD)
         # Package into framework release

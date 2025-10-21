@@ -10,9 +10,6 @@ def check_environment():
     if platform.startswith('linux'):
         script_path = os.path.join(nap_root, 'tools/buildsystem/check_build_environment/linux/check_build_environment_worker.py')
         call('%s %s %s' % (sys.executable, script_path, '--source'), shell=True)
-    elif platform == 'darwin':
-        script_path = os.path.join(nap_root, 'tools/buildsystem/check_build_environment/macos/check_build_environment.py')
-        call('%s %s %s' % (sys.executable, script_path, '--source'), shell=True)
     else:
         script_path = os.path.join(nap_root, 'tools/buildsystem/check_build_environment/win64/check_build_environment.bat')
         call('%s %s' % (script_path, '--source'), shell=True)

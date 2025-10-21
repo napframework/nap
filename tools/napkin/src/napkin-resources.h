@@ -55,5 +55,10 @@ namespace napkin
 	inline constexpr const char* QRC_ICONS_DUPLICATE				= ":/icons/duplicate.png";
 	inline constexpr const char* QRC_ICONS_SPIN_UP					= ":/icons/spin_up.png";
 	inline constexpr const char* QRC_ICONS_SPIN_DOWN				= ":/icons/spin_down.png";
+	inline constexpr const char* QRC_ICONS_MESH						= ":/icons/mesh.png";
+	inline constexpr const char* QRC_ICONS_TEXTURE					= ":/icons/texture.png";
+	inline constexpr const char* QRC_ICONS_WINDOW					= ":/icons/window.png";
+	inline constexpr const char* QRC_ICONS_SHADER					= ":/icons/shader.png";
+	inline constexpr const char* QRC_ICONS_MATERIAL					= ":/icons/material.png";
 }
 

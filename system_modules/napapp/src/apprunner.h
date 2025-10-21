@@ -39,6 +39,14 @@ namespace nap
 		 * @param core the nap core this runner uses in conjunction with the app and handler
 		 */
 		AppRunner(nap::Core& core);
+
+		/**
+		 * Constructor with the project and context to run
+		 * @param core the nap core this runner uses in conjunction with the app and handler
+		 * @param projectInfo the application project information
+		 * @param app runner context
+		 */
+		AppRunner(nap::Core& core, const std::string& projectInfo, ProjectInfo::EContext context);
 		
 		/**
 		 *	Destructor
@@ -91,8 +99,10 @@ namespace nap
 		nap::Core&					mCore;					// Core
 		std::unique_ptr<APP>		mApp = nullptr;			// App this runner works with
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
-		bool						mStop = false;			// If the runner should stop
+		std::atomic<bool>			mStop = { false };		// If the runner should stop
 		int							mExitCode = 0;			// Application exit code* Call update() to force an update.
+		std::string					mProjectInfo;			// Optional application project information
+		ProjectInfo::EContext		mProjectContext;		// Optional application context information
 	};
 
 
@@ -117,15 +127,19 @@ namespace nap
 	template<typename APP, typename HANDLER>
 	nap::AppRunner<APP, HANDLER>::AppRunner(nap::Core& core) : mCore(core)
 	{
-		// Ensure the app is an application
-		assert(RTTI_OF(APP).is_derived_from(RTTI_OF(BaseApp)));
-
-		// Ensure the handler is an app event handler
-		assert(RTTI_OF(HANDLER).is_derived_from(RTTI_OF(AppEventHandler)));
-
-		// Create 'm
+		// Create app and handler
 		mApp = std::make_unique<APP>(core);
 		mHandler = std::make_unique<HANDLER>(*mApp);
+	}
+
+
+
+	template<typename APP, typename HANDLER>
+	nap::AppRunner<APP, HANDLER>::AppRunner(nap::Core& core, const std::string& projectInfo, ProjectInfo::EContext context) :
+		nap::AppRunner<APP, HANDLER>(core)
+	{
+		this->mProjectInfo = projectInfo;
+		this->mProjectContext = context;
 	}
 
 
@@ -136,11 +150,12 @@ namespace nap
 		nap::AppEventHandler& app_event_handler = getHandler();
 
 		// Initialize engine
-		if (!mCore.initializeEngine(error))
-		{
-			error.fail("Unable to initialize engine");
+		bool initialized = !this->mProjectInfo.empty() ?
+			mCore.initializeEngine(this->mProjectInfo, this->mProjectContext, error) :
+			mCore.initializeEngine(error);
+
+		if (!error.check(initialized, "Unable to initialize engine"))
 			return false;
-		}
 
 		// Initialize the various services
 		// Bail if handle is invalid, this means service initialization failed
@@ -148,11 +163,8 @@ namespace nap
 		if (handle == nullptr)
 			return false;
 
-#ifdef NAP_ENABLE_PYTHON
-		if (!mCore.initializePython(error))
-			return false;
-#endif
 		// Change current working directory to directory that contains the data file
+		// TODO: Remove! setting cwd is not thread safe - make thread local or resolve local
 		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
 		utility::changeDir(data_dir);
 		nap::Logger::info("Current working directory: % s", data_dir.c_str());

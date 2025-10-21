@@ -8,6 +8,8 @@
 // External Includes
 #include <mathutils.h>
 #include <SDL_joystick.h>
+#include <SDL_gamepad.h>
+#include <SDL_keycode.h>
 
 namespace nap
 {
@@ -27,14 +29,18 @@ namespace nap
 			{ SDLK_TAB,						nap::EKeyCode::KEY_TAB },
 			{ SDLK_SPACE,					nap::EKeyCode::KEY_SPACE },
 			{ SDLK_EXCLAIM,					nap::EKeyCode::KEY_EXCLAIM },
-			{ SDLK_QUOTEDBL,				nap::EKeyCode::KEY_QUOTEDBL },
+			{ SDLK_DBLAPOSTROPHE,			nap::EKeyCode::KEY_QUOTEDBL },
 			{ SDLK_HASH,					nap::EKeyCode::KEY_HASH },
+			{ SDLK_TILDE,					nap::EKeyCode::KEY_TILDE },
+			{ SDLK_PIPE,					nap::EKeyCode::KEY_PIPE },
 			{ SDLK_PERCENT,					nap::EKeyCode::KEY_PERCENT },
 			{ SDLK_DOLLAR,					nap::EKeyCode::KEY_DOLLAR },
 			{ SDLK_AMPERSAND,				nap::EKeyCode::KEY_AMPERSAND },
-			{ SDLK_QUOTE,					nap::EKeyCode::KEY_QUOTE },
+			{ SDLK_APOSTROPHE,				nap::EKeyCode::KEY_QUOTE},
 			{ SDLK_LEFTPAREN,				nap::EKeyCode::KEY_LEFTPAREN },
+			{ SDLK_LEFTBRACE,				nap::EKeyCode::KEY_LEFTBRACE },
 			{ SDLK_RIGHTPAREN,				nap::EKeyCode::KEY_RIGHTPAREN },
+			{ SDLK_RIGHTBRACE,				nap::EKeyCode::KEY_RIGHTBRACE },
 			{ SDLK_ASTERISK,				nap::EKeyCode::KEY_ASTERISK },
 			{ SDLK_PLUS,					nap::EKeyCode::KEY_PLUS },
 			{ SDLK_COMMA,					nap::EKeyCode::KEY_COMMA },
@@ -63,33 +69,33 @@ namespace nap
 			{ SDLK_RIGHTBRACKET,			nap::EKeyCode::KEY_RIGHTBRACKET },
 			{ SDLK_CARET,					nap::EKeyCode::KEY_CARET },
 			{ SDLK_UNDERSCORE,				nap::EKeyCode::KEY_UNDERSCORE },
-			{ SDLK_BACKQUOTE,				nap::EKeyCode::KEY_BACKQUOTE },
-			{ SDLK_a,						nap::EKeyCode::KEY_a },
-			{ SDLK_b,						nap::EKeyCode::KEY_b },
-			{ SDLK_c,						nap::EKeyCode::KEY_c },
-			{ SDLK_d,						nap::EKeyCode::KEY_d },
-			{ SDLK_e,						nap::EKeyCode::KEY_e },
-			{ SDLK_f,						nap::EKeyCode::KEY_f },
-			{ SDLK_g,						nap::EKeyCode::KEY_g },
-			{ SDLK_h,						nap::EKeyCode::KEY_h },
-			{ SDLK_i,						nap::EKeyCode::KEY_i },
-			{ SDLK_j,						nap::EKeyCode::KEY_j },
-			{ SDLK_k,						nap::EKeyCode::KEY_k },
-			{ SDLK_l,						nap::EKeyCode::KEY_l },
-			{ SDLK_m,						nap::EKeyCode::KEY_m },
-			{ SDLK_n,						nap::EKeyCode::KEY_n },
-			{ SDLK_o,						nap::EKeyCode::KEY_o },
-			{ SDLK_p,						nap::EKeyCode::KEY_p },
-			{ SDLK_q,						nap::EKeyCode::KEY_q },
-			{ SDLK_r,						nap::EKeyCode::KEY_r },
-			{ SDLK_s,						nap::EKeyCode::KEY_s },
-			{ SDLK_t,						nap::EKeyCode::KEY_t },
-			{ SDLK_u,						nap::EKeyCode::KEY_u },
-			{ SDLK_v,						nap::EKeyCode::KEY_v },
-			{ SDLK_w,						nap::EKeyCode::KEY_w },
-			{ SDLK_x,						nap::EKeyCode::KEY_x },
-			{ SDLK_y,						nap::EKeyCode::KEY_y },
-			{ SDLK_z,						nap::EKeyCode::KEY_z },
+			{ SDLK_GRAVE,					nap::EKeyCode::KEY_BACKQUOTE },
+			{ SDLK_A,						nap::EKeyCode::KEY_a },
+			{ SDLK_B,						nap::EKeyCode::KEY_b },
+			{ SDLK_C,						nap::EKeyCode::KEY_c },
+			{ SDLK_D,						nap::EKeyCode::KEY_d },
+			{ SDLK_E,						nap::EKeyCode::KEY_e },
+			{ SDLK_F,						nap::EKeyCode::KEY_f },
+			{ SDLK_G,						nap::EKeyCode::KEY_g },
+			{ SDLK_H,						nap::EKeyCode::KEY_h },
+			{ SDLK_I,						nap::EKeyCode::KEY_i },
+			{ SDLK_J,						nap::EKeyCode::KEY_j },
+			{ SDLK_K,						nap::EKeyCode::KEY_k },
+			{ SDLK_L,						nap::EKeyCode::KEY_l },
+			{ SDLK_M,						nap::EKeyCode::KEY_m },
+			{ SDLK_N,						nap::EKeyCode::KEY_n },
+			{ SDLK_O,						nap::EKeyCode::KEY_o },
+			{ SDLK_P,						nap::EKeyCode::KEY_p },
+			{ SDLK_Q,						nap::EKeyCode::KEY_q },
+			{ SDLK_R,						nap::EKeyCode::KEY_r },
+			{ SDLK_S,						nap::EKeyCode::KEY_s },
+			{ SDLK_T,						nap::EKeyCode::KEY_t },
+			{ SDLK_U,						nap::EKeyCode::KEY_u },
+			{ SDLK_V,						nap::EKeyCode::KEY_v },
+			{ SDLK_W,						nap::EKeyCode::KEY_w },
+			{ SDLK_X,						nap::EKeyCode::KEY_x },
+			{ SDLK_Y,						nap::EKeyCode::KEY_y },
+			{ SDLK_Z,						nap::EKeyCode::KEY_z },
 			{ SDLK_CAPSLOCK,				nap::EKeyCode::KEY_CAPSLOCK },
 			{ SDLK_F1,						nap::EKeyCode::KEY_F1 },
 			{ SDLK_F2,						nap::EKeyCode::KEY_F2 },
@@ -231,16 +237,6 @@ namespace nap
 			{ SDLK_RALT,					nap::EKeyCode::KEY_RALT },
 			{ SDLK_RGUI,					nap::EKeyCode::KEY_RGUI },
 			{ SDLK_MODE,					nap::EKeyCode::KEY_MODE },
-			{ SDLK_AUDIONEXT,				nap::EKeyCode::KEY_AUDIONEXT },
-			{ SDLK_AUDIOPREV,				nap::EKeyCode::KEY_AUDIOPREV },
-			{ SDLK_AUDIOSTOP,				nap::EKeyCode::KEY_AUDIOSTOP },
-			{ SDLK_AUDIOPLAY,				nap::EKeyCode::KEY_AUDIOPLAY },
-			{ SDLK_AUDIOMUTE,				nap::EKeyCode::KEY_AUDIOMUTE },
-			{ SDLK_MEDIASELECT,				nap::EKeyCode::KEY_MEDIASELECT },
-			{ SDLK_WWW,						nap::EKeyCode::KEY_WWW },
-			{ SDLK_MAIL,					nap::EKeyCode::KEY_MAIL },
-			{ SDLK_CALCULATOR,				nap::EKeyCode::KEY_CALCULATOR },
-			{ SDLK_COMPUTER,				nap::EKeyCode::KEY_COMPUTER },
 			{ SDLK_AC_SEARCH,				nap::EKeyCode::KEY_AC_SEARCH },
 			{ SDLK_AC_HOME,					nap::EKeyCode::KEY_AC_HOME },
 			{ SDLK_AC_BACK,					nap::EKeyCode::KEY_AC_BACK },
@@ -248,16 +244,25 @@ namespace nap
 			{ SDLK_AC_STOP,					nap::EKeyCode::KEY_AC_STOP },
 			{ SDLK_AC_REFRESH,				nap::EKeyCode::KEY_AC_REFRESH },
 			{ SDLK_AC_BOOKMARKS,			nap::EKeyCode::KEY_AC_BOOKMARKS },
-			{ SDLK_BRIGHTNESSDOWN,			nap::EKeyCode::KEY_BRIGHTNESSDOWN },
-			{ SDLK_BRIGHTNESSUP,			nap::EKeyCode::KEY_BRIGHTNESSUP },
-			{ SDLK_DISPLAYSWITCH,			nap::EKeyCode::KEY_DISPLAYSWITCH },
-			{ SDLK_KBDILLUMTOGGLE,			nap::EKeyCode::KEY_KBDILLUMTOGGLE },
-			{ SDLK_KBDILLUMDOWN,			nap::EKeyCode::KEY_KBDILLUMDOWN },
-			{ SDLK_KBDILLUMUP,				nap::EKeyCode::KEY_KBDILLUMUP },
-			{ SDLK_EJECT,					nap::EKeyCode::KEY_EJECT },
-			{ SDLK_SLEEP,					nap::EKeyCode::KEY_SLEEP }
+			{ SDLK_SLEEP,					nap::EKeyCode::KEY_SLEEP },
+			{ SDLK_PIPE,					nap::EKeyCode::KEY_PIPE }
 		};
 		return key_code_map;
+	}
+
+
+	// Binds a specific SDL key modifier to a NAP key modifier
+	using SDLKeyModifierMap = std::unordered_map<Uint16, nap::EKeyModifier>;
+	static const SDLKeyModifierMap& getSDLKeyModifierMap()
+	{
+		static const SDLKeyModifierMap sdl_key_mod_map =
+		{
+			{ SDL_KMOD_NONE,	nap::EKeyModifier::None },
+			{ SDL_KMOD_SHIFT,	nap::EKeyModifier::Shift },
+			{ SDL_KMOD_CTRL,	nap::EKeyModifier::Control },
+			{ SDL_KMOD_ALT,		nap::EKeyModifier::Alt }
+		}; 
+		return sdl_key_mod_map;
 	}
 
 
@@ -267,21 +272,21 @@ namespace nap
 	{
 		static const SDLWindowMap sdl_window_map =
 		{
-			{ SDL_WINDOWEVENT_SHOWN,			RTTI_OF(nap::WindowShownEvent) },
-			{ SDL_WINDOWEVENT_HIDDEN,			RTTI_OF(nap::WindowHiddenEvent) },
-			{ SDL_WINDOWEVENT_MINIMIZED,		RTTI_OF(nap::WindowMinimizedEvent) },
-			{ SDL_WINDOWEVENT_MAXIMIZED,		RTTI_OF(nap::WindowMaximizedEvent) },
-			{ SDL_WINDOWEVENT_RESTORED,			RTTI_OF(nap::WindowRestoredEvent) },
-			{ SDL_WINDOWEVENT_ENTER,			RTTI_OF(nap::WindowEnterEvent) },
-			{ SDL_WINDOWEVENT_LEAVE,			RTTI_OF(nap::WindowLeaveEvent) },
-			{ SDL_WINDOWEVENT_FOCUS_GAINED,		RTTI_OF(nap::WindowFocusGainedEvent) },
-			{ SDL_WINDOWEVENT_FOCUS_LOST,		RTTI_OF(nap::WindowFocusLostEvent) },
-			{ SDL_WINDOWEVENT_CLOSE,			RTTI_OF(nap::WindowCloseEvent) },
-			{ SDL_WINDOWEVENT_RESIZED,			RTTI_OF(nap::WindowResizedEvent) },
-			{ SDL_WINDOWEVENT_MOVED,			RTTI_OF(nap::WindowMovedEvent) },
-			{ SDL_WINDOWEVENT_EXPOSED,			RTTI_OF(nap::WindowExposedEvent) },
-			{ SDL_WINDOWEVENT_SIZE_CHANGED,		RTTI_OF(nap::WindowResizedEvent) },
-			{ SDL_WINDOWEVENT_TAKE_FOCUS,		RTTI_OF(nap::WindowTakeFocusEvent) }
+			{ SDL_EVENT_WINDOW_SHOWN,				RTTI_OF(nap::WindowShownEvent) },
+			{ SDL_EVENT_WINDOW_HIDDEN,				RTTI_OF(nap::WindowHiddenEvent) },
+			{ SDL_EVENT_WINDOW_MINIMIZED,			RTTI_OF(nap::WindowMinimizedEvent) },
+			{ SDL_EVENT_WINDOW_MAXIMIZED,			RTTI_OF(nap::WindowMaximizedEvent) },
+			{ SDL_EVENT_WINDOW_RESTORED,			RTTI_OF(nap::WindowRestoredEvent) },
+			{ SDL_EVENT_WINDOW_MOUSE_ENTER,			RTTI_OF(nap::WindowEnterEvent) },
+			{ SDL_EVENT_WINDOW_MOUSE_LEAVE,			RTTI_OF(nap::WindowLeaveEvent) },
+			{ SDL_EVENT_WINDOW_FOCUS_GAINED,		RTTI_OF(nap::WindowFocusGainedEvent) },
+			{ SDL_EVENT_WINDOW_FOCUS_LOST,			RTTI_OF(nap::WindowFocusLostEvent) },
+			{ SDL_EVENT_WINDOW_CLOSE_REQUESTED,		RTTI_OF(nap::WindowCloseEvent) },
+			{ SDL_EVENT_WINDOW_RESIZED,				RTTI_OF(nap::WindowResizedEvent) },
+			{ SDL_EVENT_WINDOW_MOVED,				RTTI_OF(nap::WindowMovedEvent) },
+			{ SDL_EVENT_WINDOW_EXPOSED,				RTTI_OF(nap::WindowExposedEvent) },
+			{ SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,	RTTI_OF(nap::WindowResizedEvent) },
+			{ SDL_EVENT_WINDOW_FOCUS_GAINED,		RTTI_OF(nap::WindowTakeFocusEvent) }
 		};
 		return sdl_window_map;
 	}
@@ -293,10 +298,10 @@ namespace nap
 	{
 		static const std::unordered_map<Uint32, rtti::TypeInfo> sdl_mouse_map =
 		{
-			{ SDL_MOUSEBUTTONDOWN,  RTTI_OF(nap::PointerPressEvent) },
-			{ SDL_MOUSEBUTTONUP,	RTTI_OF(nap::PointerReleaseEvent) },
-			{ SDL_MOUSEMOTION,		RTTI_OF(nap::PointerMoveEvent) },
-			{ SDL_MOUSEWHEEL,		RTTI_OF(nap::MouseWheelEvent) }
+			{ SDL_EVENT_MOUSE_BUTTON_DOWN,  RTTI_OF(nap::PointerPressEvent) },
+			{ SDL_EVENT_MOUSE_BUTTON_UP,	RTTI_OF(nap::PointerReleaseEvent) },
+			{ SDL_EVENT_MOUSE_MOTION,		RTTI_OF(nap::PointerMoveEvent) },
+			{ SDL_EVENT_MOUSE_WHEEL,		RTTI_OF(nap::MouseWheelEvent) }
 		};
 		return sdl_mouse_map;
 	}
@@ -308,9 +313,9 @@ namespace nap
 	{
 		static const SDLTouchMap sdl_touch_map =
 		{
-			{ SDL_FINGERDOWN,		RTTI_OF(nap::TouchPressEvent) },
-			{ SDL_FINGERUP,			RTTI_OF(nap::TouchReleaseEvent) },
-			{ SDL_FINGERMOTION,		RTTI_OF(nap::TouchMoveEvent) }
+			{ SDL_EVENT_FINGER_DOWN,		RTTI_OF(nap::TouchPressEvent) },
+			{ SDL_EVENT_FINGER_UP,			RTTI_OF(nap::TouchReleaseEvent) },
+			{ SDL_EVENT_FINGER_MOTION,		RTTI_OF(nap::TouchMoveEvent) }
 		};
 		return sdl_touch_map;
 	}
@@ -322,9 +327,9 @@ namespace nap
 	{
 		static const SDLKeyMap key_map =
 		{
-			{ SDL_KEYDOWN,		RTTI_OF(nap::KeyPressEvent)		},
-			{ SDL_KEYUP,		RTTI_OF(nap::KeyReleaseEvent)	},
-			{ SDL_TEXTINPUT,	RTTI_OF(nap::TextInputEvent)	}
+			{ SDL_EVENT_KEY_DOWN,	RTTI_OF(nap::KeyPressEvent)		},
+			{ SDL_EVENT_KEY_UP,		RTTI_OF(nap::KeyReleaseEvent)	},
+			{ SDL_EVENT_TEXT_INPUT,	RTTI_OF(nap::TextInputEvent)	}
 		};
 		return key_map;
 	}
@@ -336,14 +341,16 @@ namespace nap
 	{
 		const static std::unordered_map<Uint32, rtti::TypeInfo> sdl_controller_map =
 		{
-			{ SDL_CONTROLLERBUTTONDOWN,		RTTI_OF(nap::ControllerButtonPressEvent) },
-			{ SDL_CONTROLLERBUTTONUP,		RTTI_OF(nap::ControllerButtonReleaseEvent) },
-			{ SDL_CONTROLLERAXISMOTION,		RTTI_OF(nap::ControllerAxisEvent) },
-			{ SDL_JOYAXISMOTION,			RTTI_OF(nap::ControllerAxisEvent) },
-			{ SDL_JOYBUTTONDOWN,			RTTI_OF(nap::ControllerButtonPressEvent) },
-			{ SDL_JOYBUTTONUP,				RTTI_OF(nap::ControllerButtonReleaseEvent) },
-			{ SDL_JOYDEVICEREMOVED,			RTTI_OF(nap::ControllerConnectionEvent) },
-			{ SDL_JOYDEVICEADDED,			RTTI_OF(nap::ControllerConnectionEvent) }
+			{ SDL_EVENT_JOYSTICK_BUTTON_DOWN,	RTTI_OF(nap::ControllerButtonPressEvent) },
+			{ SDL_EVENT_JOYSTICK_BUTTON_UP,		RTTI_OF(nap::ControllerButtonReleaseEvent) },
+			{ SDL_EVENT_JOYSTICK_AXIS_MOTION,	RTTI_OF(nap::ControllerAxisEvent) },
+			{ SDL_EVENT_JOYSTICK_REMOVED,		RTTI_OF(nap::ControllerConnectionEvent) },
+			{ SDL_EVENT_JOYSTICK_ADDED,			RTTI_OF(nap::ControllerConnectionEvent) },
+			{ SDL_EVENT_GAMEPAD_BUTTON_DOWN,	RTTI_OF(nap::ControllerButtonPressEvent) },			//< TODO: Check if these are backwards compatible / work
+			{ SDL_EVENT_GAMEPAD_BUTTON_UP,		RTTI_OF(nap::ControllerButtonReleaseEvent) },		//< TODO: Check if these are backwards compatible / work
+			{ SDL_EVENT_GAMEPAD_AXIS_MOTION,	RTTI_OF(nap::ControllerAxisEvent) },				//< TODO: Check if these are backwards compatible / work
+			{ SDL_EVENT_GAMEPAD_REMOVED,		RTTI_OF(nap::ControllerConnectionEvent) },			//< TODO: Check if these are backwards compatible / work
+			{ SDL_EVENT_GAMEPAD_ADDED,			RTTI_OF(nap::ControllerConnectionEvent) },			//< TODO: Check if these are backwards compatible / work
 		};
 		return sdl_controller_map;
 	}
@@ -361,6 +368,19 @@ namespace nap
 		auto pos = getSDLKeyCodeMap().find(key);
 		return pos != getSDLKeyCodeMap().end() ? pos->second :
 			nap::EKeyCode::KEY_UNKNOWN;
+	}
+
+
+	/**
+	 * Helper function to convert an SDL KeyCode to nap KeyCode
+	 */
+	static nap::uint8 toNapKeyModifier(SDL_Keymod mods)
+	{
+		nap::uint8 nap_key_mod = 0;
+		nap_key_mod |= (mods & SDL_KMOD_SHIFT)	> 0 ? static_cast<nap::uint8>(nap::EKeyModifier::Shift)		: 0;
+		nap_key_mod |= (mods & SDL_KMOD_ALT)	> 0 ? static_cast<nap::uint8>(nap::EKeyModifier::Alt)		: 0;
+		nap_key_mod |= (mods & SDL_KMOD_CTRL)	> 0 ? static_cast<nap::uint8>(nap::EKeyModifier::Control)	: 0;
+		return nap_key_mod;
 	}
 
 
@@ -396,17 +416,17 @@ namespace nap
 	{
 		switch (axis)
 		{
-		case SDL_CONTROLLER_AXIS_LEFTX:
+		case SDL_GAMEPAD_AXIS_LEFTX:
 			return EControllerAxis::LEFT_X;
-		case SDL_CONTROLLER_AXIS_LEFTY:
+		case SDL_GAMEPAD_AXIS_LEFTY:
 			return EControllerAxis::LEFT_Y;
-		case SDL_CONTROLLER_AXIS_RIGHTX:
+		case SDL_GAMEPAD_AXIS_RIGHTX:
 			return EControllerAxis::RIGHT_X;
-		case SDL_CONTROLLER_AXIS_RIGHTY:
+		case SDL_GAMEPAD_AXIS_RIGHTY:
 			return EControllerAxis::RIGHT_Y;
-		case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+		case SDL_GAMEPAD_AXIS_LEFT_TRIGGER:
 			return EControllerAxis::TRIGGER_LEFT;
-		case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+		case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER:
 			return EControllerAxis::TRIGGER_RIGHT;
 		}
 		return EControllerAxis::UNKNOWN;
@@ -417,34 +437,28 @@ namespace nap
 	{
 		switch (button)
 		{
-		case SDL_CONTROLLER_BUTTON_A:
+		case SDL_GAMEPAD_BUTTON_SOUTH:
 			return EControllerButton::A;
-		case SDL_CONTROLLER_BUTTON_B:
+		case SDL_GAMEPAD_BUTTON_EAST:
 			return EControllerButton::B;
-		case SDL_CONTROLLER_BUTTON_X:
+		case SDL_GAMEPAD_BUTTON_WEST:
 			return EControllerButton::X;
-		case SDL_CONTROLLER_BUTTON_Y:
+		case SDL_GAMEPAD_BUTTON_NORTH:
 			return EControllerButton::Y;
-		case SDL_CONTROLLER_BUTTON_BACK:
-			return EControllerButton::BACK;
-		case SDL_CONTROLLER_BUTTON_START:
+		case SDL_GAMEPAD_BUTTON_START:
 			return EControllerButton::START;
-		case SDL_CONTROLLER_BUTTON_LEFTSTICK:
+		case SDL_GAMEPAD_BUTTON_BACK:
+			return EControllerButton::BACK;
+		case SDL_GAMEPAD_BUTTON_LEFT_STICK:
 			return EControllerButton::LEFT_STICK;
-		case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
+		case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
 			return EControllerButton::RIGHT_STICK;
-		case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+		case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
 			return EControllerButton::LEFT_SHOULDER;
-		case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+		case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
 			return EControllerButton::RIGHT_SHOULDER;
-		case SDL_CONTROLLER_BUTTON_DPAD_UP:
-			return EControllerButton::DPAD_UP;
-		case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-			return EControllerButton::DPAD_DOWN;
-		case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-			return EControllerButton::DPAD_RIGHT;
-		case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-			return EControllerButton::DPAD_LEFT;
+		default:
+			break;
 		}
 		return EControllerButton::UNKNOWN;
 	}
@@ -466,15 +480,15 @@ namespace nap
 		InputEvent* mouse_event = nullptr;
 		switch (sdlType)
 		{
-		case SDL_MOUSEWHEEL:
+		case SDL_EVENT_MOUSE_WHEEL:
 		{
 			int dix = static_cast<int>(sdlEvent.wheel.x);
 			int diy = static_cast<int>(sdlEvent.wheel.y);
 			mouse_event = eventType.create<InputEvent>({ dix, diy, window_id });
 			break;
 		}
-		case SDL_MOUSEBUTTONUP:
-		case SDL_MOUSEBUTTONDOWN:
+		case SDL_EVENT_MOUSE_BUTTON_UP:
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		{
 			// Get position
 			int sx, sy;
@@ -485,7 +499,7 @@ namespace nap
 			mouse_event = eventType.create<InputEvent>({ px, py, toNapPointerButton(sdlEvent.button.button), window_id, toNapPointerSource(sdlEvent.motion.which)});
 			break;
 		}
-		case SDL_MOUSEMOTION:
+		case SDL_EVENT_MOUSE_MOTION:
 		{
 			// Get position
 			int sx, sy;
@@ -532,14 +546,14 @@ namespace nap
 		}
 
 		// Touch identifiers
-		int fid = static_cast<int>(sdlEvent.tfinger.fingerId);
-		int tid = static_cast<int>(sdlEvent.tfinger.touchId);
+		int fid = static_cast<int>(sdlEvent.tfinger.fingerID);
+		int tid = static_cast<int>(sdlEvent.tfinger.touchID);
 
 		InputEvent* touch_event = nullptr;
 		switch (sdlType)
 		{
-			case SDL_FINGERDOWN:
-			case SDL_FINGERUP:
+			case SDL_EVENT_FINGER_DOWN:
+			case SDL_EVENT_FINGER_UP:
 			{
 				touch_event = eventType.create<InputEvent>(
 					{
@@ -551,7 +565,7 @@ namespace nap
 					});
 				break;
 			}
-			case SDL_FINGERMOTION:
+			case SDL_EVENT_FINGER_MOTION:
 			{
 				float dx =  sdlEvent.tfinger.dx;
 				float dy = -sdlEvent.tfinger.dy;
@@ -581,17 +595,17 @@ namespace nap
 		InputEvent* controller_event = nullptr;
 		switch (sdlType)
 		{
-		case SDL_CONTROLLERAXISMOTION:
+		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
 		{
-			int id = mService.getControllerNumber(sdlEvent.caxis.which);
-			nap::EControllerAxis axis = toNapAxis(sdlEvent.caxis.axis);
-			double v = math::fit<double>((double)(sdlEvent.caxis.value),
+			int id = mService.getControllerNumber(sdlEvent.gaxis.which);
+			nap::EControllerAxis axis = toNapAxis(sdlEvent.gaxis.axis);
+			double v = math::fit<double>((double)(sdlEvent.gaxis.value),
 				(double)(SDL_JOYSTICK_AXIS_MIN),
 				(double)(SDL_JOYSTICK_AXIS_MAX), -1.0, 1.0);
 			controller_event = eventType.create<InputEvent>({ id, axis, static_cast<int>(axis), v });
 			break;
 		}
-		case SDL_JOYAXISMOTION:
+		case SDL_EVENT_JOYSTICK_AXIS_MOTION:
 		{
 			// Don't translate a joystick axis event when the joystick is a controller
 			// SDL generates 2 events for the same device if the device is both a joystick and controller
@@ -607,16 +621,16 @@ namespace nap
 			controller_event = eventType.create<InputEvent>({ id, EControllerAxis::UNKNOWN, static_cast<int>(axisID), v });
 			break;
 		}
-		case SDL_CONTROLLERBUTTONDOWN:
-		case SDL_CONTROLLERBUTTONUP:
+		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+		case SDL_EVENT_GAMEPAD_BUTTON_UP:
 		{
-			int id = mService.getControllerNumber(sdlEvent.cbutton.which);
-			nap::EControllerButton btn = toNapButton(sdlEvent.cbutton.button);
+			int id = mService.getControllerNumber(sdlEvent.button.which);
+			nap::EControllerButton btn = toNapButton(sdlEvent.button.button);
 			controller_event = eventType.create<InputEvent>({ id, btn, static_cast<int>(btn) });
 			break;
 		}
-		case SDL_JOYBUTTONDOWN:
-		case SDL_JOYBUTTONUP:
+		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+		case SDL_EVENT_JOYSTICK_BUTTON_UP:
 		{
 			// Don't translate a joystick button event when the joystick is a controller
 			// SDL generates 2 events for the same device if the device is both a joystick and controller
@@ -629,13 +643,13 @@ namespace nap
 			controller_event = eventType.create<InputEvent>({ id, nap::EControllerButton::UNKNOWN, btn_id });
 			break;
 		}
-		case SDL_JOYDEVICEREMOVED:
+		case SDL_EVENT_JOYSTICK_REMOVED:
 		{
 			int id = mService.getControllerNumber(sdlEvent.jdevice.which);
 			controller_event = eventType.create<InputEvent>({ id, false });
 			break;
 		}
-		case SDL_JOYDEVICEADDED:
+		case SDL_EVENT_JOYSTICK_ADDED:
 		{
 			int id = static_cast<int>(sdlEvent.jdevice.which);
 			controller_event = eventType.create<InputEvent>({ id, true });
@@ -660,15 +674,16 @@ namespace nap
 		InputEvent* key_event = nullptr;
 		switch (sdlType)
 		{
-		case SDL_TEXTINPUT:
+		case SDL_EVENT_TEXT_INPUT:
 		{
 			key_event = eventType.create<InputEvent>({ std::string(sdlEvent.text.text), window_id });
 			break;
 		}
-		case SDL_KEYDOWN:
-		case SDL_KEYUP:
+		case SDL_EVENT_KEY_DOWN:
+		case SDL_EVENT_KEY_UP:
 		{
-			key_event = eventType.create<InputEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
+			key_event = eventType.create<InputEvent>({ toNapKeyCode(sdlEvent.key.key),
+				toNapKeyModifier(sdlEvent.key.mod),  window_id });
 			break;
 		}
 		default:
@@ -819,7 +834,7 @@ namespace nap
 	{
 		// Get the binding and create correct event
 		// If the event can't be located there's no valid event mapping 
-		auto window_it = getSDLWindowMap().find(sdlEvent.window.event);
+		auto window_it = getSDLWindowMap().find(sdlEvent.window.type);
 		assert(window_it != getSDLWindowMap().end());
 
 		// When destroying a window (for example, during real time editing), we still get events for the destroyed window, after it has already been destroyed
@@ -846,7 +861,6 @@ namespace nap
 
 	bool SDLEventConverter::isWindowEvent(SDL_Event& sdlEvent) const
 	{
-		return sdlEvent.type == SDL_WINDOWEVENT &&
-			getSDLWindowMap().find(sdlEvent.window.event) != getSDLWindowMap().end();
+		return getSDLWindowMap().find(sdlEvent.type) != getSDLWindowMap().end();
 	}
 }

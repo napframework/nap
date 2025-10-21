@@ -1,5 +1,0 @@
-include(CMakeFindDependencyMacro)
-find_dependency(SPIRV-Tools)
-include(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools-lintTargets.cmake)
-set(SPIRV-Tools-lint_LIBRARIES SPIRV-Tools-lint)
-get_target_property(SPIRV-Tools-lint_INCLUDE_DIRS SPIRV-Tools-lint INTERFACE_INCLUDE_DIRECTORIES)

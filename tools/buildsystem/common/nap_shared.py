@@ -15,7 +15,6 @@ SOLUTION_INFO_FILENAME = 'solution_info.json'
 
 DEFAULT_BUILD_DIR = 'build'
 LINUX_BUILD_DIR = DEFAULT_BUILD_DIR
-MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
 
 # Keys for entries in app.json and module.json
@@ -25,9 +24,8 @@ CFG_KEY_MODULES = 'Modules'
 class Platform(Enum):
     """Platform Enum"""
     Windows = 1,
-    macOS   = 2,
-    Linux   = 3,
-    Unknown = 4
+    Linux   = 2,
+    Unknown = 3
 
     """The current platform"""
     @staticmethod
@@ -36,8 +34,6 @@ class Platform(Enum):
             return Platform.Linux
         if platform.startswith('win32'):
             return Platform.Windows
-        if platform.startswith('darwin'):
-            return Platform.macOS
         return Platform.Unknown
 
 class BuildType(Enum):
@@ -84,8 +80,6 @@ def get_default_build_dir_name():
     """Return platform specific build directory name"""
     if Platform.get() == Platform.Linux:
         return LINUX_BUILD_DIR
-    if Platform.get() == Platform.macOS:
-        return MACOS_BUILD_DIR
     if Platform.get() == Platform.Windows:
         return MSVC_BUILD_DIR
     return DEFAULT_BUILD_DIR
@@ -121,8 +115,6 @@ def get_system_generator():
 
     if Platform.get() == Platform.Linux:
         return Generator("Unix Makefiles", False)
-    if Platform.get() == Platform.macOS:
-        return Generator("Xcode", True)
     if Platform.get() == Platform.Windows:
         return Generator(get_visual_studio_generator(), True)
 
@@ -263,8 +255,6 @@ def get_cmake_path():
     cmake_root = os.path.join(nap_root, 'thirdparty', 'cmake')
     if sys.platform.startswith('linux'):
         cmake = os.path.join(cmake_root, 'linux', get_build_arch(), 'bin', 'cmake')
-    elif sys.platform == 'darwin':
-        cmake = os.path.join(cmake_root, 'macos', 'x86_64', 'bin', 'cmake')
     else:
         cmake = os.path.join(cmake_root, 'msvc', 'x86_64', 'bin', 'cmake.exe')
     return cmake
@@ -315,8 +305,6 @@ def get_python_path():
     python_dir = os.path.join(nap_root, 'thirdparty', 'python')
     if sys.platform.startswith('linux'):
         python = os.path.join(python_dir, 'linux', get_build_arch(), 'bin', 'python3')
-    elif sys.platform == 'darwin':
-        python = os.path.join(python_dir, 'macos', 'x86_64', 'bin', 'python3')
     else:
         python = os.path.join(python_dir, 'msvc', 'x86_64', 'python')
     return python
@@ -325,8 +313,6 @@ def get_platform_name():
     """Get display-friendly platform name"""
     if sys.platform.startswith('linux'):
         return 'Linux'
-    elif sys.platform == 'darwin':
-        return 'macOS'
     else:
         return 'Windows'
 

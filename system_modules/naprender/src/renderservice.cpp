@@ -17,9 +17,10 @@
 #include "texture.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
-#include "sdlhelpers.h"
 #include "shaderconstant.h"
 #include "renderlayer.h"
+#include "bitmap.h"
+#include "sdlhelpers.h"
 
 // External Includes
 #include <nap/core.h>
@@ -65,25 +66,6 @@ namespace nap
 		mPosition = window.getPosition();
 		mSize = window.getSize();
 	}
-
-
-	/**
-	 * Used by the render service to temporarily bind and destroy information.
-	 * This information is required by the render service (on initialization) to extract
-	 * all required Vulkan surface extensions and select a queue that can present images,
-	 * next to render and transfer functionality.
-	 */
-	struct DummyWindow
-	{
-		~DummyWindow()
-		{
-			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
-			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
-		}
-		SDL_Window*	mWindow = nullptr;
-		VkInstance	mInstance = VK_NULL_HANDLE;
-		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
-	};
 }
 
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
@@ -96,13 +78,13 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration, "Render service configuration")
 	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default, "Render without a window, turning this on `forbids` the use of a nap::RenderWindow")
+	RTTI_PROPERTY("VideoDriver",				&nap::RenderServiceConfiguration::mVideoDriver,					nap::rtti::EPropertyMetaData::Default, "The video back-end to use, defaults to system preference")
 	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default, "The preferred GPU type, when unavailable the fastest option is selected")
 	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default, "Vulkan layers the engine tries to load in Debug mode, layers are disabled in release mode.")
 	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default, "Additional required Vulkan device extensions")
 	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default, "The major required vulkan API instance version")
 	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default, "The minor required vulkan API instance version")
 	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default, "Default max number of anisotropic filter samples, can be overridden by a sampler if required")
-	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default, "Enable high DPI scaling and rendering")
 	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mEnableCompute,				nap::rtti::EPropertyMetaData::Default, "Ensures Vulkan compute is supported")
 	RTTI_PROPERTY("EnableCaching",				&nap::RenderServiceConfiguration::mEnableCaching,				nap::rtti::EPropertyMetaData::Default, "Saves state between sessions, including window size & position")
 	RTTI_PROPERTY("EnableDebug",				&nap::RenderServiceConfiguration::mEnableDebug,					nap::rtti::EPropertyMetaData::Default, "Load debug extension for printing Vulkan debug messages")
@@ -508,21 +490,26 @@ namespace nap
 	}
 
 
-	static bool getSurfaceInstanceExtensions(SDL_Window* window, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	static bool getSurfaceInstanceExtensions(std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
 	{
 		// Figure out the amount of extensions vulkan needs to interface with the os windowing system 
 		// This is necessary because vulkan is a platform agnostic API and needs to know how to interface with the windowing system
 		unsigned int ext_count = 0;
-		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, nullptr) == SDL_TRUE, "Unable to find any valid SDL Vulkan instance extensions, is the Vulkan driver installed?"))
-			return false;
+		auto ext_names = SDL_Vulkan_GetInstanceExtensions(&ext_count);
 
-		// Use the amount of extensions queried before to retrieve the names of the extensions
-		std::vector<const char*> ext_names(ext_count);
-		if (!errorState.check(SDL_Vulkan_GetInstanceExtensions(window, &ext_count, ext_names.data()) == SDL_TRUE, "Unable to get the number of SDL Vulkan extension names"))
+		// Bail if query failed
+		assert(ext_names != nullptr);
+		if (!errorState.check(ext_names != nullptr,
+			"Unable to find any SDL Vulkan surface extensions, is the Vulkan driver installed?"))
+		{
+			errorState.fail(SDL_GetError());
 			return false;
+		}
+			
 
 		// Store
-		for (unsigned int i = 0; i < ext_count; i++)
+		outExtensions.reserve(ext_count);
+		for (auto i = 0; i < ext_count; i++)
 			outExtensions.emplace_back(ext_names[i]);
 		return true;
 	}
@@ -533,8 +520,9 @@ namespace nap
 	 */
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
-		// Use SDL to create the surface
-		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL");
+		// TODO: Use system allocator
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, NULL, &outSurface),
+			"Unable to create Vulkan compatible surface using SDL");
 	}
 
 
@@ -1022,8 +1010,8 @@ namespace nap
 			{
 				color_blend_attachment_state.blendEnable = VK_TRUE;
 				color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-				color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-				color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+				color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+				color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 				color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
 				break;
 			}
@@ -1290,6 +1278,71 @@ namespace nap
 	}
 
 
+	/**
+	 * Get or create default nap window icon, thread safe.
+	 * @return window icon if found and loaded, nullptr otherwise.
+	 */
+	static SDL_Surface* getOrCreateDefaultWindowIcon(const nap::Module& renderModule)
+	{
+		static SDL::SurfacePtr windowIcon = nullptr; std::once_flag created;
+		std::call_once(created, [&renderModule]
+			{
+				// Get icon asset path
+				static constexpr const char* icon_name = "nap_icon.png";
+				auto asset_path = renderModule.findAsset(icon_name);
+
+				// Create icon if image exists
+				utility::ErrorState error;
+				if (error.check(!asset_path.empty(), "Unable to find '%s'", icon_name))
+					windowIcon = SDL::createSurface(asset_path, error);
+
+				// Log all errors
+				if (error.hasErrors())
+					Logger::error(error.toString());
+			}
+		);
+		return windowIcon.get();
+	}
+
+
+	/**
+	 * Used by the render service to temporarily bind and destroy vulkan surface information.
+	 * This information is required by the render service (on initialization) to extract
+	 * all required Vulkan surface extensions and select a queue that can present images,
+	 * next to render and transfer functionality.
+	 */
+	struct DummySurface
+	{
+		// Constructor
+		DummySurface(VkInstance instance) : mInstance(instance) {}
+
+		// Create surface using new temporary window handle
+		bool init(utility::ErrorState& error)
+		{
+			mWindow = SDL_CreateWindow("Dummy", 16, 16, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			if (error.check(mWindow != nullptr, "Failed to create temporary SDL window"))
+				return createSurface(mWindow, mInstance, mSurface, error);
+			return false;
+		}
+
+		// Create surface from external window handle
+		bool init(SDL_Window* windowHandle, utility::ErrorState& error)
+		{
+			return createSurface(windowHandle, mInstance, mSurface, error);
+		}
+
+		~DummySurface()
+		{
+			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
+			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
+		}
+
+		SDL_Window*	mWindow = nullptr;
+		VkInstance	mInstance = VK_NULL_HANDLE;
+		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service
 	//////////////////////////////////////////////////////////////////////////
@@ -1307,17 +1360,28 @@ namespace nap
 	}
 
 
-	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
+	void RenderService::addWindow(RenderWindow& window)
 	{
-		// Attempt to restore cached settings
-		if (mEnableCaching)
+		if (!window.isEmbedded())
+		{
+			// Set default window icon
+			auto* window_icon = getOrCreateDefaultWindowIcon(getModule());
+			if (window_icon != nullptr && !SDL_SetWindowIcon(window.getNativeWindow(), window_icon))
+			{
+				Logger::error("Unable to set '%s' icon: %s",
+					window.mID.c_str(), SDL::getSDLError().c_str());
+			}
+
+			// Enable text input
+			SDL::enableTextInput(window.getNativeWindow());
+
+			// Attempt to restore cached settings
 			restoreWindow(window);
+		}
 
 		// Add and notify listeners
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
-
-		return true;
 	}
 
 
@@ -1353,31 +1417,21 @@ namespace nap
 	}
 
 
-	const nap::Display* RenderService::findDisplay(int index) const
+	Display RenderService::findDisplay(int index) const
 	{
-		auto found_it = std::find_if(mDisplays.begin(), mDisplays.end(), [&](const auto& it)
-		{
-			return it.getIndex() == index;
-		});
-		return found_it == mDisplays.end() ? nullptr : &(*found_it);
+		return index >= 0 ? Display(index) : Display();
 	}
 
 
-	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window) const
+	Display RenderService::findDisplay(const nap::RenderWindow& window) const
 	{
 		return findDisplay(SDL::getDisplayIndex(window.getNativeWindow()));
 	}
 
 
-	const nap::DisplayList& RenderService::getDisplays() const
-	{
-		return mDisplays;
-	}
-
-
 	int RenderService::getDisplayCount() const
 	{
-		return mDisplays.size();
+		return SDL::getDisplayCount();
 	}
 
 
@@ -1657,22 +1711,22 @@ namespace nap
 		SurfaceDescriptor settings = { 1, 1, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
 		mEmptyTexture2D = std::make_unique<Texture2D>(getCore());
 		mEmptyTexture2D->mID = utility::stringFormat("%s_EmptyTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mEmptyTexture2D->init(settings, false, 0, errorState))
+		if (!mEmptyTexture2D->init(settings, Texture2D::EUsage::Internal, 1, glm::zero<glm::vec4>(), 0, errorState))
 			return false;
 
 		mEmptyTextureCube = std::make_unique<TextureCube>(getCore());
 		mEmptyTextureCube->mID = utility::stringFormat("%s_EmptyTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mEmptyTextureCube->init(settings, false, glm::zero<glm::vec4>(), 0, errorState))
+		if (!mEmptyTextureCube->init(settings, 1, glm::zero<glm::vec4>(), 0, errorState))
 			return false;
 
 		mErrorTexture2D = std::make_unique<Texture2D>(getCore());
 		mErrorTexture2D->mID = utility::stringFormat("%s_ErrorTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mErrorTexture2D->init(settings, false, mErrorColor.toVec4(), 0, errorState))
+		if (!mErrorTexture2D->init(settings, Texture2D::EUsage::Internal, 1, mErrorColor.toVec4(), 0, errorState))
 			return false;
 
 		mErrorTextureCube = std::make_unique<TextureCube>(getCore());
 		mErrorTextureCube->mID = utility::stringFormat("%s_ErrorTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mErrorTextureCube->init(settings, false, mErrorColor.toVec4(), 0, errorState))
+		if (!mErrorTextureCube->init(settings, 1, mErrorColor.toVec4(), 0, errorState))
 			return false;
 
 		return true;
@@ -1681,6 +1735,94 @@ namespace nap
 
 	// Set the currently active renderer
 	bool RenderService::init(nap::utility::ErrorState& errorState)
+	{
+		// Attempt to initialize SDL video subsystem if not yet available
+		// TODO: Try to find a more clean, optimized way of handling this.
+		if (!SDL::videoInitialized())
+		{
+			auto* config = getConfiguration<RenderServiceConfiguration>();
+			mSDLInitialized = SDL::initVideo(config->mVideoDriver, errorState);
+			if (!errorState.check(mSDLInitialized, "Failed to init video subsystem"))
+				return false;
+		}
+
+		// Store selected video back-end
+		mVideoDriver = fromString(SDL::getCurrentVideoDriver());
+		Logger::info("Video backend: %s", toString(mVideoDriver).c_str());
+
+		// Initialize engine
+		return initEngine(errorState);
+	}
+
+
+	bool RenderService::initShaderCompilation(utility::ErrorState& error)
+	{
+		// Initialize shader compilation
+		mShInitialized = ShInitialize() != 0;
+		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
+			return false;
+
+		// Get available debug instance extensions, notify when not all could be found
+		std::vector<std::string> required_instance_extensions;
+		bool is_debug_utils_found = false;
+		if (!error.check(getDebugInstanceExtensions(is_debug_utils_found, required_instance_extensions, error), "Failed to find available debug extension while debug is enabled"))
+			return false;
+
+		// Get available vulkan layer extensions, notify when not all could be found
+		std::vector<std::string> found_layers;
+		auto* render_config = getConfiguration<RenderServiceConfiguration>();
+#ifndef NDEBUG
+		// Get all available vulkan layers
+		const std::vector<std::string>& requested_layers = render_config->mLayers;
+		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
+			return false;
+
+		// Warn when not all requested layers could be found
+		if (found_layers.size() != requested_layers.size())
+			nap::Logger::warn("Not all requested Vulkan layers were found");
+
+		// Print the ones we're enabling
+		for (const auto& layer : found_layers)
+			Logger::info("Applying layer: %s", layer.c_str());
+#endif // NDEBUG
+
+		// Create Vulkan Instance together with required extensions and layers
+		mAPIVersion = VK_MAKE_API_VERSION(0,render_config->mVulkanVersionMajor,render_config->mVulkanVersionMinor,0);
+		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
+			return false;
+
+		// Set Vulkan messaging callback based on the available debug messaging extension
+		if (is_debug_utils_found)
+			setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, error);
+		else
+			setupDebugCallback(mInstance, mDebugCallback, error);
+
+		// Get the preferred physical device to select
+		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
+
+		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
+		VkQueueFlags req_queue_capabilities = getQueueFlags(false);
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, VK_NULL_HANDLE, req_queue_capabilities, mPhysicalDevice, error))
+			return false;
+
+		// Get extensions that are required for NAP render engine to function.
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
+
+		// Create unique set
+		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
+		for (const auto& ext : required_ext_names)
+			unique_ext_names.emplace(ext);
+
+		// Create a logical device that interfaces with the physical device.
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, false, false, mDevice, error))
+			return false;
+
+		mInitialized = true;
+		return true;
+	}
+
+
+	bool RenderService::initEngine(utility::ErrorState& errorState)
 	{
 		// Get handle to scene service
 		mSceneService = getCore().getService<SceneService>();
@@ -1692,43 +1834,25 @@ namespace nap
 		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
 		mHeadless = render_config->mHeadless;
 
-		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
-		mEnableHighDPIMode = render_config->mEnableHighDPIMode && !mHeadless;
-
 		// Check if we need to cache state between sessions
 		mEnableCaching = render_config->mEnableCaching;
 
 #ifdef _WIN32
-		if (mEnableHighDPIMode)
+
+		// Make process dpi aware
+		if (!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
+			"Unable to make process DPI aware"))
 		{
-			// Make process dpi aware
-			if(!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
-				"Unable to make process DPI aware"))
-			{
-				return false;
-			}
+			return false;
 		}
 #endif // _WIN32
 
-		// Metal limits sampler descriptors per shader to 16 by default. Here we explicitly unlock this limitation.
-#if defined(__APPLE__)
-		setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", 1);
-#endif // __APPLE__
-
-		// Initialize SDL video
-		mSDLInitialized = SDL::initVideo(errorState);
-		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
-			return false;
-
 		// Add displays
-		for (int i = 0; i < SDL::getDisplayCount(); i++)
+		for (const auto& display : SDL::getDisplays())
 		{
-			auto it = mDisplays.emplace_back(Display(i));
-			nap::Logger::info(it.toString());
-			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
-			{
+			if (!errorState.check(display.isValid(), "Display: %d, unable to extract required information"))
 				return false;
-			}
+			nap::Logger::info(display.toString());
 		}
 
 		// Initialize shader compilation
@@ -1736,10 +1860,6 @@ namespace nap
 		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
 
-		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
-		// Allows for easy destruction of previously created and assigned resources when initialization fails.
-		DummyWindow dummy_window;
-		
 		// Get available vulkan instance extensions using SDL.
 		// Returns, next to the default VK_KHR_surface, a platform specific extension.
 		// These extensions have to be enabled in order to create a swapchain and a handle to a presentable surface.
@@ -1747,14 +1867,9 @@ namespace nap
 		std::vector<std::string> instance_extensions;
 		if (!mHeadless)
 		{
-			// Create dummy window and verify creation
-			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
-				return false;
-			
 			// Get all available vulkan instance extensions, required to create a presentable surface.
 			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
-			if (!getSurfaceInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
+			if (!getSurfaceInstanceExtensions(instance_extensions, errorState))
 				return false;
 		}
 
@@ -1778,7 +1893,7 @@ namespace nap
 
 		// Warn when not all requested layers could be found
 		if (found_layers.size() != requested_layers.size())
-			nap::Logger::warn("Not all requested layers were found");
+			nap::Logger::warn("Not all requested Vulkan layers were found");
 
 		// Print the ones we're enabling
 		for (const auto& layer : found_layers)
@@ -1795,16 +1910,22 @@ namespace nap
 		{
 			if (is_debug_utils_found)
 				setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, errorState);
-			else 
+			else
 				setupDebugCallback(mInstance, mDebugCallback, errorState);
 		}
 
-		// Create presentation surface if not running headless. Can only do this after creation of instance.
-		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
+		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
+		// Allows for easy destruction of previously created and assigned resources when initialization fails.
+		DummySurface dummy_surface(mInstance);
 		if (!mHeadless)
 		{
-			dummy_window.mInstance = mInstance;
-			if (!createSurface(dummy_window.mWindow, mInstance, dummy_window.mSurface, errorState))
+			// Create surface based on new or existing window
+			auto available = render_config->mWindowHandle != nullptr ?
+				dummy_surface.init(reinterpret_cast<SDL_Window*>(render_config->mWindowHandle), errorState) :
+				dummy_surface.init(errorState);
+
+			// Make sure it's available
+			if (!available)
 				return false;
 		}
 
@@ -1815,7 +1936,7 @@ namespace nap
 		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mEnableCompute);
 
 		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_surface.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify
@@ -1842,7 +1963,7 @@ namespace nap
 
 		// Add additional requests
 		required_ext_names.insert(required_ext_names.end(), render_config->mAdditionalExtensions.begin(), render_config->mAdditionalExtensions.end());
-		
+
 		// Create unique set
 		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
 		for (const auto& ext : required_ext_names)
@@ -1868,8 +1989,8 @@ namespace nap
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
 		allocatorInfo.device = mDevice;
-        allocatorInfo.vulkanApiVersion = mAPIVersion;
-        allocatorInfo.instance = mInstance;
+		allocatorInfo.vulkanApiVersion = mAPIVersion;
+		allocatorInfo.instance = mInstance;
 
 		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
 			return false;
@@ -1880,7 +2001,7 @@ namespace nap
 		// Initialize an empty texture. This texture is used as the default for any samplers that don't have a texture bound to them in the data.
 		if (!initEmptyTextures(errorState))
 			return false;
-		
+
 		mFramesInFlight.resize(getMaxFramesInFlight());
 		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
 		{
@@ -1911,72 +2032,6 @@ namespace nap
 			ini_error.fail("Unable to load: %s", getIniFilePath().c_str());
 			nap::Logger::warn(errorState.toString());
 		}
-
-		mInitialized = true;
-		return true;
-	}
-
-
-	bool RenderService::initShaderCompilation(utility::ErrorState& error)
-	{
-		// Initialize shader compilation
-		mShInitialized = ShInitialize() != 0;
-		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
-			return false;
-
-		// Get available debug instance extensions, notify when not all could be found
-		std::vector<std::string> required_instance_extensions;
-		bool is_debug_utils_found = false;
-		if (!error.check(getDebugInstanceExtensions(is_debug_utils_found, required_instance_extensions, error), "Failed to find available debug extension while debug is enabled"))
-			return false;
-
-		// Get available vulkan layer extensions, notify when not all could be found
-		std::vector<std::string> found_layers;
-#ifndef NDEBUG
-		// Get all available vulkan layers
-		const std::vector<std::string>& requested_layers = { "VK_LAYER_KHRONOS_validation" };
-		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
-			return false;
-
-		// Warn when not all requested layers could be found
-		if (found_layers.size() != requested_layers.size())
-			nap::Logger::warn("Not all requested layers were found");
-
-		// Print the ones we're enabling
-		for (const auto& layer : found_layers)
-			Logger::info("Applying layer: %s", layer.c_str());
-#endif // NDEBUG
-
-		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_API_VERSION_1_0;
-		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
-			return false;
-
-		// Set Vulkan messaging callback based on the available debug messaging extension
-		if (is_debug_utils_found)
-			setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, error);
-		else
-			setupDebugCallback(mInstance, mDebugCallback, error);
-
-		// Get the preferred physical device to select
-		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete);
-
-		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
-		VkQueueFlags req_queue_capabilities = getQueueFlags(false);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, VK_NULL_HANDLE, req_queue_capabilities, mPhysicalDevice, error))
-			return false;
-
-		// Get extensions that are required for NAP render engine to function.
-		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
-
-		// Create unique set
-		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
-		for (const auto& ext : required_ext_names)
-			unique_ext_names.emplace(ext);
-
-		// Create a logical device that interfaces with the physical device.
-		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, false, false, mDevice, error))
-			return false;
 
 		mInitialized = true;
 		return true;
@@ -2088,7 +2143,7 @@ namespace nap
 
 			// If ID matches, ensure the window doesn't fall out of display bounds.
 			// If window falls within bounds, restore.
-			for (const auto& display : mDisplays)
+			for (const auto& display : getDisplays())
 			{
 				auto& min = display.getMin();
 				auto& max = display.getMax();
@@ -2554,7 +2609,7 @@ namespace nap
 	}
 
 
-	void RenderService::endFrame()	
+	void RenderService::endFrame()
 	{
 		// Acquire current frame
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
@@ -2633,7 +2688,7 @@ namespace nap
 	bool RenderService::beginRecording(RenderWindow& renderWindow)
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
-		assert(mCurrentRenderWindow  == VK_NULL_HANDLE);
+		assert(mCurrentRenderWindow  == nullptr);
 
 		// Ask the window to begin recording commands.
 		mCurrentCommandBuffer = renderWindow.beginRecording();
@@ -2648,12 +2703,12 @@ namespace nap
 	void RenderService::endRecording()
 	{
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
-		assert(mCurrentRenderWindow  != VK_NULL_HANDLE);
+		assert(mCurrentRenderWindow  != nullptr);
 		
 		// Stop recording, submit queue and ask for presentation
 		mCurrentRenderWindow->endRecording();
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
-		mCurrentRenderWindow  = VK_NULL_HANDLE;
+		mCurrentRenderWindow  = nullptr;
 	}
 
 
@@ -2709,7 +2764,7 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
-		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
+		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
  		assert(result == VK_SUCCESS);
 
 		// Set the compute bit of queue submit ops of the current frame
@@ -2872,6 +2927,27 @@ namespace nap
 	}
 
 
+	bool RenderService::getMipSupport(const SurfaceDescriptor& descriptor) const
+	{
+		// Get format properties
+		VkFormatProperties properties;
+		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), utility::getTextureFormat(descriptor), &properties);
+		return (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) > 0;
+	}
+
+
+	std::vector<Display> RenderService::getDisplays() const
+	{
+		return SDL::getDisplays();
+	}
+
+
+	std::vector<RenderWindow*> RenderService::getWindows() const
+	{
+		return mWindows;
+	}
+
+
 	RenderService::UniqueMaterial::UniqueMaterial(std::unique_ptr<Shader> shader, std::unique_ptr<Material> material) :
 		mShader(std::move(shader)), mMaterial(std::move(material))
 	{ }
@@ -2887,34 +2963,5 @@ namespace nap
 		mDevice(device), mProperties(properties), mQueueCapabilities(queueCapabilities), mQueueIndex(queueIndex)
 	{
 		vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
-	}
-
-
-	nap::Display::Display(int index) : mIndex(index)
-	{
-		assert(index < SDL::getDisplayCount());
-		SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
-		SDL::getDisplayName(index, mName);
-		mValid = SDL::getDisplayBounds(index, mMin, mMax) == 0;
-	}
-
-
-	std::string nap::Display::toString() const
-	{
-		return utility::stringFormat
-		(
-			"Display: %d, %s, ddpi: %.1f, hdpi: %.1f, vdpi: %.1f, min: %d-%d, max: %d-%d",
-			mIndex,
-			mName.c_str(),
-			mDDPI, mHDPI, mVDPI,
-			mMin.x, mMin.y,
-			mMax.x, mMax.y
-		);
-	}
-
-
-	nap::math::Rect nap::Display::getBounds() const
-	{
-		return { glm::vec2(mMin), glm::vec2(mMax) };
 	}
 }

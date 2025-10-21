@@ -10,6 +10,8 @@
 #include "renderutils.h"
 #include "imagedata.h"
 #include "rendertag.h"
+#include "display.h"
+#include "videodriver.h"
 
 // External Includes
 #include <nap/service.h>
@@ -49,7 +51,20 @@ namespace nap
 	class NAPAPI RenderServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
+		friend class RenderService;
 	public:
+		// Default constructor
+		RenderServiceConfiguration() = default;
+
+		/**
+		 * Initialize render service using external window handle.
+		 * This is required when NAP is embedded in another process and doesn't create and manage it's own windows.
+		 * Note that the handle must of type SDL_Surface* !
+		 * @param windowHandle window handle, must be of type SDL_Window*
+		 */
+		RenderServiceConfiguration(void* windowHandle) :
+			mWindowHandle(windowHandle) {  }
+
 		/**
 		 * Supported Vulkan device types in order of preference
 		 */
@@ -63,13 +78,13 @@ namespace nap
 		};
 
 		bool							mHeadless = false;											///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
+		EVideoDriver					mVideoDriver = EVideoDriver::Default;						///< Property: 'VideoDriver' The video back-end to use, defaults to system preference.
 		EPhysicalDeviceType				mPreferredGPU = EPhysicalDeviceType::Discrete;				///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable the fastest GPU  option is selected.
 		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
 		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.
 		uint32							mVulkanVersionMinor = 1;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
 		uint32							mAnisotropicFilterSamples = 8;								///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		bool							mEnableHighDPIMode = true;									///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
 		bool							mEnableCaching = true;										///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
 		bool							mEnableDebug = true;										///< Property: 'EnableDebug' Loads debug extension for printing Vulkan debug messages.
@@ -77,7 +92,10 @@ namespace nap
 		bool							mPrintAvailableLayers = false;								///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool							mPrintAvailableExtensions = false;							///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
 
-		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
+		rtti::TypeInfo					getServiceType() const override								{ return RTTI_OF(RenderService); }
+
+	private:
+		void* mWindowHandle = nullptr;
 	};
 
 
@@ -134,100 +152,6 @@ namespace nap
 		VkQueueFlags				mQueueCapabilities;					///< Capabilities of the selected queue
 		int							mQueueIndex = -1;					///< Queue index
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Display
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Groups together important display information
-	 */
-	class NAPAPI Display final
-	{
-	public:
-		/**
-		 * Extracts display information. Index must be >= 0 && < SDL::getDisplayCount()
-		 * @param index display index
-		 */
-		Display(int index);
-
-		/**
-		 * @return display index
-		 */
-		int getIndex() const { return mIndex; }
-
-		/**
-		 * Returns diagonal dots per inch. 0 if diagonal DPI not available.
-		 * @return diagonal dots per inch. 0 if diagonal DPI not available.
-		 */
-		float getDiagonalDPI() const { return mDDPI; }
-
-		/**
-		 * Returns horizontal dots per inch. 0 if horizontal DPI not available.
-		 * @return horizontal dots per inch. 0 if horizontal DPI not available.
-		 */
-		float getHorizontalDPI() const { return mHDPI; }
-
-		/**
-		 * Returns vertical dots per inch. 0 if vertical DPI not available.
-		 * @return vertical dots per inch. 0 if vertical DPI not available.
-		 */
-		float getVerticalDPI() const { return mVDPI; }
-
-		/**
-		 * Returns display name, empty if not available.
-		 * @return display name, empty if not available.
-		 */
-		const std::string& getName() const { return mName; }
-
-		/**
-		 * @return min location of desktop area of this display, with the primary display located at 0,0
-		 */
-		const glm::ivec2& getMin()	const { return mMin; }
-
-		/**
-		 * @return max location of desktop area of this display, with the primary display located at 0,0
-		 */
-		const glm::ivec2& getMax() const { return mMax; }
-
-		/**
-		 * @return desktop area of this display, with the primary display located at 0,0
-		 */
-		math::Rect getBounds() const;
-
-		/**
-		 * Returns if this display has valid bounds.
-		 * @return if this display has valid bounds.
-		 */
-		bool isValid() const { return mValid; }
-
-		/**
-		 * @return human readable string
-		 */
-		std::string toString() const;
-
-		/**
-		 * @return if two displays are the same based on hardware index.
-		 */
-		bool operator== (const Display& rhs) const							{ return rhs.getIndex() == this->getIndex(); }
-
-		/**
-		 * @return if two displays values are not the same based on hardware index
-		 */
-		bool operator!=(const Display& rhs) const							{ return !(rhs == *this); }
-
-	private:
-		std::string mName;						///< Display name
-		int mIndex = -1;						///< Display index
-		float mDDPI = 96.0f;					///< Diagonal DPI
-		float mHDPI = 96.0f;					///< Horizontal DPI
-		float mVDPI = 96.0f;					///< Vertical DPI
-		glm::ivec2 mMin = { 0, 0 };				///< Min display bound position
-		glm::ivec2 mMax = { 0, 0 };				///< Max display bound position
-		bool mValid = false;					///< If valid after construction
-	};
-	using DisplayList = std::vector<Display>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -555,9 +479,9 @@ namespace nap
 		/**
 		 * Add a new window as target to the render engine.
 		 * @param window the window to add as a valid render target
-		 * @param errorState contains the error message if the window could not be added
 		 */
-		bool addWindow(RenderWindow& window, utility::ErrorState& errorState);
+		void addWindow(RenderWindow& window);
+
 		/**
 		 * Remove a window as a valid target from the render engine.
 		 * @param window the window to remove from the render service
@@ -579,30 +503,34 @@ namespace nap
 		RenderWindow* findWindow(uint id) const;
 
 		/**
-		 * Returns the total number of displays.
-		 * Note that changes to display configuration are not considered when application is running.
+		 * Returns the total number of current connected displays.
 		 * @return total number of displays
 		 */
 		int getDisplayCount() const;
 
 		/**
-		 * Find a display based on the index provided.
-		 * Note that changes to display configuration are not considered when application is running.
+		 * Find the display associated with the given index.
 		 * @param index the number of the display to find
-		 * @return the display, nullptr if not found
+		 * @return the display, invalid display when not available
 		 */
-		const Display* findDisplay(int index) const;
+		Display findDisplay(int index) const;
 
 		/**
 		 * Returns the display that contains the center of the window.
-		 * @return display that contains the center of the window, nullptr if not found
+		 * @return the display, invalid display when not found
 		 */
-		const Display* findDisplay(const nap::RenderWindow& window) const;
+		Display findDisplay(const nap::RenderWindow& window) const;
 
 		/**
+		 * Returns a list of currently connected displays.
 		 * @return all available displays
 		 */
-		const DisplayList& getDisplays() const;
+		std::vector<Display> getDisplays() const;
+
+		/**
+		 * @return all available windows
+		 */
+		std::vector<RenderWindow*> getWindows() const;
 
 		/**
 		 * Add a window event that is processed later, ownership is transferred here.
@@ -744,7 +672,7 @@ namespace nap
 		 * successfull call to: RenderService::beginRecording() and RenderService::endRecording().
 		 * @return the window currently being rendered to, nullptr if not set.
 		 */
-		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != VK_NULL_HANDLE); return mCurrentRenderWindow; }
+		RenderWindow* getCurrentRenderWindow()										{ return mCurrentRenderWindow; }
 
 		/**
 		 * Returns the Vulkan runtime instance.
@@ -846,11 +774,19 @@ namespace nap
 		bool getLargePointsSupported() const										{ return mLargePointsSupported; }
 
 		/**
-		 * Configurable setting.
-		 * When enabled fonts and general scaling is adjusted for high dpi monitors.
-		 * @return if high dpi mode is enabled
+		 * Returns if hardware down-sampling is supported for the given texture type
+		 * @param descriptor texture description
+		 * @return if map-map generation is supported for the given texture type
 		 */
-		bool getHighDPIEnabled() const												{ return mEnableHighDPIMode; }
+		bool getMipSupport(const SurfaceDescriptor& descriptor) const;
+
+		/**
+		 * Deprecated: All nap applications are dpi-aware and scale content accordingly.
+		 * This call is therefore no longer required and always returns true.
+		 * @return true
+		 */
+		[[deprecated]]
+		bool getHighDPIEnabled() const												{ return true; }
 
 		/**
 		 * Returns the (system default) number of anisotropic filter samples.
@@ -984,7 +920,7 @@ namespace nap
 		 * 2 is therefore a good number, where 3 offers only, in most situations, a slight increase in performance.
 		 * This however greatly depends on the application GPU and CPU load.
 		 */
-		int getMaxFramesInFlight() const											{ return 2; }
+		constexpr int getMaxFramesInFlight() const									{ return 2; }
 
 		/**
 		 * Returns the physical device properties for the requested Vulkan format.
@@ -1024,6 +960,26 @@ namespace nap
 		 */
 		uint32 getVulkanVersionMinor() const;
 
+		/**
+		 * Selected video backend, ie: X11, Wayland, Windows etc.
+		 * @return selected video backend, ie: X11, Wayland, Windows etc.
+		 */
+		EVideoDriver getVideoDriver() const { return mVideoDriver; }
+
+		/**
+		 * Initialize the SDL video sub system and render engine -> the service owns the renderer.
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 * Initializes the complete render engine
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		bool initEngine(utility::ErrorState& error);
+		
 		/**
 		 * Initializes GLSL shader compilation and linking.
 		 * Don't call this in your application! Only required by external processes
@@ -1074,13 +1030,6 @@ namespace nap
 		 * Register dependencies, render module depends on scene
 		 */
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-
-		/**
-		 * Initialize the renderer, the service owns the renderer.
-		 * @param errorState contains the error message if the service could not be initialized
-		 * @return if the service has been initialized successfully
-		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * Waits for the device to be idle and deletes queued resources.
@@ -1305,7 +1254,6 @@ namespace nap
 			bool valid() const;
 		};
 
-		bool									mEnableHighDPIMode = true;
 		bool									mEnableCaching = true;
 		bool									mSampleShadingSupported = false;
 		bool									mAnisotropicFilteringSupported = false;
@@ -1314,7 +1262,6 @@ namespace nap
 		bool									mNonSolidFillModeSupported = false;
 		uint32									mAnisotropicSamples = 1;
 		WindowList								mWindows;
-		DisplayList								mDisplays;
 		SceneService*							mSceneService = nullptr;
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
@@ -1378,5 +1325,8 @@ namespace nap
 
 		// Render chains
 		std::vector<const RenderChain*> mRenderChains;
+
+		// Video backend driver
+		EVideoDriver mVideoDriver = EVideoDriver::Unknown;
 	};
 } // nap

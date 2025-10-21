@@ -575,10 +575,10 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 	for (int index = 0; index < type.member_types.size(); ++index)
 	{
 		spirv_cross::SPIRType member_type = compiler.get_type(type.member_types[index]);
+		auto member_size = compiler.get_declared_struct_member_size(type, index);
 
-		std::string name = compiler.get_member_name(type.self, index);
+		auto name = compiler.get_member_name(type.self, index);
 		int absoluteOffset = parentOffset + compiler.type_struct_member_offset(type, index);
-		size_t member_size = compiler.get_declared_struct_member_size(type, index);
 
 		std::string full_path = path + "." + name;
 
@@ -588,12 +588,11 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 		bool is_array = !member_type.array.empty();
 		if (is_array)
 		{
-			int num_elements = member_type.array[0];
-
+			auto num_elements = member_type.array[0];
 			if (member_type.basetype == spirv_cross::SPIRType::Struct)
 			{
-				size_t stride = compiler.type_struct_member_array_stride(type, index);
-				size_t struct_size = compiler.get_declared_struct_size(member_type);
+				auto stride = compiler.type_struct_member_array_stride(type, index);
+				auto struct_size = compiler.get_declared_struct_size(member_type);
 
 				if (descriptorType == nap::EDescriptorType::Storage)
 				{
@@ -603,21 +602,18 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 					// of the ShaderVariableStructBufferDeclaration along with the element stride and count. All that matters is the size of the struct element,
 					// which is already resolved by SPIR-V. Therefore, we do not have to traverse the struct recursively here.
 
-					std::unique_ptr<nap::ShaderVariableStructBufferDeclaration> buffer_declaration = std::make_unique<nap::ShaderVariableStructBufferDeclaration>(name, absoluteOffset, member_size, stride, num_elements);
-					std::unique_ptr<nap::ShaderVariableStructDeclaration> struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
-					buffer_declaration->mElement = std::move(struct_declaration);
+					auto buffer_declaration = std::make_unique<nap::ShaderVariableStructBufferDeclaration>(name, absoluteOffset, member_size, stride, num_elements);
+					buffer_declaration->mElement = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
 
 					parentStruct.mMembers.emplace_back(std::move(buffer_declaration));
 				}
 				else if (descriptorType == nap::EDescriptorType::Uniform)
 				{
-					std::unique_ptr<nap::ShaderVariableStructArrayDeclaration> array_declaration = std::make_unique<nap::ShaderVariableStructArrayDeclaration>(name, absoluteOffset, member_size);
-
+					auto array_declaration = std::make_unique<nap::ShaderVariableStructArrayDeclaration>(name, absoluteOffset, member_size);
 					for (int array_index = 0; array_index < num_elements; ++array_index)
 					{
-						std::string array_path = nap::utility::stringFormat("%s[%d]", full_path.c_str(), array_index);
-
-						std::unique_ptr<nap::ShaderVariableStructDeclaration> struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
+						auto array_path = nap::utility::stringFormat("%s[%d]", full_path.c_str(), array_index);
+						auto struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
 						if (!addShaderVariablesRecursive(*struct_declaration, compiler, member_type, absoluteOffset, array_path, descriptorType, errorState))
 							return false;
 
@@ -629,23 +625,20 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 			}
 			else
 			{
-				size_t stride = compiler.type_struct_member_array_stride(type, index);
-
-				nap::EShaderVariableValueType element_type = getShaderVariableValueType(member_type);
+				auto stride = compiler.type_struct_member_array_stride(type, index);
+				auto element_type = getShaderVariableValueType(member_type);
 				if (!errorState.check(element_type != nap::EShaderVariableValueType::Unknown, "Encountered unknown uniform type"))
 					return false;
 
-				std::unique_ptr<nap::ShaderVariableValueArrayDeclaration> array_declaration = std::make_unique<nap::ShaderVariableValueArrayDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
-				parentStruct.mMembers.emplace_back(std::move(array_declaration));
+				parentStruct.mMembers.emplace_back(std::make_unique<nap::ShaderVariableValueArrayDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements));
 			}
 		}
 		else
 		{
 			if (member_type.basetype == spirv_cross::SPIRType::Struct)
 			{
-				size_t struct_size = compiler.get_declared_struct_size(member_type);
-
-				std::unique_ptr<nap::ShaderVariableStructDeclaration> struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
+				auto struct_size = compiler.get_declared_struct_size(member_type);
+				auto struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
 				if (!addShaderVariablesRecursive(*struct_declaration, compiler, member_type, absoluteOffset, name, descriptorType, errorState))
 					return false;
 
@@ -653,12 +646,11 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 			}
 			else
 			{
-				nap::EShaderVariableValueType value_type = getShaderVariableValueType(member_type);
+				auto value_type = getShaderVariableValueType(member_type);
 				if (!errorState.check(value_type != nap::EShaderVariableValueType::Unknown, "Encountered unknown uniform type"))
 					return false;
 
-				std::unique_ptr<nap::ShaderVariableValueDeclaration> value_declaration = std::make_unique<nap::ShaderVariableValueDeclaration>(name, absoluteOffset, member_size, value_type);
-				parentStruct.mMembers.emplace_back(std::move(value_declaration));
+				parentStruct.mMembers.emplace_back(std::make_unique<nap::ShaderVariableValueDeclaration>(name, absoluteOffset, member_size, value_type));
 			}
 		}
 	}
@@ -1099,15 +1091,6 @@ namespace nap
 			"Compute shader `%s` workgroup size is undefined. Set `local_size_x` to a valid number or map `local_size_x_id` to a shader constant in the material.", mID.c_str()))
 			return false;
 
-#ifdef __APPLE__
-		// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,
-		// which doesn't necessarily match physical device limits, especially on older devices.
-		// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
-		// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
-		for (uint i = 0; i< mWorkGroupSize.length(); i++)
-			mWorkGroupSize[i] = math::min<uint32>(mWorkGroupSize[i], 512);
-#endif // __APPLE__
-
 		return initLayout(device, errorState);
 	}
 
@@ -1148,7 +1131,7 @@ namespace nap
 		std::vector<std::string> search_paths = { "shaders", utility::getFileDir(mVertPath), utility::getFileDir(mFragPath) };
 		if (!mRestrictModuleIncludes)
 		{
-			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
+			for (const auto& mod : mRenderService->getCore().getModuleManager().getModules())
 			{
 				for (const auto& path : mod->getInformation().mDataSearchPaths)
 				{
@@ -1194,7 +1177,7 @@ namespace nap
 		std::vector<std::string> search_paths = { "shaders", utility::getFileDir(mComputePath) };
 		if (!mRestrictModuleIncludes)
 		{
-			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
+			for (const auto& mod : mRenderService->getCore().getModuleManager().getModules())
 			{
 				for (const auto& path : mod->getInformation().mDataSearchPaths)
 				{

@@ -40,6 +40,36 @@ namespace nap
 		float mTopPlane = 100.0f;									///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom 
 		float mBottomPlane = 0.0f;									///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom
 		math::Rect mClipRect = { {0.0f, 0.0f}, {1.0f, 1.0f} };		///< Property: 'ClipRect' normalized rectangle used to clip/crop the camera view
+
+		/**
+		 * Computes the width of the orthographic projection plane.
+		 * Note that the width is only used when 'Mode' is set to 'CorrectAspectRatio' or 'Custom'.
+		 * The width is negative when flipped.
+		 * @return projection plane width
+		 */
+		inline float getWidth() const								{ return mRightPlane - mLeftPlane; }
+
+		/**
+		 * Computes the height of the orthographic projection plane.
+		 * Note that the height is only used when 'Mode' is set to 'Custom'.
+		 * The height is negative when flipped.
+		 * @return projection plane height
+		 */
+		inline float getHeight() const								{ return mTopPlane - mBottomPlane; }
+
+		/**
+		 * Returns camera ratio, height over width.
+		 * Note that the ratio is only used when 'Mode' is set to 'Custom'.
+		 * @return camera ratio, height over width
+		 */
+		float getRatio() const										{ return getHeight() / getWidth(); }
+
+		/**
+		 * Adjusts height to match the given ratio.
+		 * Note that the ratio is only used when 'Mode' is set to 'Custom'.
+		 * @param ratio the ratio to adjust to, height over width
+		 */
+		void adjust(float ratio)									{ mTopPlane = ratio * getWidth() + mBottomPlane; }
 	};
 	
 	/**
@@ -182,3 +212,4 @@ namespace nap
 		TransformComponentInstance*		mTransformComponent;					// Cached transform component
 	};
 }
+

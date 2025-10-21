@@ -105,11 +105,14 @@ namespace nap
 		const void* getData() const											{ return mData.data(); }
 
 		/**
-		 * getSize
-		 *
-		 * Returns total number of bytes associated with this image
+		 * @return total number of bytes associated with this image
 		 */
 		size_t getSizeInBytes() const;
+
+		/**
+		 * @return the surface data descriptor
+		 */
+		const SurfaceDescriptor& getDescriptor() const						{ return mSurfaceDescriptor; }
 
 		/**
 		 * Creates a color that is compatible with the data stored in this bitmap.
@@ -278,7 +281,7 @@ namespace nap
 		 * These properties are read when initializing the bitmap as a resource
 		 * These properties are set  when initializing the bitmap from file or texture
 		 */
-		SurfaceDescriptor		mSurfaceDescriptor;
+		SurfaceDescriptor mSurfaceDescriptor;
 
 		/**
 		* Triggered by Texture2D when this bitmap is updated

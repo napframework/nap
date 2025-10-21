@@ -161,11 +161,6 @@ namespace nap
 		bool isInitialized() const;
 
 		/**
-		 * Initialize python interpreter so we can have components running python scripts
-		 */
-		bool initializePython(utility::ErrorState& error);
-
-		/**
 		 * Starts core, call this after initializing the engine, just before starting the application loop.
 		 */
 		void start();
@@ -264,6 +259,15 @@ namespace nap
 		 */
 		template <typename T>
 		const T& getExtension() const;
+
+		/**
+		 * Returns the extension associated with this instance of core as T. 
+		 * Note that an extension is given explicitly to core on construction.
+		 * When using the default constructor core has no interface associated with it!
+		 * @return extension associated with core as type T
+		 */
+		template <typename T>
+		T& getExtension();
 
 		/**
 		 * @return if core has an extension of type T	
@@ -412,12 +416,6 @@ namespace nap
 		void calculateFramerate(double deltaTime);
 
 		/**
-		 * Setup our Python environment to find Python in thirdparty for NAP release or NAP source,
-		 * or alongside our binary for a packaged project
-		 */
-		void setupPythonEnvironment();
-
-		/**
 		 * Explicitly load a project from file.
 		 * Call this before initializeEngine() if custom project setup is required.
 		 * @param projectFilename absolute path to the project file on disk.
@@ -439,7 +437,7 @@ namespace nap
 		 * @param serviceConfig the service configuration to add.
 		 * @return true when added, false if already present.
 		 */
-		bool addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig);
+		bool addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig, utility::ErrorState& error);
 
 		// Manages all the loaded modules
 		std::unique_ptr<ModuleManager> mModuleManager = nullptr;
@@ -513,6 +511,18 @@ const T* nap::Core::getService() const
  */
 template <typename T>
 const T& nap::Core::getExtension() const
+{
+	T* core_ext = rtti_cast<T>(mExtension.get());
+	assert(core_ext != nullptr);
+	return *core_ext;
+}
+
+
+/**
+ * Returns the core extension as an extension of type T
+ */
+template <typename T>
+T& nap::Core::getExtension()
 {
 	T* core_ext = rtti_cast<T>(mExtension.get());
 	assert(core_ext != nullptr);

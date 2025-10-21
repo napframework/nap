@@ -6,14 +6,12 @@
 
 #include <rttr/type>
 #include <rttr/registration>
-#ifdef NAP_ENABLE_PYTHON
-	#include "pythonmodule.h"
-#endif
 #include <utility/dllexport.h>
 #include <string.h>
+#include <utility/module.h>
 
 /**
- * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system, properties and functions are also automatically exposed to Python.
+ * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system
  *
  * There are only a few macros important for the user of the RTTI system:
  * - RTTI_OF - This is a convenience macro used to get the underlying TypeInfo of the named type. Usage example: RTTI_OF(rtti::RTTIObject).
@@ -137,6 +135,9 @@ namespace nap
 {
 	namespace rtti
 	{
+		/**
+		 * Common rtti types
+		 */
 		using TypeInfo = rttr::type;
 		using Enum = rttr::enumeration;
 		using Property = rttr::property;
@@ -151,6 +152,7 @@ namespace nap
 		namespace method
 		{
 			constexpr const char* description = "description";					///< rtti type description
+			constexpr const char* moduleDescription = "moduleDescription";		///< nap module description
 			constexpr const char* assign = "assign";							///< assignment
 			constexpr const char* toObject = "toObject";						///< to object pointer
 			constexpr const char* toString	= "toString";						///< to object path
@@ -166,7 +168,7 @@ namespace nap
 			Required 	= 1,		///< Load will fail if the property isn't set
 			FileLink 	= 2,		///< Defines a relationship with an external file
 			Embedded 	= 4,		///< An embedded pointer
-			ReadOnly	= 8			///< A read only property in Python
+			ReadOnly	= 8			///< A read only property
 		};
 
 		/**
@@ -179,7 +181,6 @@ namespace nap
 			FragShader		= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
 			VertShader		= 3, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
 			ComputeShader	= 4, 	///< Points to a .comp file, must be used with EPropertyMetaData::FileLink
-			Python			= 5,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
 			Mesh			= 6,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
 			Video			= 7,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
 			ImageSequence	= 8,	///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
@@ -265,68 +266,6 @@ namespace nap
 			return type.get_method(methodName);
 		}
 	}
-
-	namespace detail
-	{
-		/**
-		 * The BaseClassList helper is used to extract the base classes from RTTR and expose them to python automatically.
-		 * This is a complicated process. These are the points worth noting:
-		 * 1) The RTTR_ENABLE macro defines the template type *base_class_list*, which has variadic template args that specify the list of base classes.
-		 *    We want to use these variadic template args to pass them to python (the python py::class_ also has variadic template args for base classes fortunately).
-		 * 2) To do so, we specialize PythonClass with this RTTR base_class_list type. Through template argument deduction, we have the variadic template arg
-		 *    named BaseClasses for our use in PythonClass.
-		 * 3) In PythonClass we make our own specialization of pybind11::class_ where we pass BaseClasses as a template argument. We alias a new type
-		 *    called PythonClass::PybindClass. PythonClass::PybindClass is passed everywhere in the macros as *the* python class. This type now contains
-		 *    the base classes as well.
-		 * 4) Rewinding to the specialization of PythonClass: this has got a little catch to it: We can not just pass the RTTR type to PythonClass,
-		 *    as there are situations where there is no such type. This happens in cases where there is no base class! This is where BaseClassList
-		 *    comes in: BaseClassList::List always contains a valid value. It is either Type::base_class_list in case there was/were base classes, or the
-		 *	  default rttr::detail::type_list containing zero variadic arguments.
-		 */
-		template<typename T>
-		struct void_ { typedef void type; };
-
-		template<typename Type, typename = void>
-		struct BaseClassList
-		{
-			using List = rttr::detail::type_list<>;
-		};
-
-		template<typename Type>
-		struct BaseClassList<Type, typename void_<typename Type::base_class_list>::type>
-		{
-			using List = typename Type::base_class_list;
-		};
-
-		/**
-		 * isReturnTypeLValueReference is a helper to make decisions about ownership in Python. First, a bit of explanation about how ownership works in pybind:
-		 * For each function that you expose to pybind11 that has a return value, we have to tell pybind how to treat that return value. It will wrap the returned value
-		 * and pybind could for instance, copy or reference the value. Besides the decision to either copy the value or reference the value, it can also decide to
-		 * take ownership of the value. For example, you could return a pointer, let pybind own the pointer and delete it at the end. Our default setting is that
-		 * pybind uses automatic_reference. This setting decides what to do with the return value based on it's type. (There is information in the docs but by inspecting
-		 * the code we've found it no to match the code exactly). In any case, the setting makes sure that when returning pointers, ownership is not taken. However,
-		 * when returning references, copies of the object are created through the copy constructor. This is not the default behaviour that we want, so in cases where we
-		 * return a reference, we change the policy to reference so that copies and ownership are avoided.
-		 * The isReturnTypeLValueReference checks whether the return type of the function/method is of a reference type to change the policy behaviour.
-		 */
-		template <typename Return, typename... Args>
-		bool isReturnTypeLValueReference(Return(*f)(Args...))
-		{
-			return std::is_lvalue_reference<Return>();
-		}
-
-		template <typename Return, typename Class, typename... Arg>
-		bool isReturnTypeLValueReference(Return(Class::*f)(Arg...))
-		{
-			return std::is_lvalue_reference<Return>();
-		}
-
-		template <typename Return, typename Class, typename... Arg>
-		bool isReturnTypeLValueReference(Return(Class::*f)(Arg...) const)
-		{
-			return std::is_lvalue_reference<Return>();
-		}
-	}
 }
 
 
@@ -367,28 +306,17 @@ namespace nap
  * It also enables the class to be available to python.
  * @param Type the type to register
  */
-#ifdef NAP_ENABLE_PYTHON
-	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
-	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
-	{																											\
-		RTTR_REGISTRATION																						\
-		{																										\
-			using namespace rttr;																				\
-			namespace py = pybind11;																			\
-			using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
-			std::string rtti_class_type_name = #Type;															\
-			registration::class_<Type> rtti_class_type(#Type);													\
-			PythonClassType python_class(#Type);
-#else // NAP_ENABLE_PYTHON
-	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
-	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
-	{																											\
-		RTTR_REGISTRATION																						\
-		{																										\
-			using namespace rttr;																				\
-			std::string rtti_class_type_name = #Type;															\
-			registration::class_<Type> rtti_class_type(#Type);													
-#endif // NAP_ENABLE_PYTHON
+
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
+UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
+{																											\
+	static nap::ModuleDescriptor* getModuleDescriptor() { return NAP_MODULE_DESCIPTOR_HANDLE; }				\
+	RTTR_REGISTRATION																						\
+	{																										\
+		using namespace rttr;																				\
+		std::string rtti_class_type_name = #Type;															\
+		registration::class_<Type> rtti_class_type(#Type);													\
+		rtti_class_type.method(nap::rtti::method::moduleDescription, &getModuleDescriptor);
 
 
  /**
@@ -398,32 +326,18 @@ namespace nap
   * @param Type the type to register
   * @param Description type description
   */
-#ifdef NAP_ENABLE_PYTHON
 #define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
-		static const char* getTypeDescription() { return Description; }											\
+		static const char* getTypeDescription()				{ return Description; }								\
+		static nap::ModuleDescriptor* getModuleDescriptor()	{ return NAP_MODULE_DESCIPTOR_HANDLE; }				\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
-			namespace py = pybind11;																			\
-			using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
 			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);						\
-			PythonClassType python_class(#Type);
-#else // NAP_ENABLE_PYTHON
-#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
-	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
-	{																											\
-		static const char* getTypeDescription()	{ return Description; }											\
-		RTTR_REGISTRATION																						\
-		{																										\
-			using namespace rttr;																				\
-			std::string rtti_class_type_name = #Type;															\
-			registration::class_<Type> rtti_class_type(#Type);													\
-			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);
-#endif // NAP_ENABLE_PYTHON
+			rtti_class_type.method(nap::rtti::method::moduleDescription, &getModuleDescriptor);					
 
 // Selector
 #define GET_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_MACRO(_1,_2,NAME,...) NAME
@@ -449,20 +363,8 @@ namespace nap
  * @param Member reference to the member variable
  * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
  */
-#ifdef NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY_3(Name, Member, Flags)																\
-			rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
-			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-			{																									\
-				if(((uint8_t)(Flags) & (uint8_t)(nap::rtti::EPropertyMetaData::ReadOnly)) != 0)					\
-					cls.def_readonly(Name, Member);																\
-				else																							\
-					cls.def_readwrite(Name, Member);															\
-			});
-#else
-	#define RTTI_PROPERTY_3(Name, Member, Flags)																\
-	        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));
-#endif // NAP_ENABLE_PYTHON
+#define RTTI_PROPERTY_3(Name, Member, Flags)																\
+        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));
 
 /**
  * Registers a property that is readable and writable in C++ and Python.
@@ -472,24 +374,10 @@ namespace nap
  * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd\
  * @param Description property description
  */
-#ifdef NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY_4(Name, Member, Flags, Description)													\
-				rtti_class_type.property(Name, Member)( 														\
-									metadata("flags", (uint8_t)(Flags)),										\
-									metadata("description", (const char*)(Description)));						\
-				python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)	\
-				{																								\
-					if(((uint8_t)(Flags) & (uint8_t)(nap::rtti::EPropertyMetaData::ReadOnly)) != 0)				\
-						cls.def_readonly(Name, Member);															\
-					else																						\
-						cls.def_readwrite(Name, Member);														\
-				});
-#else
-	#define RTTI_PROPERTY_4(Name, Member, Flags, Description)													\
-				rtti_class_type.property(Name, Member)( 														\
-									metadata("flags", (uint8_t)(Flags)),										\
-									metadata("description", (const char*)(Description)));
-#endif // NAP_ENABLE_PYTHON
+#define RTTI_PROPERTY_4(Name, Member, Flags, Description)													\
+			rtti_class_type.property(Name, Member)( 														\
+								metadata("flags", (uint8_t)(Flags)),										\
+								metadata("description", (const char*)(Description)));
 
 #define GET_PROPERTY_MACRO(_1,_2,_3,_4,NAME,...) NAME
 
@@ -517,21 +405,10 @@ namespace nap
  * @param Flags additional flags of type 'EPropertyMetaData', these can be or'd.
  * @param FileType the type of file we're going to refer to (EPropertyFileType)
  */
-#ifdef NAP_ENABLE_PYTHON
-#define RTTI_PROPERTY_FILELINK_4(Name, Member, Flags, FileType)													\
-			rtti_class_type.property(Name, Member)( 															\
-								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
-								metadata("filetype", (uint8_t)(FileType)));										\
-			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-			{																									\
-				cls.def_readwrite(Name, Member);																\
-			});
-#else // NAP_ENABLE_PYTHON
 #define RTTI_PROPERTY_FILELINK_4(Name, Member, Flags, FileType)													\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));
-#endif // NAP_ENABLE_PYTHON
 
 /**
  * Registers a property that will point to a file on disk.
@@ -542,23 +419,11 @@ namespace nap
  * @param FileType the type of file we're going to refer to (EPropertyFileType)
  * @param Description property description 
  */
-#ifdef NAP_ENABLE_PYTHON
-#define RTTI_PROPERTY_FILELINK_5(Name, Member, Flags, FileType, Description)									\
-			rtti_class_type.property(Name, Member)( 															\
-								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
-								metadata("filetype", (uint8_t)(FileType)),										\
-								metadata("description", (const char*)(Description)));							\
-			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-			{																									\
-				cls.def_readwrite(Name, Member);																\
-			});
-#else // NAP_ENABLE_PYTHON
 #define RTTI_PROPERTY_FILELINK_5(Name, Member, Flags, FileType, Description)									\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)),										\
 								metadata("description", (const char*)(Description)));							
-#endif // NAP_ENABLE_PYTHON
 
 #define GET_PROPERTY_FILELINK_MACRO(_1,_2,_3,_4,_5,NAME,...) NAME
 
@@ -584,53 +449,23 @@ namespace nap
  * @param Name RTTI name of the function
  * @param Member reference to the member function
  */
-#ifdef NAP_ENABLE_PYTHON
-#define RTTI_FUNCTION(Name, Member)																				\
-		rtti_class_type.method(Name, Member);																	\
-		python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)			\
-		{																										\
-			cls.def(Name, Member, nap::detail::isReturnTypeLValueReference(Member) ? py::return_value_policy::reference : py::return_value_policy::automatic_reference);	\
-		});
-#else // NAP_ENABLE_PYTHON
 #define RTTI_FUNCTION(Name, Member)																				\
 			rtti_class_type.method(Name, Member);
-#endif // NAP_ENABLE_PYTHON
 
 /**
  * Registers a set of custom functions that are exposed to python.
  * Call this after starting your class definition.
  * @param Func the name of the function that registers a set of python bindings
  */
-#ifdef NAP_ENABLE_PYTHON
-#define RTTI_CUSTOM_REGISTRATION_FUNCTION(Func)																	\
-			python_class.registerFunction(std::bind(&Func<PythonClassType::PybindClass>, std::placeholders::_1, std::placeholders::_2));
-#else // NAP_ENABLE_PYTHON
 #define RTTI_CUSTOM_REGISTRATION_FUNCTION(Func)
-#endif // NAP_ENABLE_PYTHON
 
 
 //////////////////////////////////////////////////////////////////////////
 // RTTI_CONSTRUCTOR
 //////////////////////////////////////////////////////////////////////////
 
- /**
- * Registers a default constructor. This is exposed to the RTTI system and python.
- * Use this constructor for larger objects and object that can't be copy constructed.
- * The rtti variant holds a pointer to the newly created object.
- * That means the object is created with a new-expression and its lifetime lasts until it is destroyed using a delete-expression.
- * Call this after starting your class definition
- */
-#ifdef NAP_ENABLE_PYTHON
-	#define RTTI_CONSTRUCTOR(...)																				\
-			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);								\
-			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-			{																									\
-				cls.def(py::init<__VA_ARGS__>());																\
-			});
-#else // NAP_ENABLE_PYTHON
-	#define RTTI_CONSTRUCTOR(...)																				\
-			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);
-#endif // NAP_ENABLE_PYTHON
+#define RTTI_CONSTRUCTOR(...)																				\
+		rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);
 
 
  //////////////////////////////////////////////////////////////////////////
@@ -645,17 +480,8 @@ namespace nap
   * Objects with automatic storage duration are automatically destroyed when the variant is out of scope.
   * Call this after starting your class definition.
   */
-#ifdef NAP_ENABLE_PYTHON
-#define RTTI_VALUE_CONSTRUCTOR(...)																				\
-			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_object);								\
-			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-			{																									\
-				cls.def(py::init<__VA_ARGS__>());																\
-			});
-#else // NAP_ENABLE_PYTHON
 #define RTTI_VALUE_CONSTRUCTOR(...)																				\
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_object);
-#endif // NAP_ENABLE_PYTHON
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -666,25 +492,9 @@ namespace nap
   * Signals the end of the class definition.
   * Define this after having defined the various constructors, properties, functions etc.
   */
-#ifdef NAP_ENABLE_PYTHON
-#define RTTI_END_CLASS																							\
-			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
-			python_module.registerTypeImportCallback(rtti_class_type_name,										\
-													 [](std::vector<std::string>& baseTypes)					\
-													 {															\
-														PythonClassType::GetBaseTypes(baseTypes);				\
-													 },															\
-													 [python_class](py::module& module)							\
-													 {															\
-														python_class.invoke(module);							\
-													 });														\
-		}																										\
-	}
-#else
 #define RTTI_END_CLASS																							\
 		}																										\
 	}
-#endif // NAP_ENABLE_PYTHON
 
 
 //////////////////////////////////////////////////////////////////////////

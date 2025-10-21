@@ -14,18 +14,22 @@
 namespace nap
 {
 	/**
-	 * Base class for vertex attribute. Describes what kind of data will be present in the attribute.
+	 * Base class for vertex attribute.
+	 * Describes what kind of data will be present in the attribute.
 	 * This base class is necessary to have a type independent way to update the GPU meshes.
 	 */
 	class NAPAPI BaseVertexAttribute : public Resource
 	{
 		RTTI_ENABLE(Resource)
-	public:		
-		BaseVertexAttribute();
+	public:
+		/**
+		 * Constructor 
+		 * @param elementType the vertex buffer element type
+		 */
+		BaseVertexAttribute(const nap::rtti::TypeInfo& elementType);
 		
 		/**
-		 * @return Should return type-less data for the vertex attribute buffer. This is a type independent way to update
-		 * meshes to the GPU.
+		 * @return Should return type-less data for the vertex attribute buffer.
 		 */
 		virtual void* getRawData() = 0;
 
@@ -49,7 +53,13 @@ namespace nap
 		 */
 		virtual void reserve(size_t numElements) = 0;
 
+		/**
+		 * @return element data type (vec3 etc.)
+		 */
+		const nap::rtti::TypeInfo& getElementType() const				{ return mElementType; }
+
 		std::string			mAttributeID;		///< Name/ID of the attribute
+		rtti::TypeInfo		mElementType;		///< Element type
 	};
 
 
@@ -67,43 +77,51 @@ namespace nap
 		RTTI_ENABLE(BaseVertexAttribute)
 	public:
 
+		VertexAttribute() : BaseVertexAttribute(RTTI_OF(ELEMENTTYPE))	{ }
+
 		/**
 		 * Reserves a certain amount of CPU memory to hold the given number of elements
 		 * @param numElements the number of elements to reserve memory for.
 		 */
-		virtual void reserve(size_t numElements) override		{ mData.reserve(numElements); }
+		virtual void reserve(size_t numElements) override				{ mData.reserve(numElements); }
 
 		/**
 		 * @return The internally allocated memory size.
 		 */
-		virtual size_t getCapacity() const override				{ return mData.capacity(); }
+		virtual size_t getCapacity() const override						{ return mData.capacity(); }
 
 		/**
 		 * Resizes the data container to hold the given number of elements.
 		 * @param numElements the new number of elements.
 		 */
-		void resize(size_t numElements)							{ mData.resize(numElements); }
+		void resize(size_t numElements)									{ mData.resize(numElements); }
 
 		/**
 		 * Clears all data associated with this attribute
 		 */
-		void clear()											{ mData.clear(); }
+		void clear()													{ mData.clear(); }
 
 		/**
 		* @return Types interface toward the internal values. Use this function to read CPU data.
 		*/
-		const std::vector<ELEMENTTYPE>& getData() const			{ return mData; }
+		const std::vector<ELEMENTTYPE>& getData() const					{ return mData; }
 
 		/**
 		* @return Types interface toward the internal values. Use this function to read CPU data.
 		*/
-		std::vector<ELEMENTTYPE>& getData()						{ return mData; }
+		std::vector<ELEMENTTYPE>& getData()								{ return mData; }
 
 		/**
 		 * Adds a single element to the end of the buffer. Data is copied.
 		 * @param element to add.
 		 */
-		void addData(const ELEMENTTYPE& element)				{ mData.emplace_back(element); }
+		void addData(const ELEMENTTYPE& element)						{ mData.emplace_back(element); }
+
+		/**
+		 * Adds a single element to the end of the buffer. Data is moved.
+		 * @param element to add.
+		 */
+		void addData(const ELEMENTTYPE&& element) noexcept				{ mData.emplace_back(std::move(element)); }
 
 		/**
 		 * Adds data to the existing data in the buffer. Data is copied.
@@ -116,7 +134,7 @@ namespace nap
 		 * Sets the internal values based on the contained type
 		 * @param values: the values that will be copied over
 		 */
-		void setData(const std::vector<ELEMENTTYPE>& values)	{ setData(&(values.front()), values.size()); }
+		void setData(const std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
 
 		/**
 		 * Sets the entire vertex attribute buffer.
@@ -133,24 +151,23 @@ namespace nap
 		/**
 		 * @return the number vertices in the buffer
 		 */
-		virtual int getCount() const override					{ return static_cast<int>(mData.size()); }
+		virtual int getCount() const override							{ return static_cast<int>(mData.size()); }
 
 		/**
 		 * Array subscript overload
 		 * @param index the index of the attribute value
 		 * @return the vertex attribute value at index
 		 */
-		ELEMENTTYPE& operator[](std::size_t index)				{ return mData[index]; }
+		ELEMENTTYPE& operator[](std::size_t index)						{ return mData[index]; }
 		
 		/**
 		 * Const array subscript overload
 		 * @param index the index of the attribute value
 		 * @return the vertex attribute value at index
 		 */
-		const ELEMENTTYPE& operator[](std::size_t index) const	{ return mData[index]; }
+		const ELEMENTTYPE& operator[](std::size_t index) const			{ return mData[index]; }
 
-
-		std::vector<ELEMENTTYPE>	mData;						///< Actual typed data of the attribute
+		std::vector<ELEMENTTYPE>	mData;								///< Actual typed data of the attribute
 
 	protected:
 		/**

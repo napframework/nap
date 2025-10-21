@@ -9,68 +9,6 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#ifdef NAP_ENABLE_PYTHON
-	#include <pybind11/operators.h>
-	#include <pybind11/pybind11.h>
-
-	template<class PythonClassType>
-	static void sRegisterFloatVectorOperators(pybind11::module& module, PythonClassType& cls)
-	{
-		cls.def(pybind11::self + pybind11::self);
-		cls.def(pybind11::self += pybind11::self);
-		cls.def(pybind11::self - pybind11::self);
-		cls.def(pybind11::self -= pybind11::self);
-		cls.def(pybind11::self * pybind11::self);
-		cls.def(pybind11::self *= pybind11::self);
-		cls.def(pybind11::self / pybind11::self);
-		cls.def(pybind11::self /= pybind11::self);
-
-		cls.def(pybind11::self *= float());
-		cls.def(pybind11::self * float());
-
-		cls.def(float() * pybind11::self);
-	}
-
-	template<class PythonClassType>
-	static void sRegisterIntVectorOperators(pybind11::module& module, PythonClassType& cls)
-	{
-		cls.def(pybind11::self + pybind11::self);
-		cls.def(pybind11::self += pybind11::self);
-		cls.def(pybind11::self - pybind11::self);
-		cls.def(pybind11::self -= pybind11::self);
-		cls.def(pybind11::self * pybind11::self);
-		cls.def(pybind11::self *= pybind11::self);
-		cls.def(pybind11::self / pybind11::self);
-		cls.def(pybind11::self /= pybind11::self);
-
-		cls.def(pybind11::self *= int());
-		cls.def(pybind11::self * int());
-
-		cls.def(int() * pybind11::self);
-	}
-
-	template<class PythonClassType>
-	static void sRegisterQuatOperators(pybind11::module& module, PythonClassType& cls)
-	{
-		cls.def(pybind11::self + pybind11::self);
-		cls.def(pybind11::self += pybind11::self);
-		cls.def(pybind11::self -= pybind11::self);
-		cls.def(pybind11::self * pybind11::self);
-		cls.def(pybind11::self *= pybind11::self);
-
-		cls.def(pybind11::self *= float());
-		cls.def(pybind11::self * float());
-
-		cls.def(float() * pybind11::self);
-
-		// TODO: This registration, with the upgrade to GLM GLM 0.9.9.8, is no longer available (if I'm not mistaken)
-		// We don't use it, if anyone does, feel free to update it, otherwise it will be removed.
-		// We had to move to a newer version of GLM because of binary compatibility issues with GCC.
-		// module.def("rotate", &glm::rotate<glm::quat::value_type, glm::highp>);
-	}
-
-#endif // NAP_ENABLE_PYTHON
-
 RTTI_BEGIN_STRUCT(glm::vec2)
 	RTTI_VALUE_CONSTRUCTOR(float, float)
 	RTTI_PROPERTY("x", &glm::vec2::x, nap::rtti::EPropertyMetaData::Default)

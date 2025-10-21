@@ -35,7 +35,12 @@ namespace nap
 
 	namespace utility
 	{
-		/**
+        /**
+         * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
+         */
+        bool NAPAPI createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool clear, bool consumeDepth, VkRenderPass& renderPass, utility::ErrorState& errorState);
+
+        /**
 		 * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
 		 */
 		bool NAPAPI createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool consumeDepth, VkRenderPass& renderPass, utility::ErrorState& errorState);

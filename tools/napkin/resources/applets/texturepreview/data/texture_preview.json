@@ -1,0 +1,1072 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "2DEntity",
+            "Components": [
+                {
+                    "Type": "napkin::TexturePreviewLoad2DComponent",
+                    "mID": "Load2DComponent",
+                    "ZoomPanController": "./2DPlaneEntity/2DOrthoCameraEntity/2DOrthoCameraPanController",
+                    "PlaneTransform": "./2DPlaneEntity/2DPlaneTextureEntity/2DPlaneTransformComponent",
+                    "PlaneRenderer": "./2DPlaneEntity/2DPlaneTextureEntity/2DPlaneRenderComponent",
+                    "PlaneCamera": "./2DPlaneEntity/2DOrthoCameraEntity/2DOrthoCameraComponent",
+                    "MeshRenderer": "./2DMeshEntity/2DMeshTextureEntity/2DMeshTextureRenderEntity/2DMeshRenderComponent",
+                    "MeshCamera": "./2DMeshEntity/2DPerspCameraEntity/2DPerspCameraComponent",
+                    "MeshRotate": "./2DMeshEntity/2DMeshTextureEntity/2DMeshRotateComponent",
+                    "MeshTransform": "./2DMeshEntity/2DMeshTextureEntity/2DMeshTextureRenderEntity/2DMeshGeoTransformComponent",
+                    "MeshOrbit": "./2DMeshEntity/2DPerspCameraEntity/2DPerspCameraOrbitComponent",
+                    "FallbackTexture": "Fallback2DTexture",
+                    "Meshes": [
+                        "Sphere",
+                        "Box",
+                        "Torus",
+                        "Plane"
+                    ]
+                }
+            ],
+            "Children": [
+                "2DPlaneEntity",
+                "2DMeshEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DMeshEntity",
+            "Components": [],
+            "Children": [
+                "2DPerspCameraEntity",
+                "2DMeshTextureEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DMeshTextureEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DMeshTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "2DMeshRotateComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.0,
+                        "Offset": 0.0
+                    }
+                }
+            ],
+            "Children": [
+                "2DMeshTextureRenderEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DMeshTextureRenderEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DMeshGeoTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "2DMeshRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "Torus",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "colorTexture_a373a2",
+                                "Name": "colorTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "Repeat",
+                                "AddressModeHorizontal": "Repeat",
+                                "MinLodLevel": 0,
+                                "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
+                                "Texture": "Fallback2DTexture"
+                            }
+                        ],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "2DTextureMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DOrthoCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "2DOrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DOrthoCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 5.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "2DOrthoCameraPointerInputComponent"
+                },
+                {
+                    "Type": "nap::ZoomPanController",
+                    "mID": "2DOrthoCameraPanController",
+                    "RenderWindow": "Window",
+                    "ZoomSpeed": 2.0
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DPerspCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "2DPerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 60.0,
+                        "NearClippingPlane": 0.25,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DPerspCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 3.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "2DPerspCameraInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "2DPerspCameraOrbitComponent",
+                    "MovementSpeed": 0.003000000026077032,
+                    "RotateSpeed": 0.0022499999031424522,
+                    "PerspCameraComponent": "./2DPerspCameraComponent",
+                    "LimitZoomDistance": false,
+                    "MinimumZoomDistance": 1.0,
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DPlaneEntity",
+            "Components": [],
+            "Children": [
+                "2DPlaneTextureEntity",
+                "2DOrthoCameraEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DPlaneTextureEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DPlaneTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 32.0,
+                            "y": 32.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 64.0,
+                            "y": 64.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "2DPlaneRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "Plane",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "colorTexture_5916e7",
+                                "Name": "colorTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MinLodLevel": 0,
+                                "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
+                                "Texture": "Fallback2DTexture"
+                            }
+                        ],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "2DTextureMaterial",
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "NoReadWrite"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "APIEntity",
+            "Components": [
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "APIComponent",
+                    "Signatures": [
+                        "LoadTexture",
+                        "ClearTexture",
+                        "LoadMesh",
+                        "ChangeTheme"
+                    ]
+                },
+                {
+                    "Type": "napkin::TexturePreviewAPIComponent",
+                    "mID": "TexturePreviewAPIComponent",
+                    "Load2DTextureComponent": "../2DEntity/Load2DComponent",
+                    "LoadCubemapComponent": "../CubeEntity/LoadCubeComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubeEntity",
+            "Components": [
+                {
+                    "Type": "napkin::TexturePreviewLoadCubeComponent",
+                    "mID": "LoadCubeComponent",
+                    "SkyboxRenderer": "./CubeTextureEntity/CubeTextureRenderComponent",
+                    "SkboxTransform": "./CubeTextureEntity/CubeTextureTransformComponent",
+                    "CameraComponent": "./CubePerspCameraEntity/CubePerspCameraComponent",
+                    "MeshOrbit": "./CubePerspCameraEntity/CubePerspCameraOrbitComponent",
+                    "MeshRenderer": "./CubeMeshEntity/CubeMeshRenderEntity/CubeMeshRenderComponent",
+                    "MeshRotate": "./CubeMeshEntity/CubeMeshRotateComponent",
+                    "MeshTransform": "./CubeMeshEntity/CubeMeshRenderEntity/CubeMeshGeoTransformComponent",
+                    "FallbackTexture": "FallbackCubeTexture",
+                    "Meshes": [
+                        "Sphere",
+                        "Torus",
+                        "Toy",
+                        "Lucy",
+                        "Box",
+                        "Plane"
+                    ]
+                }
+            ],
+            "Children": [
+                "CubePerspCameraEntity",
+                "CubeTextureEntity",
+                "CubeMeshEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubeMeshEntity",
+            "Components": [
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "CubeMeshRotateComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.0,
+                        "Offset": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CubeMeshTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "CubeMeshRenderEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubeMeshRenderEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CubeMeshGeoTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "CubeMeshRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "Torus",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "CubeReflectionMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubePerspCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "CubePerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 60.0,
+                        "NearClippingPlane": 0.25,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CubePerspCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 3.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "CubePerspCameraInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "CubePerspCameraOrbitComponent",
+                    "MovementSpeed": 0.003000000026077032,
+                    "RotateSpeed": 0.0022499999031424522,
+                    "PerspCameraComponent": "./CubePerspCameraComponent",
+                    "LimitZoomDistance": false,
+                    "MinimumZoomDistance": 1.0,
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubeTextureEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CubeTextureTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1000.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderSkyBoxComponent",
+                    "mID": "CubeTextureRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "BlendMode": "AlphaBlend",
+                    "CubeTexture": "FallbackCubeTexture",
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Opacity": 1.0
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TextEntity",
+            "Components": [
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "TextRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Text": "Load Texture",
+                    "Font": "Font",
+                    "TextColor": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite",
+                    "IgnoreTransform": true,
+                    "DPI Aware": true
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TextTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Font",
+            "mID": "Font",
+            "Properties": {
+                "Size": 16
+            },
+            "Font": "fonts/Manrope-Light.otf"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": false,
+            "SampleShading": true,
+            "Title": "Window 1",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1,
+            "RestoreSize": false,
+            "RestorePosition": false
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "Rendering",
+            "Members": [],
+            "Children": [
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Materials",
+                    "Members": [
+                        {
+                            "Type": "nap::TextureShader",
+                            "mID": "2DTextureShader"
+                        },
+                        {
+                            "Type": "nap::Material",
+                            "mID": "2DTextureMaterial",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "UBO_eeaee4",
+                                    "Name": "UBO",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "color_7a3f71",
+                                            "Name": "color",
+                                            "Value": {
+                                                "x": 1.0,
+                                                "y": 1.0,
+                                                "z": 1.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformFloat",
+                                            "mID": "alpha_6c7b08",
+                                            "Name": "alpha",
+                                            "Value": 1.0
+                                        }
+                                    ]
+                                }
+                            ],
+                            "Samplers": [],
+                            "Buffers": [],
+                            "Constants": [],
+                            "Shader": "2DTextureShader",
+                            "VertexAttributeBindings": [],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        },
+                        {
+                            "Type": "nap::ShaderFromFile",
+                            "mID": "CubeReflectionShader",
+                            "VertShader": "shaders/reflection.vert",
+                            "FragShader": "shaders/reflection.frag",
+                            "RestrictModuleIncludes": false
+                        },
+                        {
+                            "Type": "nap::Material",
+                            "mID": "CubeReflectionMaterial",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "UBO",
+                                    "Name": "UBO",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "color",
+                                            "Name": "color",
+                                            "Value": {
+                                                "x": 1.0,
+                                                "y": 1.0,
+                                                "z": 1.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformVec2",
+                                            "mID": "fresnel",
+                                            "Name": "fresnel",
+                                            "Value": {
+                                                "x": 0.75,
+                                                "y": 4.0
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "Samplers": [
+                                {
+                                    "Type": "nap::SamplerCube",
+                                    "mID": "environmentMap",
+                                    "Name": "environmentMap",
+                                    "MinFilter": "Linear",
+                                    "MaxFilter": "Linear",
+                                    "MipMapMode": "Linear",
+                                    "AddressModeVertical": "ClampToEdge",
+                                    "AddressModeHorizontal": "ClampToEdge",
+                                    "MinLodLevel": 0,
+                                    "MaxLodLevel": 1000,
+                                    "LodBias": 0.0,
+                                    "AnisotropicSamples": "Default",
+                                    "BorderColor": "IntOpaqueBlack",
+                                    "CompareMode": "LessOrEqual",
+                                    "EnableCompare": false,
+                                    "Texture": "FallbackCubeTexture"
+                                }
+                            ],
+                            "Buffers": [],
+                            "Constants": [],
+                            "Shader": "CubeReflectionShader",
+                            "VertexAttributeBindings": [],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Meshes",
+                    "Members": [
+                        {
+                            "Type": "nap::PlaneMesh",
+                            "mID": "Plane",
+                            "Usage": "Static",
+                            "CullMode": "None",
+                            "PolygonMode": "Fill",
+                            "Size": {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            "Position": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rows": 1,
+                            "Columns": 1
+                        },
+                        {
+                            "Type": "nap::TorusMesh",
+                            "mID": "Torus",
+                            "Radius": 0.75,
+                            "TubeRadius": 0.25,
+                            "Segments": 64,
+                            "TubeSegments": 64,
+                            "AngleOffset": 0.0,
+                            "Usage": "Static",
+                            "PolygonMode": "Fill",
+                            "CullMode": "Back",
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::SphereMesh",
+                            "mID": "Sphere",
+                            "Usage": "Static",
+                            "CullMode": "Back",
+                            "PolygonMode": "Fill",
+                            "Radius": 1.0,
+                            "Rings": 50,
+                            "Sectors": 50,
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Position": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::BoxMesh",
+                            "mID": "Box",
+                            "Usage": "Static",
+                            "CullMode": "Back",
+                            "PolygonMode": "Fill",
+                            "Size": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "Position": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "FlipNormals": false
+                        },
+                        {
+                            "Type": "nap::ToyMesh",
+                            "mID": "Toy",
+                            "Usage": "Static",
+                            "CullMode": "Back",
+                            "PolygonMode": "Fill"
+                        },
+                        {
+                            "Type": "nap::LucyMesh",
+                            "mID": "Lucy",
+                            "Usage": "Static",
+                            "CullMode": "Back",
+                            "PolygonMode": "Fill"
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Textures",
+                    "Members": [
+                        {
+                            "Type": "nap::UVTestTexture",
+                            "mID": "Fallback2DTexture",
+                            "GenerateLods": false
+                        },
+                        {
+                            "Type": "nap::TestCubeMap",
+                            "mID": "FallbackCubeTexture",
+                            "Width": 128,
+                            "Height": 128,
+                            "Format": "RGBA8",
+                            "ColorSpace": "Linear",
+                            "ClearColor": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "SampleShading": false,
+                            "GenerateLODs": false
+                        }
+                    ],
+                    "Children": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "Signatures",
+            "Members": [
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "LoadTexture",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "textureDataArg",
+                            "Name": "data",
+                            "Value": ""
+                        },
+                        {
+                            "Type": "nap::APIBool",
+                            "mID": "textureFrameArg",
+                            "Name": "frame",
+                            "Value": true
+                        }
+                    ]
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "ClearTexture",
+                    "Arguments": []
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "LoadMesh",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "meshDataArg",
+                            "Name": "data",
+                            "Value": ""
+                        },
+                        {
+                            "Type": "nap::APIBool",
+                            "mID": "meshFrameArg",
+                            "Name": "frame",
+                            "Value": false
+                        }
+                    ]
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "ChangeTheme",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "themeArg",
+                            "Name": "theme",
+                            "Value": ""
+                        }
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "TextEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "APIEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "2DEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "CubeEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        }
+    ]
+}

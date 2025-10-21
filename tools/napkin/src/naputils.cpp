@@ -29,6 +29,32 @@ using namespace napkin;
 
 RTTI_DEFINE_BASE(napkin::RTTITypeItem)
 
+// App global definition of cwd mutex
+std::mutex napkin::CWDHandle::mMutex;
+CWDHandle::CWDHandle(const std::string& newDirectory) : mLock(mMutex)
+{
+	mPrevious = nap::utility::getCWD();
+	nap::utility::changeDir(newDirectory);
+}
+
+CWDHandle::~CWDHandle()
+{
+	nap::utility::changeDir(mPrevious);
+}
+
+napkin::CWDHandle& CWDHandle::operator=(CWDHandle&& other) noexcept
+{
+	this->mPrevious = std::move(other.mPrevious);
+	this->mLock = std::move(other.mLock);
+	return *this;
+}
+
+CWDHandle::CWDHandle(CWDHandle&& other) noexcept
+{
+	this->mPrevious = std::move(other.mPrevious);
+	this->mLock = std::move(other.mLock);
+}
+
 std::vector<rttr::type> napkin::getImmediateDerivedTypes(const rttr::type& type)
 {
 	// Cycle over all derived types. This includes all derived types,
@@ -185,21 +211,48 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
 	using namespace nap::qt;
-	StringModel::Entries names;
+	std::unordered_map<const nap::ModuleDescriptor*, StringModel::Entry> module_entries;
+	const auto& resource_factory = AppContext::get().getResourceFactory();
+
+	// Create entry groups filtered on module
 	for (const auto& t : getTypes(predicate))
 	{
-		const char* type_desc = nap::rtti::getDescription(t);
-		if (type_desc != nullptr)
+		// Get module description
+		const auto* mod_desc = nap::rtti::getModuleDescription(t);
+
+		// Find or create module related entry
+		auto it = module_entries.find(mod_desc);
+		StringModel::Entry* module_entry = nullptr;
+		if (it == module_entries.end())
 		{
-			names << StringModel::Entry(QString(t.get_name().data()), QString(type_desc));
-			continue;
+			auto ins = module_entries.emplace(mod_desc, StringModel::Entry(mod_desc != nullptr ? mod_desc->mID : "unknown"));
+			module_entry = &ins.first->second;
+			module_entry->addIcon(resource_factory.getIcon(QRC_ICONS_MODULE));
 		}
-		names << QString(t.get_name().data());
+		else
+		{
+			module_entry = &it->second;
+		}
+
+		const char* type_desc = nap::rtti::getDescription(t);
+		StringModel::Entry type_entry = type_desc != nullptr ?
+			StringModel::Entry(QString(t.get_name().data()), QString(type_desc)) :
+			StringModel::Entry(StringModel::Entry(t.get_name().data()));
+
+		// Add icon and add
+		type_entry.addIcon(resource_factory.getIcon(t));
+		module_entry->addChild(std::move(type_entry));
 	}
 
-	// Sort and select
-	StringModel::sort(names);
-	auto selectedName = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
+	// Move into list
+	StringModel::Entries module_items;
+	module_items.reserve(module_entries.size());
+	for(auto& entry : module_entries)
+		module_items.emplace_back(std::move(entry.second));
+
+	// Move into model and let user select
+	StringModel::sort(module_items);
+	auto selectedName = nap::qt::FilterPopup::show(parent, std::move(module_items)).toStdString();
 	return selectedName.empty() ? nap::rtti::TypeInfo::empty() : nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
 
@@ -207,8 +260,8 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 std::vector<rttr::type> napkin::getComponentTypes()
 {
 	std::vector<rttr::type> ret;
-	nap::rtti::TypeInfo rootType = RTTI_OF(nap::Component);
-	for (const nap::rtti::TypeInfo& derived : rootType.get_derived_classes())
+	nap::rtti::TypeInfo root_type = RTTI_OF(nap::Component);
+	for (const nap::rtti::TypeInfo& derived : root_type.get_derived_classes())
 	{
 		if (derived.can_create_instance())
 			ret.emplace_back(derived);
@@ -218,21 +271,42 @@ std::vector<rttr::type> napkin::getComponentTypes()
 
 std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 {
-	std::vector<rttr::type> ret;
 	nap::Core& core = AppContext::get().getCore();
 	if (!core.isInitialized())
-		return ret;
+		return std::vector<rttr::type>();
 
 	nap::rtti::Factory& factory = core.getResourceManager()->getFactory();
 	std::vector<rttr::type> derived_classes;
 
-	auto rootType = RTTI_OF(nap::rtti::Object);
-	nap::rtti::getDerivedTypesRecursive(rootType, derived_classes);
+	// TODO: It's possible to directly compare module descriptor pointers instead of names
+	// For that to work we need to add the napcore module descriptor when initializing NAP
+	const auto& project_modules = core.getModuleManager().getModules();
+	std::unordered_set<std::string> module_names = { nap::moduleCoreName };
+	module_names.reserve(project_modules.size() + module_names.size());
+	for (const auto& module : project_modules)
+		module_names.emplace(module->getName());
+
+	auto root_type = RTTI_OF(nap::rtti::Object);
+	nap::rtti::getDerivedTypesRecursive(root_type, derived_classes);
+	std::vector<rttr::type> ret; ret.reserve(derived_classes.size());
 	for (const rttr::type& derived : derived_classes)
 	{
+		// Ensure the object can be created
 		if (!factory.canCreate(derived))
 			continue;
 
+		// Filter out objects that are not included in the project ->
+		// This includes items from libraries linked in napkin (render, camera etc..) but not the user project.
+		// Note that we do allow unknown module descriptions when 'NAP_DEV' is defined.
+		// Which enables us to create and author Napkin Applet resources in Napkin itself ...
+		// I know, very meta, but then in a good way (thanks for ruining that word FOREVER zak mark)
+		const auto* module_desc = nap::rtti::getModuleDescription(derived);
+#ifndef NAP_DEV
+		if (module_desc == nullptr || module_names.find(module_desc->mID) == module_names.end())
+			continue;
+#endif // NAP_DEV
+
+		// Check user preference
 		if (predicate != nullptr && !predicate(derived))
 			continue;
 
@@ -360,16 +434,13 @@ bool napkin::loadShader(nap::BaseShader& shader, nap::Core& core, nap::utility::
 	if (!AppContext::get().canRender())
 		return false;
 
-	// Change working directory for compilation
-	auto cwd = nap::utility::getCWD();
+	// Change working directory for compilation -> restored when destroyed
 	assert(core.isInitialized());
-	nap::utility::changeDir(core.getProjectInfo()->getDataDirectory());
+	napkin::CWDHandle cwd(core.getProjectInfo()->getDataDirectory());
 
 	// Clear and load
 	shader.clear();
-	bool success = shader.init(error);
-	nap::utility::changeDir(cwd);
-	return success;
+	return shader.init(error);
 }
 
 
@@ -442,4 +513,18 @@ nap::Entity* napkin::findChild(nap::Entity& parent, const std::string& name, int
 	}
 	return nullptr;
 }
+
+nap::EVideoDriver napkin::getVideoDriver()
+{
+	auto name = QApplication::platformName();
+	if (name == "xcb")
+		return nap::EVideoDriver::X11;
+	if (name == "wayland")
+		return nap::EVideoDriver::Wayland;
+	if (name == "windows")
+		return nap::EVideoDriver::Windows;
+
+	return nap::EVideoDriver::Default;
+}
+
 

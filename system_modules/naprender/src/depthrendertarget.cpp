@@ -27,7 +27,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	DepthRenderTarget::DepthRenderTarget(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mTextureTargetLink(*this)
 	{}
 
 
@@ -66,7 +67,7 @@ namespace nap
 			return false;
 
 		// Bind textures as attachments
-		VkImageView attachment = mDepthTexture->getHandle().getView();
+		const auto attachment = std::as_const(*mDepthTexture).getHandle().getView();
 
 		// Create framebuffer
 		VkFramebufferCreateInfo framebufferInfo = {};
@@ -127,7 +128,9 @@ namespace nap
 
 	void DepthRenderTarget::endRendering()
 	{
+		// End render pass and sync layout
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
+		mTextureTargetLink.sync(*mDepthTexture);
 	}
 
 

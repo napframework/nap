@@ -19,7 +19,7 @@ def build_app_by_dir(app_path, build_type, pause_on_failed_build):
     cmd = [python, script_path, app_name, '-t', build_type]
     exit_code = call(cmd)
 
-    # Pause to display output in case we're running from Windows Explorer / macOS Finder
+    # Pause to display output in case we're running from Windows Explorer
     if exit_code != 0 and pause_on_failed_build:
         print("Press key to close...")
         read_console_char()

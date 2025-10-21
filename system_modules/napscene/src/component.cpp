@@ -4,7 +4,6 @@
 
 #include "component.h"
 #include "entity.h"
-#include <nap/python.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)

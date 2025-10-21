@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "appcontext.h"
 #include "napkin-resources.h"
+#include "napkin-env.h"
 
 #include <QFontDatabase>
 #include <QCommandLineParser>
@@ -20,17 +21,8 @@ namespace napkin
 	{
 		inline constexpr int success		= 0;		//< No error
 		inline constexpr int parseError		= 1;		//< Parse error
-		inline constexpr int coreError		= 2;		//< Core initialization error
-		inline constexpr int documentError	= 3;		//< Document load error
-	}
-
-	void setEnv(const char* key, const char* value)
-	{
-#ifdef _WIN32
-		_putenv_s(key, value);
-#else
-		setenv(key, value, 0);
-#endif // _WIN32
+		inline constexpr int coreError		= 10;		//< Core initialization error
+		inline constexpr int documentError	= 20;		//< Document load error
 	}
 }
 
@@ -46,26 +38,26 @@ void initializeSettings()
 	QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, exeDir);
 	QSettings::setDefaultFormat(QSettings::IniFormat);
 
-	auto userSettingsFilename = QSettings().fileName();
-	if (!QFileInfo::exists(userSettingsFilename))
+	auto user_settings_filename = QSettings().fileName();
+	if (!QFileInfo::exists(user_settings_filename))
 	{
-		auto settingsDir = QFileInfo(userSettingsFilename).dir();
+		auto settingsDir = QFileInfo(user_settings_filename).dir();
 		if (!settingsDir.exists())
 		{
 			settingsDir.mkpath(".");
 		}
 
-		auto defaultSettingsFilename = QString("%1/%2").arg(exeDir, napkin::DEFAULT_SETTINGS_FILE);
-		if (!QFileInfo::exists(defaultSettingsFilename))
+		auto default_settings_filename = QString("%1/%2").arg(exeDir, napkin::DEFAULT_SETTINGS_FILE);
+		if (!QFileInfo::exists(default_settings_filename))
 		{
-			nap::Logger::error("File not found: %s", defaultSettingsFilename.toStdString().c_str());
+			nap::Logger::error("File not found: %s", default_settings_filename.toStdString().c_str());
 		}
 
-		if (!QFile::copy(defaultSettingsFilename, userSettingsFilename))
+		if (!QFile::copy(default_settings_filename, user_settings_filename))
 		{
 			nap::Logger::error("Failed to copy %s to %s", 
-				defaultSettingsFilename.toStdString().c_str(),
-				userSettingsFilename.toStdString().c_str());
+				default_settings_filename.toStdString().c_str(),
+				user_settings_filename.toStdString().c_str());
 		}
 	}
 }
@@ -75,9 +67,9 @@ void initializeSettings()
  * Command line handling. Exits application if requested or arguments are invalid.
  * @param app the main application
  * @param context the main application context
- * @return if process should exit after load
+ * @return project to load and if we should exit after initialization
  */
-bool parseCommandline(QApplication& app, napkin::AppContext& context)
+std::pair<bool, std::string> parseCommandline(QApplication& app, napkin::AppContext& context)
 {
 	QCommandLineParser parser;
 	auto op_help = parser.addHelpOption();
@@ -109,28 +101,21 @@ bool parseCommandline(QApplication& app, napkin::AppContext& context)
 	// Check if we should open a recent project
 	bool no_open_recent = parser.isSet(opNoOpenRecent);
 
-	// Bail if exit-after-load flag is set but no project is specified
-	if (exit_after_load && !project_set)
-	{
-		nap::Logger::error("exit-after-load requested without specifying project to load");
-		exit(napkin::returncode::parseError);
-	}
-
-	// Check if we need to load a specific project
-	// This flag has precedence over the 'open no recent' project flag if set simultaneously
+	// Check if we need to load a project on startup
 	auto ctx = napkin::utility::Context::get();
+	std::string project_path;
 	if (project_set)
 	{
-		std::string project_path = parser.value(opProject).toStdString();
+		project_path = parser.value(opProject).toStdString();
 		project_path = nap::utility::getAbsolutePath(project_path);
 		context.addRecentlyOpenedProject(QString::fromStdString(project_path));
 	}
 	else if (no_open_recent)
 	{
-		context.setOpenRecentProjectOnStartup(false);
+		context.setOpenProjectOnStartup(false);
 	}
 
-	return exit_after_load;
+	return { exit_after_load, project_path };
 }
 
 
@@ -139,11 +124,16 @@ bool parseCommandline(QApplication& app, napkin::AppContext& context)
  */
 int main(int argc, char* argv[])
 {
+	// Force X11 when running Linux -> required because of NAP applets.
+	// Applets are NAP applications that run inside NAPKIN and use X11 for compatibility.
+	// Note that applets do work with Qt Wayland, but we currently can't embed them in a docked widget.
+#ifdef __linux__
+	if (napkin::env::get(napkin::env::option::QT_QPA_PLATFORM).empty())
+		napkin::env::set(napkin::env::option::QT_QPA_PLATFORM, "xcb");
+#endif // __linux__
+
 	// Start logging to file next to console
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
-
-	// Only log debug messages and higher
-	nap::Logger::setLevel(nap::Logger::debugLevel());
 
     // Construct the app context singleton
     auto& ctx = napkin::AppContext::create();
@@ -176,29 +166,54 @@ int main(int argc, char* argv[])
 	}
 
 	// Handle command line instructions
-	bool exit_after_load = parseCommandline(app, ctx);
+	auto launch_options = parseCommandline(app, ctx);
 
 	// Create main window and show -> loads a project if set
-	// Disable font hinting -> doesn't do font rendering any good
 	app.setWindowIcon(QIcon(napkin::QRC_ICONS_NAP_ICON));
 	std::unique_ptr<napkin::MainWindow> w = std::make_unique<napkin::MainWindow>();
+
+	// Disable font hinting -> doesn't do font rendering any good
 	QFont applied_font = w->font();
+	applied_font.setStyleStrategy(QFont::PreferQuality);
 	applied_font.setHintingPreference(QFont::PreferNoHinting);
 	w->setFont(applied_font);
 	w->show();
+
+	// Close splash
 	splash.finish(w.get());
 
+	// Close application if exit after initialization is requested
+	if (launch_options.first)
+	{
+		// Ensure requested project loaded successfully
+		int init_code = napkin::returncode::success;
+		if (!launch_options.second.empty())
+		{
+			if (!ctx.getCore().isInitialized())
+			{
+				nap::Logger::error("Napkin core initialization failed, '%s'", launch_options.second.c_str());
+				init_code = napkin::returncode::coreError;
+			}
 
-	// Initialize return code.
-	// Informs the test environment if the NAP project loaded successfully.
-	// Only relevant when 'exit-after-load' flag is set for testing purposes.
-	int exit_code = !ctx.getCore().isInitialized() ? napkin::returncode::coreError :
-		!ctx.hasDocument() ? napkin::returncode::documentError :
-		napkin::returncode::success;
+			if (!ctx.hasDocument())
+			{
+				nap::Logger::error("Napkin document load failed, '%s'", launch_options.second.c_str());
+				init_code = napkin::returncode::documentError;
+			}
+		}
 
-	// Run until quit, this is the normal behavior.
-	if (!exit_after_load)
-		exit_code = app.exec();
+		// Allow the app to run for 5 seconds before closing the main window
+		// This breaks the execution loop and quits the application.
+		QTimer::singleShot(5000, [&w, &app, ic = init_code]()
+			{
+				w->close();
+				app.processEvents();
+				app.exit(ic);
+			});
+	}
+
+	// Execute application until quit()
+	int exit_code = app.exec();
 
 	// Remove all app fonts
 	QFontDatabase::removeAllApplicationFonts();
@@ -210,3 +225,4 @@ int main(int argc, char* argv[])
     napkin::AppContext::destroy();
 	return exit_code;
 }
+

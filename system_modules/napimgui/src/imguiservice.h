@@ -5,8 +5,8 @@
 #pragma once
 
 // Local Includes
-#include "imgui/imgui.h"
 #include "imguiicon.h"
+#include "imguistyle.h"
 
 // External includes
 #include <nap/service.h>
@@ -15,7 +15,6 @@
 #include <nap/resourceptr.h>
 #include <descriptorsetallocator.h>
 #include <nap/signalslot.h>
-#include <color.h>
 
 // ImGUI forward declares
 struct ImGuiContext;
@@ -61,76 +60,7 @@ namespace nap
 		inline constexpr const char* add		= "add.png";
 		inline constexpr const char* change		= "change.png";
         inline constexpr const char* subtract	= "subtract.png";
-	}
-
-
-	// GUI
-	namespace gui
-	{
-		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
-		inline constexpr int pointerInvalidID = -3;				///< Invalid pointer ID
-		inline constexpr int pointerMouseID	= -2;				///< Pointer from mouse ID
-		inline constexpr int pointerTouchID	= -1;				///< Pointer from touch ID
-
-		/**
-		 * All available color schemes
-		 */
-		enum class EColorScheme
-		{
-			Light		= 0,		///< Lighter color scheme
-			Dark		= 1,		///< Darker color scheme (default)
-			HyperDark	= 2,		///< High contrast dark color scheme
-			Classic		= 3,		///< Classic color scheme
-			Custom		= 4			///< Custom color scheme
-		};
-
-		/**
-		 * Configurable palette of GUI colors.
-		 */
-		struct NAPAPI ColorPalette
-		{
-			ColorPalette() = default;
-			RGBColor8 mBackgroundColor = { 0x2D, 0x2D, 0x2D };		///< Property: 'BackgroundColor' Gui window background color
-			RGBColor8 mDarkColor = { 0x00, 0x00, 0x00 };			///< Property: 'DarkColor' Gui dark color
-			RGBColor8 mMenuColor = { 0x8D, 0x8B, 0x84 };			///< Property: 'MenuColor' Gui menu color
-			RGBColor8 mFront1Color = { 0x8D, 0x8B, 0x84 };			///< Property: 'FrontColor1' Gui gradient color 1
-			RGBColor8 mFront2Color = { 0xAE, 0xAC, 0xA4 };			///< Property: 'FrontColor2' Gui gradient color 2
-			RGBColor8 mFront3Color = { 0xCD, 0xCD, 0xC3 };			///< Property: 'FrontColor3' Gui gradient color 3
-			RGBColor8 mFront4Color = { 0xFF, 0xFF, 0xFF };			///< Property: 'FrontColor4' Gui gradient color 4 (text)
-			RGBColor8 mHighlightColor1 = { 0x29, 0x58, 0xff };		///< Property: 'HighlightColor1' Special highlight color 1 (selection)
-			RGBColor8 mHighlightColor2 = { 0xD6, 0xFF, 0xA3 };		///< Property: 'HighlightColor2' Special highlight color 2 (info)
-			RGBColor8 mHighlightColor3 = { 0xFF, 0xEA, 0x30 };		///< Property: 'HighlightColor3' Special highlight color 3 (warning)
-			RGBColor8 mHighlightColor4 = { 0xFF, 0x50, 0x50 };		///< Property: 'HighlightColor4' Special highlight color 4 (errors)
-			bool mInvertIcon = false;								///< Property: 'InvertIcon' If icons should be inverted
-		};
-
-		/**
-		 * Configurable GUI style options
-		 */
-		struct NAPAPI Style
-		{
-			Style() = default;
-			bool mAntiAliasedLines = true;							///< Property: 'AntiAliasedLines' Enable anti-aliasing on lines/borders. Disable if you are really tight on CPU/GPU.
-			bool mAntiAliasedFill = true;							///< Property: 'AntiAliasedFill' Enable anti-aliasing on filled shapes (rounded rectangles, circles, etc.)
-			glm::vec2 mWindowPadding = { 10.0, 10.0f };				///< Property: 'WindowPadding' Padding within a window.
-			float mWindowRounding = 0.0f;							///< Property: 'WindowRounding' Radius of window corners rounding. Set to 0.0f to have rectangular windows.
-			glm::vec2 mFramePadding = { 5.0f, 5.0f };				///< Property: 'FramePadding' Padding within a framed rectangle (used by most widgets).
-			float mFrameRounding = 0.0f;							///< Property: 'FrameRounding' Radius of frame corners rounding. Set to 0.0f to have rectangular frame (used by most widgets).
-			glm::vec2 mItemSpacing = { 12.0f, 6.0f };				///< Property: 'ItemSpacing' Horizontal and vertical spacing between widgets/lines.
-			glm::vec2 mItemInnerSpacing = { 8.0f, 6.0f };			///< Property: 'ItemInnerSpacing' Horizontal and vertical spacing between within elements of a composed widget (e.g. a slider and its label).
-			float mIndentSpacing = 25.0f;							///< Property: 'IndentSpacing' Horizontal indentation when e.g. entering a tree node. Generally == (FontSize + FramePadding.x*2).
-			float mScrollbarSize = 13.0f;							///< Property: 'ScrollbarSize' Width of the vertical scrollbar, Height of the horizontal scrollbar.
-			float mScrollbarRounding = 0.0f;						///< Property: 'ScrollbarRounding' Radius of grab corners for scrollbar.
-			float mGrabMinSize = 5.0f;								///< Property: 'GrabMinSize' Minimum width/height of a grab box for slider/scrollbar.
-			float mGrabRounding = 0.0f;								///< Property: 'GrabRounding' Radius of grabs corners rounding. Set to 0.0f to have rectangular slider grabs.
-			float mWindowBorderSize = 0.0f;							///< Property: 'WindowBorderSize' Thickness of border around windows. Generally set to 0.0f or 1.0f. (Other values are not well tested and more CPU/GPU costly).
-			float mPopupRounding = 0.0f;							///< Property: 'PopupRounding' Radius of popup window corners rounding. (Note that tooltip windows use WindowRounding)
-			float mChildRounding = 0.0f;							///< Property: 'ChildRounding' Radius of child window corners rounding. Set to 0.0f to have rectangular windows.
-			glm::vec2 mWindowTitleAlign = { 0.5f, 0.5f };			///< Property: 'WindowTitleAlign' Alignment for title bar text. Defaults to (0.5f,0.5f) for vertically & horizontally centered.
-			float mPopupBorderSize = 0.0f;							///< Property: 'PopupBorderSize' Thickness of border around popup/tooltip windows. Generally set to 0.0f or 1.0f. (Other values are not well tested and more CPU/GPU costly).
-			float mTabRounding = 0.0f;								///< Property: 'TabRounding' Radius of upper corners of a tab. Set to 0.0f to have rectangular tabs.
-			glm::vec2 mTouchExtraPadding = { 0.0f, 0.0f };			///< Property: 'TouchExtraPadding' Expand reactive bounding box for touch-based system where touch position is not accurate enough. We don't sort widgets so priority on overlap will always be given to the first widget. So don't grow this too much!
-		};
+		inline constexpr const char* frame		= "frame.png";
 	}
 
 
@@ -256,6 +186,12 @@ namespace nap
 		const gui::ColorPalette& getPalette() const;
 
 		/**
+		 * Sets the GUI color palette
+		 * @param palette the color palette to apply 
+		 */
+		void setPalette(gui::EColorScheme palette);
+
+		/**
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
 		 * @return context that belongs to the event, nullptr if the event is not related to a window.
 		 */
@@ -270,6 +206,13 @@ namespace nap
 		 * @return if the GUI is capturing mouse events
 		 */
 		bool isCapturingMouse(ImGuiContext* context);
+
+		/**
+		 * Add unicode input character.
+		 * @param context the gui context
+		 * @param character the unicode character to add
+		 */
+		void addInputCharachter(ImGuiContext* context, nap::uint character);
 
 		/**
 		 * Returns a texture handle that can be used to display a Vulkan texture inside ImGUI.
@@ -332,42 +275,41 @@ namespace nap
 		 * @param error contains the error message if the lib could not be initialized correctly
 		 * @return if the lib was initialized successfully
 		 */
-		virtual bool init(utility::ErrorState& error) override;
+		bool init(utility::ErrorState& error) override;
 
 		/**
 		 * ImGui depends on the renderer
 		 * @param dependencies the type of services this service depends on
 		 */
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+		void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
 		 * Allows IMGUI to draw a new frame. This is called automatically by core in the app loop
 		 * @param deltaTime the time in seconds between ticks
 		 */
-		virtual void update(double deltaTime) override;
+		void update(double deltaTime) override;
 
 		/**
 		 * Ends frame operation for all contexts.
 		 */
-		virtual void postUpdate(double deltaTime) override;
+		void postUpdate(double deltaTime) override;
 
 		/**
 		 * Saves all gui .ini files
 		 */
-		virtual void preShutdown() override;
+		void preShutdown() override;
 
 		/**
 		 *	Deletes all GUI related resources
 		 */
-		virtual void shutdown() override;
+		void shutdown() override;
 
 		/**
 		 * Registers all gui object creation objects
 		 */
-		virtual void registerObjectCreators(rtti::Factory& factory) override;
+		void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
-
 		/**
 		 * Simple struct that combines an ImGUI context with additional state information.
 		 * Takes ownership of the context, destroys it on destruction.
@@ -391,7 +333,7 @@ namespace nap
 			glm::ivec2 mMousePosition						= { 0, 0 };						///< Last known mouse position
 			float mMouseWheel								= 0.0f;							///< Mouse wheel
 			float mScale									= 1.0f;							///< GUI Scale
-			const Display* mDisplay							= nullptr;						///< Current display
+			int mDisplayIndex								= -1;							///< Current display
 			ImGuiContext* mContext							= nullptr;						///< Associated ImGUI context
 			ImGuiContext* mPreviousContext					= nullptr;						///< Context active before this one
 			ImGuiStyle* mStyle								= nullptr;						///< Style of context
@@ -432,9 +374,9 @@ namespace nap
 		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
 
 		/**
-		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
+		 * Calculates and applies a gui scaling factor based for the given window
 		 */
-		void pushScale(GUIContext& context, const Display& display);
+		void pushScale(GUIContext& context, const nap::RenderWindow& window);
 
 		/**
 		 * Add key event to given context
@@ -453,13 +395,11 @@ namespace nap
 
 		// Everything related to ImGUI
 		RenderService* mRenderService = nullptr;
-		mutable std::unordered_map<const Texture2D*, VkDescriptorSet> mDescriptors;
-		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
-		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
-		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
+		float mGuiScale = 1.0f;			///< Overall GUI scaling factor
+		float mReferenceScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 
 		// Selected colour palette and style
 		IMGuiServiceConfiguration* mConfiguration = nullptr;
@@ -467,5 +407,12 @@ namespace nap
 
 		// Icons
 		std::unordered_map<std::string, std::unique_ptr<Icon>> mIcons;
+
+		// Vulkan data associated with ImGUI
+		std::unique_ptr<DescriptorSetAllocator> mAllocator;								///< GUI Descriptor set allocator
+		VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;								///< GUI Pool used by font texture
+		VkDescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;					///< GUI texture layout description 
+		VkSampler mSampler = VK_NULL_HANDLE;											///< GUI Texture binding
+		mutable std::unordered_map<const Texture2D*, VkDescriptorSet> mDescriptors;		///< Cached GUI texture descriptors
 	};
 }

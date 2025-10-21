@@ -64,9 +64,9 @@ namespace nap
 		virtual void render()											{ }
 
 		/**
-		 * Called by the event handler when it receives an external event to quit the running application
-		 * By default this calls quit() with the return value of this call, which causes the application to stop running
-		 * You can override it to ignore the event or perform specific logic (such as saving a file) before the app is shutdown()
+		 * Called by the event handler when it receives an external event to quit the running application.
+		 * By default this calls quit() with the return value of this call, which causes the application to stop running.
+		 * You can override it to ignore the event or perform specific logic (such as saving a file) before the app is shutdown().
 		 * @return if the application should quit, true by default
 		 */
 		virtual bool shutdownRequested()								{ return true; }

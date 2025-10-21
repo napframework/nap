@@ -20,10 +20,7 @@ macro(nap_qt_pre)
     endif()
 
     # Set vulkan SDK environment variable so QT to can find and use Vulkan
-    if(NOT DEFINED ENV{VULKAN_SDK})
-        set(ENV{VULKAN_SDK} "${NAP_ROOT}/system_modules/naprender/thirdparty/vulkansdk/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}")
-        message(STATUS "Using VULKAN_SDK environment variable: $ENV{VULKAN_SDK}")
-    endif()
+    set(ENV{VULKAN_SDK} "${NAP_ROOT}/system_modules/naprender/thirdparty/vulkansdk/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}")
 
     # Add possible Qt installation paths to the HINTS section
     # The version probably doesn't have to match exactly (5.8.? is probably fine)
@@ -33,17 +30,7 @@ macro(nap_qt_pre)
               )
 
     if(QT_DIR)
-        if(APPLE AND DEFINED NAP_PACKAGED_BUILD)
-              # Ensure we're not using Qt from homebrew as we don't know the legal situation with packaging homebrew's packages.
-              # Plus Qt's own opensource packages should have wider macOS version support.
-              if(EXISTS ${QT_DIR}/INSTALL_RECEIPT.json)
-                  message(FATAL_ERROR "Homebrew's Qt packages aren't allowed due largely to a legal unknown.
-                          Install Qt's own opensource release and point environment variable QT_DIR there.")
-              endif()
-        endif()
-
         # TODO Ensure we're not packaging system Qt on Linux, we only want to use a download from qt.io
-
         # Find_package for Qt6 will pick up the Qt installation from CMAKE_PREFIX_PATH
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
     else()

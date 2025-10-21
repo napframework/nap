@@ -218,6 +218,6 @@ namespace nap
 	private:
 		// this variable will be set by the core when the service is added
 		Core*									mCore = nullptr;
-		ServiceConfiguration*					mConfiguration;
+		ServiceConfiguration*					mConfiguration = nullptr;
 	};
 }

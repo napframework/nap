@@ -19,7 +19,7 @@ def regenerate_module_by_dir(module_path, build_type):
     cmd = [python, script_path, module_name, '-t', build_type]
     exit_code = call(cmd)
 
-    # Pause to display output in case we're running from Windows Explorer / macOS Finder
+    # Pause to display output in case we're running from Windows Explorer
     if exit_code != 0 and not Platform.get() == Platform.Linux:
         print("Press key to close...")
         read_console_char()

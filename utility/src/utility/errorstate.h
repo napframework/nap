@@ -55,7 +55,9 @@ namespace nap
 			template <typename... Args>
 			bool check(bool successCondition, const char* format, Args&&... args)
 			{
-				return check(successCondition, stringFormat(format, std::forward<Args>(args)...));
+				if (!successCondition)
+					mErrorList.emplace_back(stringFormat(format, std::forward<Args>(args)...));
+				return successCondition;
 			}
 
 			/**

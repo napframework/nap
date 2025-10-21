@@ -18,7 +18,7 @@
 	*	[Run a Demo](#run-a-demo)
 	*	[Work Against Source](#work-against-source)
 	*	[Package](#build-distributable-nap-package)
- 	*	[Branches](#branches) 
+ 	*	[Forks](#forks) 
 *	[Contributing](#contributing)
 *	[License](#license)
 	
@@ -59,6 +59,8 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_applets.jpg)
+[NAP Framework](https://nap-framework.tech) editor & applets
 ![NAP Framework](https://download.nap-labs.tech/shared/napkin_interface.jpg)
 [NAP Framework](https://nap-framework.tech) editor & audiovisualfft demo
 
@@ -78,18 +80,18 @@ The default `CMake` generator is Visual Studio 2019 or 2022.
 
 ### Linux
 
-| arch   | os                | version      | compiler    |
-|--------|-------------------|--------------|-------------|
-| x86-64 | Ubuntu            | 22.04, 24.04 | gcc         |
-| arm64  | Raspberry Pi OS   | 12           | gcc         |
+| arch   | os                | version | compiler    |
+|--------|-------------------|---------|-------------|
+| x86-64 | Ubuntu            | 24.04   | gcc         |
+| arm64  | Raspberry Pi OS   | 12      | gcc         |
 
 The default `CMake` generator is `Make`. 
 
 Other Linux distributions *may* work, but they have not been tested and are not officially supported.
 
-#### Display Server
+#### Display Server 
 
-When `Wayland` is configured as the display server, NAP applications will rely on `XWayland` for compatibility. It is recommended to use `X11` instead of Wayland until Wayland is fully supported.
+When `Wayland` is configured as the display server, NAP applications will run in native wayland mode if the compositor supports `wp_fifo_manager_v1`; otherwise the system will revert back to `XWayland` for performance reasons. You can force applications to run in native wayland mode by selecting `wayland` as the `Video Driver` in the `nap::RenderServiceConfiguration`. Napkin is set up to always use `XWayland` for compatibility, but it can be run as a native Wayland application by setting the `QT_QPA_PLATFORM` environment variable to `wayland`.
 
 #### Raspberry Pi
 
@@ -220,19 +222,9 @@ Some other useful flags:
 
 More options for packaging can be queried by adding the flag `--help` when running the script.
 
-## Branches
+## Forks
 
-### main
-
-The current [stable branch](https://github.com/napframework/nap/tree/main): It generally reflects the latest release, plus a few critical bug-fixes.
-
-### 0.8
-
-The bleeding edge: [0.8](https://github.com/napframework/nap/tree/0.8) introduces many new features, improvements and portential fixes that are scheduled for a new official release.
-
-### build
-
-An [alternative build system](https://github.com/stijnvanbeek/nap): Including support for macOS and a simplified CMAKE interface, developed by [Stijn van Beek](https://github.com/stijnvanbeek).
+An [alternative build system](https://github.com/stijnvanbeek/nap): Including support for macOS and a simplified CMAKE interface, developed by [Stijn van Beek](https://github.com/stijnvanbeek). This fork is *not* officially supported by us.
 
 # Contributing
 
@@ -243,7 +235,7 @@ Use the github [issues](https://github.com/napframework/nap/issues) page for bug
 New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://github.com/orgs/napframework/discussions) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
 MSVC, Platform Toolset v142 on Windows 10
-GCC <= 11 on Ubuntu LTS 22.04
+GCC <= 13.3.0 on Ubuntu LTS 24.04
 ```
 
 # License

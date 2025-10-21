@@ -71,6 +71,12 @@ namespace nap
 			float getDepth() const;
 
 			/**
+			 * Returns the distance between the min and max coordinates
+			 * @return space diagonal of the box
+			 */
+			float getDiagonal() const;
+
+			/**
 			 * @return if the point is inside the box, this excludes the edge
 			 */
 			bool inside(const glm::vec3& point) const;

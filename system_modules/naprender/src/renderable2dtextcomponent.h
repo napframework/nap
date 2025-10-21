@@ -129,11 +129,17 @@ namespace nap
 			RenderableTextComponentInstance(entity, resource)									{ }
 
 		/**
-		 * Initialize Renderable2DTextComponentInstance based on the Renderable2DTextComponent resource
+		 * Initialize the component.
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the Renderable2DTextComponentInstance is initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Update line cache if required.
+		 * @param deltaTime frame time in seconds
+		 */
+		virtual void update(double deltaTime) override;
 
 		/**
 		* Draws the current text into the active target using the stored coordinates in screen space.
@@ -220,9 +226,10 @@ namespace nap
 		 */
 		void computeTextModelMatrix(glm::mat4x4& outMatrix);
 
-		glm::ivec2		mLocation = { 0,0 };		///< Text location in pixel coordinates
+		glm::ivec2		mLocation = { 0,0 };	///< Text location in pixel coordinates
 		RenderService*	mService = nullptr;			///< Render service
 		bool			mIgnoreTransform = true;	///< If transform should be ignored when present
 		bool			mDPIAware = true;			///< If the text is scaled according to display dpi
+		float			mDisplayScale = 1.0f;		///< Current content display scale
 	};
 }

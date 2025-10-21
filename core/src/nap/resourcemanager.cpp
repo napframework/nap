@@ -6,7 +6,6 @@
 #include "objectgraph.h"
 #include "logger.h"
 #include "core.h"
-#include "python.h"
 #include "rttiobjectgraphitem.h"
 #include "device.h"
 #include "corefactory.h"

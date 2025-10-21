@@ -31,4 +31,5 @@ namespace nap
 	 * Most events are wrapped in a unique pointer to manage lifetime automatically
 	 */
 	using EventPtr = std::unique_ptr<nap::Event>;
+	using EventPtrList = std::vector<EventPtr>;
 }
