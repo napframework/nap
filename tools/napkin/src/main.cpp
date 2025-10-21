@@ -195,8 +195,8 @@ int main(int argc, char* argv[])
 				napkin::returncode::success;
 		}
 
-		// Allow the app to run for 5 seconds before closing
-		QTimer::singleShot(5000, [ec = exit_code, &app]()
+		// Allow the app to run for 10 seconds before closing
+		QTimer::singleShot(10000, [ec = exit_code, &app]()
 			{
 				app.exit(ec);
 			}
