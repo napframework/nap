@@ -638,7 +638,8 @@ namespace nap
 					auto* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(sampler_instance);
 					for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
 					{
-						const auto& tex = sampler_2d_array->hasTexture(index) ? sampler_2d_array->getTexture(index) : mRenderService->getEmptyTexture2D();
+						const auto& tex = sampler_2d_array->hasTexture(index) ? sampler_2d_array->getTexture(index) :
+							sampler_2d_array->getDeclaration().mHasShadow ? mRenderService->getEmptyDepthTexture2D() : mRenderService->getEmptyTexture2D();
 						addImageInfo(tex, vk_sampler);
 					}
 					break;
@@ -648,7 +649,8 @@ namespace nap
 					auto* sampler_cube_array = static_cast<SamplerCubeArrayInstance*>(sampler_instance);
 					for (int index = 0; index < sampler_cube_array->getNumElements(); ++index)
 					{
-						const auto& tex = sampler_cube_array->hasTexture(index) ? sampler_cube_array->getTexture(index) : mRenderService->getEmptyTextureCube();
+						const auto& tex = sampler_cube_array->hasTexture(index) ? sampler_cube_array->getTexture(index) :
+							sampler_cube_array->getDeclaration().mHasShadow ? mRenderService->getEmptyDepthTextureCube() : mRenderService->getEmptyTextureCube();
 						addImageInfo(tex, vk_sampler);
 					}
 					break;

@@ -755,13 +755,14 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 				errorState.fail("Unsupported sampler type encountered");
 				return false;
 		}
-
+		
 		nap::uint32 binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
+		bool is_shadow_sampler = sampler_type.image.depth;
 
         if (is_array)
-            samplerDeclarations.emplace_back(sampled_image.name, binding, inStage, type, true, num_elements);
+            samplerDeclarations.emplace_back(sampled_image.name, binding, inStage, type, is_shadow_sampler, true, num_elements);
         else
-            samplerDeclarations.emplace_back(sampled_image.name, binding, inStage, type);
+            samplerDeclarations.emplace_back(sampled_image.name, binding, inStage, type, is_shadow_sampler);
     }
 
 	return true;

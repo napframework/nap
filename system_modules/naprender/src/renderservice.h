@@ -7,8 +7,9 @@
 // Local Includes
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
+#include "material.h"
+#include "rendertexturecube.h"
 #include "renderutils.h"
-#include "imagedata.h"
 #include "rendertag.h"
 #include "display.h"
 #include "videodriver.h"
@@ -16,9 +17,6 @@
 // External Includes
 #include <nap/service.h>
 #include <windowevent.h>
-#include <rendertarget.h>
-#include <material.h>
-#include <rect.h>
 #include <color.h>
 
 namespace nap
@@ -36,8 +34,9 @@ namespace nap
 	class MaterialInstance;
 	class ComputeMaterialInstance;
 	class ComputeComponentInstance;
-	class Texture;
 	class Texture2D;
+	class TextureCube;
+	class DepthRenderTexture2D;
 	class RenderLayer;
 	class RenderChain;
 
@@ -839,10 +838,22 @@ namespace nap
 		Texture2D& getEmptyTexture2D() const										{ return *mEmptyTexture2D; }
 
 		/**
-		 * Returns an error cube texture that can be bound to materials to signal an application warning or error.
-		 * @return the error cube texture.
+		 * Returns an empty cube texture that is available on the GPU for temporary binding or storage.
+		 * @return empty cube texture that is available on the GPU.
 		 */
 		TextureCube& getEmptyTextureCube() const									{ return *mEmptyTextureCube; }
+
+		/**
+		 * Returns an empty 2D depth texture that is available on the GPU for temporary binding or storage.
+		 * @return empty depth texture that is available on the GPU.
+		 */
+		Texture2D& getEmptyDepthTexture2D() const									{ return *mEmptyDepthTexture2D; }
+
+		/**
+		 * Returns an error cube depth texture that is available on the GPU for temporary binding or storage.
+		 * @return empty cube depth texture that is available on the GPU.
+		 */
+		TextureCube& getEmptyDepthTextureCube() const								{ return *mEmptyDepthTextureCube; }
 
 		/**
 		 * Returns an error 2D texture that can be bound to materials to signal an application warning or error.
@@ -1269,6 +1280,8 @@ namespace nap
 		// Empty textures
 		std::unique_ptr<Texture2D>				mEmptyTexture2D;
 		std::unique_ptr<TextureCube>			mEmptyTextureCube;
+		std::unique_ptr<DepthRenderTexture2D>	mEmptyDepthTexture2D;
+		std::unique_ptr<DepthRenderTextureCube>	mEmptyDepthTextureCube;
 
 		// Error textures
 		std::unique_ptr<Texture2D>				mErrorTexture2D;
