@@ -39,20 +39,10 @@ namespace napkin
 	public:
 		MainWindow();
 		virtual ~MainWindow();
+
 	protected:
-		/**
-		 * Override
-		 */
 		void showEvent(QShowEvent* event) override;
-
-		/**
-		 * Hide event
-		 */
 		void hideEvent(QHideEvent* event) override;
-
-		/**
-		 * Override
-		 */
 		void closeEvent(QCloseEvent* event) override;
 
 	private:

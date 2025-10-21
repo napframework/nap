@@ -97,6 +97,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	for (auto& applet : mApplets)
 		applet->close();
 
+	// Forward
 	QMainWindow::closeEvent(event);
 }
 

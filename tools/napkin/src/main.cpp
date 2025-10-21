@@ -21,8 +21,8 @@ namespace napkin
 	{
 		inline constexpr int success		= 0;		//< No error
 		inline constexpr int parseError		= 1;		//< Parse error
-		inline constexpr int coreError		= 2;		//< Core initialization error
-		inline constexpr int documentError	= 3;		//< Document load error
+		inline constexpr int coreError		= 10;		//< Core initialization error
+		inline constexpr int documentError	= 20;		//< Document load error
 	}
 }
 
@@ -186,24 +186,33 @@ int main(int argc, char* argv[])
 	if (launch_options.first)
 	{
 		// Ensure requested project loaded successfully
-		int exit_code = napkin::returncode::success;
+		int init_code = napkin::returncode::success;
 		if (!launch_options.second.empty())
 		{
-			exit_code =
-				!ctx.getCore().isInitialized() ? napkin::returncode::coreError :
-				!ctx.hasDocument() ? napkin::returncode::documentError :
-				napkin::returncode::success;
+			if (!ctx.getCore().isInitialized())
+			{
+				nap::Logger::error("Napkin core initialization failed, '%s'", launch_options.second.c_str());
+				init_code = napkin::returncode::coreError;
+			}
+
+			if (!ctx.hasDocument())
+			{
+				nap::Logger::error("Napkin document load failed, '%s'", launch_options.second.c_str());
+				init_code = napkin::returncode::documentError;
+			}
 		}
 
-		// Allow the app to run for 10 seconds before closing
-		QTimer::singleShot(10000, [ec = exit_code, &app]()
+		// Allow the app to run for 5 seconds before closing the main window
+		// This breaks the execution loop and quits the application.
+		QTimer::singleShot(5000, [&w, &app, ic = init_code]()
 			{
-				app.exit(ec);
-			}
-		);
+				w->close();
+				app.processEvents();
+				app.exit(ic);
+			});
 	}
 
-	// Execute application
+	// Execute application until quit()
 	int exit_code = app.exec();
 
 	// Remove all app fonts
