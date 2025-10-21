@@ -281,11 +281,12 @@ namespace nap
 		rect.extent.height = mSize.y;
 		vkCmdSetScissor(mRenderService->getCurrentCommandBuffer(), 0, 1, &rect);
 
+		const glm::ivec2 size = getBufferSize();
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
-		viewport.y = mSize.y;
-		viewport.width = mSize.x;
-		viewport.height = -mSize.y;
+		viewport.y = size.y;
+		viewport.width = size.x;
+		viewport.height = -size.y;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
@@ -303,7 +304,7 @@ namespace nap
 
 	const glm::ivec2 SnapshotRenderTarget::getBufferSize() const
 	{
-		return static_cast<glm::ivec2>(mSize);
+		return mSize;
 	}
 
 
