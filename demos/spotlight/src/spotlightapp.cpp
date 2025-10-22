@@ -161,15 +161,15 @@ namespace nap
 				light.setColor(color);
 
 			auto inten = light.getIntensity();
-			if (ImGui::SliderFloat("Intensity", &inten, 0.0f, 5.0f, "%.3f", 2.0f))
+			if (ImGui::SliderFloat("Intensity", &inten, 0.0f, 5.0f, "%.3f", ImGuiSliderFlags_Logarithmic))
 				light.setIntensity(inten);
 
 			auto shadow = light.getShadowStrength();
-			if (ImGui::SliderFloat("Shadow Strength", &shadow, 0.0f, 1.0f, "%.3f", 1.0f))
+			if (ImGui::SliderFloat("Shadow Strength", &shadow, 0.0f, 1.0f, "%.3f"))
 				light.setShadowStrength(shadow);
 
 			auto spread = light.getShadowSpread();
-			if (ImGui::SliderFloat("Shadow Spread", &spread, 0.0f, 10.0f, "%.3f", 1.0f))
+			if (ImGui::SliderFloat("Shadow Spread", &spread, 0.0f, 10.0f, "%.3f"))
 				light.setShadowSpread(spread);
 
 			// Spotlight specific controls
