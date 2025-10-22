@@ -315,7 +315,7 @@ namespace nap
 		font_config.OversampleH = fontSampling.x;
 		font_config.OversampleV = fontSampling.y;
 
-		// ImGui note: (REMOVED AT IT SEEMS LARGELY OBSOLETE. PLEASE REPORT IF YOU WERE USING THIS). Extra spacing (in pixels) between glyphs when rendered: essentially add to glyph->AdvanceX. Only X axis is supported for now.
+		// ImGui note: (REMOVED AS IT SEEMS LARGELY OBSOLETE. PLEASE REPORT IF YOU WERE USING THIS). Extra spacing (in pixels) between glyphs when rendered: essentially add to glyph->AdvanceX. Only X axis is supported for now.
 		// font_config.GlyphExtraSpacing.x = fontSpacing;
 
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
