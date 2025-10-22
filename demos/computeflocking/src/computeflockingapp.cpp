@@ -123,7 +123,7 @@ namespace nap
 			if (ImGui::CollapsingHeader("Bloom Texture", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				const float aspect = coloradjust_comp->getOutputTexture().getHeight() / static_cast<float>(coloradjust_comp->getOutputTexture().getWidth());
-				const float width = ImGui:: GetWindowContentRegionMax().x;
+				const float width = ImGui::GetWindowContentRegionMax().x;
 				ImGui::Image(coloradjust_comp->getOutputTexture(), { width, width * aspect });
 			}
 			ImGui::End();
