@@ -121,7 +121,7 @@ namespace nap
 		Snapshot*					mSnapshot = nullptr;
 
 		std::vector<VkFramebuffer>	mFramebuffers;
-		glm::u32vec2				mSize = { 0, 0 };
+		glm::uvec2					mSize = { 0, 0 };
 
 		bool						mSampleShading = true;
 		RGBAColorFloat				mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };

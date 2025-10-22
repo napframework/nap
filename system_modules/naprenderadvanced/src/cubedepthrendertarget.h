@@ -190,6 +190,5 @@ namespace nap
 		glm::ivec2								mSize;
 		RGBAColorFloat							mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		uint									mLayerIndex = 0U;
-		bool									mIsFirstPass = true;
 	};
 }

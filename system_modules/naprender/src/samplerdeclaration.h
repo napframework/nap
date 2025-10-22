@@ -26,11 +26,11 @@ namespace nap
 			Type_Cube
 		};
 
-		SamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits stage, EType type) :
-			mName(name), mBinding(binding), mStage(stage), mType(type), mIsArray(false), mNumElements(1) {}
+		SamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits stage, EType type, bool shadow) :
+			mName(name), mBinding(binding), mStage(stage), mType(type), mShadow(shadow), mIsArray(false), mNumElements(1) {}
 
-        SamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits stage, EType type, bool isArray, int numElements) :
-            mName(name), mBinding(binding), mStage(stage), mType(type), mIsArray(isArray), mNumElements(numElements)
+        SamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits stage, EType type, bool shadow, bool isArray, int numElements) :
+            mName(name), mBinding(binding), mStage(stage), mType(type), mShadow(shadow), mIsArray(isArray), mNumElements(numElements)
         {
             assert(mNumElements > 0);
         }
@@ -39,6 +39,7 @@ namespace nap
 		int						mBinding = -1;
 		VkShaderStageFlagBits	mStage;
 		EType					mType = EType::Type_2D;
+        bool                    mShadow = false;
         bool                    mIsArray = false;
         int                     mNumElements = 1;
 	};

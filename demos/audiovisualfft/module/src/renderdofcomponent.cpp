@@ -9,13 +9,10 @@
 #include "gpubuffer.h"
 #include "renderglobals.h"
 #include "uniforminstance.h"
-#include "renderglobals.h"
 #include "dofshader.h"
 #include "textureutils.h"
 
 // External Includes
-#include <entity.h>
-#include <glm/gtc/matrix_transform.hpp>
 #include <entity.h>
 #include <nap/core.h>
 #include <orthocameracomponent.h>
@@ -60,10 +57,6 @@ namespace nap
 
 		// Verify the input render target is available
 		if (!errorState.check(mResource->mInputTarget != nullptr, "InputTarget not set"))
-			return false;
-
-		// Verify the render target has a depth texture resource
-		if (!errorState.check(mResource->mInputTarget->hasDepthTexture(), "The specified InputTarget has no depth texture resource"))
 			return false;
 
 		// Get render service
