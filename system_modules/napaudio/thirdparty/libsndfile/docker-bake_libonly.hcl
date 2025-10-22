@@ -2,7 +2,7 @@ target "x86_64" {
     dockerfile = "BuildLib.Dockerfile"
     platforms = ["linux/amd64"]
     args = {"image_name": "x86_64-ubuntu_2004",
-    "from_builder":"ubuntu:20.04",
+    "from_builder":"ubuntu:24.04",
     "extra_installs":"python-is-python3"}
     output = ["./linux/x86_64"]
 }
