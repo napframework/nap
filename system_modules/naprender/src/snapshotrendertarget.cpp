@@ -60,7 +60,7 @@ namespace nap
 
 			// WAW (write-after-write) hazard
 			// This render pass does not read output from the previous render pass, but a memory dependency is still required to sync writes
-			VkSubpassDependency dependency;
+			VkSubpassDependency dependency = {};
 			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 			dependency.dstSubpass = 0;
 
@@ -86,34 +86,32 @@ namespace nap
 				std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
 				renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
 				renderpass_info.pAttachments = attachments.data();
+
+				return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 			}
+
 			// Multi-sample render pass
-			else
-			{
-				VkAttachmentDescription resolve_attachment = {};
-				resolve_attachment.format = colorFormat;
-				resolve_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-				resolve_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				resolve_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-				resolve_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				resolve_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-				resolve_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				resolve_attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			VkAttachmentDescription resolve_attachment = {};
+			resolve_attachment.format = colorFormat;
+			resolve_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			resolve_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			resolve_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			resolve_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			resolve_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			resolve_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			resolve_attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-				VkAttachmentReference resolve_attachment_ref {};
-				resolve_attachment_ref.attachment = 2;
-				resolve_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			VkAttachmentReference resolve_attachment_ref = {};
+			resolve_attachment_ref.attachment = 2;
+			resolve_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-				subpass.pResolveAttachments = &resolve_attachment_ref;
+			subpass.pResolveAttachments = &resolve_attachment_ref;
 
-				std::array<VkAttachmentDescription, 3> attachments = { color_attachment, depth_attachment, resolve_attachment };
-				renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-				renderpass_info.pAttachments = attachments.data();
+			std::array<VkAttachmentDescription, 3> attachments = { color_attachment, depth_attachment, resolve_attachment };
+			renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderpass_info.pAttachments = attachments.data();
 
-				return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
-			}
-
-			return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
+			return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
 		}
 	}
 
@@ -185,7 +183,7 @@ namespace nap
 		}
 
 		// Assert the cells are created
-		assert(mSnapshot->mColorTextures.size() > 0);
+		assert(!mSnapshot->mColorTextures.empty());
 		mFormat = mSnapshot->mColorTextures[0]->getFormat();
 
 		// Create a framebuffer for every cell
@@ -255,7 +253,6 @@ namespace nap
 
 	void SnapshotRenderTarget::beginRendering()
 	{
-		glm::ivec2 size = getBufferSize();
 		const RGBAColorFloat& clear_color = mSnapshot->mClearColor;
 
 		std::array<VkClearValue, 3> clearValues = {};
@@ -264,26 +261,27 @@ namespace nap
 		clearValues[2].color = { clear_color[0], clear_color[1], clear_color[2], clear_color[3] };
 
 		// Setup render pass
-		VkRenderPassBeginInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = mRenderPass;
-		renderPassInfo.framebuffer = mFramebuffers[mCellIndex];
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = { mSize.x, mSize.y };
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+		VkRenderPassBeginInfo renderpass_info = {};
+		renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderpass_info.renderPass = mRenderPass;
+		renderpass_info.framebuffer = mFramebuffers[mCellIndex];
+		renderpass_info.renderArea.offset = { 0, 0 };
+		renderpass_info.renderArea.extent = { mSize.x, mSize.y };
+		renderpass_info.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderpass_info.pClearValues = clearValues.data();
 
 		// Begin render pass
-		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderpass_info, VK_SUBPASS_CONTENTS_INLINE);
 
 		// Ensure scissor and viewport are covering the cell area
 		VkRect2D rect = {};
 		rect.offset.x = 0;
 		rect.offset.y = 0;
-		rect.extent.width = size.x;
-		rect.extent.height = size.y;
+		rect.extent.width = mSize.x;
+		rect.extent.height = mSize.y;
 		vkCmdSetScissor(mRenderService->getCurrentCommandBuffer(), 0, 1, &rect);
 
+		const glm::ivec2 size = getBufferSize();
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = size.y;
@@ -306,7 +304,7 @@ namespace nap
 
 	const glm::ivec2 SnapshotRenderTarget::getBufferSize() const
 	{
-		return static_cast<glm::ivec2>(mSize);
+		return mSize;
 	}
 
 

@@ -8,13 +8,11 @@
 #include "rendercomponent.h"
 #include "computecomponent.h"
 #include "renderwindow.h"
-#include "transformcomponent.h"
 #include "cameracomponent.h"
 #include "renderglobals.h"
 #include "mesh.h"
 #include "depthsorter.h"
 #include "gpubuffer.h"
-#include "texture.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "shaderconstant.h"
@@ -1322,6 +1320,8 @@ namespace nap
 			mWindow = SDL_CreateWindow("Dummy", 16, 16, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
 			if (error.check(mWindow != nullptr, "Failed to create temporary SDL window"))
 				return createSurface(mWindow, mInstance, mSurface, error);
+
+			error.fail(SDL_GetError());
 			return false;
 		}
 
@@ -1708,6 +1708,7 @@ namespace nap
 
 	bool RenderService::initEmptyTextures(nap::utility::ErrorState& errorState)
 	{
+		// Regular texture dummies
 		SurfaceDescriptor settings = { 1, 1, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
 		mEmptyTexture2D = std::make_unique<Texture2D>(getCore());
 		mEmptyTexture2D->mID = utility::stringFormat("%s_EmptyTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
@@ -1719,6 +1720,30 @@ namespace nap
 		if (!mEmptyTextureCube->init(settings, 1, glm::zero<glm::vec4>(), 0, errorState))
 			return false;
 
+		// Depth texture dummies for valid shadow samplers
+		mEmptyDepthTexture2D = std::make_unique<DepthRenderTexture2D>(getCore());
+		mEmptyDepthTexture2D->mID = utility::stringFormat("%s_EmptyDepthTexture2D_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+		mEmptyDepthTexture2D->mWidth = 1;
+		mEmptyDepthTexture2D->mHeight = 1;
+		mEmptyDepthTexture2D->mUsage = Texture2D::EUsage::Internal;
+		mEmptyDepthTexture2D->mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
+		mEmptyDepthTexture2D->mColorSpace = EColorSpace::Linear;
+		mEmptyDepthTexture2D->mClearValue = 1.0f;
+		if (!mEmptyDepthTexture2D->init(errorState))
+			return false;
+
+		// Depth cube texture dummies for valid shadow samplers
+		mEmptyDepthTextureCube = std::make_unique<DepthRenderTextureCube>(getCore());
+		mEmptyDepthTextureCube->mID = utility::stringFormat("%s_EmptyDepthTextureCube_%s", RTTI_OF(DepthRenderTextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
+		mEmptyDepthTextureCube->mWidth = 1;
+		mEmptyDepthTextureCube->mHeight = 1;
+		mEmptyDepthTextureCube->mDepthFormat = DepthRenderTextureCube::EDepthFormat::D16;
+		mEmptyDepthTextureCube->mColorSpace = EColorSpace::Linear;
+		mEmptyDepthTextureCube->mClearValue = 1.0f;
+		if (!mEmptyDepthTextureCube->init(errorState))
+			return false;
+
+		// Error texture dummies
 		mErrorTexture2D = std::make_unique<Texture2D>(getCore());
 		mErrorTexture2D->mID = utility::stringFormat("%s_ErrorTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 		if (!mErrorTexture2D->init(settings, Texture2D::EUsage::Internal, 1, mErrorColor.toVec4(), 0, errorState))
@@ -2399,6 +2424,8 @@ namespace nap
 		mFramesInFlight.clear();
 		mEmptyTexture2D.reset();
 		mEmptyTextureCube.reset();
+		mEmptyDepthTexture2D.reset();
+		mEmptyDepthTextureCube.reset();
 		mErrorTexture2D.reset();
 		mErrorTextureCube.reset();
 		mDescriptorSetCaches.clear();
