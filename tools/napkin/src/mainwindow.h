@@ -14,6 +14,7 @@
 #include "actionmodel.h"
 #include "appcontext.h"
 #include "themeselectionmenu.h"
+#include "stagewidget.h"
 #include "panels/apprunnerpanel.h"
 #include "panels/historypanel.h"
 #include "panels/inspectorpanel.h"
@@ -24,8 +25,6 @@
 #include "panels/modulepanel.h"
 #include "panels/instanceproppanel.h"
 #include "panels/serviceconfigpanel.h"
-#include "panels/renderpreviewpanel.h"
-#include "panels/texturepreviewpanel.h"
 #include "panels/pathbrowserpanel.h"
 
 namespace napkin
@@ -40,20 +39,10 @@ namespace napkin
 	public:
 		MainWindow();
 		virtual ~MainWindow();
+
 	protected:
-		/**
-		 * Override
-		 */
 		void showEvent(QShowEvent* event) override;
-
-		/**
-		 * Hide event
-		 */
 		void hideEvent(QHideEvent* event) override;
-
-		/**
-		 * Override
-		 */
 		void closeEvent(QCloseEvent* event) override;
 
 	private:
@@ -205,7 +194,7 @@ namespace napkin
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;
 		ScenePanel mScenePanel;
-		TexturePreviewPanel mTexturePreviewPanel;
+		std::vector<std::unique_ptr<StageWidget>> mApplets;
 		ServiceConfigPanel mServiceConfigPanel;
 
 		ThemeSelectionMenu mThemeMenu;

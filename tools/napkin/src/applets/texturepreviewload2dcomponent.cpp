@@ -2,9 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "frame2dtexturecomponent.h"
+// Internal includes
+#include "texturepreviewload2dcomponent.h"
 
-// External Includes
+// External includes
 #include <entity.h>
 #include <textureshader.h>
 #include <inputservice.h>
@@ -14,22 +15,22 @@
 #include <spheremesh.h>
 
 // nap::appletcomponent run time class definition 
-RTTI_BEGIN_CLASS(napkin::Frame2DTextureComponent)
-	RTTI_PROPERTY("ZoomPanController",		&napkin::Frame2DTextureComponent::mZoomPanController,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PlaneTransform",			&napkin::Frame2DTextureComponent::mPlaneTransform,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PlaneRenderer",			&napkin::Frame2DTextureComponent::mPlaneRenderer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PlaneCamera",			&napkin::Frame2DTextureComponent::mPlaneCamera,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshRenderer",			&napkin::Frame2DTextureComponent::mMeshRenderer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshCamera",				&napkin::Frame2DTextureComponent::mMeshCamera,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshRotate",				&napkin::Frame2DTextureComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshTransform",			&napkin::Frame2DTextureComponent::mMeshTransform,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshOrbit",				&napkin::Frame2DTextureComponent::mMeshOrbit,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FallbackTexture",		&napkin::Frame2DTextureComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Meshes",					&napkin::Frame2DTextureComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(napkin::TexturePreviewLoad2DComponent)
+	RTTI_PROPERTY("ZoomPanController",		&napkin::TexturePreviewLoad2DComponent::mZoomPanController,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PlaneTransform",			&napkin::TexturePreviewLoad2DComponent::mPlaneTransform,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PlaneRenderer",			&napkin::TexturePreviewLoad2DComponent::mPlaneRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PlaneCamera",			&napkin::TexturePreviewLoad2DComponent::mPlaneCamera,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshRenderer",			&napkin::TexturePreviewLoad2DComponent::mMeshRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshCamera",				&napkin::TexturePreviewLoad2DComponent::mMeshCamera,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshRotate",				&napkin::TexturePreviewLoad2DComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshTransform",			&napkin::TexturePreviewLoad2DComponent::mMeshTransform,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshOrbit",				&napkin::TexturePreviewLoad2DComponent::mMeshOrbit,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FallbackTexture",		&napkin::TexturePreviewLoad2DComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Meshes",					&napkin::TexturePreviewLoad2DComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::appletcomponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::Frame2DTextureComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::TexturePreviewLoad2DComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -38,7 +39,7 @@ RTTI_END_CLASS
 
 namespace napkin
 {
-	bool Frame2DTextureComponentInstance::init(utility::ErrorState& errorState)
+	bool TexturePreviewLoad2DComponentInstance::init(utility::ErrorState& errorState)
 	{
 		//////////////////////////////////////////////////////////////////////////
 		// Orthographic Zoom & Pan Plane
@@ -68,7 +69,7 @@ namespace napkin
 		// Create a link between the material and mesh for every mesh you can select from
 		// This RenderableMesh objects bind a mesh to material and allow it to be rendered
 		// Using the render component
-		Frame2DTextureComponent* resource = getComponent<Frame2DTextureComponent>();
+		TexturePreviewLoad2DComponent* resource = getComponent<TexturePreviewLoad2DComponent>();
 		for (auto& mesh : resource->mMeshes)
 		{
 			// Create mesh / material combo
@@ -103,7 +104,7 @@ namespace napkin
 		//////////////////////////////////////////////////////////////////////////
 
 		// Texture to use when selection is cleared
-		mTextureFallback = getComponent<Frame2DTextureComponent>()->mFallbackTexture.get();
+		mTextureFallback = getComponent<TexturePreviewLoad2DComponent>()->mFallbackTexture.get();
 
 		// Reference orbit move speed
 		mSpeedReference = mMeshOrbit->getMovementSpeed();
@@ -118,14 +119,14 @@ namespace napkin
 	}
 
 
-	void Frame2DTextureComponentInstance::load(std::unique_ptr<Texture2D> texure)
+	void TexturePreviewLoad2DComponentInstance::load(std::unique_ptr<Texture2D> texure)
 	{
 		bind(*texure);
 		mTexture = std::move(texure);
 	}
 
 
-	int Frame2DTextureComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
+	int TexturePreviewLoad2DComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
 	{
 		// Catch most obvious explicit error -> missing uv attribute
 		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::uv) != nullptr,
@@ -155,7 +156,7 @@ namespace napkin
 	}
 
 
-	void Frame2DTextureComponentInstance::bind(Texture2D& texture)
+	void TexturePreviewLoad2DComponentInstance::bind(Texture2D& texture)
 	{
 		// Bind texture to plane and mesh shader
 		assert(mPlaneSampler != nullptr);
@@ -165,7 +166,7 @@ namespace napkin
 	}
 
 
-	void Frame2DTextureComponentInstance::frame()
+	void TexturePreviewLoad2DComponentInstance::frame()
 	{
 		// 2D Projection
 		assert(mPlaneSampler->hasTexture());
@@ -199,14 +200,14 @@ namespace napkin
 	}
 
 
-	const Texture2D& Frame2DTextureComponentInstance::getTexture() const
+	const Texture2D& TexturePreviewLoad2DComponentInstance::getTexture() const
 	{
 		assert(mPlaneSampler != nullptr && mPlaneSampler->hasTexture());
 		return mPlaneSampler->getTexture();
 	}
 
 
-	void Frame2DTextureComponentInstance::setOpacity(float opacity)
+	void TexturePreviewLoad2DComponentInstance::setOpacity(float opacity)
 	{
 		switch (mMode)
 		{
@@ -221,7 +222,7 @@ namespace napkin
 	}
 
 
-	float Frame2DTextureComponentInstance::getOpacity() const
+	float TexturePreviewLoad2DComponentInstance::getOpacity() const
 	{
 		switch (mMode)
 		{
@@ -237,21 +238,21 @@ namespace napkin
 	}
 
 
-	void Frame2DTextureComponentInstance::setMeshIndex(int index)
+	void TexturePreviewLoad2DComponentInstance::setMeshIndex(int index)
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mMeshRenderer->setMesh(mMeshes[mMeshIndex]);
 	}
 
 
-	const nap::math::Box& Frame2DTextureComponentInstance::getBounds() const
+	const nap::math::Box& TexturePreviewLoad2DComponentInstance::getBounds() const
 	{
 		return mMode == EMode::Plane ? mPlaneBounds :
 			mBounds[mMeshIndex];
 	}
 
 
-	const IMesh& Frame2DTextureComponentInstance::getMesh()
+	const IMesh& TexturePreviewLoad2DComponentInstance::getMesh()
 	{
 		assert(mMeshes.size() > mMeshIndex);
 		return mMode == EMode::Plane ? mPlaneRenderer->getMesh() :
@@ -259,15 +260,15 @@ namespace napkin
 	}
 
 
-	void Frame2DTextureComponentInstance::processWindowEvents(InputService& inputService, RenderWindow& window)
+	void TexturePreviewLoad2DComponentInstance::processWindowEvents(InputService& inputService, RenderWindow& window)
 	{
 		static nap::DefaultInputRouter input_router;
 		switch (mMode)
 		{
-		case napkin::Frame2DTextureComponentInstance::EMode::Plane:
+		case napkin::TexturePreviewLoad2DComponentInstance::EMode::Plane:
 			inputService.processWindowEvents(window, input_router, { mPlaneCamera->getEntityInstance() });
 			break;
-		case napkin::Frame2DTextureComponentInstance::EMode::Mesh:
+		case napkin::TexturePreviewLoad2DComponentInstance::EMode::Mesh:
 			inputService.processWindowEvents(window, input_router, { mMeshCamera->getEntityInstance() });
 			break;
 		default:
@@ -277,14 +278,14 @@ namespace napkin
 	}
 
 
-	void Frame2DTextureComponentInstance::draw(RenderService& renderService, RenderWindow& window)
+	void TexturePreviewLoad2DComponentInstance::draw(RenderService& renderService, RenderWindow& window)
 	{
 		switch (mMode)
 		{
-		case napkin::Frame2DTextureComponentInstance::EMode::Plane:
+		case napkin::TexturePreviewLoad2DComponentInstance::EMode::Plane:
 			renderService.renderObjects(window, *mPlaneCamera, { mPlaneRenderer.get() });
 			break;
-		case napkin::Frame2DTextureComponentInstance::EMode::Mesh:
+		case napkin::TexturePreviewLoad2DComponentInstance::EMode::Mesh:
 			renderService.renderObjects(window, *mMeshCamera, { mMeshRenderer.get() });
 			break;
 		default:

@@ -5,6 +5,7 @@
 // Local includes
 #include "texturepreviewappletgui.h"
 #include "texturepreviewapicomponent.h"
+#include "texturepreviewapplet.h"
 
 // External includes
 #include <vulkan/vk_enum_string_helper.h>
@@ -33,7 +34,7 @@ namespace napkin
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Texture", loaded_tex != nullptr))
+		if (ImGui::BeginMenu("Details", loaded_tex != nullptr))
 		{
 			ImGui::PushID(loaded_tex);
 			texDetail("Identifier", loaded_tex->mID);
@@ -53,53 +54,7 @@ namespace napkin
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Mesh", loaded_tex != nullptr))
-		{
-			// Mesh attributes
-			auto* mesh = tex_controller.getMesh(); assert(mesh != nullptr);
-			const auto& mesh_instance = mesh->getMeshInstance();
-			ImGui::PushID(mesh);
-			texDetail("Identifier", mesh->mID);
-			texDetail("Vertices", utility::stringFormat("%d", mesh_instance.getNumVertices()));
-			texDetail("Shapes", utility::stringFormat("%d", mesh_instance.getNumShapes()));
-			texDetail("Cull Mode", RTTI_OF(ECullMode), mesh_instance.getCullMode());
-			texDetail("Draw Mode", RTTI_OF(EDrawMode), mesh_instance.getDrawMode());
-			texDetail("Polygon Mode ", RTTI_OF(EPolygonMode), mesh_instance.getPolygonMode());
-			texDetail("Usage", RTTI_OF(EMemoryUsage), mesh_instance.getUsage());
-
-			// Vertex attributes
-			texDetail("Attributes", utility::stringFormat("%d", mesh_instance.getAttributes().size()));
-			for (auto i = 0; i < mesh_instance.getAttributes().size(); i++)
-			{
-				auto& attr = *mesh_instance.getAttributes()[i];
-				ImGui::PushID(&attr);
-				texDetail(utility::stringFormat("\t%d", i), attr.mAttributeID,
-					nap::utility::stripNamespace(attr.getElementType().get_name().data()));
-				ImGui::PopID();
-			}
-
-			// Mesh bound dimensions
-			const auto& bounds = tex_controller.getMeshBounds();
-			texDetail("Bounds", "");
-			texDetail("\tWidth", utility::stringFormat("%.1f", bounds.getWidth()), "unit(s)");
-			texDetail("\tHeight", utility::stringFormat("%.1f", bounds.getHeight()), "unit(s)");
-			texDetail("\tDepth", utility::stringFormat("%.1f", bounds.getDepth()), "unit(s)");
-
-			// Mesh bound coordinates
-			static constexpr const float cutoff = 0.01;
-			static constexpr const glm::vec3 zero = { 0.0f, 0.0f, 0.0f };
-			auto min = glm::length(bounds.getMin()) < cutoff ? zero : bounds.getMin();
-			auto max = glm::length(bounds.getMax()) < cutoff ? zero : bounds.getMax();
-			auto cen = glm::length(bounds.getCenter()) < cutoff ? zero : bounds.getCenter();
-			texDetail("\tMin", utility::stringFormat("%.1f, %.1f, %.1f", min.x, min.y, min.z));
-			texDetail("\tMax", utility::stringFormat("%.1f, %.1f, %.1f", max.x, max.y, max.z));
-			texDetail("\tCenter", utility::stringFormat("%.1f, %.1f, %.1f", cen.x, cen.y, cen.z));
-
-			ImGui::PopID();
-			ImGui::EndMenu();
-		}
-
-		if (ImGui::BeginMenu("Controls", loaded_tex != nullptr))
+		if (ImGui::BeginMenu("Texture", loaded_tex != nullptr))
 		{
 			switch (tex_controller.getType())
 			{
@@ -127,7 +82,7 @@ namespace napkin
 
 		// Add frame icon
 		if (loaded_tex != nullptr &&
-			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Selection"))
+			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Texture"))
 		{
 			// Frame object & reset rotation
 			tex_controller.frame();
@@ -168,38 +123,38 @@ namespace napkin
 	{
 		// Show and set display mode
 		static const std::array<const char*, 2> mode_labels = { "Zoom & Pan", "3D Mesh" };
-		int display_idx = static_cast<int>(controller.mFrame2DTextureComponent->getMode());
+		int display_idx = static_cast<int>(controller.mLoad2DComponent->getMode());
 		if (ImGui::Combo("Display Mode", &display_idx, mode_labels.data(), mode_labels.size()))
 		{
-			auto display_mode = static_cast<Frame2DTextureComponentInstance::EMode>(display_idx);
-			controller.mFrame2DTextureComponent->setMode(display_mode);
+			auto display_mode = static_cast<TexturePreviewLoad2DComponentInstance::EMode>(display_idx);
+			controller.mLoad2DComponent->setMode(display_mode);
 			controller.frame();
 		}
 
 		// Update based on selected 2D texture display mode
-		switch (static_cast<Frame2DTextureComponentInstance::EMode>(display_idx))
+		switch (static_cast<TexturePreviewLoad2DComponentInstance::EMode>(display_idx))
 		{
-			case Frame2DTextureComponentInstance::EMode::Plane:
+			case TexturePreviewLoad2DComponentInstance::EMode::Plane:
 			{
 				// Texture opacity
 				float opacity = controller.getOpacity();
-				if (ImGui::SliderFloat("Texture Opacity", &opacity, 0.0f, 1.0f))
+				if (ImGui::SliderFloat("Opacity", &opacity, 0.0f, 1.0f))
 					controller.setOpacity(opacity);
 				break;
 			}
-			case Frame2DTextureComponentInstance::EMode::Mesh:
+			case TexturePreviewLoad2DComponentInstance::EMode::Mesh:
 			{
 				// Mesh selection labels
-				const auto& meshes = controller.mFrame2DTextureComponent->getMeshes();
+				const auto& meshes = controller.mLoad2DComponent->getMeshes();
 				std::vector<const char*> labels; labels.reserve(meshes.size());
 				for (const auto& mesh : meshes)
 					labels.emplace_back(mesh.getMesh().mID.c_str());
 
 				// Add mesh combo selection
-				int current_idx = controller.mFrame2DTextureComponent->getMeshIndex();
+				int current_idx = controller.mLoad2DComponent->getMeshIndex();
 				if (ImGui::Combo("Preview Mesh", &current_idx, labels.data(), meshes.size()))
 				{
-					controller.mFrame2DTextureComponent->setMeshIndex(current_idx);
+					controller.mLoad2DComponent->setMeshIndex(current_idx);
 					controller.frame();
 				}
 
@@ -218,21 +173,21 @@ namespace napkin
 	void TexturePreviewAppletGUI::updateTextureCube(TexturePreviewAPIComponentInstance& controller)
 	{
 		// Mesh visibility
-		auto& render_mesh_comp = *controller.mFrameCubeComponent->mMeshRenderer;
+		auto& render_mesh_comp = *controller.mLoadCubeComponent->mMeshRenderer;
 		bool visible = render_mesh_comp.isVisible();
 		if (ImGui::Checkbox("Show Mesh", &visible))
 			render_mesh_comp.setVisible(!render_mesh_comp.isVisible());
 
-		const auto& meshes = controller.mFrameCubeComponent->getMeshes();
+		const auto& meshes = controller.mLoadCubeComponent->getMeshes();
 		std::vector<const char*> labels; labels.reserve(meshes.size());
 		for (const auto& mesh : meshes)
 			labels.emplace_back(mesh.getMesh().mID.c_str());
 
 		// Add mesh combo selection
-		int current_idx = controller.mFrameCubeComponent->getMeshIndex();
+		int current_idx = controller.mLoadCubeComponent->getMeshIndex();
 		if (ImGui::Combo("Preview Mesh", &current_idx, labels.data(), meshes.size()))
 		{
-			controller.mFrameCubeComponent->setMeshIndex(current_idx);
+			controller.mLoadCubeComponent->setMeshIndex(current_idx);
 			controller.frame();
 		}
 

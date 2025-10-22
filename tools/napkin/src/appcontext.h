@@ -285,7 +285,7 @@ namespace napkin
 		/**
 		 * Disable opening of project from recently opened file list on startup
 		 */
-		void setOpenRecentProjectOnStartup(bool b);
+		void setOpenProjectOnStartup(bool b);
 
 	Q_SIGNALS:
 		/**

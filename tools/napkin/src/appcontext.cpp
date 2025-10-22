@@ -584,7 +584,7 @@ void napkin::AppContext::closeServiceConfiguration()
 }
 
 
-void AppContext::setOpenRecentProjectOnStartup(bool b)
+void AppContext::setOpenProjectOnStartup(bool b)
 {
 	mOpenRecentProjectAtStartup = b;
 }

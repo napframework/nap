@@ -12,16 +12,16 @@
 #include <renderservice.h>
 #include <sceneservice.h>
 #include <inputservice.h>
+#include <renderadvancedservice.h>
 #include <scene.h>
 #include <renderwindow.h>
 #include <entity.h>
-#include <imagefromfile.h>
 #include <imguiservice.h>
-#include <apisignature.h>
-#include <apievent.h>
+#include <color.h>
 
 // Local includes
 #include "../applet.h"
+#include "meshpreviewappletgui.h"
 
 namespace napkin
 {
@@ -29,17 +29,19 @@ namespace napkin
 	using namespace nap::rtti;
 
 	/**
-	 * Main application that is called from within the main loop
+	 * Simple mesh preview application.
+	 * Allows users to load and visualize all mesh (nap::IMesh) types.
 	 */
-	class RenderPreviewApplet : public napkin::Applet
+	class MeshPreviewApplet : public napkin::Applet
 	{
+		friend class MeshPreviewAppletGUI;
 		RTTI_ENABLE(napkin::Applet)
 	public:
 		/**
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		RenderPreviewApplet(nap::Core& core) : napkin::Applet(core) { }
+		MeshPreviewApplet(nap::Core& core);
 		
 		/**
 		 * Initialize all the services and app specific data structures
@@ -70,12 +72,6 @@ namespace napkin
 		 * @param inputEvent the input event that occurred
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
-		
-		/**
-		 * Called when the app is shutting down after quit() has been invoked
-		 * @return the application exit code, this is returned when the main loop is exited
-		 */
-		virtual int shutdown() override;
 
 	private:
 		ResourceManager*			mResourceManager = nullptr;			///< Manages all the loaded data
@@ -84,16 +80,17 @@ namespace napkin
 		InputService*				mInputService = nullptr;			///< Input service for processing input
 		IMGuiService*				mGuiService = nullptr;				//< Manages gui related update / draw calls
 		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
+		RenderAdvancedService*		mRenderAdvancedService = nullptr;	///< Render advanced service
 
+		ObjectPtr<EntityInstance>	mLoaderEntity = nullptr;			//< Pointer to the render entity
 		ObjectPtr<EntityInstance>	mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
-		ObjectPtr<EntityInstance>	mAPIEntity = nullptr;				//< Pointer to the api entity
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
+		ObjectPtr<EntityInstance>	mLightsEntity = nullptr;			//< Pointer to the light entity
 
-		ObjectPtr<APISignature>		mAPISignature = nullptr;			//< Pointer to the api text signature
-
-		void onTextChanged(const nap::APIEvent& apiEvent);
-		Slot<const nap::APIEvent&> mTextChangedSlot = { this, &RenderPreviewApplet::onTextChanged };
+		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
+		std::unique_ptr<MeshPreviewAppletGUI> mGUI;						//< Applet gui helper class
 	};
 }
+

@@ -8,14 +8,43 @@
 
 // External includes
 #include <rtti/jsonwriter.h>
+#include <trianglemesh.h>
+#include <image.h>
+#include <rendertexturecube.h>
 
 namespace napkin
 {
 	// Widget name
 	static constexpr const char* sPanelName = "Texture Preview";
 
+	// Included types
+	static StageOption::Types getTypes()
+	{
+		return
+		{
+			RTTI_OF(nap::Texture2D),
+			RTTI_OF(nap::TextureCube),
+			RTTI_OF(nap::IMesh)
+		};
+	}
+
+	// Explicit excluded types
+	static StageOption::Types getExcludedTypes()
+	{
+		return
+		{
+			 RTTI_OF(nap::TriangleMesh),
+			 RTTI_OF(nap::Image),
+			 RTTI_OF(nap::RenderTexture2D),
+			 RTTI_OF(nap::DepthRenderTexture2D),
+			 RTTI_OF(nap::RenderTextureCube),
+			 RTTI_OF(nap::DepthRenderTextureCube)
+		};
+	}
+
+
 	TexturePreviewPanel::TexturePreviewPanel(QWidget* parent) : StageWidget(sPanelName,
-		{ RTTI_OF(nap::Texture), RTTI_OF(nap::IMesh)}, parent)
+		getTypes(), getExcludedTypes(), RTTI_OF(nap::Texture), parent)
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePreviewPanel::init);
@@ -30,6 +59,10 @@ namespace napkin
 
 	void TexturePreviewPanel::init(const nap::ProjectInfo& info)
 	{
+		// Don't do anything if textures aren't supported
+		if (!isSupported(info))
+			return;
+
 		// Should only be initialized once, after the project is loaded
 		assert(mPanel == nullptr);
 
@@ -81,7 +114,7 @@ namespace napkin
 	void TexturePreviewPanel::closeEvent(QCloseEvent* event)
 	{
 		mRunner.abort();
-		return QWidget::closeEvent(event);
+		QWidget::closeEvent(event);
 	}
 
 
@@ -123,9 +156,11 @@ namespace napkin
 	bool TexturePreviewPanel::loadMesh(const PropertyPath& path, bool frame, nap::utility::ErrorState& error)
 	{
 		// Bail if no texture is loaded
-		if (!error.check(mLoadedTexture != nullptr, "%s cmd failed: can't assign mesh, no texture loaded",
-			TexturePreviewAPIComponent::loadMeshCmd))
-			return false;
+		if (mLoadedTexture == nullptr)
+		{
+			nap::Logger::warn("Unable to assign mesh: a texture must be loaded first");
+			return true;
+		}
 
 		// Serialize to JSON
 		nap::rtti::JSONWriter writer;
@@ -199,3 +234,4 @@ namespace napkin
 		return nullptr;
 	}
 }
+

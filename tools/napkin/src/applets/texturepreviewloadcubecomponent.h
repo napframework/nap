@@ -18,15 +18,15 @@
 namespace napkin
 {
 	using namespace nap;
-	class FrameCubemapComponentInstance;
+	class TexturePreviewLoadCubeComponentInstance;
 
 	/**
 	 * Binds and frames a cubemap texture in the viewport
 	 */
-	class FrameCubemapComponent : public Component
+	class TexturePreviewLoadCubeComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(FrameCubemapComponent, FrameCubemapComponentInstance)
+		DECLARE_COMPONENT(TexturePreviewLoadCubeComponent, TexturePreviewLoadCubeComponentInstance)
 
 	public:
 		// Properties
@@ -45,11 +45,11 @@ namespace napkin
 	/**
 	 * Binds and frames a cubemap texture in the viewport
 	 */
-	class FrameCubemapComponentInstance : public ComponentInstance
+	class TexturePreviewLoadCubeComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		FrameCubemapComponentInstance(EntityInstance& entity, Component& resource) :
+		TexturePreviewLoadCubeComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
 		/**
@@ -161,25 +161,25 @@ namespace napkin
 		void draw(RenderService& renderService, RenderWindow& window);
 
 		// Perspective camera component link
-		ComponentInstancePtr<PerspCameraComponent> mCameraComponent = { this, &FrameCubemapComponent::mCameraComponent };
+		ComponentInstancePtr<PerspCameraComponent> mCameraComponent = { this, &TexturePreviewLoadCubeComponent::mCameraComponent };
 
 		// Orbit controller link
-		ComponentInstancePtr<OrbitController> mMeshOrbit = { this, &FrameCubemapComponent::mMeshOrbit };
+		ComponentInstancePtr<OrbitController> mMeshOrbit = { this, &TexturePreviewLoadCubeComponent::mMeshOrbit };
 
 		// Render mesh component link
-		ComponentInstancePtr<RenderableMeshComponent> mMeshRenderer = { this, &FrameCubemapComponent::mMeshRenderer };
+		ComponentInstancePtr<RenderableMeshComponent> mMeshRenderer = { this, &TexturePreviewLoadCubeComponent::mMeshRenderer };
 
 		// Skybox component link
-		ComponentInstancePtr<RenderSkyBoxComponent> mSkyRenderer = { this, &FrameCubemapComponent::mSkyRenderer };
+		ComponentInstancePtr<RenderSkyBoxComponent> mSkyRenderer = { this, &TexturePreviewLoadCubeComponent::mSkyRenderer };
 
 		// Rotate component link
-		ComponentInstancePtr<RotateComponent> mMeshRotate = { this, &FrameCubemapComponent::mMeshRotate };
+		ComponentInstancePtr<RotateComponent> mMeshRotate = { this, &TexturePreviewLoadCubeComponent::mMeshRotate };
 
 		// Skybox transform link
-		ComponentInstancePtr<TransformComponent> mSkyTransform = { this, &FrameCubemapComponent::mSkyTransform };
+		ComponentInstancePtr<TransformComponent> mSkyTransform = { this, &TexturePreviewLoadCubeComponent::mSkyTransform };
 
 		// Mesh transform link
-		ComponentInstancePtr<TransformComponent> mMeshTransform = { this, &FrameCubemapComponent::mMeshTransform };
+		ComponentInstancePtr<TransformComponent> mMeshTransform = { this, &TexturePreviewLoadCubeComponent::mMeshTransform };
 
 	private:
 		TextureCube* mTextureFallback = nullptr;					//< Fall-back texture (managed by resource manager)
@@ -193,4 +193,3 @@ namespace napkin
 		void bind(TextureCube& texture);							//< Binds a cubemap texture
 	};
 }
-

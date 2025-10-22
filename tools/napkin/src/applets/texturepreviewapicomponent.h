@@ -5,12 +5,10 @@
 #pragma once
 
 // Local includes
-#include "frame2dtexturecomponent.h"
-#include "framecubemapcomponent.h"
-#include "../appletextension.h"
+#include "texturepreviewload2dcomponent.h"
+#include "texturepreviewloadcubecomponent.h"
 
 // External includes
-#include <component.h>
 #include <apicomponent.h>
 #include <componentptr.h>
 #include <renderskyboxcomponent.h>
@@ -24,6 +22,7 @@ namespace nap
 namespace napkin
 {
 	using namespace nap;
+	class AppletExtension;
 	class TexturePreviewApplet;
 	class TexturePreviewAPIComponentInstance;
 
@@ -54,11 +53,11 @@ namespace napkin
 		static constexpr const char* clearCmd = "ClearTexture";
 
 		// Properties
-		nap::ComponentPtr<Frame2DTextureComponent> mFrame2DTextureComponent;	///< Property: 'Frame2DTextureComponent' The component that binds and frames the 2D texture
-		nap::ComponentPtr<FrameCubemapComponent> mFrameCubemapComponent;		///< Property: 'FrameCubemapComponent' The component that binds and frames the cubemap
+		nap::ComponentPtr<TexturePreviewLoad2DComponent> mLoad2DTextureComponent;		///< Property: 'Load2DTextureComponent' The component that loads and frames the 2D texture
+		nap::ComponentPtr<TexturePreviewLoadCubeComponent> mLoadCubeTextureComponent;	///< Property: 'LoadCubemapComponent' The component that loads and frames the cubemap
 
 		// Requires an api component
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};
 
 
@@ -148,10 +147,10 @@ namespace napkin
 		void draw(RenderService& renderService, RenderWindow& window);
 
 		// The resolved 2d texture frame component
-		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &TexturePreviewAPIComponent::mFrame2DTextureComponent };
+		ComponentInstancePtr<TexturePreviewLoad2DComponent> mLoad2DComponent = { this, &TexturePreviewAPIComponent::mLoad2DTextureComponent };
 
 		// The resolved cubemap frame component
-		ComponentInstancePtr<FrameCubemapComponent> mFrameCubeComponent = { this, &TexturePreviewAPIComponent::mFrameCubemapComponent };
+		ComponentInstancePtr<TexturePreviewLoadCubeComponent> mLoadCubeComponent = { this, &TexturePreviewAPIComponent::mLoadCubeTextureComponent };
 
 	private:
 		void loadTexture(const nap::APIEvent& apiEvent);						//< Loads a texture from JSON
@@ -173,6 +172,6 @@ namespace napkin
 		EType mSelectedType = EType::None;
 
 		// GUI service
-		nap::IMGuiService* mGUIService;
+		nap::IMGuiService* mGUIService = nullptr;
 	};
 }

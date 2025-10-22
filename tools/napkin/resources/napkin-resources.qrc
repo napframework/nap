@@ -49,6 +49,10 @@
 		<file>icons/duplicate.png</file>
 		<file>icons/spin_up.png</file>
 		<file>icons/spin_down.png</file>
+		<file>icons/mesh.png</file>
+		<file>icons/texture.png</file>
+		<file>icons/window.png</file>
+		<file>icons/shader.png</file>
+		<file>icons/material.png</file>
 	</qresource>
 </RCC>
-

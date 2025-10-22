@@ -245,6 +245,17 @@ namespace nap
 		bool isMinimized() const;
 
 		/**
+		 * When hidden, the window is not mapped onto the desktop nor shown in the taskbar.
+		 * @return if the window is hidden
+		 */
+		bool isHidden() const;
+
+		/**
+		 * @return ff the window is behind another window or desktop element.
+		 */
+		bool isOccluded() const;
+
+		/**
 		 *	@return the hardware window number
 		 */
 		uint getNumber() const override;

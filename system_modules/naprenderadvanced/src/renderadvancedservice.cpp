@@ -327,10 +327,8 @@ namespace nap
 		for (auto& material : materials)
 		{
 			// Shader interface for lights
-			auto* light_struct = material->getOrCreateUniform(uniform::lightStruct);
-			assert(light_struct != nullptr);
-			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count);
-			assert(light_count != nullptr);
+			auto* light_struct = material->getOrCreateUniform(uniform::lightStruct); assert(light_struct != nullptr);
+			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count); assert(light_count != nullptr);
 
             light_count->setValue(mLightComponents.size());
 			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
@@ -406,16 +404,14 @@ namespace nap
 								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(uvalue);
 								break;
 							}
-							else if (entry.get_type().is_derived_from(RTTI_OF(glm::vec3)))
+							if (entry.get_type().is_derived_from(RTTI_OF(glm::vec3)))
 							{
 								glm::vec3 uvalue = variant.get_value<glm::vec3>();
 								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(uvalue);
 								break;
 							}
-							else
-							{
-								NAP_ASSERT_MSG(false, "Unsupported member data type");
-							}
+							NAP_ASSERT_MSG(false, "Unsupported member data type");
+							break;
 						}
 						default:
 						{
@@ -434,20 +430,24 @@ namespace nap
         // Shadow data
         for (auto& material : materials)
         {
-			// Ensure the shader interface is valid
-			auto* shadow_struct = material->getOrCreateUniform(uniform::shadowStruct); assert(shadow_struct != nullptr);
-            auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix); assert(view_matrix_array != nullptr);
-            auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar); assert(near_far_array != nullptr);
-            auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength); assert(strength_array != nullptr);
-            auto* spread_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::spread); assert(spread_array != nullptr);
-			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags); assert(shadow_flags != nullptr);
-            auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count); assert(light_count != nullptr);
-
+			// If material isn't using shadows, skip
+			auto* shadow_struct = material->getOrCreateUniform(uniform::shadowStruct);
+			if(shadow_struct == nullptr)
+				continue;
+			
 			// Set number of lights
-            light_count->setValue(mLightComponents.size());
+			auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count); assert(light_count != nullptr);
+			light_count->setValue(mLightComponents.size());
 
 			// Set shadow flags
+			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags); assert(shadow_flags != nullptr);
 			shadow_flags->setValue(getShadowFlags(mLightComponents));
+
+			// Get arrays
+			auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix); assert(view_matrix_array != nullptr);
+			auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar); assert(near_far_array != nullptr);
+			auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength); assert(strength_array != nullptr);
+			auto* spread_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::spread); assert(spread_array != nullptr);
 
             uint light_index = 0;
             for (const auto& light : mLightComponents)
