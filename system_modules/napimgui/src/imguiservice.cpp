@@ -336,7 +336,7 @@ namespace nap
 	{
 #ifdef _WIN32
 		auto hwnd = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-		ImGui::GetIO().ImeWindowHandle = hwnd;
+		ImGui::GetMainViewport()->PlatformHandleRaw = hwnd;
 #else
 		(void)window;
 #endif
