@@ -110,11 +110,18 @@ extract_apt_files "libmp3lame-dev" "$PLATFORM" "$DEST"
 
 rm -f -- "${DEST}/libmpg123/linux/${PLATFORM}/lib/libsyn123.so"*
 rm -f -- "${DEST}/libmpg123/linux/${PLATFORM}/lib/libout123.so"*
-rm -f -- "${DEST}/libmpg123/linux/${PLATFORM}/include"/*/out123.h
-rm -f -- "${DEST}/libmpg123/linux/${PLATFORM}/include"/*/syn123.h
 mkdir -p "${DEST}/libmpg123/linux/${PLATFORM}/include/libmpg123/"
-mv "${DEST}/libmpg123/linux/${PLATFORM}/include"/*/*.h "${DEST}/libmpg123/linux/${PLATFORM}/include/libmpg123/"
 
+if [[ "$PLATFORM" == "x86_64" ]] || [[ "$PLATFORM" == "arm64" ]]; then
+  rm -f -- "${DEST}/libmpg123/linux/${PLATFORM}/include"/*/out123.h
+  rm -f -- "${DEST}/libmpg123/linux/${PLATFORM}/include"/*/syn123.h
+  mv "${DEST}/libmpg123/linux/${PLATFORM}/include"/*/*.h "${DEST}/libmpg123/linux/${PLATFORM}/include/libmpg123/"
+else
+  rm -f -- "${DEST}/libmpg123/linux/${PLATFORM}"/*/out123.h
+  rm -f -- "${DEST}/libmpg123/linux/${PLATFORM}"/*/syn123.h
+  mv "${DEST}/libmpg123/linux/${PLATFORM}"/*/fmt123.h "${DEST}/libmpg123/linux/${PLATFORM}/include/libmpg123/"
+  mv "${DEST}/libmpg123/linux/${PLATFORM}"/*/mpg123.h "${DEST}/libmpg123/linux/${PLATFORM}/include/libmpg123/"
+fi
 
 
 # patch rpaths for dynamic libs
