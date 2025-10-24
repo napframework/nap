@@ -1,7 +1,7 @@
-prefix=/tmp/out
+prefix=/tmp/out/libsndfile/linux/arm64
 exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
+libdir=/tmp/out/libsndfile/linux/arm64/lib
+includedir=/tmp/out/libsndfile/linux/arm64/include
 
 Name: sndfile
 Description: A library for reading and writing audio files
