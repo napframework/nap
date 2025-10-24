@@ -1,7 +1,7 @@
-prefix=/tmp/out/libsndfile/linux/arm64
+prefix=/home/pi/nap/system_modules/napaudio/thirdparty/libsndfile/linux/arm64
 exec_prefix=${prefix}
-libdir=/tmp/out/libsndfile/linux/arm64/lib
-includedir=/tmp/out/libsndfile/linux/arm64/include
+libdir=/home/pi/nap/system_modules/napaudio/thirdparty/libsndfile/linux/arm64/lib
+includedir=/home/pi/nap/system_modules/napaudio/thirdparty/libsndfile/linux/arm64/include
 
 Name: sndfile
 Description: A library for reading and writing audio files

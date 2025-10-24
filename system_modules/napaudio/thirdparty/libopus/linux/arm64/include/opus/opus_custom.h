@@ -104,8 +104,7 @@ typedef struct OpusCustomDecoder OpusCustomDecoder;
 /** The mode contains all the information necessary to create an
     encoder. Both the encoder and decoder need to be initialized
     with exactly the same mode, otherwise the output will be
-    corrupted. The mode MUST NOT BE DESTROYED until the encoders and
-    decoders that use it are destroyed as well.
+    corrupted.
    @brief Mode configuration
  */
 typedef struct OpusCustomMode OpusCustomMode;
@@ -179,7 +178,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT OpusCustomEncoder *opus_custom_encode
 ) OPUS_ARG_NONNULL(1);
 
 
-/** Destroys an encoder state.
+/** Destroys a an encoder state.
   * @param[in] st <tt>OpusCustomEncoder*</tt>: State to be freed.
   */
 OPUS_CUSTOM_EXPORT void opus_custom_encoder_destroy(OpusCustomEncoder *st);
@@ -287,7 +286,7 @@ OPUS_CUSTOM_EXPORT OPUS_WARN_UNUSED_RESULT OpusCustomDecoder *opus_custom_decode
     int *error
 ) OPUS_ARG_NONNULL(1);
 
-/** Destroys a decoder state.
+/** Destroys a an decoder state.
   * @param[in] st <tt>OpusCustomDecoder*</tt>: State to be freed.
   */
 OPUS_CUSTOM_EXPORT void opus_custom_decoder_destroy(OpusCustomDecoder *st);
