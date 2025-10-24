@@ -1,7 +1,7 @@
 prefix=/tmp/out/libsndfile/linux/x86_64
 exec_prefix=${prefix}
-libdir=/tmp/out/libsndfile/linux/x86_64/lib
-includedir=/tmp/out/libsndfile/linux/x86_64/include
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
 Name: sndfile
 Description: A library for reading and writing audio files
