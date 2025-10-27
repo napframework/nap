@@ -11,8 +11,8 @@ target_architecture(ARCH)
 
 find_path(LIBFLAC_DIR
          NAMES
-         msvc/x86_64/include/all.h
-         linux/${ARCH}/include/all.h
+         msvc/x86_64/include/FLAC/all.h
+         linux/${ARCH}/include/FLAC/all.h
          HINTS
           ${NAP_ROOT}/system_modules/napaudio/thirdparty/libflac
         )
