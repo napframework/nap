@@ -43,8 +43,7 @@
             "{ROOT}/system_modules/napaudio/thirdparty/libmpg123/msvc/{BUILD_ARCH}/lib",
             "{ROOT}/system_modules/napaudio/thirdparty/libogg/msvc/{BUILD_ARCH}/lib",
             "{ROOT}/system_modules/napaudio/thirdparty/libopus/msvc/{BUILD_ARCH}/lib",
-            "{ROOT}/system_modules/napaudio/thirdparty/libvorbis/msvc/{BUILD_ARCH}/lib",
-
+            "{ROOT}/system_modules/napaudio/thirdparty/libvorbis/msvc/{BUILD_ARCH}/lib"
         ]
     }
 }
