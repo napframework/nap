@@ -220,7 +220,7 @@ if (NAP_AUDIOFILE_SUPPORT)
         install(FILES ${LIBSAMPLERATE_LICENSE_FILES} DESTINATION licenses/libsamplerate)
         foreach(dep IN LISTS SNDFILE_DEPENDENCIES)
             string(TOUPPER ${dep} DEP_UPPER)
-            set(licfiles "${DEP_UPPER}_LIB_DIR")
+            set(licfiles "${DEP_UPPER}_LICENSE_FILES")
             install(FILES "${${licfiles}}" DESTINATION "licfiles/${DEP_UPPER}")
         endforeach()
 
