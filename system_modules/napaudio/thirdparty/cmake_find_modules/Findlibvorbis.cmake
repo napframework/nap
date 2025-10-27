@@ -19,17 +19,19 @@ find_path(LIBVORBIS_DIR
 
 if (WIN32)
     set(LIBVORBIS_LIB_DIR ${LIBVORBIS_DIR}/msvc/x86_64/lib)
-    set(LIBVORBIS_LIBRARIES ${LIBVORBIS_LIB_DIR}/libvorbis.lib ${LIBVORBIS_LIB_DIR}/libvorbisenc.lib ${LIBVORBIS_LIB_DIR}/libvorbisfile.lib )
-    set(LIBVORBIS_LIBS_RELEASE_DLL ${LIBVORBIS_LIB_DIR}/libvorbis.dll ${LIBVORBIS_LIB_DIR}/libvorbisenc.dll ${LIBVORBIS_LIB_DIR}/libvorbisfile.dll)
+    set(LIBVORBIS_LIBRARIES ${LIBVORBIS_LIB_DIR}/vorbis.lib ${LIBVORBIS_LIB_DIR}/vorbisenc.lib ${LIBVORBIS_LIB_DIR}/vorbisfile.lib )
+    set(LIBVORBIS_LIBS_RELEASE_DLL ${LIBVORBIS_LIB_DIR}/vorbis.dll ${LIBVORBIS_LIB_DIR}/vorbisenc.dll ${LIBVORBIS_LIB_DIR}/vorbisfile.dll)
     set(LIBVORBIS_INCLUDE_DIR ${LIBVORBIS_DIR}/msvc/x86_64/include)
+    set(LIBVORBIS_LICENSE_FILES ${LIBVORBIS_DIR}/msvc/x86_64/copyright)
+
 else ()
     set(LIBVORBIS_LIB_DIR ${LIBVORBIS_DIR}/linux/${ARCH}/lib)
     set(LIBVORBIS_LIBS_RELEASE_DLL ${LIBVORBIS_LIB_DIR}/libvorbis.so ${LIBVORBIS_LIB_DIR}/libvorbisenc.so ${LIBVORBIS_LIB_DIR}/libvorbisfile.so)
     set(LIBVORBIS_LIBRARIES ${LIBVORBIS_LIBS_RELEASE_DLL})
     set(LIBVORBIS_INCLUDE_DIR ${LIBVORBIS_DIR}/linux/${ARCH}/include)
+    set(LIBVORBIS_LICENSE_FILES ${LIBVORBIS_DIR}/linux/${ARCH}/copyright)
 endif ()
 
-set(LIBVORBIS_LICENSE_FILES ${LIBVORBIS_DIR}/linux/${ARCH}/copyright)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBVORBIS_FOUND to TRUE

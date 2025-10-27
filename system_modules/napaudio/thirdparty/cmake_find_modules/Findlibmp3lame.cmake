@@ -22,14 +22,16 @@ if (WIN32)
     set(LIBMP3LAME_LIBRARIES ${LIBMP3LAME_LIB_DIR}/libmp3lame.lib)
     set(LIBMP3LAME_LIBS_RELEASE_DLL ${LIBMP3LAME_LIB_DIR}/libmp3lame.dll)
     set(LIBMP3LAME_INCLUDE_DIR ${LIBMP3LAME_DIR}/msvc/x86_64/include)
+    set(LIBMP3LAME_LICENSE_FILES ${LIBMP3LAME_DIR}/msvc/x86_64/copyright)
 else ()
     set(LIBMP3LAME_LIB_DIR ${LIBMP3LAME_DIR}/linux/${ARCH}/lib)
     set(LIBMP3LAME_LIBS_RELEASE_DLL ${LIBMP3LAME_LIB_DIR}/libmp3lame.so)
     set(LIBMP3LAME_LIBRARIES ${LIBMP3LAME_LIBS_RELEASE_DLL})
     set(LIBMP3LAME_INCLUDE_DIR ${LIBMP3LAME_DIR}/linux/${ARCH}/include)
+    set(LIBMP3LAME_LICENSE_FILES ${LIBMP3LAME_DIR}/linux/${ARCH}/copyright)
 endif ()
 
-set(LIBMP3LAME_LICENSE_FILES ${LIBMP3LAME_DIR}/linux/${ARCH}/copyright)
+
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBMP3LAME_FOUND to TRUE

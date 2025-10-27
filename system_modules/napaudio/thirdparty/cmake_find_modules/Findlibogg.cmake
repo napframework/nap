@@ -19,17 +19,18 @@ find_path(LIBOGG_DIR
 
 if (WIN32)
     set(LIBOGG_LIB_DIR ${LIBOGG_DIR}/msvc/x86_64/lib)
-    set(LIBOGG_LIBRARIES ${LIBOGG_LIB_DIR}/libogg.lib)
-    set(LIBOGG_LIBS_RELEASE_DLL ${LIBOGG_LIB_DIR}/libogg.dll)
+    set(LIBOGG_LIBRARIES ${LIBOGG_LIB_DIR}/ogg.lib)
+    set(LIBOGG_LIBS_RELEASE_DLL ${LIBOGG_LIB_DIR}/ogg.dll)
     set(LIBOGG_INCLUDE_DIR ${LIBOGG_DIR}/msvc/x86_64/include)
+    set(LIBOGG_LICENSE_FILES ${LIBOGG_DIR}/msvc/x86_64/copyright)
 else ()
     set(LIBOGG_LIB_DIR ${LIBOGG_DIR}/linux/${ARCH}/lib)
     set(LIBOGG_LIBS_RELEASE_DLL ${LIBOGG_LIB_DIR}/libogg.so)
     set(LIBOGG_LIBRARIES ${LIBOGG_LIBS_RELEASE_DLL})
     set(LIBOGG_INCLUDE_DIR ${LIBOGG_DIR}/linux/${ARCH}/include)
+    set(LIBOGG_LICENSE_FILES ${LIBOGG_DIR}/linux/${ARCH}/copyright)
 endif ()
 
-set(LIBOGG_LICENSE_FILES ${LIBOGG_DIR}/linux/${ARCH}/copyright)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBOGG_FOUND to TRUE

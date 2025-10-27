@@ -19,17 +19,20 @@ find_path(LIBOPUS_DIR
 
 if (WIN32)
     set(LIBOPUS_LIB_DIR ${LIBOPUS_DIR}/msvc/x86_64/lib)
-    set(LIBOPUS_LIBRARIES ${LIBOPUS_LIB_DIR}/libopus.lib)
-    set(LIBOPUS_LIBS_RELEASE_DLL ${LIBOPUS_LIB_DIR}/libopus.dll)
+    set(LIBOPUS_LIBRARIES ${LIBOPUS_LIB_DIR}/opus.lib)
+    set(LIBOPUS_LIBS_RELEASE_DLL ${LIBOPUS_LIB_DIR}/opus.dll)
     set(LIBOPUS_INCLUDE_DIR ${LIBOPUS_DIR}/msvc/x86_64/include)
+    set(LIBOPUS_LICENSE_FILES ${LIBOPUS_DIR}/msvc/x86_64/copyright)
+
 else ()
     set(LIBOPUS_LIB_DIR ${LIBOPUS_DIR}/linux/${ARCH}/lib)
     set(LIBOPUS_LIBS_RELEASE_DLL ${LIBOPUS_LIB_DIR}/libopus.so)
     set(LIBOPUS_LIBRARIES ${LIBOPUS_LIBS_RELEASE_DLL})
     set(LIBOPUS_INCLUDE_DIR ${LIBOPUS_DIR}/linux/${ARCH}/include)
+    set(LIBOPUS_LICENSE_FILES ${LIBOPUS_DIR}/linux/${ARCH}/copyright)
+
 endif ()
 
-set(LIBOPUS_LICENSE_FILES ${LIBOPUS_DIR}/linux/${ARCH}/copyright)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBOPUS_FOUND to TRUE
