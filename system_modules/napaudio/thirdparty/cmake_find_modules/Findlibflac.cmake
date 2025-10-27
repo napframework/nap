@@ -34,10 +34,10 @@ set(LIBFLAC_LICENSE_FILES ${LIBFLAC_DIR}/linux/${ARCH}/copyright)
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBFLAC_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(libFLAC REQUIRED_VARS LIBFLAC_DIR LIBFLAC_LIB_DIR LIBFLAC_INCLUDE_DIR)
+find_package_handle_standard_args(libflac REQUIRED_VARS LIBFLAC_DIR LIBFLAC_LIB_DIR LIBFLAC_INCLUDE_DIR)
 
-add_library(libFLAC SHARED IMPORTED)
-set_target_properties(libFLAC PROPERTIES
+add_library(libflac SHARED IMPORTED)
+set_target_properties(libflac PROPERTIES
                       IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
                       IMPORTED_LOCATION_RELEASE ${LIBFLAC_LIBS_RELEASE_DLL}
                       IMPORTED_LOCATION_DEBUG ${LIBFLAC_LIBS_RELEASE_DLL}
@@ -46,7 +46,7 @@ set_target_properties(libFLAC PROPERTIES
                       )
 
 if(WIN32)
-    set_target_properties(libFLAC PROPERTIES
+    set_target_properties(libflac PROPERTIES
                           IMPORTED_IMPLIB ${LIBFLAC_LIBRARIES}
                           )
 endif()
