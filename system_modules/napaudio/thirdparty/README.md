@@ -15,8 +15,17 @@ This command will build libsndfile using the source code available and install i
 
 
 ### Windows
-On windows run 
+
+Install libsndfile with multi format support using vcpkg
+
+Install vcpkg if not already installed
 ```
-libsndfile\install_libsndfile.bat
+git clone https://github.com/microsoft/vcpkg C:\vcpkg
+C:\vcpkg\bootstrap-vcpkg.bat
 ```
+install libsndfile enabling multi file type support
+```
+C:\vcpkg\vcpkg install libsndfile[external-libs,mpeg]:x64-windows
+```
+run `libsndfile\copy_libsndfile.bat`. Modify its base paths if needed.
 
