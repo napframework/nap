@@ -84,7 +84,7 @@ extract_apt_files() {
 }
 
 PLATFORM=$1
-DEST="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DEST="$( cd "$( dirname "${BASH_SOURCE[0]}/.." )" && pwd )"
 
 
 
