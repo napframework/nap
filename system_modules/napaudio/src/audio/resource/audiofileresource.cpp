@@ -36,7 +36,7 @@ namespace nap
 				if( serviceSampleRate != sampleRate){
 
 					nap::Logger::info("Resampling audio file: %s", mAudioFilePath.c_str());
-					if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, 0, errorState))
+					if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, 2, errorState))
 						return false;
 					
 					sampleRate = serviceSampleRate;
@@ -70,7 +70,7 @@ namespace nap
 					if( serviceSampleRate != sampleRate)
 					{
 						nap::Logger::info("Resampling audio file: %s", mAudioFilePaths[1].c_str());
-						if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, 0, errorState))
+						if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, 2, errorState))
 							return false;
 					
 						sampleRate = serviceSampleRate;
