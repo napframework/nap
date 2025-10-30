@@ -12,14 +12,28 @@
 #include <nap/logger.h>
 
 // RTTI
+
+RTTI_BEGIN_ENUM(nap::audio::EResampleMode)
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincBestQuality, "Sinc Best Quality"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincMediumQuality, "Sinc Medium Quality"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincFastest, "Sinc Fastest"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::ZeroOrderHold, "Zero Order Hold"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::Linear, "Linear")
+RTTI_END_ENUM
+
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileResource, "Loads an audio file (.wav, .mp3, etc..) from disk into memory")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("AudioFilePath", &nap::audio::AudioFileResource::mAudioFilePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Audio, "Path to the audio file (.wav, .mp3, etc..) on disk")
+	RTTI_PROPERTY("Resample", &nap::audio::AudioFileResource::mResample,  nap::rtti::EPropertyMetaData::Default, "Will resample the loaded audio file upon initing to match the samplerate of the selected sound device")
+	RTTI_PROPERTY("ResampleMode", &nap::audio::AudioFileResource::mResampleMode, nap::rtti::EPropertyMetaData::Default, "Resampling mode used when automatic resampling is enabled")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiAudioFileResource, "Loads multiple audio files from disk into memory as seperate channels, ie: 2x stereo '.wav' = 4 channels")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("AudioFilePaths", &nap::audio::MultiAudioFileResource::mAudioFilePaths, nap::rtti::EPropertyMetaData::Required, "Paths to the audio files on disk to load")
+	RTTI_PROPERTY("Resample", &nap::audio::MultiAudioFileResource::mResample,  nap::rtti::EPropertyMetaData::Default, "Will resample the loaded audio file upon initing to match the samplerate of the selected sound device")
+	RTTI_PROPERTY("ResampleMode", &nap::audio::MultiAudioFileResource::mResampleMode, nap::rtti::EPropertyMetaData::Default, "Resampling mode used when automatic resampling is enabled")
 RTTI_END_CLASS
 
 namespace nap
@@ -32,16 +46,18 @@ namespace nap
 			float sampleRate;
 			if (readAudioFile(mAudioFilePath, *getBuffer(), sampleRate, errorState))
 			{
-				auto serviceSampleRate = mAudioService->getNodeManager().getSampleRate();
-				if( serviceSampleRate != sampleRate){
-
-					nap::Logger::info("Resampling audio file: %s", mAudioFilePath.c_str());
-					if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, 2, errorState))
-						return false;
-					
-					sampleRate = serviceSampleRate;
-
-
+				if(mResample)
+				{
+					auto serviceSampleRate = mAudioService->getNodeManager().getSampleRate();
+					if( serviceSampleRate != sampleRate)
+					{
+	
+						nap::Logger::info("Resampling audio file: %s", mAudioFilePath.c_str());
+						if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, static_cast<uint>(mResampleMode), errorState))
+							return false;
+						
+						sampleRate = serviceSampleRate;
+					}
 				}
 				nap::Logger::info("Loaded audio file: %s sampleRate: %f", mAudioFilePath.c_str(), sampleRate);
 				setSampleRate(sampleRate);
@@ -65,24 +81,19 @@ namespace nap
 			{
 				if (readAudioFile(mAudioFilePaths[i], *getBuffer(), sampleRate, errorState))
 				{
-					nap::Logger::info("Loaded audio file: %s", mAudioFilePaths[i].c_str());
-					auto serviceSampleRate = mAudioService->getNodeManager().getSampleRate();
-					if( serviceSampleRate != sampleRate)
+
+					if(mResample)
 					{
-						nap::Logger::info("Resampling audio file: %s", mAudioFilePaths[1].c_str());
-						if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, 2, errorState))
-							return false;
-					
-						sampleRate = serviceSampleRate;
+						auto serviceSampleRate = mAudioService->getNodeManager().getSampleRate();
+						if( serviceSampleRate != sampleRate)
+						{
+							nap::Logger::info("Resampling audio file: %s", mAudioFilePaths[i].c_str());
+							if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, static_cast<uint>(mResampleMode), errorState))
+								return false;
+							
+							sampleRate = serviceSampleRate;
+						}
 					}
-					// if (i == 0)
-					// 	setSampleRate(sampleRate);
-					// // else {
-					// 	if (sampleRate != getSampleRate()) {
-					// 		errorState.fail("MultiAudioFileResource: files have different sample rates.");
-					// 		return false;
-					// 	}
-					// }
 				} else
 					return false;
 			}
