@@ -272,20 +272,20 @@ namespace nap
 
 		TargetComponentInstanceType* operator->()										{ assert(mInstance != nullptr); return mInstance; }
 
-		bool operator==(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance == other.mPtr; }
+		bool operator==(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance == other.mInstance; }
 
 		template<typename OTHER>
-		bool operator==(const ComponentInstancePtr<OTHER>& other) const					{ return mInstance == other.mPtr; }
+		bool operator==(const ComponentInstancePtr<OTHER>& other) const					{ return mInstance == other.mInstance; }
 
 		template<typename OTHER>
 		bool operator==(const OTHER* ptr) const											{ return mInstance == ptr; }
 
 		bool operator==(std::nullptr_t) const											{ return mInstance == nullptr; }
 
-		bool operator!=(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance != other.mPtr; }
+		bool operator!=(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance != other.mInstance; }
 
 		template<typename OTHER>
-		bool operator!=(const ComponentInstancePtr<OTHER>& other) const					{ return mInstance != other.mPtr; }
+		bool operator!=(const ComponentInstancePtr<OTHER>& other) const					{ return mInstance != other.mInstance; }
 
 		template<typename OTHER>
 		bool operator!=(const OTHER* ptr) const											{ return mInstance != ptr; }
