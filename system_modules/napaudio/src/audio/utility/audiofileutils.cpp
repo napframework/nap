@@ -21,6 +21,16 @@
 
 #include <nap/logger.h>
 
+
+RTTI_BEGIN_ENUM(nap::audio::EResampleMode)
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincBestQuality, "Sinc Best Quality"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincMediumQuality, "Sinc Medium Quality"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincFastest, "Sinc Fastest"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::ZeroOrderHold, "Zero Order Hold"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::Linear, "Linear")
+RTTI_END_ENUM
+
+
 using namespace std;
 
 namespace nap

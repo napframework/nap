@@ -11,6 +11,7 @@
 #include <rtti/factory.h>
 #include <nap/resourceptr.h>
 #include <nap/core.h>
+#include <audio/utility/audiofileutils.h>
 
 namespace nap
 {
@@ -19,20 +20,6 @@ namespace nap
 		
 		// Forward declarations
 		class AudioService;		
-		/**
-		 * Resampling algorithm options, taken from libsamplerate
-		 * ordered by quality/speed. Better quality = longer processing times. 
-		 * Best quality is very power hungry and takes about 10x more than the following algorithm
-		*/
-		enum class EResampleMode : uint
-		{
-			SincBestQuality			= 0,
-			SincMediumQuality		= 1,
-			SincFastest				= 2,
-			ZeroOrderHold			= 3,
-			Linear					= 4,
-		};
-
 		
 		/**
 		 * Loads an audio file from disk into memory.

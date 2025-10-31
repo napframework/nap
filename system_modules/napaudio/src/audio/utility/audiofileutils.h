@@ -16,7 +16,21 @@ namespace nap
 
 	namespace audio
 	{
+		/**
+		 * Resampling algorithm options, taken from libsamplerate
+		 * ordered by quality/speed. Better quality = longer processing times. 
+		 * Best quality is very power hungry and takes about 10x more than the following algorithm
+		*/
+		enum class EResampleMode : uint
+		{
+			SincBestQuality			= 0,
+			SincMediumQuality		= 1,
+			SincFastest				= 2,
+			ZeroOrderHold			= 3,
+			Linear					= 4,
+		};
 
+		
 		/**
 		 * Utility to read an audio file from disk
 		 * @param fileName the absolute path to the file

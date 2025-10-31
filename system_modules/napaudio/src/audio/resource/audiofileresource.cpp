@@ -6,20 +6,11 @@
 
 // audio includes
 #include <audio/service/audioservice.h>
-#include <audio/utility/audiofileutils.h>
 
 // nap includes
 #include <nap/logger.h>
 
 // RTTI
-
-RTTI_BEGIN_ENUM(nap::audio::EResampleMode)
-	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincBestQuality, "Sinc Best Quality"),
-	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincMediumQuality, "Sinc Medium Quality"),
-	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincFastest, "Sinc Fastest"),
-	RTTI_ENUM_VALUE(nap::audio::EResampleMode::ZeroOrderHold, "Zero Order Hold"),
-	RTTI_ENUM_VALUE(nap::audio::EResampleMode::Linear, "Linear")
-RTTI_END_ENUM
 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileResource, "Loads an audio file (.wav, .mp3, etc..) from disk into memory")
