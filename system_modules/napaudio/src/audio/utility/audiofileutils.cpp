@@ -224,11 +224,11 @@ namespace nap
 				}
 				
 				if(data.input_frames_used != buffer[i].size()){
-					nap::Logger::info("Sample rate conversion: whole input not processed. input size: %u, processed samples: %d", buffer[i].size(), data.input_frames_used);
+					nap::Logger::debug("Sample rate conversion: whole input not processed. input size: %u, processed samples: %d", buffer[i].size(), data.input_frames_used);
 				}
 
 				if(data.output_frames_gen != resampled[i].size()){
-					nap::Logger::info("Sample rate conversion: output is smaller than allocated size. %u, %d", resampled[i].size(), data.output_frames_gen);
+					nap::Logger::debug("Sample rate conversion: output is smaller than allocated size. %u, %d", resampled[i].size(), data.output_frames_gen);
 					if(data.output_frames_gen > 0 && data.output_frames_gen < resampled[i].size())
 					{
 						resampled[i].resize(data.output_frames_gen);						
