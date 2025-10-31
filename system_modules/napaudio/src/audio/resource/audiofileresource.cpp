@@ -7,6 +7,7 @@
 // audio includes
 #include <audio/service/audioservice.h>
 
+
 // nap includes
 #include <nap/logger.h>
 
@@ -34,64 +35,54 @@ namespace nap
 		
 		bool AudioFileResource::init(utility::ErrorState& errorState)
 		{
-			float sampleRate;
-			if (readAudioFile(mAudioFilePath, *getBuffer(), sampleRate, errorState))
-			{
-				if(mResample)
-				{
-					auto serviceSampleRate = mAudioService->getNodeManager().getSampleRate();
-					if( serviceSampleRate != sampleRate)
-					{
-	
-						nap::Logger::info("Resampling audio file: %s", mAudioFilePath.c_str());
-						if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, static_cast<uint>(mResampleMode), errorState))
-							return false;
-						
-						sampleRate = serviceSampleRate;
-					}
-				}
-				nap::Logger::info("Loaded audio file: %s sampleRate: %f", mAudioFilePath.c_str(), sampleRate);
-				setSampleRate(sampleRate);
-				return true;
-			}
+			float samplerate;
+			if (!readAudioFile(mAudioFilePath, *getBuffer(), samplerate, errorState))
 			return false;
+			auto service_samplerate = mAudioService->getNodeManager().getSampleRate();
+			if(mResample &&  service_samplerate != samplerate)
+			{
+				nap::Logger::debug("Resampling audio file: %s", mAudioFilePath.c_str());
+				if(!resampleSampleBuffer(*getBuffer(), samplerate, service_samplerate, mResampleMode, errorState))
+					return false;
+				
+				samplerate = service_samplerate;
+				
+			}
+			nap::Logger::info("Loaded audio file: %s samplerate: %f", mAudioFilePath.c_str(), samplerate);
+			setSampleRate(samplerate);
+			return true;
 		}
 		
 		
 		bool MultiAudioFileResource::init(utility::ErrorState& errorState)
 		{
-			float sampleRate = 0;
 			
 			if (mAudioFilePaths.empty())
 			{
 				errorState.fail("MultiAudioFileResource: need at least one audio file path");
 				return false;
 			}
+
+			float samplerate = 0;
 			
+			auto service_samplerate = mAudioService->getNodeManager().getSampleRate();
 			for (auto i = 0; i < mAudioFilePaths.size(); ++i)
 			{
-				if (readAudioFile(mAudioFilePaths[i], *getBuffer(), sampleRate, errorState))
-				{
-
-					if(mResample)
-					{
-						auto serviceSampleRate = mAudioService->getNodeManager().getSampleRate();
-						if( serviceSampleRate != sampleRate)
-						{
-							nap::Logger::info("Resampling audio file: %s", mAudioFilePaths[i].c_str());
-							if(!resampleSampleBuffer(*getBuffer(), sampleRate, serviceSampleRate, static_cast<uint>(mResampleMode), errorState))
-								return false;
-							
-							sampleRate = serviceSampleRate;
-						}
-					}
-				} else
+				if (!readAudioFile(mAudioFilePaths[i], *getBuffer(), samplerate, errorState))
 					return false;
+				if(mResample && service_samplerate != samplerate)
+				{
+					nap::Logger::debug("Resampling audio file: %s", mAudioFilePaths[i].c_str());
+					if(!resampleSampleBuffer(*getBuffer(), samplerate, service_samplerate, mResampleMode, errorState))
+						return false;
+					
+					samplerate = service_samplerate;
+					
+				}
+				 
 			}
 			
-			setSampleRate(sampleRate);
-			
-			
+			setSampleRate(samplerate);
 			return true;
 		}
 		
