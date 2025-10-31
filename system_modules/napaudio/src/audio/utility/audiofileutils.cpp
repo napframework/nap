@@ -96,14 +96,12 @@ namespace nap
 
 		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, EResampleMode resamplingMode, nap::utility::ErrorState& errorState){
 
-			if(isFloatEqual(sourceSampleRate, destSampleRate)){
-				errorState.fail("Not resampling because samplerates are equal. %f == %f", sourceSampleRate, destSampleRate);
+			if(!errorState.check(isFloatEqual(sourceSampleRate, destSampleRate),"Not resampling because samplerates are equal. %f == %f", sourceSampleRate, destSampleRate))
 				return false;
-			}
-			if(buffer.getSize() == 0){
-				errorState.fail("Not resampling because buffer is empty.");
+			
+			if(!errorState.check(buffer.getSize() == 0, "Not resampling because buffer is empty."))
 				return false;
-			}
+			
 
 			float ratio = destSampleRate/sourceSampleRate;
 
