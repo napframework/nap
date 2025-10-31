@@ -187,7 +187,7 @@ namespace nap
 		}
 
 
-		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, int converterType, nap::utility::ErrorState& errorState){
+		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, EResampleMode resamplingMode, nap::utility::ErrorState& errorState){
 
 			if(isFloatEqual(sourceSampleRate, destSampleRate)){
 				errorState.fail("Not resampling because samplerates are equal. %f == %f", sourceSampleRate, destSampleRate);
@@ -204,7 +204,6 @@ namespace nap
 
 			MultiSampleBuffer resampled(buffer.getChannelCount(), maxResampledSize);
 			
-			converterType = nap::math::clamp(converterType, 0, 4);
 
 			for(std::size_t i = 0; i < buffer.getChannelCount(); i++)
 			{
@@ -217,7 +216,7 @@ namespace nap
 				data.src_ratio = ratio;
 				 //     long   input_frames_used, output_frames_gen ;
 
-				int ret = src_simple (&data, converterType, 1) ;
+				int ret = src_simple (&data, static_cast<uint>(resamplingMode), 1) ;
 				if(ret != 0)
 				{
 					 errorState.fail("samplerate convertion failed: %s", src_strerror (ret));
