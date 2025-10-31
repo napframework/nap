@@ -31,6 +31,7 @@ RTTI_BEGIN_ENUM(nap::audio::EResampleMode)
 RTTI_END_ENUM
 
 
+
 using namespace std;
 
 namespace nap
@@ -105,12 +106,12 @@ namespace nap
 
 			float ratio = destSampleRate/sourceSampleRate;
 
-			size_t maxResampledSize = nap::math::ceil(buffer.getSize() * ratio);
+			auto maxResampledSize = nap::math::ceil(buffer.getSize() * ratio);
 
 			MultiSampleBuffer resampled(buffer.getChannelCount(), maxResampledSize);
 			
 
-			for(std::size_t i = 0; i < buffer.getChannelCount(); i++)
+			for(auto i = 0; i < buffer.getChannelCount(); i++)
 			{
 				SRC_DATA data;
 				data.data_in = buffer[i].data();
