@@ -53,10 +53,10 @@ namespace ImGui
 	}
 
 
-	ImTextureID GetTextureHandle(nap::Texture2D& texture)
+	ImTextureID GetTextureHandle(const nap::Texture2D& texture)
 	{
 		const nap::Core& core = texture.getRenderService().getCore();
-		const nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
+		const auto* gui_service = core.getService<nap::IMGuiService>();
 		return gui_service->getTextureHandle(texture);
 	}
 
