@@ -1236,7 +1236,8 @@ namespace nap
     bool SequenceCurveTrackView::inputFloat<float>(float& v, int precision)
     {
         ImGui::PushItemWidth(100.0f * mState.mScale);
-        ImGui::InputFloat("", &v, 0.0f, 0.0f, precision);
+        const auto format = "%." + std::to_string(precision) + "f";
+        ImGui::InputFloat("", &v, 0.0f, 0.0f, format.c_str());
         return ImGui::IsItemDeactivatedAfterEdit();
     }
 
@@ -1245,7 +1246,8 @@ namespace nap
     bool SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2& v, int precision)
     {
         ImGui::PushItemWidth(145.0f * mState.mScale);
-        ImGui::InputFloat2("", &v[0], precision);
+        const auto format = "%." + std::to_string(precision) + "f";
+        ImGui::InputFloat2("", &v[0], format.c_str());
         return ImGui::IsItemDeactivatedAfterEdit();
     }
 
@@ -1254,7 +1256,8 @@ namespace nap
     bool SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3& v, int precision)
     {
         ImGui::PushItemWidth(180.0f * mState.mScale);
-        ImGui::InputFloat3("", &v[0], precision);
+        const auto format = "%." + std::to_string(precision) + "f";
+        ImGui::InputFloat3("", &v[0], format.c_str());
         return ImGui::IsItemDeactivatedAfterEdit();
     }
 
@@ -1263,7 +1266,8 @@ namespace nap
     bool SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4& v, int precision)
     {
         ImGui::PushItemWidth(225.0f * mState.mScale);
-        ImGui::InputFloat4("", &v[0], precision);
+        const auto format = "%." + std::to_string(precision) + "f";
+        ImGui::InputFloat4("", &v[0], format.c_str());
         return ImGui::IsItemDeactivatedAfterEdit();
     }
 

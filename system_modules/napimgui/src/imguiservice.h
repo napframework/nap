@@ -320,18 +320,8 @@ namespace nap
 			~GUIContext();
 
 			using ESource = PointerEvent::ESource;
-			static constexpr int keyCount = 512;											///< Number of items in key array
-			using KeyArray = std::array<bool, keyCount>;
 
-			std::array<bool,3> mMousePressed				= { false };					///< If the mouse was pressed this frame
-			std::array<bool,3> mMouseRelease				= { false };					///< If the mouse was released this frame
-			std::array<bool,3> mModPressed					= { false };					///< If the ctrl (0), alt (1) or shift (2) modifier key is pressed
-			std::array<bool,3> mModRelease					= { false };					///< If the ctrl (0), alt (1) or shift (2) modifier key is released
 			std::array<int, 3> mPointerID					= { gui::pointerInvalidID };	///< Pointer id, -1 for pointer, 0+ for finger
-			KeyArray mKeyPressed							= { false };					///< The keys that were pressed this frame
-			std::vector<int> mKeyRelease;													///< The keys that were released this frame
-			glm::ivec2 mMousePosition						= { 0, 0 };						///< Last known mouse position
-			float mMouseWheel								= 0.0f;							///< Mouse wheel
 			float mScale									= 1.0f;							///< GUI Scale
 			int mDisplayIndex								= -1;							///< Current display
 			ImGuiContext* mContext							= nullptr;						///< Associated ImGUI context
