@@ -18,8 +18,8 @@ namespace nap
 
         AudioBufferResource::AudioBufferResource(nap::Core& core)
 		{
-            auto audioService = core.getService<AudioService>();
-			mBuffer = audioService->getNodeManager().makeSafe<MultiSampleBuffer>();
+            mAudioService = core.getService<AudioService>();
+			mBuffer = mAudioService->getNodeManager().makeSafe<MultiSampleBuffer>();
 		}
 		
 	}
