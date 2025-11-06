@@ -39,10 +39,6 @@ namespace nap
 	
 	namespace audio
 	{
-		
-
-		
-		
 		bool readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
 		{
 			SF_INFO info;
@@ -86,30 +82,18 @@ namespace nap
 			
 			return true;
 		}
-		
-		
-		
-		//this function should probably live in nap::math
-		bool isFloatEqual(const float & a, const float & b) {
-			return std::abs(a - b) <= std::numeric_limits<float>::epsilon() * std::abs(a);
-		}
 
 
-		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, EResampleMode resamplingMode, nap::utility::ErrorState& errorState){
+		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, EResampleMode resamplingMode, nap::utility::ErrorState& errorState)
+		{
+			// Source and target are the same or buffer empty
+			if (math::equal<float>(sourceSampleRate, destSampleRate) || buffer.getSize() == 0)
+				return true;	
 
-			if(!errorState.check(isFloatEqual(sourceSampleRate, destSampleRate),"Not resampling because samplerates are equal. %f == %f", sourceSampleRate, destSampleRate))
-				return false;
-			
-			if(!errorState.check(buffer.getSize() == 0, "Not resampling because buffer is empty."))
-				return false;
-			
-
+			// Resample
 			float ratio = destSampleRate/sourceSampleRate;
-
 			auto maxResampledSize = nap::math::ceil(buffer.getSize() * ratio);
-
 			MultiSampleBuffer resampled(buffer.getChannelCount(), maxResampledSize);
-			
 
 			for(auto i = 0; i < buffer.getChannelCount(); i++)
 			{
@@ -120,12 +104,11 @@ namespace nap
 				data.output_frames = resampled[i].size();
 				data.end_of_input =1;
 				data.src_ratio = ratio;
-				 //     long   input_frames_used, output_frames_gen ;
 
 				int ret = src_simple (&data, static_cast<uint>(resamplingMode), 1) ;
 				if(ret != 0)
 				{
-					 errorState.fail("samplerate convertion failed: %s", src_strerror (ret));
+					 errorState.fail("samplerate conversion failed: %s", src_strerror(ret));
 					 return false;
 				}
 				
@@ -133,14 +116,14 @@ namespace nap
 					nap::Logger::debug("Sample rate conversion: whole input not processed. input size: %u, processed samples: %d", buffer[i].size(), data.input_frames_used);
 				}
 
-				if(data.output_frames_gen != resampled[i].size()){
+				if(data.output_frames_gen != resampled[i].size())
+				{
 					nap::Logger::debug("Sample rate conversion: output is smaller than allocated size. %u, %d", resampled[i].size(), data.output_frames_gen);
 					if(data.output_frames_gen > 0 && data.output_frames_gen < resampled[i].size())
-					{
 						resampled[i].resize(data.output_frames_gen);						
-					}
 				}
 			}
+
 			// Is it OK to swap?
 			std::swap(buffer, resampled);
 			return true;

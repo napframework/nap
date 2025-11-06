@@ -7,9 +7,9 @@
 // audio includes
 #include <audio/service/audioservice.h>
 
-
 // nap includes
 #include <nap/logger.h>
+#include <mathutils.h>
 
 // RTTI
 
@@ -32,19 +32,18 @@ namespace nap
 {
 	namespace audio
 	{
-		
 		bool AudioFileResource::init(utility::ErrorState& errorState)
 		{
 			float samplerate;
 			if (!readAudioFile(mAudioFilePath, *getBuffer(), samplerate, errorState))
-			return false;
+				return false;
+
 			auto service_samplerate = mAudioService->getNodeManager().getSampleRate();
-			if(mResample &&  service_samplerate != samplerate)
+			if(mResample &&  !math::equal<float>(service_samplerate, samplerate))
 			{
 				nap::Logger::debug("Resampling audio file: %s", mAudioFilePath.c_str());
 				if(!resampleSampleBuffer(*getBuffer(), samplerate, service_samplerate, mResampleMode, errorState))
 					return false;
-				
 				samplerate = service_samplerate;
 				
 			}
@@ -64,24 +63,20 @@ namespace nap
 			}
 
 			float samplerate = 0;
-			
 			auto service_samplerate = mAudioService->getNodeManager().getSampleRate();
-			for (auto i = 0; i < mAudioFilePaths.size(); ++i)
+			for (const auto& path : mAudioFilePaths)
 			{
-				if (!readAudioFile(mAudioFilePaths[i], *getBuffer(), samplerate, errorState))
+				if (!readAudioFile(path, *getBuffer(), samplerate, errorState))
 					return false;
-				if(mResample && service_samplerate != samplerate)
+
+				if (mResample && !math::equal<float>(service_samplerate, samplerate))
 				{
-					nap::Logger::debug("Resampling audio file: %s", mAudioFilePaths[i].c_str());
-					if(!resampleSampleBuffer(*getBuffer(), samplerate, service_samplerate, mResampleMode, errorState))
+					nap::Logger::debug("Resampling audio file: %s", path.c_str());
+					if (!resampleSampleBuffer(*getBuffer(), samplerate, service_samplerate, mResampleMode, errorState))
 						return false;
-					
 					samplerate = service_samplerate;
-					
 				}
-				 
 			}
-			
 			setSampleRate(samplerate);
 			return true;
 		}
