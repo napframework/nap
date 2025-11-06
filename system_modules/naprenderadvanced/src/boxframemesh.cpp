@@ -6,8 +6,6 @@
 #include <nap/core.h>
 #include <nap/numeric.h>
 #include <cameracomponent.h>
-#include <orthocameracomponent.h>
-#include <perspcameracomponent.h>
 #include <renderglobals.h>
 #include <renderservice.h>
 
@@ -45,14 +43,13 @@ namespace nap
 		};
 	}
 
-	const static std::vector<glm::vec3> unitLineBox			= getBoxFrameMeshVertices({ 1,1,1 });
-	const static std::vector<glm::vec3> normalizedLineBox	= getBoxFrameMeshVertices({ 2,2,2 });
+	const static std::vector<glm::vec3> sUnitLineBox		= getBoxFrameMeshVertices({1, 1, 1 });
+	const static std::vector<glm::vec3> sNormalizedLineBox	= getBoxFrameMeshVertices({2, 2, 2 });
 
-	constexpr static uint quadVertCount = 4;					//< Number of vertices per quad
-	constexpr static uint quadCount = 2;						//< Total number of quad
-	constexpr static uint lineVertCount = 2;					//< Total number of vertices per line
-	constexpr static uint lineCount = 4;						//< Total number of lines
-	constexpr static uint primitiveCount = 6;					//< Total number of primitives
+	constexpr static uint sQuadVertCount = 4;	//< Number of vertices per quad
+	constexpr static uint sQuadCount = 2;		//< Total number of quad
+	constexpr static uint sLineVertCount = 2;	//< Total number of vertices per line
+	constexpr static uint sLineCount = 4;		//< Total number of lines
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -66,7 +63,18 @@ namespace nap
 
 	bool BoxFrameMesh::init(utility::ErrorState& errorState)
 	{
-		if (!mIsSetup)
+		// Create mesh instance
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
+
+		// Persistent configuration
+		mMeshInstance->setNumVertices(sNormalizedLineBox.size());
+		mMeshInstance->setUsage(mUsage);
+		mMeshInstance->setPolygonMode(EPolygonMode::Line);
+		mMeshInstance->setDrawMode(EDrawMode::Lines);
+		mMeshInstance->setCullMode(ECullMode::None);
+
+		if (!mIsSetupManually)
 			setup();
 
 		return mMeshInstance->init(errorState);
@@ -75,116 +83,83 @@ namespace nap
 
 	bool BoxFrameMesh::setup(const math::Box& box, utility::ErrorState& errorState)
 	{
-		// Ensure the mesh is not set up a second time
-		if (!errorState.check(!mIsSetup, "The current mesh cannot be setup more than once"))
-			return false;
-
-		// Create mesh instance
-		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
-
 		// Generate the indices
-		std::vector<uint32> indices(quadCount * quadVertCount + 2 + lineCount * lineVertCount + primitiveCount);
-		uint32* index_ptr = indices.data();
-		for (uint quad = 0; quad < quadCount; quad++)
+		std::vector<uint32> indices;
+		indices.reserve(sQuadCount * sQuadVertCount * 2 + sLineCount * sLineVertCount);
+
+		// Index offsets to shape a single quad face
+		static const std::vector quad_index_offsets = { 0, 1, 1, 2, 2, 3, 3, 0 };
+
+		//  Repeat twice generating two quads
+		for (uint i = 0; i < sQuadCount; i++)
 		{
-			const uint offset = quad * quadVertCount;
-			*(index_ptr++) = 0 + offset;
-			*(index_ptr++) = 1 + offset;
-			*(index_ptr++) = 2 + offset;
-			*(index_ptr++) = 3 + offset;
-			*(index_ptr++) = 0 + offset;
-			*(index_ptr++) = index::primitiveRestartIndex; // Base this on the index buffer data type (uint16 or uint32)
+			const uint quad_offset = i * sQuadVertCount;
+			for (uint off : quad_index_offsets)
+				indices.emplace_back(quad_offset + off);
 		}
 
-		for (uint line = 0; line < lineCount; line++)
+		// Connect the mirroring edges of the quads
+		for (uint i = 0; i < sLineCount; i++)
 		{
-			*(index_ptr++) = line;
-			*(index_ptr++) = line + quadVertCount;
-			*(index_ptr++) = index::primitiveRestartIndex;
+			indices.emplace_back(i);
+			indices.emplace_back(i + sQuadVertCount);
 		}
 
 		// Create attributes
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-
-		// Set numer of vertices this mesh contains
-		mMeshInstance->setNumVertices(unitLineBox.size());
-		mMeshInstance->setUsage(mUsage);
-		mMeshInstance->setPolygonMode(EPolygonMode::Line);
-		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
-		mMeshInstance->setCullMode(ECullMode::None);
-
+		auto& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
 		position_attribute.setData(getBoxFrameMeshVertices(box));
 
 		// Create the shape
-		MeshShape& shape = mMeshInstance->createShape();
+		auto& shape = mMeshInstance->createShape();
 		shape.setIndices(indices.data(), indices.size());
 
-		mIsSetup = true;
-
+		mIsSetupManually = true;
 		return true;
 	}
 
 
 	void BoxFrameMesh::setup()
 	{
-		// Ensure the mesh is not set up a second time
-		assert(!mIsSetup);
-
-		// Create mesh instance
-		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
-
 		// Generate the indices
-		std::vector<uint32> indices(quadCount * quadVertCount + 2 + lineCount * lineVertCount + primitiveCount);
-		uint32* index_ptr = indices.data();
-		for (uint quad = 0; quad < quadCount; quad++)
+		std::vector<uint32> indices;
+		indices.reserve(sQuadCount * sQuadVertCount * 2 + sLineCount * sLineVertCount);
+
+		// Index offsets to shape a single quad face
+		static const std::vector quad_index_offsets = { 0, 1, 1, 2, 2, 3, 3, 0 };
+
+		//  Repeat twice generating two quads
+		for (uint i = 0; i < sQuadCount; i++)
 		{
-			const uint offset = quad * quadVertCount;
-			*(index_ptr++) = 0 + offset;
-			*(index_ptr++) = 1 + offset;
-			*(index_ptr++) = 2 + offset;
-			*(index_ptr++) = 3 + offset;
-			*(index_ptr++) = 0 + offset;
-			*(index_ptr++) = index::primitiveRestartIndex; // Base this on the index buffer data type (uint16 or uint32)
+			const uint quad_offset = i * sQuadVertCount;
+			for (uint off : quad_index_offsets)
+				indices.emplace_back(quad_offset + off);
 		}
 
-		for (uint line = 0; line < lineCount; line++)
+		// Connect the mirroring edges of the quads
+		for (uint i = 0; i < sLineCount; i++)
 		{
-			*(index_ptr++) = line;
-			*(index_ptr++) = line + quadVertCount;
-			*(index_ptr++) = index::primitiveRestartIndex;
+			indices.emplace_back(i);
+			indices.emplace_back(i + sQuadVertCount);
 		}
 
 		// Create attributes
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-
-		// Set numer of vertices this mesh contains
-		mMeshInstance->setNumVertices(unitLineBox.size());
-		mMeshInstance->setUsage(mUsage);
-		mMeshInstance->setPolygonMode(EPolygonMode::Line);
-		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
-		mMeshInstance->setCullMode(ECullMode::None);
-
-		// Set data
-		position_attribute.setData(unitLineBox);
+		auto& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		position_attribute.setData(sUnitLineBox);
 
 		// Create the shape
-		MeshShape& shape = mMeshInstance->createShape();
+		auto& shape = mMeshInstance->createShape();
 		shape.setIndices(indices.data(), indices.size());
-
-		mIsSetup = true;
 	}
 
 
 	const std::vector<glm::vec3>& BoxFrameMesh::getUnitLineBox()
 	{
-		return unitLineBox;
+		return sUnitLineBox;
 	}
 
 
 	const std::vector<glm::vec3>& BoxFrameMesh::getNormalizedLineBox()
 	{
-		return normalizedLineBox;
+		return sNormalizedLineBox;
 	}
 }

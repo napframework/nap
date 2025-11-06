@@ -33,7 +33,6 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTexture2D, "Holds the depth output from a render pass using a render target")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Fill",		&nap::DepthRenderTexture2D::mFill,			nap::rtti::EPropertyMetaData::Default,	"If the texture is initialized to black when usage is static")
 	RTTI_PROPERTY("Width",		&nap::DepthRenderTexture2D::mWidth,			nap::rtti::EPropertyMetaData::Required, "Width of the texture in texels")
 	RTTI_PROPERTY("Height",		&nap::DepthRenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required, "Height of the texture in texels")
 	RTTI_PROPERTY("Format",		&nap::DepthRenderTexture2D::mDepthFormat,	nap::rtti::EPropertyMetaData::Required, "Texture depth format")

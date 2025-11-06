@@ -3,21 +3,23 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "rendertarget.h"
+#include "colordepthrendertarget.h"
 #include "renderservice.h"
 #include "textureutils.h"
+#include "renderadvancedutils.h"
 
 // External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget, "Color and Depth texture target for render operations")
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ColorDepthRenderTarget, "Color and Depth texture target for render operations")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("ColorTexture",			&nap::RenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required, "The storage color texture")
-	RTTI_PROPERTY("SampleShading",			&nap::RenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
-	RTTI_PROPERTY("Samples",				&nap::RenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
-	RTTI_PROPERTY("ClearColor",				&nap::RenderTarget::mClearColor,			nap::rtti::EPropertyMetaData::Default,	"Initial clear value")
-	RTTI_PROPERTY("Clear",					&nap::RenderTarget::mClear,					nap::rtti::EPropertyMetaData::Default,	"Whether to clear the render target at the start of each render pass")
+	RTTI_PROPERTY("ColorTexture",			&nap::ColorDepthRenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required, "The storage color texture")
+	RTTI_PROPERTY("DepthTexture",			&nap::ColorDepthRenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Required, "The storage depth texture")
+	RTTI_PROPERTY("SampleShading",			&nap::ColorDepthRenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost, applies to both color and depth")
+	RTTI_PROPERTY("Samples",				&nap::ColorDepthRenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use, applies to both color and depth")
+	RTTI_PROPERTY("ClearColor",				&nap::ColorDepthRenderTarget::mClearColor,				nap::rtti::EPropertyMetaData::Default,	"Initial clear color value")
+	RTTI_PROPERTY("ClearDepth",				&nap::ColorDepthRenderTarget::mClearDepth,				nap::rtti::EPropertyMetaData::Default,	"Initial clear depth value")
 RTTI_END_CLASS
 
 namespace nap
@@ -53,16 +55,16 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// RenderTarget
+	// ColorDepthRenderTarget
 	//////////////////////////////////////////////////////////////////////////
 
-	RenderTarget::RenderTarget(Core& core) :
+	ColorDepthRenderTarget::ColorDepthRenderTarget(Core& core) :
 		mRenderService(core.getService<RenderService>()),
 		mTextureLink(*this)
 	{}
 
 
-	RenderTarget::~RenderTarget()
+	ColorDepthRenderTarget::~ColorDepthRenderTarget()
 	{
 		if (mFramebuffer != VK_NULL_HANDLE)
 			vkDestroyFramebuffer(mRenderService->getDevice(), mFramebuffer, nullptr);
@@ -75,7 +77,7 @@ namespace nap
 	}
 
 
-	bool RenderTarget::init(utility::ErrorState& errorState)
+	bool ColorDepthRenderTarget::init(utility::ErrorState& errorState)
 	{
 		// Warn if requested number of samples is not matched by hardware
 		if (!mRenderService->getRasterizationSamples(mRequestedSamples, mRasterizationSamples, errorState))
@@ -93,22 +95,18 @@ namespace nap
 		VkExtent2D framebuffer_size = { (uint32)size.x, (uint32)size.y };
 
 		// Store as attachments
-		std::array<VkImageView, 3> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
+		std::array<VkImageView, 4> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, getFinalLayout(), mClear, mRenderPass, errorState))
+		if (!createConsumeRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, getFinalLayout(), mRenderPass, errorState))
 			return false;
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
 			// Bind textures as attachments
-			// Create depth image data and hook up to depth attachment
-			if (!createDepthResource(*mRenderService, framebuffer_size, mRenderService->getDepthFormat(), mRasterizationSamples, 0, mDepthImage, errorState))
-				return false;
-
 			attachments[0] = std::as_const(*mColorTexture).getHandle().getView();
-			attachments[1] = mDepthImage.getView();
+			attachments[1] = std::as_const(*mDepthTexture).getHandle().getView();
 		}
 		else
 		{
@@ -117,20 +115,21 @@ namespace nap
 				return false;
 
 			// Create multi-sampled depth attachment
-			if (!createDepthResource(*mRenderService, framebuffer_size, mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, mDepthImage, errorState))
+			if (!createDepthResource(*mRenderService, framebuffer_size, mDepthTexture->getFormat(), mRasterizationSamples, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, mDepthImage, errorState))
 				return false;
 
 			// Bind textures as attachments
 			attachments[0] = mColorImage.getView();
 			attachments[1] = mDepthImage.getView();
 			attachments[2] = std::as_const(*mColorTexture).getHandle().getView();
+			attachments[3] = std::as_const(*mDepthTexture).getHandle().getView();
 		}
 
 		// Create framebuffer
 		VkFramebufferCreateInfo framebuffer_info = {};
 		framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebuffer_info.renderPass = mRenderPass;
-		framebuffer_info.attachmentCount = mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3;
+		framebuffer_info.attachmentCount = mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 4;
 		framebuffer_info.pAttachments = attachments.data();
 		framebuffer_info.width = framebuffer_size.width;
 		framebuffer_info.height = framebuffer_size.height;
@@ -141,52 +140,15 @@ namespace nap
 	}
 
 
-	void RenderTarget::beginRendering()
+	void ColorDepthRenderTarget::beginRendering()
 	{
-        // Transition target texture image layout to color attachment optimal only when clear is disabled
-		// We would otherwise violate the Vulkan spec when using LOAD_OP_LOAD in the render pass
-		// https://vulkan.lunarg.com/doc/view/1.3.296.0/linux/1.3-extensions/vkspec.html#VUID-VkAttachmentDescription-format-06699
-		if (!mClear)
-        {
-			if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
-			{
-				// When MSAA is disabled, transition the color texture layout
-				// This operation requires a non-const image data handle
-				utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(),
-					mColorTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-					0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-					0, mColorTexture->getMipLevels(),
-					VK_IMAGE_ASPECT_COLOR_BIT);
-			}
-			else
-			{
-				// When MSAA is enabled, transition the color image
-				VkImageMemoryBarrier barrier = {};
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.srcAccessMask = 0;
-				barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.image = mColorImage.getImage();
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				barrier.subresourceRange.baseMipLevel = 0;
-				barrier.subresourceRange.levelCount = 1;
-				barrier.subresourceRange.baseArrayLayer = 0;
-				barrier.subresourceRange.layerCount = 1;
-				vkCmdPipelineBarrier(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-			}
-        }
-
 		const auto size = mColorTexture->getSize();
-		std::array<VkClearValue, 3> clear_values = {};
+		std::array<VkClearValue, 4> clear_values = {};
 		clear_values[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
-		clear_values[1].depthStencil = { 1.0f, 0 };
+		clear_values[1].depthStencil = { mClearDepth, 0 };
 		clear_values[2].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
+		clear_values[3].depthStencil = { mClearDepth, 0 };
 
-		// Setup render pass
 		VkRenderPassBeginInfo renderpass_info = {};
 		renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderpass_info.renderPass = mRenderPass;
@@ -196,10 +158,8 @@ namespace nap
 		renderpass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
 		renderpass_info.pClearValues = clear_values.data();
 
-		// Begin render pass
 		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderpass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-		// Ensure scissor and viewport are covering complete area
 		VkRect2D rect = {};
 		rect.offset = { 0, 0 };
 		rect.extent = { static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y) };
@@ -216,46 +176,54 @@ namespace nap
 	}
 
 
-	void RenderTarget::endRendering()
+	void ColorDepthRenderTarget::endRendering()
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
 
 		// Sync image data with render pass final layout
 		mTextureLink.sync(*mColorTexture);
+		mTextureLink.sync(*mDepthTexture);
 	}
 
 
-	const glm::ivec2 RenderTarget::getBufferSize() const
+	const glm::ivec2 ColorDepthRenderTarget::getBufferSize() const
 	{
 		return mColorTexture->getSize();
 	}
 
 
-	RenderTexture2D& RenderTarget::getColorTexture()
+	RenderTexture2D& ColorDepthRenderTarget::getColorTexture()
 	{
 		return *mColorTexture;
 	}
 
 
-	VkFormat RenderTarget::getColorFormat() const
+	DepthRenderTexture2D& ColorDepthRenderTarget::getDepthTexture()
+	{
+		assert(mDepthTexture != nullptr);
+		return *mDepthTexture;
+	}
+
+
+	VkFormat ColorDepthRenderTarget::getColorFormat() const
 	{
 		return mColorTexture->getFormat();
 	}
 
 
-	VkFormat RenderTarget::getDepthFormat() const
+	VkFormat ColorDepthRenderTarget::getDepthFormat() const
 	{
 		return mRenderService->getDepthFormat();
 	}
 
 
-	VkSampleCountFlagBits RenderTarget::getSampleCount() const
+	VkSampleCountFlagBits ColorDepthRenderTarget::getSampleCount() const
 	{
 		return mRasterizationSamples;
 	}
 
 
-	bool RenderTarget::getSampleShadingEnabled() const
+	bool ColorDepthRenderTarget::getSampleShadingEnabled() const
 	{
 		return mSampleShading;
 	}

@@ -44,7 +44,7 @@ namespace nap
 		{
 			bool mGenerateNormals		= false;	///< If vertex normals are generated when not present
 			bool mGenerateTangents		= false;	///< If tangents and bi-tangents are calculated, void if no normals are present or generated
-			bool mSmoothingAngle		= 60.0f;	///< The maximum angle between two normals at the same vertex position to be considered the same. Only used when normals are generated.
+			float mSmoothingAngle		= 60.0f;	///< The maximum angle between two normals at the same vertex position to be considered the same. Only used when normals are generated.
 		};
 
 		/**  

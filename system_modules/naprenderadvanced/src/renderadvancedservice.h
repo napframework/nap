@@ -287,7 +287,6 @@ namespace nap
 
 		std::unique_ptr<Sampler2DArray> mSampler2DResource;								///< Base sampler 2D resource with a reference to a depth texture dummy
 		std::unique_ptr<SamplerCubeArray> mSamplerCubeResource;							///< Base cube sampler resource with a reference to a cube depth texture dummy
-		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;						///< Shadow depth texture dummy
 		std::unique_ptr<nap::Scene> mLightScene = nullptr;								///< Light scene
 
 		bool mShadowMappingEnabled = true;												///< Whether shadow mapping is disabled
@@ -296,13 +295,11 @@ namespace nap
 		// Cube maps from file
 		std::unordered_map<EquiRectangularCubeMap*, std::unique_ptr<CubeRenderTarget>> mCubeMapTargets;		///< List of all registered cube map from file resources
 
-		std::unique_ptr<EmptyMesh>					mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
+		std::unique_ptr<EmptyMesh>					mEmptyMesh;							///< Empty mesh is required for generating a cube map from an equirectangular texture
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;		///< Run-time cube map material instance resource
 		std::unique_ptr<MaterialInstance>			mCubeMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		Material*									mCubeMapMaterial = nullptr;			///< Run-time cube map material
 
-		static constexpr const uint mRequiredVulkanVersionMajor = 1;					///< Required Vulkan major version to support the render advanced service
-		static constexpr const uint mRequiredVulkanVersionMinor = 0;					///< Required Vulkan minor version to support the render advanced service
 		static constexpr const uint mMaxLightCount = 8;									///< The maximum number of lights the supported by the render advanced  service light system
 	};
 }

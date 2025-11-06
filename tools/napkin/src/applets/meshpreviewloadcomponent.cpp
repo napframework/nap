@@ -268,13 +268,13 @@ namespace napkin
 	void MeshPreviewLoadComponentInstance::draw()
 	{
 		assert(mMesh != nullptr);
-		if (mDrawBounds)
-			drawBounds();
-
 		drawMesh();
 
 		if (hasWireframe() && mDrawWireframe)
 			drawWireframe();
+
+		if (mDrawBounds)
+			drawBounds();
 	}
 
 

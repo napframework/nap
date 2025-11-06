@@ -183,7 +183,6 @@ namespace nap
 	using BufferBindingVec3		= TypedBufferBindingNumeric<glm::vec3>;
 	using BufferBindingVec4		= TypedBufferBindingNumeric<glm::vec4>;
 	using BufferBindingIVec4	= TypedBufferBindingNumeric<glm::ivec4>;
-	using BufferBindingUVec4	= TypedBufferBindingNumeric<glm::uvec4>;
 	using BufferBindingMat4		= TypedBufferBindingNumeric<glm::mat4>;
 
 

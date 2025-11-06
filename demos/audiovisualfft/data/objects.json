@@ -1,6 +1,23 @@
 {
     "Objects": [
         {
+            "Type": "nap::ColorDepthRenderTarget",
+            "mID": "RenderTarget",
+            "ColorTexture": "ColorTexture",
+            "DepthTexture": "DepthTexture",
+            "SampleShading": true,
+            "Samples": "One",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "ClearDepth": 1.0
+        },
+        {
             "Type": "nap::ConstantShader",
             "mID": "ConstantShader"
         },
@@ -17,12 +34,12 @@
                     1.0
                 ]
             },
-            "UpdateLODs": true
+            "UpdateLODs": true,
+            "Clear": true
         },
         {
             "Type": "nap::DepthRenderTexture2D",
             "mID": "DepthTexture",
-            "Fill": false,
             "Width": 1920,
             "Height": 1080,
             "Format": "D16",
@@ -1237,23 +1254,6 @@
             "Children": []
         },
         {
-            "Type": "nap::RenderTarget",
-            "mID": "RenderTarget",
-            "ColorTexture": "ColorTexture",
-            "DepthTexture": "DepthTexture",
-            "SampleShading": true,
-            "Samples": "One",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "Clear": true
-        },
-        {
             "Type": "nap::RenderTexture2D",
             "mID": "ColorTexture",
             "Width": 1920,
@@ -1326,8 +1326,9 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
+            "AlwaysOnTop": false,
             "SampleShading": true,
-            "Title": "audiovisual",
+            "Title": "Audio Visual FFT",
             "Width": 1920,
             "Height": 1080,
             "Mode": "Immediate",
@@ -1341,6 +1342,7 @@
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1,
+            "Clear": true,
             "RestoreSize": true,
             "RestorePosition": true
         },

@@ -7,8 +7,9 @@
 // Local Includes
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
+#include "material.h"
+#include "rendertexturecube.h"
 #include "renderutils.h"
-#include "imagedata.h"
 #include "rendertag.h"
 #include "display.h"
 #include "videodriver.h"
@@ -16,9 +17,6 @@
 // External Includes
 #include <nap/service.h>
 #include <windowevent.h>
-#include <rendertarget.h>
-#include <material.h>
-#include <rect.h>
 #include <color.h>
 
 namespace nap
@@ -36,8 +34,9 @@ namespace nap
 	class MaterialInstance;
 	class ComputeMaterialInstance;
 	class ComputeComponentInstance;
-	class Texture;
 	class Texture2D;
+	class TextureCube;
+	class DepthRenderTexture2D;
 	class RenderLayer;
 	class RenderChain;
 
@@ -83,7 +82,7 @@ namespace nap
 		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
 		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32							mVulkanVersionMinor = 1;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		uint32							mVulkanVersionMinor = 2;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
 		uint32							mAnisotropicFilterSamples = 8;								///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
 		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
 		bool							mEnableCaching = true;										///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
@@ -177,11 +176,11 @@ namespace nap
 	 *
 	 * Turn headless rendering on / off using the nap::RenderServiceConfiguration.
 	 *
-	 * The service creates a Vulkan 1.0 instance by default, but applications may use Vulkan 1.1 and 1.2 functionality if required.
+	 * The service creates a Vulkan 1.2 instance by default, but applications may use legacy Vulkan functionality if required.
 	 * Make sure to set the required major and minor Vulkan version accordingly using the RenderServiceConfiguration.
 	 * The application will not start if the device does not support the selected (and therefore required) version of Vulkan.
 	 *
-	 * The following Vulkan device extensions are always required: VK_KHR_MAINTENANCE1_EXTENSION.
+	 * For Vulkan 1.0, the following Vulkan device extensions are always required: VK_KHR_MAINTENANCE1_EXTENSION.
 	 * When rendering to a window, the VK_KHR_SWAPCHAIN_EXTENSION is also required.
 	 * Additional extension can be specified using the nap::RenderServiceConfiguration.
 	 *
@@ -839,10 +838,22 @@ namespace nap
 		Texture2D& getEmptyTexture2D() const										{ return *mEmptyTexture2D; }
 
 		/**
-		 * Returns an error cube texture that can be bound to materials to signal an application warning or error.
-		 * @return the error cube texture.
+		 * Returns an empty cube texture that is available on the GPU for temporary binding or storage.
+		 * @return empty cube texture that is available on the GPU.
 		 */
 		TextureCube& getEmptyTextureCube() const									{ return *mEmptyTextureCube; }
+
+		/**
+		 * Returns an empty 2D depth texture that is available on the GPU for temporary binding or storage.
+		 * @return empty depth texture that is available on the GPU.
+		 */
+		Texture2D& getEmptyDepthTexture2D() const									{ return *mEmptyDepthTexture2D; }
+
+		/**
+		 * Returns an error cube depth texture that is available on the GPU for temporary binding or storage.
+		 * @return empty cube depth texture that is available on the GPU.
+		 */
+		TextureCube& getEmptyDepthTextureCube() const								{ return *mEmptyDepthTextureCube; }
 
 		/**
 		 * Returns an error 2D texture that can be bound to materials to signal an application warning or error.
@@ -1269,6 +1280,8 @@ namespace nap
 		// Empty textures
 		std::unique_ptr<Texture2D>				mEmptyTexture2D;
 		std::unique_ptr<TextureCube>			mEmptyTextureCube;
+		std::unique_ptr<DepthRenderTexture2D>	mEmptyDepthTexture2D;
+		std::unique_ptr<DepthRenderTextureCube>	mEmptyDepthTextureCube;
 
 		// Error textures
 		std::unique_ptr<Texture2D>				mErrorTexture2D;
