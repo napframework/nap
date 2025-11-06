@@ -1,0 +1,13 @@
+prefix=/tmp/out
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: sndfile
+Description: A library for reading and writing audio files
+Requires:
+Requires.private: flac ogg vorbis vorbisenc opus libmpg123
+Version: 1.2.2
+Libs: -L${libdir} -lsndfile
+Libs.private: -lmp3lame
+Cflags: -I${includedir}
