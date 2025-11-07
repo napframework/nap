@@ -10,6 +10,7 @@
 // nap includes
 #include <audio/utility/audiotypes.h>
 #include <utility/errorstate.h>
+#include <mathutils.h>
 
 namespace nap
 {
@@ -53,7 +54,14 @@ namespace nap
 		 */
 		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, EResampleMode resamplingMode, nap::utility::ErrorState& errorState);
 
-
+		/**
+		 * Utility to generate a visual waveform of x points from an audio buffer
+		 * @param buffer the buffer to generate the waveform for
+		 * @param segments number of waveform segments (512, 1024 etc.)
+		 * @param granularity number of samples to skip, 1 = don't skip
+		 * @return waveform of buffer of x points
+		 */
+		std::vector<float> NAPAPI getWaveform(const SampleBuffer& buffer, uint points, uint granularty, glm::vec2& range);
 	}
 
 

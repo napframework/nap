@@ -128,5 +128,58 @@ namespace nap
 			std::swap(buffer, resampled);
 			return true;
 		}
+
+
+		std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, uint points, uint granularity, glm::vec2& range)
+		{
+			std::vector<float> waveform(points);
+			float size = buffer.size() / static_cast<float>(points);
+			glm::ivec3 bounds;
+			range = { math::max<float>(), math::min<float>() };
+
+			for (int i = 0; i < points; i++)
+			{
+				// Min, Center and Max sample
+				bounds[0] = size * math::max<int>(i - 1, 0);
+				bounds[1] = size * i;
+				bounds[2] = size * math::max<int>(i + 1, points - 1);
+
+				// Sum & Value
+				double sum = 0.0f;
+				double val = 0.0f;
+
+				// Walk down and sample buffer weighted, increase weight the closer to the center
+				float length = bounds[1] - bounds[0];
+				for (auto s = bounds[0]; s < bounds[1]; s += granularity)
+				{
+					// Get value at location and scale based on distance
+					float bvalue = math::max<float>(buffer[s], 0.0f);
+					float weight = ((s - bounds[0]) / length) * math::smoothStep<float>(bvalue, 0.0f, 1.0f);
+
+					// Scale value based on weight and sum
+					val += bvalue * weight;
+					sum += weight;
+				}
+
+				// Walk up and sample buffer weighted
+				length = bounds[2] - bounds[1];
+				for (auto s = bounds[1]; s < bounds[2]; s += granularity)
+				{
+					// Get value at location and scale based on distance
+					float bvalue = math::max<float>(buffer[s], 0.0f);
+					float weight = (1.0f - ((s - bounds[1]) / length)) * math::smoothStep<float>(bvalue, 0.0f, 1.0f);
+
+					val += bvalue * weight;
+					sum += weight;
+				}
+
+				// Now divide total value by weighted sum
+				waveform[i] = val / math::max<float>(sum, 1.0f);
+
+				range.x = math::min(waveform[i], range.x);
+				range.y = math::max(waveform[i], range.y);
+			}
+			return waveform;
+		}
 	}
 }
