@@ -55,10 +55,21 @@ namespace nap
 		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, EResampleMode resamplingMode, nap::utility::ErrorState& errorState);
 
 		/**
-		 * Utility to generate a visual waveform of x points from an audio buffer
+		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
 		 * @param buffer the buffer to generate the waveform for
-		 * @param segments number of waveform segments (512, 1024 etc.)
+		 * @param points number of waveform segments (512, 1024 etc.)
+		 * @param samples number of samples per second to consider; lower value increase speed at the cost of resolution.
+		 * @param range the amplitude bounds of the waveform, always between 0-1
+		 * @return waveform of buffer of x points
+		 */
+		std::vector<float> NAPAPI getWaveform(const SampleBuffer& buffer, uint points, float sampleRate, uint samples, glm::vec2& range);
+
+		/**
+		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
+		 * @param buffer the buffer to generate the waveform for
+		 * @param points number of waveform segments (512, 1024 etc.)
 		 * @param granularity number of samples to skip, 1 = don't skip
+		 * @param range the amplitude bounds of the waveform, always between 0-1.
 		 * @return waveform of buffer of x points
 		 */
 		std::vector<float> NAPAPI getWaveform(const SampleBuffer& buffer, uint points, uint granularty, glm::vec2& range);
