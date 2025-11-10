@@ -58,7 +58,7 @@ namespace nap
 		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
 		 * @param buffer the buffer to generate the waveform for
 		 * @param points number of waveform segments (512, 1024 etc.)
-		 * @param samples number of samples per second to consider; lower value increase speed at the cost of resolution.
+		 * @param number of samples per second; reducing this value improves execution speed but decreases resolution.
 		 * @param range the amplitude bounds of the waveform, always between 0-1
 		 * @return waveform of buffer of x points
 		 */
