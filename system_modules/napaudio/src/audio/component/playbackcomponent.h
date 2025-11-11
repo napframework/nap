@@ -39,7 +39,7 @@ namespace nap
 			
 			// Properties
 			ResourcePtr<AudioBufferResource> mBuffer = nullptr; ///< property: 'Buffer' The buffer containing the audio to be played back
-			std::vector<int> mChannelRouting = { };           ///< property: 'ChannelRouting' The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played. If left empty it will be filled with the channels in the buffer in ascending order.
+			std::vector<int> mChannelRouting = { };				///< property: 'ChannelRouting' The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played. If left empty it will be filled with the channels in the buffer in ascending order.
 			bool mAutoPlay = true;                              ///< property: 'AutoPlay' If set to true, the component will start playing on initialization.
 			TimeValue mStartPosition = 0;                       ///< property: 'StartPosition' Start position of playback in milliseconds.
 			TimeValue mDuration = 0;                            ///< property: 'Duration' Duration of playback in milliseconds.
@@ -153,15 +153,74 @@ namespace nap
 			 * @return the pitch as a fraction of the original pitch of the audio material in the buffer.
 			 */
 			ControllerValue getPitch() const { return mPitch; }
+
+			/**
+			 * Returns buffer playback speed, which is a combination of the pitch and sample-rate
+			 * @return current buffer playback speed
+			 */
+			float getSpeed() const;
 			
 			/**
-			 * @return the amount of time the sequencer has been playing since the last call to play().
+			 * @return the amount of time in ms the sequencer has been playing since the last call to play().
 			 */
-			TimeValue getCurrentPlayingTime() const { return mCurrentPlayingTime; }
-		
+			TimeValue getCurrentPlayingTime() const			{ return mPlaytime; }
+
+			/**
+			 * Returns the length of the buffer in seconds
+			 * @param channel channel to get length for
+			 * @return length of the buffer in seconds
+			 */
+			double getLength()								{ return mLength; }
+
+			/**
+			 * Returns the current position in seconds in the buffer
+			 * @return current position in seconds in the buffer, 0.0f if no channels exist
+			 */
+			double getPosition() const;
+
+			/**
+			 * Returns the current position in seconds in the buffer for the given channel
+			 * @param channel channel to get position for
+			 * @return current position in ms in the buffer for the given channel, 0.0 if channel isn't available
+			 */
+			double getPosition(int channel) const;
+
+			/**
+			 * Returns the current position in the buffer
+			 * @return current position in the buffer, 0 if channel isn't available
+			 */
+			DiscreteTimeValue getSamplePosition() const;
+
+			/**
+			 * Returns the current position in the buffer for the given channel
+			 * @param channel channel to get position for
+			 * @return current position in the buffer, 0 if channel isn't available
+			 */
+			DiscreteTimeValue getSamplePosition(int channel) const;
+
+			/**
+			 * Returns the full audio buffer
+			 * @return the full audio buffer
+			 */
+			const AudioBufferResource& getBuffer()			{ return *mResource->mBuffer; }
+
+			/**
+			 * Returns sample buffer for given channel, asserts if channel doesn't exist 
+			 * @return sample buffer for given channel
+			 */
+			const SampleBuffer& getSamples(int channel) const;
+
+			/**
+			 * Returns available channels.
+			 * For stereo 0,1; unless a custom mapping is provided.
+			 * @return available channels
+			 */
+			const std::vector<int>& getChannels() const		{ return mChannelRouting; }
+
 		private:
 			void applyGain(TimeValue rampTime);
-			
+			int getBufferIndex(int channel) const;
+
 			std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
 			std::vector<SafeOwner<MultiplyNode>> mGainNodes; // Nodes for each channel to gain the signal.
 			std::vector<SafeOwner<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
@@ -172,12 +231,13 @@ namespace nap
 			TimeValue mFadeInTime = 0;
 			TimeValue mFadeOutTime = 0;
 			ControllerValue mPitch = 1.0;
-			TimeValue mDuration = 0;
-			TimeValue mCurrentPlayingTime = 0;
+			double mDuration = 0;
+			double mPlaytime = 0;
 			std::vector<int> mChannelRouting;
 			
 			bool mPlaying = false;  // Indicates wether the component is currently playing
-			
+			double mLength = 0.0;	// Track length in seconds
+
 			PlaybackComponent* mResource = nullptr; // The component's resource
 			NodeManager* mNodeManager = nullptr; // The audio node manager this component's audio nodes are managed by
 			AudioService* mAudioService = nullptr;
