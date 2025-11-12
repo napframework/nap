@@ -56,6 +56,7 @@ namespace nap
 		{
 			assert(mPlaying == false); // It is not safe to do this while playing back!
 			mBuffer = std::move(buffer);
+			mSize = mBuffer->getSize();
 		}
 		
 		

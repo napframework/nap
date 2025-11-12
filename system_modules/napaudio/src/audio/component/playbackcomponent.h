@@ -42,7 +42,6 @@ namespace nap
 			std::vector<int> mChannelRouting = { };				///< property: 'ChannelRouting' The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played. If left empty it will be filled with the channels in the buffer in ascending order.
 			bool mAutoPlay = true;                              ///< property: 'AutoPlay' If set to true, the component will start playing on initialization.
 			TimeValue mStartPosition = 0;                       ///< property: 'StartPosition' Start position of playback in milliseconds.
-			TimeValue mDuration = 0;                            ///< property: 'Duration' Duration of playback in milliseconds.
 			TimeValue mFadeInTime = 0;                          ///< property: 'FadeInTime' Fade in time of playback in milliseconds, to prevent clicks.
 			TimeValue mFadeOutTime = 0;                         ///< property: 'FadeOutTime' Fade out time of playback in milliseconds, to prevent clicks
 			ControllerValue mPitch = 1.0;                       ///< property: 'Pitch' Pitch as a fraction of the original: 2.0 means double speed, 0.5 means halve speed.
@@ -69,19 +68,27 @@ namespace nap
 			
 			// Inherited from ComponentInstance
 			bool init(utility::ErrorState& errorState) override;
-			
+
+			// Called every frame
 			void update(double deltaTime) override;
 			
-			// Inherited from AudioComponentBaseInstance
+			/**
+			 * @return total number of channels
+			 */
 			int getChannelCount() const override { return mGainNodes.size(); }
 			
 			OutputPin* getOutputForChannel(int channel) override { return &mGainNodes[channel]->audioOutput; }
-			
+
 			/**
-			 * @param startPosition: the start position in the buffer in milliseconds
-			 * @param duration: the total duration of playback in milliseconds. 0 means play untill the end of the buffer
+			 * Continue playback at current position
 			 */
-			void start(TimeValue startPosition = 0, TimeValue duration = 0);
+			void start();
+
+			/**
+			 * Start playback at given position in seconds 
+			 * @param startPosition: the start position in the buffer in seconds
+			 */
+			void start(double startPosition);
 			
 			/**
 			 * Fade out over fade out time and stop playback.
@@ -103,17 +110,7 @@ namespace nap
 			 * Sets the panning for stereo playback: 0 means far left, 0.5 means center and 1.0 means far right. Only applies when there are 2 channels of playback.
 			 */
 			void setStereoPanning(ControllerValue panning);
-			
-			/**
-			 * Sets the fade in time used in milliseconds when starting playback.
-			 */
-			void setFadeInTime(TimeValue time);
-			
-			/**
-			 * Sets the fade out time used in milliseconds when stopping playback.
-			 */
-			void setFadeOutTime(TimeValue time);
-			
+
 			/**
 			 * Sets the pitch as a fraction of the original pitch of the audio material in the buffer.
 			 */
@@ -127,7 +124,13 @@ namespace nap
 			/**
 			 * @return true when the component is currently playing back audio.
 			 */
-			bool isPlaying() const { return mPlaying; }
+			bool isPlaying() const;
+
+			/**
+			 * Returns if playback reached the end
+			 * @return if playback reached the end
+			 */
+			bool isFinished() const;
 			
 			/**
 			 * @return the current gain value
@@ -138,16 +141,6 @@ namespace nap
 			 * @return the current stereo panning.
 			 */
 			ControllerValue getStereoPanning() const { return mStereoPanning; }
-			
-			/**
-			 * @return the fade in time in milliseconds used when starting playback
-			 */
-			ControllerValue getFadeInTime() const { return mFadeInTime; }
-			
-			/**
-			 * @return the fade out time in milliseconds used when stopping playback
-			 */
-			ControllerValue getFadeOutTime() const { return mFadeOutTime; }
 			
 			/**
 			 * @return the pitch as a fraction of the original pitch of the audio material in the buffer.
@@ -163,14 +156,20 @@ namespace nap
 			/**
 			 * @return the amount of time in ms the sequencer has been playing since the last call to play().
 			 */
-			TimeValue getCurrentPlayingTime() const			{ return mPlaytime; }
+			[[deprecated]]
+			TimeValue getCurrentPlayingTime() const	{ return mPlaytime * 1000.0; }
+
+			/**
+			 * @return time in seconds since start
+			 */
+			double getPlaytime() { return mPlaytime; }
 
 			/**
 			 * Returns the length of the buffer in seconds
 			 * @param channel channel to get length for
 			 * @return length of the buffer in seconds
 			 */
-			double getLength()								{ return mLength; }
+			double getLength() { return mLength; }
 
 			/**
 			 * Returns the current position in seconds in the buffer
@@ -186,10 +185,27 @@ namespace nap
 			double getPosition(int channel) const;
 
 			/**
+			 * Set position in seconds, can't exceed length
+			 * @param pos position in seconds
+			 */
+			void setPosition(double pos);
+
+			/**
+			 * Update position in buffer, can't exceed buffer size
+			 * @param sample sample position
+			 */
+			void setSamplePosition(DiscreteTimeValue pos);
+
+			/**
 			 * Returns the current position in the buffer
 			 * @return current position in the buffer, 0 if channel isn't available
 			 */
 			DiscreteTimeValue getSamplePosition() const;
+
+			/**
+			 * @return total number of samples in the buffer
+			 */
+			DiscreteTimeValue getSampleCount() const { return getBuffer().getSize(); }
 
 			/**
 			 * Returns the current position in the buffer for the given channel
@@ -202,7 +218,7 @@ namespace nap
 			 * Returns the full audio buffer
 			 * @return the full audio buffer
 			 */
-			const AudioBufferResource& getBuffer()			{ return *mResource->mBuffer; }
+			const AudioBufferResource& getBuffer() const;
 
 			/**
 			 * Returns sample buffer for given channel, asserts if channel doesn't exist 
@@ -215,29 +231,23 @@ namespace nap
 			 * For stereo 0,1; unless a custom mapping is provided.
 			 * @return available channels
 			 */
-			const std::vector<int>& getChannels() const		{ return mChannelRouting; }
+			const std::vector<int>& getChannels() const { return mChannelRouting; }
 
 		private:
-			void applyGain(TimeValue rampTime);
+			void applyGain();
 			int getBufferIndex(int channel) const;
 
-			std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers; // Nodes for each channel performing the actual audio playback.
-			std::vector<SafeOwner<MultiplyNode>> mGainNodes; // Nodes for each channel to gain the signal.
-			std::vector<SafeOwner<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
+			std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers;	// Nodes for each channel performing the actual audio playback.
+			std::vector<SafeOwner<MultiplyNode>> mGainNodes;			// Nodes for each channel to gain the signal.
+			std::vector<SafeOwner<ControlNode>> mGainControls;			// Nodes to control the gain for each channel.
 			
-			ControllerValue mGain = 0;
+			ControllerValue mGain = 1.0;
 			std::vector<ControllerValue> mChannelGains;
 			ControllerValue mStereoPanning = 0.5;
-			TimeValue mFadeInTime = 0;
-			TimeValue mFadeOutTime = 0;
 			ControllerValue mPitch = 1.0;
-			double mDuration = 0;
 			double mPlaytime = 0;
+			double mLength = 0.0;
 			std::vector<int> mChannelRouting;
-			
-			bool mPlaying = false;  // Indicates wether the component is currently playing
-			double mLength = 0.0;	// Track length in seconds
-
 			PlaybackComponent* mResource = nullptr; // The component's resource
 			NodeManager* mNodeManager = nullptr; // The audio node manager this component's audio nodes are managed by
 			AudioService* mAudioService = nullptr;
