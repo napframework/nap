@@ -40,7 +40,6 @@ namespace nap
 	
 	namespace audio
 	{
-		
 		bool PlaybackComponentInstance::init(utility::ErrorState& errorState)
 		{
 			// Ensure sample rate is valid
@@ -253,8 +252,10 @@ namespace nap
 
 		const SampleBuffer& PlaybackComponentInstance::getSamples(int c) const
 		{
-			assert(c < mResource->mBuffer->getChannelCount());
-			return mResource->mBuffer->getBuffer()->channels[c];
+			assert(mResource != nullptr);
+			const auto& resource = mResource->mBuffer.get();
+			assert(resource != nullptr && c < resource->getChannelCount());
+			return resource->getBuffer()->channels[c];
 		}
 
 
