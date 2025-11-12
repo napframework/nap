@@ -252,10 +252,7 @@ namespace nap
 
 		const SampleBuffer& PlaybackComponentInstance::getSamples(int c) const
 		{
-			assert(mResource != nullptr);
-			const auto& resource = mResource->mBuffer.get();
-			assert(resource != nullptr && c < resource->getChannelCount());
-			return resource->getBuffer()->channels[c];
+			return getBuffer().getSamples(c);
 		}
 
 

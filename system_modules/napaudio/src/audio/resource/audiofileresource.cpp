@@ -47,7 +47,7 @@ namespace nap
 				samplerate = service_samplerate;
 				
 			}
-			nap::Logger::info("Loaded audio file: %s samplerate: %f", mAudioFilePath.c_str(), samplerate);
+			nap::Logger::debug("Loaded audio file: %s samplerate: %.2f", mAudioFilePath.c_str(), samplerate);
 			setSampleRate(samplerate);
 			return true;
 		}

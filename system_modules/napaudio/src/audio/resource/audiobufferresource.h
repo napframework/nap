@@ -46,7 +46,12 @@ namespace nap
 			 * @return: number of channels in the buffer
 			 */
 			unsigned int getChannelCount() const { return mBuffer->getChannelCount(); }
-			
+
+			/**
+			 * @return: samples in the buffer
+			 */
+			const auto& getSamples(int channel) const { assert(channel < mBuffer->getChannelCount()); return mBuffer->channels[channel]; }
+
 			/**
 			 * @return: access the actual data in the buffer
 			 */
