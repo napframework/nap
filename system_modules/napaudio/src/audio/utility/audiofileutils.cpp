@@ -130,6 +130,49 @@ namespace nap
 		}
 
 
+		std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint points, uint granularty, glm::vec2& bounds)
+		{
+			// Create waveform container
+			std::vector<float> waveform(points);
+
+			// Align range to granularity grid
+			size_t min = range.x - range.x % granularty;
+			size_t max = range.y - range.y % granularty;
+
+			double window = (max - min) / static_cast<double>(points);
+			double thresh = min + window;
+
+			float rms = 0.0f; size_t rct = 0; size_t bct = 0;
+			for (auto i = min; i < max; i += granularty)
+			{
+				if (i >= thresh)
+				{
+					// Compute RMS for bucket 
+					rms /= static_cast<float>(rct);
+					rms = sqrt(rms);
+
+					// Update bounds
+					bounds.x = rms < bounds.x ? rms : bounds.x;
+					bounds.y = rms > bounds.y ? rms : bounds.y;
+
+					// Average with previous sample, if available
+					assert(bct < waveform.size());
+					waveform[bct++] = bct == 0 ? rms : (waveform[bct - 1] + rms) / 2.0f;
+
+					thresh += window;
+
+					// Reset rms counters
+					rct = 0; rms = 0.0f;
+				}
+
+				rms += pow(buffer[i], 2.0f); rct++;
+			}
+
+			nap::Logger::info("Buckets: %d", bct);
+			return waveform;
+		}
+
+
 		std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, uint points, uint granularity, glm::vec2& range)
 		{
 			// Create waveform container
@@ -148,7 +191,6 @@ namespace nap
 			size_t rct = 0;		// RMS sample count
 			size_t bct = 0;		// Bucket count
 			float rms = 0;		// Summed RMS
-			float prm = 1.0f;	// Previous RMS
 			double thr = size;	// Bucket threshold
 
 			auto cth = math::min<size_t>(buffer.size(), thr);
@@ -190,4 +232,5 @@ namespace nap
 		nap::uint granularity = sampleRate / math::max<float>(samples, 1.0f);
 		return getWaveform(buffer, points, granularity, range);
 	}
+
 }
