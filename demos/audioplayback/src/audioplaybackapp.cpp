@@ -49,7 +49,7 @@ namespace nap
 		// Find the audio entity
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
         mAudioEntity = scene->findEntity("audioEntity");
-        
+
         // Find the audio playback component and initialize parameters
         mAudioDeviceSettingsGui = std::make_unique<audio::AudioDeviceSettingsGui>(*getCore().getService<audio::PortAudioService>(), false);
 
