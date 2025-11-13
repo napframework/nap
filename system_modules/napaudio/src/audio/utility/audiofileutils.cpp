@@ -130,27 +130,24 @@ namespace nap
 		}
 
 
-		std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint points, uint granularty, glm::vec2& bounds)
+		void nap::audio::getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer)
 		{
-			// Create waveform container
-			std::vector<float> waveform;
-			waveform.reserve(points);
-
 			// Align range to granularity grid
+			assert(range.y < buffer.size());
 			size_t min = range.x - range.x % granularty;
 			size_t max = range.y - range.y % granularty;
 
-			double window = (max - min) / static_cast<double>(points);
+			double window = (max - min) / static_cast<double>(ioBuffer.size());
 			double thresh = math::min<double>(min + window, max);
 			size_t thresi = static_cast<size_t>(thresh);
 
-			float rms = 0.0f; size_t rct = 0; size_t i = 0;
+			float rms = 0.0f; size_t rct = 0; size_t i = 0; size_t bct = 0;
 			while (i < max)
 			{
 				// Add sample for bucket
 				rms += pow(buffer[i], 2.0f); rct++;
 
-				// Create bucket if this is the last available sample
+				// Create buck if next sample overflows current
 				if ((i += granularty) >= thresi)
 				{
 					// Compute RMS for bucket 
@@ -162,9 +159,9 @@ namespace nap
 					bounds.y = rms > bounds.y ? rms : bounds.y;
 
 					// Average with previous sample, if available
-					assert(waveform.size() < points);
-					waveform.emplace_back(waveform.empty() ?
-						rms : (waveform.back() + rms) / 2.0f);
+					assert(bct < ioBuffer.size());
+					ioBuffer[bct] = bct == 0 ? rms : (ioBuffer[bct - 1] + rms) / 2.0f;
+					bct++;
 
 					// Reset threshold
 					thresh = math::min<double>(thresh + window, max);
@@ -174,21 +171,12 @@ namespace nap
 					rct = 0; rms = 0.0f;
 				}
 			}
-			return waveform;
 		}
 
 
-		std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, uint points, uint granularity, glm::vec2& bounds)
+		void nap::audio::getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& bounds, SampleBuffer& ioBuffer)
 		{
-			return getWaveform(buffer, { 0, buffer.size() - 1 }, points, granularity, bounds);
+			getWaveform(buffer, { 0, buffer.size() - 1 }, granularity, bounds, ioBuffer);
 		}
 	}
-
-
-	std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, uint points, float sampleRate, uint samples, glm::vec2& range)
-	{
-		nap::uint granularity = sampleRate / math::max<float>(samples, 1.0f);
-		return getWaveform(buffer, points, granularity, range);
-	}
-
 }

@@ -56,11 +56,11 @@ namespace nap
 		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
 		 * @param buffer the buffer to generate the waveform for
 		 * @param points number of waveform segments (512, 1024 etc.)
-		 * @param number of samples per second; reducing this value improves execution speed but decreases resolution.
-		 * @param range the amplitude bounds of the waveform, always between 0-1
+		 * @param granularity number of samples to skip, 1 = don't skip
+		 * @param range the amplitude bounds of the waveform, always between 0-1.
 		 * @return waveform of buffer of x points
 		 */
-		std::vector<float> NAPAPI getWaveform(const SampleBuffer& buffer, uint points, float sampleRate, uint samples, glm::vec2& range);
+		void NAPAPI getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer);
 
 		/**
 		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
@@ -70,16 +70,6 @@ namespace nap
 		 * @param range the amplitude bounds of the waveform, always between 0-1.
 		 * @return waveform of buffer of x points
 		 */
-		std::vector<float> NAPAPI getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint points, uint granularty, glm::vec2& bounds);
-
-		/**
-		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
-		 * @param buffer the buffer to generate the waveform for
-		 * @param points number of waveform segments (512, 1024 etc.)
-		 * @param granularity number of samples to skip, 1 = don't skip
-		 * @param range the amplitude bounds of the waveform, always between 0-1.
-		 * @return waveform of buffer of x points
-		 */
-		std::vector<float> NAPAPI getWaveform(const SampleBuffer& buffer, uint points, uint granularty, glm::vec2& range);
+		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularty, glm::vec2& range, SampleBuffer& ioBuffer);
 	}
 }
