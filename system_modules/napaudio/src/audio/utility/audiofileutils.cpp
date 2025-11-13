@@ -144,7 +144,7 @@ namespace nap
 			double thresh = math::min<double>(min + window, max);
 			size_t thresi = static_cast<size_t>(thresh);
 
-			float rms = 0.0f; size_t rct = 0; size_t bct = 0; size_t i = 0;
+			float rms = 0.0f; size_t rct = 0; size_t i = 0;
 			while (i < max)
 			{
 				// Add sample for bucket
@@ -162,7 +162,7 @@ namespace nap
 					bounds.y = rms > bounds.y ? rms : bounds.y;
 
 					// Average with previous sample, if available
-					assert(bct < points);
+					assert(waveform.size() < points);
 					waveform.emplace_back(waveform.empty() ?
 						rms : (waveform.back() + rms) / 2.0f);
 
@@ -174,7 +174,6 @@ namespace nap
 					rct = 0; rms = 0.0f;
 				}
 			}
-			nap::Logger::info("Buckets: %d", waveform.size());
 			return waveform;
 		}
 
