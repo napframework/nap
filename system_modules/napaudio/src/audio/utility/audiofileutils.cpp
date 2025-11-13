@@ -133,19 +133,25 @@ namespace nap
 		std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint points, uint granularty, glm::vec2& bounds)
 		{
 			// Create waveform container
-			std::vector<float> waveform(points);
+			std::vector<float> waveform;
+			waveform.reserve(points);
 
 			// Align range to granularity grid
 			size_t min = range.x - range.x % granularty;
 			size_t max = range.y - range.y % granularty;
 
 			double window = (max - min) / static_cast<double>(points);
-			double thresh = min + window;
+			double thresh = math::min<double>(min + window, max);
+			size_t thresi = static_cast<size_t>(thresh);
 
-			float rms = 0.0f; size_t rct = 0; size_t bct = 0;
-			for (auto i = min; i < max; i += granularty)
+			float rms = 0.0f; size_t rct = 0; size_t bct = 0; size_t i = 0;
+			while (i < max)
 			{
-				if (i >= thresh)
+				// Add sample for bucket
+				rms += pow(buffer[i], 2.0f); rct++;
+
+				// Create bucket if this is the last available sample
+				if ((i += granularty) >= thresi)
 				{
 					// Compute RMS for bucket 
 					rms /= static_cast<float>(rct);
@@ -156,73 +162,26 @@ namespace nap
 					bounds.y = rms > bounds.y ? rms : bounds.y;
 
 					// Average with previous sample, if available
-					assert(bct < waveform.size());
-					waveform[bct++] = bct == 0 ? rms : (waveform[bct - 1] + rms) / 2.0f;
+					assert(bct < points);
+					waveform.emplace_back(waveform.empty() ?
+						rms : (waveform.back() + rms) / 2.0f);
 
-					thresh += window;
+					// Reset threshold
+					thresh = math::min<double>(thresh + window, max);
+					thresi = size_t(thresh);
 
 					// Reset rms counters
 					rct = 0; rms = 0.0f;
 				}
-
-				rms += pow(buffer[i], 2.0f); rct++;
 			}
-
-			nap::Logger::info("Buckets: %d", bct);
+			nap::Logger::info("Buckets: %d", waveform.size());
 			return waveform;
 		}
 
 
-		std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, uint points, uint granularity, glm::vec2& range)
+		std::vector<float> nap::audio::getWaveform(const SampleBuffer& buffer, uint points, uint granularity, glm::vec2& bounds)
 		{
-			// Create waveform container
-			std::vector<float> waveform(points);
-
-			// Get sample window & granularity
-			assert(points > 0);
-			auto size = buffer.size() / static_cast<double>(points);
-			auto gran = std::max<uint>(granularity, 1);
-
-			// Compute RMS for every requested point in range
-			range = { math::max<float>(), math::min<float>() };
-
-			// Iterate until complete
-			size_t idx = 0;		// Sample index
-			size_t rct = 0;		// RMS sample count
-			size_t bct = 0;		// Bucket count
-			float rms = 0;		// Summed RMS
-			double thr = size;	// Bucket threshold
-
-			auto cth = math::min<size_t>(buffer.size(), thr);
-			while (idx < buffer.size())
-			{
-				// Sum RMS at sample location
-				rms += pow(buffer[idx], 2.0f); rct++;
-
-				// Average into bucket if next sample exceeds threshold
-				if ((idx += gran) >= cth)
-				{
-					// Compute RMS for bucket 
-					rms /= static_cast<float>(rct);
-					rms = sqrt(rms);
-
-					// Update bounds
-					range.x = rms < range.x ? rms : range.x;
-					range.y = rms > range.y ? rms : range.y;
-
-					// Average with previous sample, if available
-					assert(bct < waveform.size());
-					waveform[bct++] = bct == 0 ? rms : (waveform[bct - 1] + rms) / 2.0f;
-
-					// Compute next threshold
-					thr += size;
-					cth = math::min<size_t>(buffer.size(), thr);
-
-					// Reset rms counters
-					rct = 0; rms = 0.0f;
-				}
-			}
-			return waveform;
+			return getWaveform(buffer, { 0, buffer.size() - 1 }, points, granularity, bounds);
 		}
 	}
 

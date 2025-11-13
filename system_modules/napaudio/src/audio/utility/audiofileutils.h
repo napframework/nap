@@ -30,7 +30,6 @@ namespace nap
 			ZeroOrderHold			= 3,
 			Linear					= 4,
 		};
-
 		
 		/**
 		 * Utility to read an audio file from disk
@@ -41,7 +40,6 @@ namespace nap
 		 * @return true on success
 		 */
 		bool NAPAPI readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState);
-
 
 		/**
 		 * Utility to change the sample rate of a sample buffer. IMPORTANT: it is intended for resampling whole audio buffers from files not chuncks of audio.
@@ -72,8 +70,16 @@ namespace nap
 		 * @param range the amplitude bounds of the waveform, always between 0-1.
 		 * @return waveform of buffer of x points
 		 */
+		std::vector<float> NAPAPI getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint points, uint granularty, glm::vec2& bounds);
+
+		/**
+		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
+		 * @param buffer the buffer to generate the waveform for
+		 * @param points number of waveform segments (512, 1024 etc.)
+		 * @param granularity number of samples to skip, 1 = don't skip
+		 * @param range the amplitude bounds of the waveform, always between 0-1.
+		 * @return waveform of buffer of x points
+		 */
 		std::vector<float> NAPAPI getWaveform(const SampleBuffer& buffer, uint points, uint granularty, glm::vec2& range);
 	}
-
-
 }
