@@ -134,25 +134,34 @@ namespace nap
 		{
 			// Align range to granularity grid
 			assert(range.y < buffer.size());
-			size_t min = range.x - range.x % granularty;
-			size_t max = range.y - range.y % granularty;
+			assert(granularty > 0);
+			assert(!ioBuffer.empty());
 
-			double window = (max - min) / static_cast<double>(ioBuffer.size());
-			double thresh = math::min<double>(min + window, max);
-			size_t thresi = static_cast<size_t>(thresh);
+			// Quantize
+			size_t min = range.x - (range.x % granularty);
+			size_t max = range.y - (range.y % granularty);
 
-			float rms = 0.0f; size_t rct = 0; size_t i = 0; size_t bct = 0;
-			while (i < max)
+			// Compute bucket size
+			double bucket = (max - min) / static_cast<double>(ioBuffer.size());
+			double thresh = math::min<double>(min + bucket, max);
+
+			// Ensure step size doesn't exceed bucket size
+			auto inc = math::min<uint>(bucket, granularty);
+
+			size_t sct = 0;		//< Samples in bucket
+			size_t pct = 0;		//< Previous bucket sample count
+			size_t bct = 0;		//< Total number of buckets
+			float rms = 0.0f;	//< Bucket amplitude
+
+			for (auto i = min; i < max; i += inc)
 			{
-				// Add sample for bucket
-				rms += pow(buffer[i], 2.0f); rct++;
-
-				// Create buck if next sample overflows current
-				if ((i += granularty) >= thresi)
+				// If current position overflows existing bucket, add it
+				if (i >= thresh)
 				{
 					// Compute RMS for bucket 
-					rms /= static_cast<float>(rct);
+					rms /= static_cast<float>(sct);
 					rms = sqrt(rms);
+					pct = sct;
 
 					// Update bounds
 					bounds.x = rms < bounds.x ? rms : bounds.x;
@@ -161,16 +170,30 @@ namespace nap
 					// Average with previous sample, if available
 					assert(bct < ioBuffer.size());
 					ioBuffer[bct] = bct == 0 ? rms : (ioBuffer[bct - 1] + rms) / 2.0f;
-					bct++;
 
-					// Reset threshold
-					thresh = math::min<double>(thresh + window, max);
-					thresi = size_t(thresh);
-
-					// Reset rms counters
-					rct = 0; rms = 0.0f;
+					// Update bounds
+					thresh = math::min<double>(thresh + bucket, max);
+					sct = 0; rms = 0.0f; bct++;
 				}
+
+				// Add sample for bucket
+				rms += pow(buffer[i], 2.0f); sct++;
 			}
+
+			// Get RMS of remaining samples
+			sct = static_cast<float>(math::max<int>(sct, 1));
+			rms = rms / sct;
+			rms = sqrt(rms);
+
+			// Add previous bucket
+			if (bct > 0)
+			{
+				float weight = pct / sct;
+				rms += ioBuffer[bct - 1] * weight;
+				rms /= weight + 1.0f;
+			}
+
+			ioBuffer.back() = rms;
 		}
 
 
