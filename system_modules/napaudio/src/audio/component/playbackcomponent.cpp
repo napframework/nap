@@ -189,21 +189,21 @@ namespace nap
 
 		float PlaybackComponentInstance::getSpeed() const
 		{
-			return mPitch * (mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate());
+			return mPitch * (getBuffer().getSampleRate() / mNodeManager->getSampleRate());
 		}
 
 
 		double PlaybackComponentInstance::getPosition(int c) const
 		{
 			auto i = getBufferIndex(c); assert(i >= 0);
-			return mBufferPlayers[i]->getPosition() / static_cast<double>(mResource->mBuffer->getSampleRate());
+			return mBufferPlayers[i]->getPosition() / static_cast<double>(getBuffer().getSampleRate());
 		}
 
 
 		double PlaybackComponentInstance::getPosition() const
 		{
 			assert(!mBufferPlayers.empty());
-			return mBufferPlayers[0]->getPosition() / static_cast<double>(mResource->mBuffer->getSampleRate());
+			return mBufferPlayers[0]->getPosition() / static_cast<double>(getBuffer().getSampleRate());
 		}
 
 
@@ -240,13 +240,6 @@ namespace nap
 		{
 			auto i = getBufferIndex(c); assert(i >= 0);
 			return mBufferPlayers[i]->getPosition();
-		}
-
-
-		const nap::audio::AudioBufferResource& PlaybackComponentInstance::getBuffer() const
-		{
-			assert(mResource != nullptr);
-			return *mResource->mBuffer;
 		}
 
 

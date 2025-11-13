@@ -152,6 +152,12 @@ namespace nap
 			 * @return current buffer playback speed
 			 */
 			float getSpeed() const;
+
+			/**
+			 * Returns the audio buffer sample rate
+			 * @return the audio buffer sample rate
+			 */
+			float getSampleRate() const { return getBuffer().getSampleRate(); }
 			
 			/**
 			 * @return the amount of time in ms the sequencer has been playing since the last call to play().
@@ -218,7 +224,7 @@ namespace nap
 			 * Returns the full audio buffer
 			 * @return the full audio buffer
 			 */
-			const AudioBufferResource& getBuffer() const;
+			const AudioBufferResource& getBuffer() const { assert(mResource != nullptr); return *mResource->mBuffer; }
 
 			/**
 			 * Returns sample buffer for given channel, asserts if channel doesn't exist 

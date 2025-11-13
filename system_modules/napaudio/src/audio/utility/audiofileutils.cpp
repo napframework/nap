@@ -136,37 +136,50 @@ namespace nap
 			std::vector<float> waveform(points);
 
 			// Get sample window & granularity
+			assert(points > 0);
 			auto size = buffer.size() / static_cast<double>(points);
 			auto gran = std::max<uint>(granularity, 1);
 
 			// Compute RMS for every requested point in range
 			range = { math::max<float>(), math::min<float>() };
-			for (int p = 0; p < points; p++)
+
+			// Iterate until complete
+			size_t idx = 0;		// Sample index
+			size_t rct = 0;		// RMS sample count
+			size_t bct = 0;		// Bucket count
+			float rms = 0;		// Summed RMS
+			float prm = 1.0f;	// Previous RMS
+			double thr = size;	// Bucket threshold
+
+			auto cth = math::min<size_t>(buffer.size(), thr);
+			while (idx < buffer.size())
 			{
-				auto idx = static_cast<uint>(p * size);
-				auto max = idx + static_cast<uint>(size);
+				// Sum RMS at sample location
+				rms += pow(buffer[idx], 2.0f); rct++;
 
-				float rms = 0.0f; uint count = 0;
-				while (idx < max)
+				// Average into bucket if next sample exceeds threshold
+				if ((idx += gran) >= cth)
 				{
-					// Add value to RMS & increment
-					auto value = math::max<float>(buffer[idx], 0.0f);
-					rms += value * value;
-					idx += gran; count++;
+					// Compute RMS for bucket 
+					rms /= static_cast<float>(rct);
+					rms = sqrt(rms);
+
+					// Update bounds
+					range.x = rms < range.x ? rms : range.x;
+					range.y = rms > range.y ? rms : range.y;
+
+					// Average with previous sample, if available
+					assert(bct < waveform.size());
+					waveform[bct++] = bct == 0 ? rms : (waveform[bct - 1] + rms) / 2.0f;
+
+					// Compute next threshold
+					thr += size;
+					cth = math::min<size_t>(buffer.size(), thr);
+
+					// Reset rms counters
+					rct = 0; rms = 0.0f;
 				}
-
-				// Average signal power
-				rms /= static_cast<float>(count);
-				rms = sqrt(rms);
-
-				// Update bounds
-				range.x = rms < range.x ? rms : range.x;
-				range.y = rms > range.y ? rms : range.y;
-
-				// Store
-				waveform[p] = rms;
 			}
-
 			return waveform;
 		}
 	}
