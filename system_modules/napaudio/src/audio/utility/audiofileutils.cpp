@@ -134,7 +134,7 @@ namespace nap
 		{
 			// Align range to granularity grid
 			assert(range.x < range.y);
-			assert(range.y < ioBuffer.size());
+			assert(range.y < buffer.size());
 			assert(range.x > -1);
 			assert(granularty > 0);
 
@@ -175,10 +175,11 @@ namespace nap
 
 					// Average with previous sample, if available
 					assert(bct < ioBuffer.size());
-					ioBuffer[bct] = bct == 0 ? rms : (ioBuffer[bct - 1] + rms) / 2.0f;
+					ioBuffer[bct] = bct == 0 ? rms :
+						(ioBuffer[bct - 1] + rms) / 2.0f;
 
 					// Update bounds
-					thresh = math::min<double>(thresh + bucket, max);
+					thresh += bucket;
 					sct = 0; rms = 0.0f; bct++;
 				}
 
@@ -187,14 +188,13 @@ namespace nap
 			}
 
 			// Get RMS of remaining samples
-			sct = static_cast<float>(math::max<int>(sct, 1));
-			rms = rms / sct;
-			rms = sqrt(rms);
+			float sample_count = math::max<float>(sct, 1);
+			rms = sqrt(rms / sample_count);
 
 			// Add previous bucket
 			if (bct > 0)
 			{
-				float weight = pct / sct;
+				float weight = pct / sample_count;
 				rms += ioBuffer[bct - 1] * weight;
 				rms /= weight + 1.0f;
 			}
