@@ -140,7 +140,7 @@ namespace nap
 
 			// Quantize
 			size_t min = range.x;
-			size_t max = range.y;
+			size_t max = range.y + 1;
 
 			// Compute bucket size
 			assert(!ioBuffer.empty());
@@ -165,7 +165,7 @@ namespace nap
 				if (i >= thresh)
 				{
 					// Compute RMS for bucket 
-					rms /= static_cast<float>(sct);
+					rms /= math::max<float>(sct, 1.0f);
 					rms = sqrt(rms);
 					pct = sct;
 
@@ -175,8 +175,7 @@ namespace nap
 
 					// Average with previous sample, if available
 					assert(bct < ioBuffer.size());
-					ioBuffer[bct] = bct == 0 ? rms :
-						(ioBuffer[bct - 1] + rms) / 2.0f;
+					ioBuffer[bct] = bct == 0 ? rms : (ioBuffer[bct - 1] + rms) / 2.0f;
 
 					// Update bounds
 					thresh += bucket;
@@ -188,7 +187,7 @@ namespace nap
 			}
 
 			// Get RMS of remaining samples
-			float sample_count = math::max<float>(sct, 1);
+			float sample_count = math::max<float>(sct, 1.0f);
 			rms = sqrt(rms / sample_count);
 
 			// Add previous bucket
