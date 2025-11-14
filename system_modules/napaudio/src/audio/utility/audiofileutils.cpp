@@ -148,6 +148,10 @@ namespace nap
 			// Ensure step size doesn't exceed bucket size
 			auto inc = math::min<uint>(bucket, granularty);
 
+			// Initialize bounds
+			bounds.x = math::max<float>();
+			bounds.y = math::min<float>();
+
 			size_t sct = 0;		//< Samples in bucket
 			size_t pct = 0;		//< Previous bucket sample count
 			size_t bct = 0;		//< Total number of buckets

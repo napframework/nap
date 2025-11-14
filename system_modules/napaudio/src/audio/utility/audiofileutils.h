@@ -70,6 +70,6 @@ namespace nap
 		 * @param range the amplitude bounds of the waveform, always between 0-1.
 		 * @return waveform of buffer of x points
 		 */
-		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularty, glm::vec2& range, SampleBuffer& ioBuffer);
+		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer);
 	}
 }
