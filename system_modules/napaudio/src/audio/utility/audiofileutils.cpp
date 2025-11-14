@@ -133,15 +133,17 @@ namespace nap
 		void nap::audio::getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer)
 		{
 			// Align range to granularity grid
-			assert(range.y < buffer.size());
+			assert(range.x < range.y);
+			assert(range.y < ioBuffer.size());
+			assert(range.x > -1);
 			assert(granularty > 0);
-			assert(!ioBuffer.empty());
 
 			// Quantize
-			size_t min = range.x - (range.x % granularty);
-			size_t max = range.y - (range.y % granularty);
+			size_t min = range.x;
+			size_t max = range.y;
 
 			// Compute bucket size
+			assert(!ioBuffer.empty());
 			double bucket = (max - min) / static_cast<double>(ioBuffer.size());
 			double thresh = math::min<double>(min + bucket, max);
 
