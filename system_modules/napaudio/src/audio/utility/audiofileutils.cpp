@@ -130,7 +130,7 @@ namespace nap
 		}
 
 
-		void nap::audio::getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer)
+		void getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer)
 		{
 			// Align range to granularity grid
 			assert(range.x < range.y);
@@ -202,7 +202,7 @@ namespace nap
 		}
 
 
-		void nap::audio::getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& bounds, SampleBuffer& ioBuffer)
+		void getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& bounds, SampleBuffer& ioBuffer)
 		{
 			getWaveform(buffer, { 0, buffer.size() - 1 }, granularity, bounds, ioBuffer);
 		}
