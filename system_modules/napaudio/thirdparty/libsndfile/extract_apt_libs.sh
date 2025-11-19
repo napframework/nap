@@ -130,12 +130,12 @@ RPATH="\$ORIGIN/../../../../libflac/linux/${PLATFORM}/lib:\
 \$ORIGIN/../../../../libmpg123/linux/${PLATFORM}/lib:\
 \$ORIGIN/../../../../libogg/linux/${PLATFORM}/lib:\
 \$ORIGIN/../../../../libopus/linux/${PLATFORM}/lib:\
-\$ORIGIN/../../../../libvorbis/linux/${PLATFORM}/lib"
+\$ORIGIN/../../../../libvorbis/linux/${PLATFORM}/lib:\$ORIGIN"
 
 patchelf --set-rpath "$RPATH" "${DEST}/libsndfile/linux/${PLATFORM}/lib/libsndfile.so"
 
-patchelf --set-rpath "\$ORIGIN/../../../../libogg/linux/${PLATFORM}/lib" "${DEST}/libflac/linux/${PLATFORM}/lib/libFLAC.so"
-patchelf --set-rpath "\$ORIGIN/../../../../libogg/linux/${PLATFORM}/lib" "${DEST}/libvorbis/linux/${PLATFORM}/lib/libvorbis.so"
+patchelf --set-rpath "\$ORIGIN/../../../../libogg/linux/${PLATFORM}/lib:\$ORIGIN" "${DEST}/libflac/linux/${PLATFORM}/lib/libFLAC.so"
+patchelf --set-rpath "\$ORIGIN/../../../../libogg/linux/${PLATFORM}/lib:\$ORIGIN" "${DEST}/libvorbis/linux/${PLATFORM}/lib/libvorbis.so"
 patchelf --set-rpath "\$ORIGIN/../../../../libogg/linux/${PLATFORM}/lib:\$ORIGIN" "${DEST}/libvorbis/linux/${PLATFORM}/lib/libvorbisfile.so"
 patchelf --set-rpath "\$ORIGIN/../../../../libogg/linux/${PLATFORM}/lib:\$ORIGIN" "${DEST}/libvorbis/linux/${PLATFORM}/lib/libvorbisenc.so"
 
