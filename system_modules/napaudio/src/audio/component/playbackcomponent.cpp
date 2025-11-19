@@ -131,9 +131,9 @@ namespace nap
 
 				// Stop buffer playback when gain reaches 0
 				SafePtr<BufferPlayerNode> player_ptr = player.get();
-				gain_control->rampFinishedSignal.connect([&, player_ptr](ControlNode& gainControl)
+				gain_control->rampFinishedSignal.connect([&, player_ptr](ControlNode& control)
 					{
-						if (gainControl.getValue() <= 0 && player_ptr != nullptr) {
+						if (math::equal<float>(control.getValue(), 0.0f) && player_ptr != nullptr) {
 							player_ptr->stop();
 						}
 					});
