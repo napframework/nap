@@ -76,7 +76,10 @@ namespace nap
 			 * @return total number of channels
 			 */
 			int getChannelCount() const override { return mGainNodes.size(); }
-			
+
+			/**
+			 * @return output for given channel
+			 */
 			OutputPin* getOutputForChannel(int channel) override { return &mGainNodes[channel]->audioOutput; }
 
 			/**
@@ -94,7 +97,19 @@ namespace nap
 			 * Fade out over fade out time and stop playback.
 			 */
 			void stop();
-			
+
+			/**
+			 * Set the audio buffer to play
+			 * @param resource the audio buffer to play
+			 * @param error the error if buffer can't be set
+			 */
+			bool setBuffer(AudioBufferResource& resource, utility::ErrorState& error);
+
+			/**
+			 * @return audio playback buffer
+			 */
+			const AudioBufferResource& getBuffer() const { assert(mBuffer != nullptr); return *mBuffer; }
+
 			/**
 			 * Sets the overall gain of playback.
 			 */
@@ -175,7 +190,7 @@ namespace nap
 			 * @param channel channel to get length for
 			 * @return length of the buffer in seconds
 			 */
-			double getLength() { return mLength; }
+			double getLength() const { return mLength; }
 
 			/**
 			 * Returns the current position in seconds in the buffer
@@ -221,12 +236,6 @@ namespace nap
 			DiscreteTimeValue getSamplePosition(int channel) const;
 
 			/**
-			 * Returns the full audio buffer
-			 * @return the full audio buffer
-			 */
-			const AudioBufferResource& getBuffer() const { assert(mResource != nullptr); return *mResource->mBuffer; }
-
-			/**
 			 * Returns sample buffer for given channel, asserts if channel doesn't exist 
 			 * @return sample buffer for given channel
 			 */
@@ -246,19 +255,17 @@ namespace nap
 			std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers;	// Nodes for each channel performing the actual audio playback.
 			std::vector<SafeOwner<MultiplyNode>> mGainNodes;			// Nodes for each channel to gain the signal.
 			std::vector<SafeOwner<ControlNode>> mGainControls;			// Nodes to control the gain for each channel.
-			
+			AudioBufferResource* mBuffer = nullptr;
+
 			ControllerValue mGain = 1.0;
 			std::vector<ControllerValue> mChannelGains;
 			ControllerValue mStereoPanning = 0.5;
 			ControllerValue mPitch = 1.0;
 			double mPlaytime = 0;
-			double mLength = 0.0;
 			std::vector<int> mChannelRouting;
-			PlaybackComponent* mResource = nullptr; // The component's resource
-			NodeManager* mNodeManager = nullptr; // The audio node manager this component's audio nodes are managed by
+			NodeManager* mNodeManager = nullptr;						// The audio node manager this component's audio nodes are managed by
 			AudioService* mAudioService = nullptr;
-		};
-		
+			double mLength = 0.0;
+		};	
 	}
-	
 }
