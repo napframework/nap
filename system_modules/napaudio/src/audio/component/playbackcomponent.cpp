@@ -14,7 +14,7 @@
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::PlaybackComponent, "Plays-back audio from an audio buffer resource")
-	RTTI_PROPERTY("Buffer", &nap::audio::PlaybackComponent::mBuffer, nap::rtti::EPropertyMetaData::Default, "The buffer to play")
+	RTTI_PROPERTY("Buffer", &nap::audio::PlaybackComponent::mBuffer, nap::rtti::EPropertyMetaData::Required, "The buffer to play")
 	RTTI_PROPERTY("ChannelRouting", &nap::audio::PlaybackComponent::mChannelRouting, nap::rtti::EPropertyMetaData::Default, "Channel selection, auto completed using buffer when left empty")
 	RTTI_PROPERTY("Gain", &nap::audio::PlaybackComponent::mGain, nap::rtti::EPropertyMetaData::Default, "Overall input gain")
 	RTTI_PROPERTY("StereoPanning", &nap::audio::PlaybackComponent::mStereoPanning, nap::rtti::EPropertyMetaData::Default, "Stereo field panning, only works with 2 channels: 0.0 = left, 1.0 = right & 0.5 = center")
@@ -55,23 +55,25 @@ namespace nap
 			mNodeManager = &mAudioService->getNodeManager();
 
 			// Copy required routing, stereo if none provided
-			mChannelRouting = component->mChannelRouting.empty() ?
-				std::vector<int>({ 0,1 }) : component->mChannelRouting;
+			mChannelRouting = component->mChannelRouting;
+			if (mChannelRouting.empty())
+			{
+				for (auto channel = 0; channel < component->mBuffer->getChannelCount(); ++channel) {
+					mChannelRouting.emplace_back(channel);
+				}
+			}
 
 			// Create audio playback graph
 			createGraph();
 
-			// If there's a buffer to play, set it and start if requested
-			if (component->mBuffer != nullptr)
-			{
-				if (!setBuffer(*component->mBuffer, errorState))
-					return false;
+			// Set buffer to play
+			if (!setBuffer(*component->mBuffer, errorState))
+				return false;
 
-				// Start playback if requested
-				if (component->mAutoPlay)
-					start(component->mStartPosition / 1000.0);
-			}
-
+			// Start playback if requested
+			if (component->mAutoPlay)
+				start(component->mStartPosition / 1000.0);
+			
 			return true;
 		}
 		
@@ -155,7 +157,9 @@ namespace nap
 				SafePtr<BufferPlayerNode> player_ptr = player.get();
 				gain_control->rampFinishedSignal.connect([&, player_ptr](ControlNode& control)
 					{
-						if (math::equal<float>(control.getValue(), 0.0f) && player_ptr != nullptr) {
+						if (math::equal<float>(control.getValue(), 0.0f))
+						{
+							assert(player_ptr != nullptr);
 							player_ptr->stop();
 						}
 					});
