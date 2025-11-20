@@ -2,6 +2,7 @@
     "Type": "nap::SolutionInfo",
     "mID": "SolutionInfo",
     "AdditionalTargets": [
-        "apps/pocketpreview"
+        "apps/pocketpreview",
+        "modules/napxwax"
     ]
 }
