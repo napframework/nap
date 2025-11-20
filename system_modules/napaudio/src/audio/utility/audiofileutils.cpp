@@ -137,20 +137,18 @@ namespace nap
 			assert(range.y < buffer.size());
 			assert(range.x > -1);
 			assert(granularty > 0);
+			assert(!ioBuffer.empty());
 
 			// Quantize
 			size_t min = range.x;
 			size_t max = range.y + 1;
 
 			// Compute bucket size
-			assert(!ioBuffer.empty());
-			double bucket = (max - min) / static_cast<double>(ioBuffer.size());
-			//bucket = math::max(bucket, 1.0);
-
-			double thresh = math::min<double>(min + bucket, max);
+			auto bucket = (max - min) / static_cast<double>(ioBuffer.size());
+			auto thresh = math::min<double>(min + bucket, max);
 
 			// Ensure step size doesn't exceed bucket size
-			auto inc = math::min<uint>(math::max(bucket, 1.0), granularty);
+			auto inc = math::min<double>(bucket, granularty);
 
 			// Initialize bounds
 			bounds.x = math::max<float>();
@@ -161,8 +159,8 @@ namespace nap
 			size_t bct = 0;		//< Total number of buckets
 			float rms = 0.0f;	//< Bucket amplitude
 
-			size_t i = 0; 
-			size_t t = static_cast<size_t>(thresh);
+			size_t i = 0; double d = 0.0;
+			size_t t = thresh;
 			while (true)
 			{
 				// If current sample position overflows existing bucket, add it
@@ -172,45 +170,45 @@ namespace nap
 					auto sample_count = math::max<float>(sct, 1.0f);
 					rms = sqrt(rms / sample_count);
 
-					// Add RMS of previous bucket; weighted
+					// Add RMS of previous bucket -> weighted
 					if (bct > 0)
 					{
 						float weight = pct / sample_count;
 						rms += ioBuffer[bct - 1] * weight;
 						rms /= 1.0f + weight;
 					}
-					pct = sct;
 
 					// Set RMS for bucket
 					assert(bct < ioBuffer.size());
 					ioBuffer[bct++] = rms;
+					pct = sct;
 
 					// Update bounds
 					bounds.x = rms < bounds.x ? rms : bounds.x;
 					bounds.y = rms > bounds.y ? rms : bounds.y;
 
 					// Break if we're out of samples
-					if (i >= max)
-					{
-						// Initialize not filled buckets to 0
-						if (bct != ioBuffer.size())
-							std::fill(ioBuffer.begin() + bct, ioBuffer.end(), 0.0f);
+					if (i >= max) {
+						assert(bct == ioBuffer.size());
 						break;
 					}
 
 					// Set next bucket threshold
 					thresh = math::min<double>(thresh + bucket, max);
+					t = thresh;
 
 					// Reset
-					t = thresh; sct = 0; rms = 0.0f;
+					sct = 0; rms = 0.0f;
 				}
 
 				// Add sample for bucket
 				assert(i < max);
-				rms += pow(buffer[i], 2.0f); sct++;
+				rms += pow(buffer[i], 2.0f);
+				sct++;
 
 				// Increment sample position with step size
-				i += inc;
+				// Truncate down to ensure all buckets are filled
+				d += inc; i = d;
 			}
 		}
 

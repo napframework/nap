@@ -53,21 +53,20 @@ namespace nap
 
 		/**
 		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
-		 * @param buffer the buffer to generate the waveform for
-		 * @param points number of waveform segments (512, 1024 etc.)
-		 * @param granularity number of samples to skip, 1 = don't skip
-		 * @param range the amplitude bounds of the waveform, always between 0-1.
-		 * @return waveform of buffer of x points
+		 * @param buffer the buffer to generate the RMS waveform from
+		 * @param range the sample range of the audio buffer
+		 * @param granularity number of samples to skip, 1 = don't skip; must be > 0
+		 * @param bounds the computed amplitude bounds of the waveform, always between 0-1.
+		 * @param ioBuffer the result of the RMS computation, where the number of samples = given size.
 		 */
 		void NAPAPI getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer);
 
 		/**
 		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
-		 * @param buffer the buffer to generate the waveform for
-		 * @param points number of waveform segments (512, 1024 etc.)
-		 * @param granularity number of samples to skip, 1 = don't skip
-		 * @param range the amplitude bounds of the waveform, always between 0-1.
-		 * @return waveform of buffer of x points
+		 * @param buffer the audio buffer to generate the waveform for
+		 * @param granularity number of samples to skip, 1 = don't skip; must be > 0
+		 * @param bounds the computed amplitude bounds of the waveform, always between 0-1.
+		 * @param ioBuffer the result of the RMS computation, where the number of samples = given size.
 		 */
 		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer);
 	}
