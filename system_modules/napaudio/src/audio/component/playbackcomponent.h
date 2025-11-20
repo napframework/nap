@@ -38,7 +38,7 @@ namespace nap
 			PlaybackComponent() : AudioComponentBase() { }
 			
 			// Properties
-			ResourcePtr<AudioBufferResource> mBuffer = nullptr; ///< property: 'Buffer' The buffer containing the audio to be played back
+			ResourcePtr<AudioBufferResource> mBuffer = nullptr; ///< property: 'Buffer' Optional buffer containing the audio to be played back
 			std::vector<int> mChannelRouting = { };				///< property: 'ChannelRouting' The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played. If left empty it will be filled with the channels in the buffer in ascending order.
 			bool mAutoPlay = true;                              ///< property: 'AutoPlay' If set to true, the component will start playing on initialization.
 			TimeValue mStartPosition = 0;                       ///< property: 'StartPosition' Start position of playback in milliseconds.
@@ -251,8 +251,9 @@ namespace nap
 		private:
 			void applyGain();
 			int getBufferIndex(int channel) const;
+			void createGraph();
 
-			std::vector<SafeOwner<BufferPlayerNode>> mBufferPlayers;	// Nodes for each channel performing the actual audio playback.
+			std::vector<SafeOwner<BufferPlayerNode>> mPlayerNodes;		// Nodes for each channel performing the actual audio playback.
 			std::vector<SafeOwner<MultiplyNode>> mGainNodes;			// Nodes for each channel to gain the signal.
 			std::vector<SafeOwner<ControlNode>> mGainControls;			// Nodes to control the gain for each channel.
 			AudioBufferResource* mBuffer = nullptr;
@@ -262,7 +263,7 @@ namespace nap
 			ControllerValue mStereoPanning = 0.5;
 			ControllerValue mPitch = 1.0;
 			double mPlaytime = 0;
-			std::vector<int> mChannelRouting;
+			std::vector<int> mChannelRouting = { 0, 1 };				
 			NodeManager* mNodeManager = nullptr;						// The audio node manager this component's audio nodes are managed by
 			AudioService* mAudioService = nullptr;
 			double mLength = 0.0;

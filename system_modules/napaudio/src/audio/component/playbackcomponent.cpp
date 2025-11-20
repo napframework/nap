@@ -14,7 +14,7 @@
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::PlaybackComponent, "Plays-back audio from an audio buffer resource")
-	RTTI_PROPERTY("Buffer", &nap::audio::PlaybackComponent::mBuffer, nap::rtti::EPropertyMetaData::Required, "The buffer to play")
+	RTTI_PROPERTY("Buffer", &nap::audio::PlaybackComponent::mBuffer, nap::rtti::EPropertyMetaData::Default, "The buffer to play")
 	RTTI_PROPERTY("ChannelRouting", &nap::audio::PlaybackComponent::mChannelRouting, nap::rtti::EPropertyMetaData::Default, "Channel selection, auto completed using buffer when left empty")
 	RTTI_PROPERTY("Gain", &nap::audio::PlaybackComponent::mGain, nap::rtti::EPropertyMetaData::Default, "Overall input gain")
 	RTTI_PROPERTY("StereoPanning", &nap::audio::PlaybackComponent::mStereoPanning, nap::rtti::EPropertyMetaData::Default, "Stereo field panning, only works with 2 channels: 0.0 = left, 1.0 = right & 0.5 = center")
@@ -44,10 +44,6 @@ namespace nap
 		{
 			// Ensure sample rate is valid
 			auto component = getComponent<PlaybackComponent>();
-			auto sample_rate = component->mBuffer->getSampleRate();
-			if (!errorState.check(!math::equal<float>(sample_rate, 0.0f),
-				"Invalid buffer sample rate"))
-				return false;
 
 			// Copy from resource
 			mGain = component->mGain;
@@ -58,22 +54,23 @@ namespace nap
 			mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
 			mNodeManager = &mAudioService->getNodeManager();
 
-			// If channel routing is left empty, fill it with the channels in the buffer in ascending order.
-			mChannelRouting = component->mChannelRouting;
-			if (mChannelRouting.empty())
+			// Copy required routing, stereo if none provided
+			mChannelRouting = component->mChannelRouting.empty() ?
+				std::vector<int>({ 0,1 }) : component->mChannelRouting;
+
+			// Create audio playback graph
+			createGraph();
+
+			// If there's a buffer to play, set it and start if requested
+			if (component->mBuffer != nullptr)
 			{
-				for (auto channel = 0; channel < component->mBuffer->getChannelCount(); ++channel) {
-					mChannelRouting.emplace_back(channel);
-				}
+				if (!setBuffer(*component->mBuffer, errorState))
+					return false;
+
+				// Start playback if requested
+				if (component->mAutoPlay)
+					start(component->mStartPosition / 1000.0);
 			}
-
-			// Install buffer for playback
-			if (!setBuffer(*component->mBuffer, errorState))
-				return false;
-
-			// Start playback if requested
-			if (component->mAutoPlay)
-				start(component->mStartPosition / 1000.0);
 
 			return true;
 		}
@@ -97,28 +94,53 @@ namespace nap
 
 		bool PlaybackComponentInstance::setBuffer(AudioBufferResource& resource, utility::ErrorState& error)
 		{
-			// Stop playback
-			stop();
+			// Ensure sample rate is valid
+			auto sample_rate = resource.getSampleRate();
+			if (!error.check(!math::equal<float>(sample_rate, 0.0f), "Invalid buffer sample rate"))
+				return false;
 
-			// Containers
-			std::vector<SafeOwner<MultiplyNode>> gain_nodes;
-			gain_nodes.reserve(mChannelRouting.size());
-			std::vector<SafeOwner<BufferPlayerNode>> players;
-			players.reserve(mChannelRouting.size());
-			std::vector<SafeOwner<ControlNode>> gain_controls;
-			gain_controls.reserve(mChannelRouting.size());
+			// First make sure the buffer supports the number of output channels
+			for (const auto& channel: mChannelRouting)
+			{
+				if (!error.check(channel < resource.getChannelCount(),
+					"Requested output channel %d exceeds buffer channel count of %d", channel, resource.getChannelCount()))
+					return false;
+			}
 
-			// Create the players for every channel
-			for (auto route : mChannelRouting)
+			// Set buffer for every channel
+			for (auto i = 0; i < mChannelRouting.size(); i++)
 			{
 				// Ensure requested is within buffer channel bounds
-				if (!error.check(route < resource.getChannelCount(),
-					"Channel %d is out of buffer channel bounds", route))
+				auto& channel = mChannelRouting[i];
+				if (!error.check(channel < resource.getChannelCount(),
+					"Channel %d exceeds buffer channel count", mChannelRouting[i]))
 					return false;
 
+				// Set channel and buffer to play-back
+				auto& player = mPlayerNodes[i];
+				player->stop();
+				player->setChannel(channel);
+				player->setBuffer(resource.getBuffer());
+				player->setPosition(0);
+			}
+
+			mBuffer = &resource;
+			mLength = mBuffer->getSize() / static_cast<float>(mBuffer->getSampleRate());
+			return true;
+		}
+
+
+		void PlaybackComponentInstance::createGraph()
+		{
+			mPlayerNodes.reserve(mChannelRouting.size());
+			mGainNodes.reserve(mChannelRouting.size());
+			mGainControls.reserve(mChannelRouting.size());
+
+			// Create graph for every required channel
+			for (auto route : mChannelRouting)
+			{
 				// Create the playback node
 				auto player = mNodeManager->makeSafe<BufferPlayerNode>(*mNodeManager);
-				player->setBuffer(resource.getBuffer());
 
 				// Create gain
 				auto gain = mNodeManager->makeSafe<MultiplyNode>(*mNodeManager);
@@ -138,21 +160,12 @@ namespace nap
 						}
 					});
 
-				players.emplace_back(std::move(player));
-				gain_nodes.emplace_back(std::move(gain));
-				gain_controls.emplace_back(std::move(gain_control));
+				mPlayerNodes.emplace_back(std::move(player));
+				mGainNodes.emplace_back(std::move(gain));
+				mGainControls.emplace_back(std::move(gain_control));
 			}
 
-			// Creation succeeded, move containers
-			mBufferPlayers = std::move(players);
-			mGainNodes = std::move(gain_nodes);
-			mGainControls = std::move(gain_controls);
 			mChannelGains.resize(mChannelRouting.size(), 1.f);
-
-			mBuffer = &resource;
-			mLength = mBuffer->getSize() / static_cast<float>(mBuffer->getSampleRate());
-
-			return true;
 		}
 
 
@@ -190,7 +203,7 @@ namespace nap
 			if (!math::equal(pitch, mPitch))
 			{
 				mPitch = pitch;
-				for (auto& bufferPlayer : mBufferPlayers) {
+				for (auto& bufferPlayer : mPlayerNodes) {
 					bufferPlayer->setSpeed(getSpeed());
 				}
 			}
@@ -199,7 +212,7 @@ namespace nap
 		
 		bool PlaybackComponentInstance::isPlaying() const
 		{
-			for (auto& player : mBufferPlayers)
+			for (auto& player : mPlayerNodes)
 			{
 				if (!player->getPlaying())
 					return false;
@@ -223,14 +236,14 @@ namespace nap
 		double PlaybackComponentInstance::getPosition(int c) const
 		{
 			auto i = getBufferIndex(c); assert(i >= 0);
-			return mBufferPlayers[i]->getPosition() / static_cast<double>(getBuffer().getSampleRate());
+			return mPlayerNodes[i]->getPosition() / static_cast<double>(getBuffer().getSampleRate());
 		}
 
 
 		double PlaybackComponentInstance::getPosition() const
 		{
-			assert(!mBufferPlayers.empty());
-			return mBufferPlayers[0]->getPosition() / static_cast<double>(getBuffer().getSampleRate());
+			assert(!mPlayerNodes.empty());
+			return mPlayerNodes[0]->getPosition() / static_cast<double>(getBuffer().getSampleRate());
 		}
 
 
@@ -246,7 +259,7 @@ namespace nap
 		void PlaybackComponentInstance::setSamplePosition(DiscreteTimeValue pos)
 		{
 			assert(mBuffer != nullptr && pos < mBuffer->getSize());
-			for (auto& player : mBufferPlayers)
+			for (auto& player : mPlayerNodes)
 			{
 				if (player != nullptr)
 				{
@@ -260,14 +273,14 @@ namespace nap
 		DiscreteTimeValue PlaybackComponentInstance::getSamplePosition() const
 		{
 			assert(!mChannelRouting.empty());
-			return mBufferPlayers[0]->getPosition();
+			return mPlayerNodes[0]->getPosition();
 		}
 
 
 		DiscreteTimeValue PlaybackComponentInstance::getSamplePosition(int c) const
 		{
 			auto i = getBufferIndex(c); assert(i >= 0);
-			return mBufferPlayers[i]->getPosition();
+			return mPlayerNodes[i]->getPosition();
 		}
 
 
@@ -309,7 +322,7 @@ namespace nap
 		{
 			// Play from current position
 			int idx = 0; auto speed = getSpeed();
-			for (auto& player : mBufferPlayers)
+			for (auto& player : mPlayerNodes)
 			{
 				if (player != nullptr)
 					player->play(mChannelRouting[idx], player->getPosition(), speed);
