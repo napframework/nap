@@ -133,7 +133,7 @@ namespace nap
 		void getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer)
 		{
 			// Align range to granularity grid
-			assert(range.x < range.y);
+			assert(range.x <= range.y);
 			assert(range.y < buffer.size());
 			assert(range.x > -1);
 			assert(granularty > 0);
@@ -144,11 +144,15 @@ namespace nap
 			size_t max = range.y + 1;
 
 			// Compute bucket size
+			// Add epsilon to fix tight integer rounding, ie: 0.3331 * 3 != 1.0.
 			auto bucket = (max - min) / static_cast<double>(ioBuffer.size());
-			auto thresh = math::min<double>(min + bucket, max);
+			bucket += math::epsilon<double>();
 
 			// Ensure step size doesn't exceed bucket size
 			auto inc = math::min<double>(bucket, granularty);
+
+			// Calculate initial bucket threshold
+			auto thresh = math::min<double>(min + bucket, max);
 
 			// Initialize bounds
 			bounds.x = math::max<float>();
@@ -159,7 +163,7 @@ namespace nap
 			size_t bct = 0;		//< Total number of buckets
 			float rms = 0.0f;	//< Bucket amplitude
 
-			size_t i = 0; double d = 0.0;
+			size_t i = min; double d = min;
 			size_t t = thresh;
 			while (true)
 			{
@@ -187,9 +191,9 @@ namespace nap
 					bounds.x = rms < bounds.x ? rms : bounds.x;
 					bounds.y = rms > bounds.y ? rms : bounds.y;
 
-					// Break if we're out of samples
-					if (i >= max) {
-						assert(bct == ioBuffer.size());
+					// Break when we're done sampling
+					if (bct == ioBuffer.size()) {
+						assert(i >= max);
 						break;
 					}
 
