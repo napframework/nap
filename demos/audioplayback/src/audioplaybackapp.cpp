@@ -16,8 +16,8 @@
 #include <imgui/imgui.h>
 #include <triangleiterator.h>
 #include <meshutils.h>
-#include <mathutils.h>
 #include <imguiutils.h>
+#include <audio/utility/audiofileutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -53,6 +53,15 @@ namespace nap
         // Find the audio playback component and initialize parameters
         mAudioDeviceSettingsGui = std::make_unique<audio::AudioDeviceSettingsGui>(*getCore().getService<audio::PortAudioService>(), false);
 
+		// Create visual song representation
+		mWaveform.resize(192, 0.0f);
+		generateWaveform();
+
+		// Generate waveform, also when file is reloaded -> this doesn't check if the file actually changed;
+		// It's better to create a component that links to the audio buffer, and *only* re-create the waveform
+		// when the buffer changes, instead of a more brute force solution like this.
+		getCore().getResourceManager()->mPostResourcesLoadedSignal.connect([this] { generateWaveform(); });
+		
 		return true;
 	}
 
@@ -96,6 +105,10 @@ namespace nap
 			if (ImGui::Button("Stop"))
 				pc->stop();
         }
+
+		// Waveform
+		ImGui::PlotLines("Wave", &mWaveform[0], mWaveform.size(), 0, NULL,
+			mWaveBounds.x, mWaveBounds.y, { 0, ImGui::GetFrameHeight() * 2 });
 
 		// Playback settings
 		float ps = pc->getPosition();
@@ -214,4 +227,14 @@ namespace nap
 	{
 		return 0;
 	}
+
+
+	void AudioPlaybackApp::generateWaveform()
+	{
+		auto& pc = mAudioEntity->getComponent<audio::PlaybackComponentInstance>();
+		uint granularity = pc.getSampleRate() / 1000.0f;
+		assert(pc.getChannelCount() > 0);
+		audio::getWaveform(pc.getSamples(0), granularity, mWaveBounds, mWaveform);
+	}
+
 }
