@@ -74,6 +74,11 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
         ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
         ObjectPtr<nap::EntityInstance> mAudioEntity = nullptr;
+		std::vector<float> mWaveform;
+		glm::vec2 mWaveBounds = { 0.0f, 1.0f };
+
+		// Creates visual representation of track
+		void generateWaveform();
 
         std::unique_ptr<audio::AudioDeviceSettingsGui> mAudioDeviceSettingsGui = nullptr; //< Gui to select audio device settings at runtime
 		float mStartPosition = 0.0f;
