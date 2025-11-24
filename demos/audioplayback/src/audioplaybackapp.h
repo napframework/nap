@@ -74,13 +74,13 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
         ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
         ObjectPtr<nap::EntityInstance> mAudioEntity = nullptr;
-        audio::TimeValue mStartPosition = 0;                            //< Start position of the playback in ms
-        audio::TimeValue mDuration = 0;                                 //< Duration of the playback in ms
-        audio::TimeValue mFadeInTime = 0;                               //< Fade in time in ms
-        audio::TimeValue mFadeOutTime = 0;                              //< Fade out time in ms
-        audio::ControllerValue mPitch = 1.0;                            //< Pitch of the playback in relation to original pitch of the audio file
-        audio::ControllerValue mPanning = 0.5;                          //< Panning of the audio in the stereo field
+		std::vector<float> mWaveform;
+		glm::vec2 mWaveBounds = { 0.0f, 1.0f };
+
+		// Creates visual representation of track
+		void generateWaveform();
 
         std::unique_ptr<audio::AudioDeviceSettingsGui> mAudioDeviceSettingsGui = nullptr; //< Gui to select audio device settings at runtime
+		float mStartPosition = 0.0f;
 	};
 }

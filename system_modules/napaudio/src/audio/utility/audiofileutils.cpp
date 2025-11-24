@@ -128,5 +128,98 @@ namespace nap
 			std::swap(buffer, resampled);
 			return true;
 		}
+
+
+		void getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularity, glm::vec2& outBounds, std::vector<float>& outBuffer)
+		{
+			// Align range to granularity grid
+			assert(range.x <= range.y);
+			assert(range.y < buffer.size());
+			assert(range.x > -1);
+			assert(granularity > 0);
+			assert(!outBuffer.empty());
+
+			// Quantize
+			size_t min = range.x;
+			size_t max = range.y + 1;
+
+			// Compute bucket size
+			// Add epsilon to fix tight integer rounding, ie: 0.3331 * 3 != 1.0.
+			auto bucket = (max - min) / static_cast<double>(outBuffer.size());
+			bucket += math::epsilon<double>();
+
+			// Ensure step size doesn't exceed bucket size
+			auto inc = math::min<double>(bucket, granularity);
+
+			// Calculate initial bucket threshold
+			auto thresh = math::min<double>(min + bucket, max);
+
+			// Initialize bounds
+			outBounds.x = math::max<float>();
+			outBounds.y = math::min<float>();
+
+			size_t sct = 0;		//< Samples in bucket
+			size_t pct = 0;		//< Previous bucket sample count
+			size_t bct = 0;		//< Total number of buckets
+			float rms = 0.0f;	//< Bucket amplitude
+
+			size_t i = min; double d = min;
+			size_t t = thresh;
+			while (true)
+			{
+				// If current sample position overflows existing bucket, add it
+				if (i >= t)
+				{
+					// Compute RMS for bucket
+					auto sample_count = math::max<float>(sct, 1.0f);
+					rms = sqrt(rms / sample_count);
+
+					// Add RMS of previous bucket -> weighted
+					if (bct > 0)
+					{
+						float weight = pct / sample_count;
+						rms += outBuffer[bct - 1] * weight;
+						rms /= 1.0f + weight;
+					}
+
+					// Set RMS for bucket
+					assert(bct < outBuffer.size());
+					outBuffer[bct++] = rms;
+					pct = sct;
+
+					// Update bounds
+					outBounds.x = rms < outBounds.x ? rms : outBounds.x;
+					outBounds.y = rms > outBounds.y ? rms : outBounds.y;
+
+					// Break when we're done sampling
+					if (bct == outBuffer.size()) {
+						assert(i >= max);
+						break;
+					}
+
+					// Set next bucket threshold
+					thresh = math::min<double>(thresh + bucket, max);
+					t = thresh;
+
+					// Reset
+					sct = 0; rms = 0.0f;
+				}
+
+				// Add sample for bucket
+				assert(i < max);
+				rms += pow(buffer[i], 2.0f);
+				sct++;
+
+				// Increment sample position with step size
+				// Truncate down to ensure all buckets are filled
+				d += inc; i = d;
+			}
+		}
+
+
+		void getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& outBounds, SampleBuffer& outBuffer)
+		{
+			getWaveform(buffer, { 0, buffer.size() - 1 }, granularity, outBounds, outBuffer);
+		}
 	}
 }

@@ -6,6 +6,8 @@
 
 #pragma once
 #include <color.h>
+#include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 #include <nap/numeric.h>
 #include <mathutils.h>
 #include <texture.h>
@@ -81,7 +83,13 @@
 		ImVec4(const nap::RGBColor8& f, float a)		{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
 															y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
 															z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
-															w = a;}	
+															w = a;}													\
+		ImVec4(const glm::vec4& f)						{ x = f.x; y = f.y; z = f.z; w = f.w; }						\
+		operator glm::vec4()							{ return glm::vec4(x,y,z,w); }
+
+#define IM_VEC2_CLASS_EXTRA	\
+		ImVec2(const glm::vec2& f)						{ x = f.x; y = f.y;  }										\
+		operator glm::vec2() const						{ return glm::vec2(x, y); }
 
 
 //---- Use 32-bit vertex indices (instead of default: 16-bit) to allow meshes with more than 64K vertices
