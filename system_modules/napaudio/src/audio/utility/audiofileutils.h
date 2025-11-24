@@ -74,7 +74,7 @@ namespace nap
 		 * @param buffer the audio buffer to generate the waveform for
 		 * @param granularity number of samples to skip, 1 = all samples & don't skip; must be > 0
 		 * @param bounds the computed amplitude bounds of the returned  waveform, always between 0-1.
-		 * @param ioBuffer the result of the RMS computation, where the number of samples = buffer size.
+		 * @param outBuffer the result of the RMS computation, where the number of samples = buffer size.
 		 */
 		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& bounds, SampleBuffer& outBuffer);
 	}
