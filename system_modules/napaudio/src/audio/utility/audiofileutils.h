@@ -60,10 +60,10 @@ namespace nap
 		 * @param buffer the buffer to generate the RMS waveform from
 		 * @param range the sample range of the audio buffer
 		 * @param granularity number of samples to skip, 1 = all samples & don't skip; must be > 0
-		 * @param bounds the computed amplitude bounds of the returned waveform, always between 0-1.
+		 * @param outBounds the computed amplitude bounds of the returned waveform, always between 0-1.
 		 * @param outBuffer the result of the RMS computation, where the number of samples = buffer size.
 		 */
-		void NAPAPI getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularity, glm::vec2& bounds, SampleBuffer& outBuffer);
+		void NAPAPI getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularity, glm::vec2& outBounds, std::vector<float>& outBuffer);
 
 		/**
 		 * Creates a visual waveform representation of x segments by analyzing the RMS of the audio buffer.
@@ -73,9 +73,9 @@ namespace nap
 		 * 
 		 * @param buffer the audio buffer to generate the waveform for
 		 * @param granularity number of samples to skip, 1 = all samples & don't skip; must be > 0
-		 * @param bounds the computed amplitude bounds of the returned  waveform, always between 0-1.
+		 * @param outBounds the computed amplitude bounds of the returned  waveform, always between 0-1.
 		 * @param outBuffer the result of the RMS computation, where the number of samples = buffer size.
 		 */
-		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& bounds, SampleBuffer& outBuffer);
+		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& outBounds, std::vector<float>& outBuffer);
 	}
 }

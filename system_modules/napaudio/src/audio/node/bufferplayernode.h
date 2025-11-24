@@ -90,7 +90,7 @@ namespace nap
 			/**
 			 * @return absolute buffer sample size, 0 when buffer is not set
 			 */
-			DiscreteTimeValue getSize() { return mSize; }
+			DiscreteTimeValue getSize() { return mBuffer != nullptr ? mBuffer->getSize() : 0; }
 
 			/**
 			 * @return if the buffer is playing
@@ -104,7 +104,6 @@ namespace nap
 			std::atomic<bool> mPlaying = {false};			// Indicates wether the node is currently playing.
 			std::atomic<int> mChannel = {0};				// The channel within the buffer that is being played bacl/
 			std::atomic<double> mPosition = {0};			// Current position of playback in samples within the source buffer.
-			std::atomic<DiscreteTimeValue> mSize = { 0 };	// Buffer sampler size
 			std::atomic<ControllerValue> mSpeed = {1.f};	// Playback speed as a fraction of the original speed.
 			SafePtr<MultiSampleBuffer> mBuffer = nullptr;	// Pointer to the buffer with audio material being played back.
 		};

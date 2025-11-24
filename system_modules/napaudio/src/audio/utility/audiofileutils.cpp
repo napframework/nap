@@ -130,14 +130,14 @@ namespace nap
 		}
 
 
-		void getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularity, glm::vec2& bounds, SampleBuffer& ioBuffer)
+		void getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularity, glm::vec2& outBounds, std::vector<float>& outBuffer)
 		{
 			// Align range to granularity grid
 			assert(range.x <= range.y);
 			assert(range.y < buffer.size());
 			assert(range.x > -1);
 			assert(granularity > 0);
-			assert(!ioBuffer.empty());
+			assert(!outBuffer.empty());
 
 			// Quantize
 			size_t min = range.x;
@@ -145,7 +145,7 @@ namespace nap
 
 			// Compute bucket size
 			// Add epsilon to fix tight integer rounding, ie: 0.3331 * 3 != 1.0.
-			auto bucket = (max - min) / static_cast<double>(ioBuffer.size());
+			auto bucket = (max - min) / static_cast<double>(outBuffer.size());
 			bucket += math::epsilon<double>();
 
 			// Ensure step size doesn't exceed bucket size
@@ -155,8 +155,8 @@ namespace nap
 			auto thresh = math::min<double>(min + bucket, max);
 
 			// Initialize bounds
-			bounds.x = math::max<float>();
-			bounds.y = math::min<float>();
+			outBounds.x = math::max<float>();
+			outBounds.y = math::min<float>();
 
 			size_t sct = 0;		//< Samples in bucket
 			size_t pct = 0;		//< Previous bucket sample count
@@ -178,21 +178,21 @@ namespace nap
 					if (bct > 0)
 					{
 						float weight = pct / sample_count;
-						rms += ioBuffer[bct - 1] * weight;
+						rms += outBuffer[bct - 1] * weight;
 						rms /= 1.0f + weight;
 					}
 
 					// Set RMS for bucket
-					assert(bct < ioBuffer.size());
-					ioBuffer[bct++] = rms;
+					assert(bct < outBuffer.size());
+					outBuffer[bct++] = rms;
 					pct = sct;
 
 					// Update bounds
-					bounds.x = rms < bounds.x ? rms : bounds.x;
-					bounds.y = rms > bounds.y ? rms : bounds.y;
+					outBounds.x = rms < outBounds.x ? rms : outBounds.x;
+					outBounds.y = rms > outBounds.y ? rms : outBounds.y;
 
 					// Break when we're done sampling
-					if (bct == ioBuffer.size()) {
+					if (bct == outBuffer.size()) {
 						assert(i >= max);
 						break;
 					}
@@ -217,9 +217,9 @@ namespace nap
 		}
 
 
-		void getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& bounds, SampleBuffer& ioBuffer)
+		void getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& outBounds, SampleBuffer& outBuffer)
 		{
-			getWaveform(buffer, { 0, buffer.size() - 1 }, granularity, bounds, ioBuffer);
+			getWaveform(buffer, { 0, buffer.size() - 1 }, granularity, outBounds, outBuffer);
 		}
 	}
 }
