@@ -130,13 +130,13 @@ namespace nap
 		}
 
 
-		void getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer)
+		void getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularity, glm::vec2& bounds, SampleBuffer& ioBuffer)
 		{
 			// Align range to granularity grid
 			assert(range.x <= range.y);
 			assert(range.y < buffer.size());
 			assert(range.x > -1);
-			assert(granularty > 0);
+			assert(granularity > 0);
 			assert(!ioBuffer.empty());
 
 			// Quantize
@@ -149,7 +149,7 @@ namespace nap
 			bucket += math::epsilon<double>();
 
 			// Ensure step size doesn't exceed bucket size
-			auto inc = math::min<double>(bucket, granularty);
+			auto inc = math::min<double>(bucket, granularity);
 
 			// Calculate initial bucket threshold
 			auto thresh = math::min<double>(min + bucket, max);

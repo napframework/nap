@@ -52,22 +52,30 @@ namespace nap
 		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, EResampleMode resamplingMode, nap::utility::ErrorState& errorState);
 
 		/**
-		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
+		 * Creates a visual waveform representation of x segments by analyzing the RMS of the audio buffer.
+		 * The granularity controls the sample resolution, with higher values increasing speed at the cost of accuracy.
+		 * The right granularity setting depends on your purpose, but 'should' be 1/10th to 1/100th of
+		 * the sample rate for best results.
+		 * 
 		 * @param buffer the buffer to generate the RMS waveform from
 		 * @param range the sample range of the audio buffer
-		 * @param granularity number of samples to skip, 1 = don't skip; must be > 0
-		 * @param bounds the computed amplitude bounds of the waveform, always between 0-1.
-		 * @param ioBuffer the result of the RMS computation, where the number of samples = given size.
+		 * @param granularity number of samples to skip, 1 = all samples & don't skip; must be > 0
+		 * @param bounds the computed amplitude bounds of the returned waveform, always between 0-1.
+		 * @param outBuffer the result of the RMS computation, where the number of samples = buffer size.
 		 */
-		void NAPAPI getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer);
+		void NAPAPI getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularity, glm::vec2& bounds, SampleBuffer& outBuffer);
 
 		/**
-		 * Creates a waveform of x segments by analyzing the RMS of the audio buffer.
+		 * Creates a visual waveform representation of x segments by analyzing the RMS of the audio buffer.
+		 * The granularity controls the sample resolution, with higher values increasing speed at the cost of accuracy.
+		 * The right granularity setting depends on your purpose, but 'should' be 1/10th to 1/100th of
+		 * the sample rate for best results.
+		 * 
 		 * @param buffer the audio buffer to generate the waveform for
-		 * @param granularity number of samples to skip, 1 = don't skip; must be > 0
-		 * @param bounds the computed amplitude bounds of the waveform, always between 0-1.
-		 * @param ioBuffer the result of the RMS computation, where the number of samples = given size.
+		 * @param granularity number of samples to skip, 1 = all samples & don't skip; must be > 0
+		 * @param bounds the computed amplitude bounds of the returned  waveform, always between 0-1.
+		 * @param ioBuffer the result of the RMS computation, where the number of samples = buffer size.
 		 */
-		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularty, glm::vec2& bounds, SampleBuffer& ioBuffer);
+		void NAPAPI getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& bounds, SampleBuffer& outBuffer);
 	}
 }
