@@ -11,6 +11,7 @@
 #include <rtti/factory.h>
 #include <nap/resourceptr.h>
 #include <nap/core.h>
+#include <audio/utility/audiofileutils.h>
 
 namespace nap
 {
@@ -18,7 +19,7 @@ namespace nap
 	{
 		
 		// Forward declarations
-		class AudioService;
+		class AudioService;		
 		
 		/**
 		 * Loads an audio file from disk into memory.
@@ -33,6 +34,8 @@ namespace nap
 			bool init(utility::ErrorState& errorState) override;
 		
 		public:
+			bool mResample = false; ///< property 'Resample' will resample the loaded audio file upon initing to match the samplerate of the selected sound device
+			EResampleMode mResampleMode = EResampleMode::SincFastest; ///<property: 'ResampleMode' sets the resampling algorithm used.
 			std::string mAudioFilePath = ""; ///< property: 'AudioFilePath' The path to the audio file on disk
 		};
 		
@@ -52,6 +55,8 @@ namespace nap
 			bool init(utility::ErrorState& errorState) override;
 		
 		public:
+			bool mResample = false; ///< property 'Resample' will resample the loaded audio file upon initing to match the samplerate of the selected sound device
+			EResampleMode mResampleMode = EResampleMode::SincFastest; ///<property: 'ResampleMode' sets the resampling algorithm used.
 			std::vector<std::string> mAudioFilePaths; ///< property: 'AudioFilePaths' The paths to the audio files on disk
 		};
 

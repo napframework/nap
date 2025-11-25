@@ -508,7 +508,7 @@ static void
 win32_play_data (Win32_Audio_Data *audio_data)
 {	int thisread, readcount ;
 
-	/* fill a buffer if there is more data and we can read it successfully */
+	/* fill a buffer if there is more data and we can read it sucessfully */
 	readcount = (audio_data->remaining > audio_data->bufferlen) ? audio_data->bufferlen : (int) audio_data->remaining ;
 
 	short *lpData = (short *) (void *) audio_data->whdr [audio_data->current].lpData ;
@@ -666,7 +666,7 @@ win32_play (int argc, char *argv [])
 #endif /* Win32 */
 
 /*------------------------------------------------------------------------------
-**	Sndio.
+**	OpenBSD's sndio.
 */
 
 #if HAVE_SNDIO_H
@@ -759,7 +759,7 @@ solaris_play (int argc, char *argv [])
 			return ;
 			} ;
 
-		/*	Retrieve standard values. */
+		/*	Retrive standard values. */
 		AUDIO_INITINFO (&audio_info) ;
 
 		audio_info.play.sample_rate = sfinfo.samplerate ;

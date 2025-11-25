@@ -1,0 +1,310 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: opus
+Upstream-Contact: opus@xiph.org
+Source: https://www.opus-codec.org/
+License: BSD-3-clause
+
+Files: *
+Copyright: 2001-2023, Xiph.Org
+ 2001-2018, Skype Limited
+ 2001-2018, Octasic
+ 2001-2018, Jean-Marc Valin
+ 2001-2018, Timothy B. Terriberry
+ 2001-2018, CSIRO
+ 2001-2018, Gregory Maxwell
+ 2001-2018, Mark Borgerding
+ 2001-2018, Erik de Castro Lopo
+License: BSD-3-clause
+
+Files: celt/arm/celt_fft_ne10.c
+ celt/arm/celt_mdct_ne10.c
+ celt/arm/celt_neon_intr.c
+ celt/arm/fft_arm.h
+ celt/arm/mdct_arm.h
+ celt/celt_lpc.*
+ celt/tests/test_unit_dft.c
+ celt/tests/test_unit_mdct.c
+ celt/tests/test_unit_rotation.c
+ celt/tests/test_unit_types.c
+ include/opus_multistream.h
+ include/opus_types.h
+ src/analysis.*
+ src/opus_multistream*
+ src/opus_private.h
+ src/repacketizer*
+ tests/*
+Copyright: 1994-2015, Xiph.Org Foundation
+License: BSD-2-clause
+
+Files: celt/laplace.*
+ celt/mdct.*
+ celt/pitch.*
+ celt/quant_bands.*
+ celt/rate.*
+ celt/vq.*
+ celt/mips/mdct_mipsr1.h
+ celt/mips/pitch_mipsr1.h
+ celt/mips/vq_mipsr1.h
+ celt/opus_custom_demo.c
+ src/opus_demo.c
+Copyright: 2007-2008, CSIRO
+  2007-2009, Xiph.Org Foundation
+License: BSD-2-clause
+
+
+Files: celt/x86/celt_lpc_sse.h
+ celt/x86/celt_lpc_sse4_1.c
+ celt/x86/pitch_sse.c
+ celt/x86/pitch_sse2.c
+ celt/x86/pitch_sse4_1.c
+ celt/x86/x86_celt_map.c
+ celt/x86/x86cpu.c
+ celt/x86/x86cpu.h
+ silk/fixed/x86/burg_modified_FIX_sse4_1.c
+ silk/fixed/x86/vector_ops_FIX_sse4_1.c
+ silk/x86/NSQ_del_dec_sse4_1.c
+ silk/x86/NSQ_sse4_1.c
+ silk/x86/SigProc_FIX_sse.h
+ silk/x86/VAD_sse4_1.c
+ silk/x86/VQ_WMat_EC_sse4_1.c
+ silk/x86/main_sse.h
+ silk/x86/x86_silk_map.c
+Copyright: 2014-2020, Cisco Systems, INC
+License: BSD-2-clause
+
+Files: celt/bands.*
+ celt/celt.*
+ celt/celt_*coder.c
+ celt/mips/celt_mipsr1.h
+ celt/modes.*
+ include/opus_custom.h
+Copyright: 2007-2008, CSIRO
+  2007-2010, Xiph.Org Foundation
+  2008-2012, Gregory Maxwell
+License: BSD-2-clause
+
+Files: celt/arm/pitch_neon_intr.c
+ silk/arm/LPC_inv_pred_gain_arm.h
+ silk/arm/LPC_inv_pred_gain_neon_intr.c
+ silk/arm/NSQ_del_dec_arm.h
+ silk/arm/NSQ_del_dec_neon_intr.c
+ silk/arm/biquad_alt_arm.h
+ silk/arm/biquad_alt_neon_intr.c
+ silk/fixed/arm/warped_autocorrelation_FIX_arm.h
+Copyright: 2017, Google Inc.
+License: BSD-3-clause
+
+Files: celt/ecintrin.h
+ celt/ent*
+ celt/mfrngcod.h
+Copyright: 2001-2011, Timothy B. Terriberry
+  2008-2009, Xiph.Org Foundation
+License: BSD-2-clause
+
+Files: celt/arch.h
+ celt/fixed_generic.h
+ celt/mathops.*
+ celt/mips/fixed_generic_mipsr1.h
+ celt/x86/vq_sse2.c
+Copyright: 2002-2016, Jean-Marc Valin
+  2007-2008, CSIRO
+  2007-2009, Xiph.Org Foundation
+License: BSD-2-clause
+
+Files: celt/arm/arm_celt_map.c
+ celt/arm/armcpu.*
+ celt/arm/pitch_arm.h
+ celt/cpu_support.h
+Copyright: 2010, Xiph.Org Foundation
+  2013, Parrot
+License: BSD-2-clause
+
+Files: include/opus.h
+ include/opus_defines.h
+ src/opus.c
+ src/opus_*coder.c
+Copyright: 2010-2011, Xiph.Org Foundation, Skype Limited
+License: BSD-2-clause
+
+Files: include/opus_projection.h
+ src/mapping_matrix.*
+ src/opus_projection_*coder.c
+ tests/test_opus_projection.c
+Copyright: 2017, Google Inc.
+License: BSD-2-clause
+
+Files: celt/os_support.h
+ celt/x86/vq_sse.h
+ doc/trivial_example.c
+ src/mlp.h
+Copyright: 2007-2017, Jean-Marc Valin
+License: BSD-2-clause
+
+Files: silk/arm/NSQ_neon.*
+ silk/arm/arm_silk_map.c
+ silk/arm/macros_arm64.h
+ celt/arm/fixed_arm64.h
+Copyright: 2014-2015, Vidyo
+License: BSD-3-clause
+
+Files: celt/arm/kiss_fft_armv4.h
+ celt/arm/kiss_fft_armv5e.h
+ celt/mips/kiss_fft_mipsr1.h
+Copyright: 2013, Xiph.Org Foundation and contributors.
+License: BSD-2-clause
+
+Files: celt/tests/test_unit_cwrs32.c
+ celt/tests/test_unit_entropy.c
+ celt/tests/test_unit_mathops.c
+ celt/tests/test_unit_laplace.c
+ src/opus_compare.c
+Copyright: 2007-2012, Xiph.Org Foundation, Mozilla Corporation,
+License: BSD-2-clause
+
+Files: celt/cwrs.*
+Copyright: 2007-2008, CSIRO
+  2007-2009, Timothy B. Terriberry
+  2007-2009, Xiph.Org Foundation
+License: BSD-2-clause
+
+Files: celt/fixed_debug.h
+ celt/stack_alloc.h
+Copyright: 2002-2008, Jean-Marc Valin
+  2007-2012, Xiph.Org Foundation
+License: BSD-2-clause
+
+Files: celt/kiss_fft.c
+ celt/kiss_fft.h
+Copyright: 2003-2004, Mark Borgerding
+  2005-2007, Xiph.Org Foundation
+  2008, Xiph.Org Foundation, CSIRO
+License: BSD-2-clause
+
+Files: silk/fixed/arm/warped_autocorrelation_FIX_neon_intr.c
+ silk/tests/test_unit_LPC_inv_pred_gain.c
+Copyright: 2017, Google Inc., Jean-Marc Valin
+License: BSD-3-clause
+
+Files: silk/arm/SigProc_FIX_armv5e.h
+ silk/arm/macros_armv5e.h
+Copyright: 2006-2011, Skype Limited.
+  2013, Parrot
+License: BSD-3-clause
+
+Files: celt/arm/fixed_armv5e.h
+Copyright: 2003-2008, Jean-Marc Valin
+  2007-2008, CSIRO
+  2007-2009, Xiph.Org Foundation
+  2013, Parrot
+License: BSD-2-clause
+
+Files: celt/arm/celt_pitch_xcorr_arm-gnu.S
+Copyright: 2007-2008, CSIRO
+  2007-2009, Xiph.Org Foundation
+  2013, Parrot
+License: BSD-2-clause
+
+Files: celt/x86/pitch_sse.h
+Copyright: 2013, Jean-Marc Valin and John Ridges
+  2014, Cisco Systems, INC MingXiang WeiZhou MinPeng YanWang
+License: BSD-2-clause
+
+Files: celt/float_cast.h
+Copyright: 2001, Erik de Castro Lopo <erikd AT mega-nerd DOT com>
+License: BSD-2-clause
+
+Files: celt/_kiss_fft_guts.h
+Copyright: 2003-2004, Mark Borgerding
+License: BSD-2-clause
+
+Files: tests/opus_encode_regressions.c
+Copyright: 2016, Mark Harris, Jean-Marc Valin
+License: BSD-2-clause
+
+Files: src/mlp.c
+Copyright: 2008-2011, Octasic Inc.
+License: BSD-2-clause
+
+Files: celt/entcode.c
+Copyright: 2001-2011, Timothy B. Terriberry
+License: BSD-2-clause
+
+Files: celt/arm/fixed_armv4.h
+Copyright: 2013, Xiph.Org Foundation and contributors
+License: BSD-2-clause
+
+Files: celt/arm/arm2gnu.pl
+Copyright: 2002-2013, Xiph.org Foundation
+License: BSD-2-clause
+
+Files: silk/LPC_fit.c
+Copyright: 2013, Koen Vos.
+License: BSD-3-clause
+
+Files: silk/arm/SigProc_FIX_armv4.h
+Copyright: 2013, Parrot
+  2013, Xiph.Org Foundation and contributors
+License: BSD-3-clause
+
+Files: silk/NSQ.h
+Copyright: 2006-2011, Skype Limited.
+  2014, Vidyo.
+License: BSD-3-clause
+
+Files: debian/*
+Copyright: 2008-2018, Ron Lee <ron@debian.org>
+ 2022-2023, IOhannes m zmölnig <umlaeute@debian.org>
+License: BSD-3-clause
+
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ - Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ .
+ - Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ .
+ - Neither the name of Internet Society, IETF or IETF Trust, nor the
+ names of specific contributors, may be used to endorse or promote
+ products derived from this software without specific prior written
+ permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+
+License: BSD-2-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ - Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ .
+ - Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

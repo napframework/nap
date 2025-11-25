@@ -7,14 +7,30 @@
 // Std Includes
 #include <stdint.h>
 #include <iostream>
+#include <utility>
 
 // Third party includes
 #include <sndfile.h>
-#include <mpg123.h>
+// #include <mpg123.h>
+#include <samplerate.h>
 
 // Nap include
 #include <utility/fileutils.h>
 #include <utility/stringutils.h>
+#include <mathutils.h>
+
+#include <nap/logger.h>
+
+
+RTTI_BEGIN_ENUM(nap::audio::EResampleMode)
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincBestQuality, "Sinc Best Quality"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincMediumQuality, "Sinc Medium Quality"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::SincFastest, "Sinc Fastest"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::ZeroOrderHold, "Zero Order Hold"),
+	RTTI_ENUM_VALUE(nap::audio::EResampleMode::Linear, "Linear")
+RTTI_END_ENUM
+
+
 
 using namespace std;
 
@@ -23,96 +39,7 @@ namespace nap
 	
 	namespace audio
 	{
-		
-		
-		bool readMp3File(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
-		{
-			mpg123_handle *mpgHandle;
-			std::vector<unsigned char> buffer;
-			
-			int error;
-			long sampleRate;
-			int channelCount;
-			int encoding;
-			size_t done;
-			
-			// Acquire a mpg123 handle
-			mpgHandle = mpg123_new(NULL, &error);
-			if (mpgHandle == nullptr)
-			{
-				errorState.fail("Error loading mp3 while acquiring mpg123 handle.");
-				return false;
-			}
-			
-			// Set the format settings for the handle
-			if(!errorState.check(mpg123_format_none(mpgHandle) == MPG123_OK, "Error loading mp3 while setting format.") ||
-               !errorState.check(mpg123_format(mpgHandle, 44100, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK, "Error loading mp3 while setting format.") ||
-               !errorState.check(mpg123_format(mpgHandle, 48000, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK, "Error loading mp3 while setting format."))
-            {
-                // Clean up when an error has occured
-                mpg123_delete(mpgHandle);
-                return false;
-            }
-			
-			// Request the buffersize
-			auto bufferSize = mpg123_outblock(mpgHandle);
-			buffer.resize(bufferSize);
-			
-			// Open the file on the handle
-			error = mpg123_open(mpgHandle, fileName.c_str());
-			if (error != MPG123_OK)
-			{
-				errorState.fail("Mp3 file failed to open: %s", fileName.c_str());
-				mpg123_delete(mpgHandle);
-				return false;
-			}
-			
-			// Request the format
-			error = mpg123_getformat(mpgHandle, &sampleRate, &channelCount, &encoding);
-			if (error != MPG123_OK)
-			{
-				errorState.fail("Failed to retrieve format.");
-				mpg123_delete(mpgHandle);
-				return false;
-			}
-			outSampleRate = sampleRate;
-			
-			// Request the size in bytes of one audio sample
-			auto sampleSize = mpg123_encsize(encoding);
-			if (sampleSize <= 0)
-			{
-				errorState.fail("Error requesting the sample size");
-				mpg123_delete(mpgHandle);
-				return false;
-			}
-			
-			auto channelOffset = output.getSize();
-			output.resize(channelOffset + channelCount, 0);
-			
-			auto formattedBuffer = reinterpret_cast<float*>(buffer.data());
-			
-			while (mpg123_read(mpgHandle, buffer.data(), bufferSize, &done) == MPG123_OK)
-			{
-				auto frameCount = done / (sampleSize * channelCount);
-				auto offset = output.getSize();
-				output.resize(channelOffset + channelCount, output.getSize() + frameCount);
-				auto i = 0;
-				for (auto frame = 0; frame < frameCount; ++frame)
-					for (auto channel = channelOffset; channel < channelOffset + channelCount; ++channel)
-					{
-						output[channel][offset + frame] = formattedBuffer[i];
-						i++;
-					}
-			}
-			
-			mpg123_close(mpgHandle);
-			mpg123_delete(mpgHandle);
-			
-			return true;
-		}
-		
-		
-		bool readLibSndFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
+		bool readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
 		{
 			SF_INFO info;
 			
@@ -155,16 +82,144 @@ namespace nap
 			
 			return true;
 		}
-		
-		
-		bool readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
+
+
+		bool NAPAPI resampleSampleBuffer(MultiSampleBuffer& buffer, float sourceSampleRate, float destSampleRate, EResampleMode resamplingMode, nap::utility::ErrorState& errorState)
 		{
-			if (utility::toLower(utility::getFileExtension(fileName)) == "mp3")
-				return readMp3File(fileName, output, outSampleRate, errorState);
-			
-			return readLibSndFile(fileName, output, outSampleRate, errorState);
+			// Source and target are the same or buffer empty
+			if (math::equal<float>(sourceSampleRate, destSampleRate) || buffer.getSize() == 0)
+				return true;	
+
+			// Resample
+			float ratio = destSampleRate/sourceSampleRate;
+			auto maxResampledSize = nap::math::ceil(buffer.getSize() * ratio);
+			MultiSampleBuffer resampled(buffer.getChannelCount(), maxResampledSize);
+
+			for(auto i = 0; i < buffer.getChannelCount(); i++)
+			{
+				SRC_DATA data;
+				data.data_in = buffer[i].data();
+				data.data_out = resampled[i].data();
+				data.input_frames = buffer[i].size();
+				data.output_frames = resampled[i].size();
+				data.end_of_input =1;
+				data.src_ratio = ratio;
+
+				int ret = src_simple (&data, static_cast<uint>(resamplingMode), 1) ;
+				if(ret != 0)
+				{
+					 errorState.fail("samplerate conversion failed: %s", src_strerror(ret));
+					 return false;
+				}
+				
+				if(data.input_frames_used != buffer[i].size()){
+					nap::Logger::debug("Sample rate conversion: whole input not processed. input size: %u, processed samples: %d", buffer[i].size(), data.input_frames_used);
+				}
+
+				if(data.output_frames_gen != resampled[i].size())
+				{
+					nap::Logger::debug("Sample rate conversion: output is smaller than allocated size. %u, %d", resampled[i].size(), data.output_frames_gen);
+					if(data.output_frames_gen > 0 && data.output_frames_gen < resampled[i].size())
+						resampled[i].resize(data.output_frames_gen);						
+				}
+			}
+
+			// Is it OK to swap?
+			std::swap(buffer, resampled);
+			return true;
 		}
-		
-		
+
+
+		void getWaveform(const SampleBuffer& buffer, const glm::ivec2& range, uint granularity, glm::vec2& outBounds, std::vector<float>& outBuffer)
+		{
+			// Align range to granularity grid
+			assert(range.x <= range.y);
+			assert(range.y < buffer.size());
+			assert(range.x > -1);
+			assert(granularity > 0);
+			assert(!outBuffer.empty());
+
+			// Quantize
+			size_t min = range.x;
+			size_t max = range.y + 1;
+
+			// Compute bucket size
+			// Add epsilon to fix tight integer rounding, ie: 0.3331 * 3 != 1.0.
+			auto bucket = (max - min) / static_cast<double>(outBuffer.size());
+			bucket += math::epsilon<double>();
+
+			// Ensure step size doesn't exceed bucket size
+			auto inc = math::min<double>(bucket, granularity);
+
+			// Calculate initial bucket threshold
+			auto thresh = math::min<double>(min + bucket, max);
+
+			// Initialize bounds
+			outBounds.x = math::max<float>();
+			outBounds.y = math::min<float>();
+
+			size_t sct = 0;		//< Samples in bucket
+			size_t pct = 0;		//< Previous bucket sample count
+			size_t bct = 0;		//< Total number of buckets
+			float rms = 0.0f;	//< Bucket amplitude
+
+			size_t i = min; double d = min;
+			size_t t = thresh;
+			while (true)
+			{
+				// If current sample position overflows existing bucket, add it
+				if (i >= t)
+				{
+					// Compute RMS for bucket
+					auto sample_count = math::max<float>(sct, 1.0f);
+					rms = sqrt(rms / sample_count);
+
+					// Add RMS of previous bucket -> weighted
+					if (bct > 0)
+					{
+						float weight = pct / sample_count;
+						rms += outBuffer[bct - 1] * weight;
+						rms /= 1.0f + weight;
+					}
+
+					// Set RMS for bucket
+					assert(bct < outBuffer.size());
+					outBuffer[bct++] = rms;
+					pct = sct;
+
+					// Update bounds
+					outBounds.x = rms < outBounds.x ? rms : outBounds.x;
+					outBounds.y = rms > outBounds.y ? rms : outBounds.y;
+
+					// Break when we're done sampling
+					if (bct == outBuffer.size()) {
+						assert(i >= max);
+						break;
+					}
+
+					// Set next bucket threshold
+					thresh = math::min<double>(thresh + bucket, max);
+					t = thresh;
+
+					// Reset
+					sct = 0; rms = 0.0f;
+				}
+
+				// Add sample for bucket
+				assert(i < max);
+				rms += pow(buffer[i], 2.0f);
+				sct++;
+
+				// Increment sample position with step size
+				// Truncate down to ensure all buckets are filled
+				d += inc; i = d;
+			}
+		}
+
+
+		void getWaveform(const SampleBuffer& buffer, uint granularity, glm::vec2& outBounds, SampleBuffer& outBuffer)
+		{
+			getWaveform(buffer, { 0, buffer.size() - 1 }, granularity, outBounds, outBuffer);
+		}
 	}
 }

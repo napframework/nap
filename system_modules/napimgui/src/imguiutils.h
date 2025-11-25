@@ -88,7 +88,7 @@ namespace ImGui
 	 * @param texture the texture to retrieve the ImTextureID from
 	 * @return the ImTextureID
 	 */
-	ImTextureID IMGUI_API GetTextureHandle(nap::Texture2D& texture);
+	ImTextureID IMGUI_API GetTextureHandle(const nap::Texture2D& texture);
 
 	/**
 	 * Displays all members of an rtti defined enumeration type inside a combo box.

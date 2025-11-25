@@ -516,9 +516,8 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, expect_early_clos
             stdout, stderr = p.communicate()
             success = not expect_early_closure
         except TimeoutExpired:
-            print("Failed to close on terminate, sending kill signal")
             force_quit(p)
-            stdout, stderr = ""
+            stdout, stderr = ("","Failed to close on terminate, sending kill signal")
 
     # Gather info from stream
     if type(stdout) == bytes:

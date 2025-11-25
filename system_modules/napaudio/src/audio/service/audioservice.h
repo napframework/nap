@@ -69,8 +69,7 @@ namespace nap
 
 		private:
 			NodeManager mNodeManager; // The node manager that performs the audio processing.
-			bool mMpg123Initialized	   = false;	// If mpg123 is initialized
-
+		
 			// DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
 			// Clearing is performed on the audio callback to make sure the node can not be destructed while it is being processed.
 			DeletionQueue mDeletionQueue;

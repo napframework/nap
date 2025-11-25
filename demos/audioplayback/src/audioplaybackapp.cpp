@@ -16,8 +16,8 @@
 #include <imgui/imgui.h>
 #include <triangleiterator.h>
 #include <meshutils.h>
-#include <mathutils.h>
 #include <imguiutils.h>
+#include <audio/utility/audiofileutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -49,16 +49,19 @@ namespace nap
 		// Find the audio entity
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
         mAudioEntity = scene->findEntity("audioEntity");
-        
-        // Find the audio playback component and initialize parameters
-        auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
-		mFadeInTime = playbackComponent->getFadeInTime() / 1000.0f;
-        mFadeOutTime = playbackComponent->getFadeOutTime() / 1000.0f;
-        mPitch = playbackComponent->getPitch();
-        mPanning = playbackComponent->getStereoPanning();
 
+        // Find the audio playback component and initialize parameters
         mAudioDeviceSettingsGui = std::make_unique<audio::AudioDeviceSettingsGui>(*getCore().getService<audio::PortAudioService>(), false);
 
+		// Create visual song representation
+		mWaveform.resize(192, 0.0f);
+		generateWaveform();
+
+		// Generate waveform, also when file is reloaded -> this doesn't check if the file actually changed;
+		// It's better to create a component that links to the audio buffer, and *only* re-create the waveform
+		// when the buffer changes, instead of a more brute force solution like this.
+		getCore().getResourceManager()->mPostResourcesLoadedSignal.connect([this] { generateWaveform(); });
+		
 		return true;
 	}
 
@@ -91,38 +94,38 @@ namespace nap
 		}
 
 		// Handle playback
-		auto play_back_component = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
-        if (!play_back_component->isPlaying())
-        {
-            if (ImGui::Button("Play"))
-                play_back_component->start(mStartPosition * 1000.0f, mDuration * 1000.0f);
+		auto pc = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
+		if (!pc->isPlaying())
+		{
+			if (ImGui::Button("Play"))
+				pc->isFinished() ? pc->start(0.0) : pc->start();
         }
         else
 		{
-            if (ImGui::Button("Stop"))
-                play_back_component->stop();
+			if (ImGui::Button("Stop"))
+				pc->stop();
         }
 
+		// Waveform
+		ImGui::PlotLines("Wave", &mWaveform[0], mWaveform.size(), 0, NULL,
+			mWaveBounds.x, mWaveBounds.y, { 0, ImGui::GetFrameHeight() * 2 });
+
 		// Playback settings
-		float length_seconds = mBuffer->getSize() / (mBuffer->getSampleRate() / 1000.0f) / 1000.0f;
-		ImGui::SliderFloat("Start Position (s)", &mStartPosition, 0, length_seconds, "%.3f", 2);
-		ImGui::SliderFloat("Duration (0 = until end)", &mDuration, 0, 10.0f, "%.3f", 2);
-		if (ImGui::SliderFloat("Fade In (s)", &mFadeInTime, 0, 2.0f, "%.3f", 2))
-		{
-			play_back_component->setFadeInTime(mFadeInTime * 1000.0f);
-		}
-		if (ImGui::SliderFloat("Fade Out (s)", &mFadeOutTime, 0, 2.0f, "%.3f", 2))
-		{
-			play_back_component->setFadeOutTime(mFadeOutTime * 1000.0f);
-		}
-		if (ImGui::SliderFloat("Pitch", &mPitch, 0.5, 2, "%.3f", 1))
-		{
-			play_back_component->setPitch(mPitch);
-		}
-		if (ImGui::SliderFloat("Panning", &mPanning, 0.f, 1.f, "%.3f", 1))
-		{
-			play_back_component->setStereoPanning(mPanning);
-		}
+		float ps = pc->getPosition();
+		if (ImGui::SliderFloat("Position (s)", &ps, 0, pc->getLength(), "%.2f"))
+			pc->setPosition(ps);
+
+		float pi = pc->getPitch();
+		if (ImGui::SliderFloat("Pitch", &pi, 0.5, 2, "%.2f"))
+			pc->setPitch(pi);
+
+		float pa = pc->getStereoPanning();
+		if (ImGui::SliderFloat("Panning", &pa, 0.f, 1.f, "%.2f"))
+			pc->setStereoPanning(pa);
+
+		float ga = pc->getGain();
+		if (ImGui::SliderFloat("Gain", &ga, 0.0f, 1.0f, "%.2f"))
+			pc->setGain(ga);
 
 		// Show audio device settings
         if (ImGui::CollapsingHeader("Driver Settings", ImGuiTreeNodeFlags_DefaultOpen))
@@ -224,4 +227,14 @@ namespace nap
 	{
 		return 0;
 	}
+
+
+	void AudioPlaybackApp::generateWaveform()
+	{
+		auto& pc = mAudioEntity->getComponent<audio::PlaybackComponentInstance>();
+		uint granularity = pc.getSampleRate() / 1000.0f;
+		assert(pc.getChannelCount() > 0);
+		audio::getWaveform(pc.getSamples(0), granularity, mWaveBounds, mWaveform);
+	}
+
 }

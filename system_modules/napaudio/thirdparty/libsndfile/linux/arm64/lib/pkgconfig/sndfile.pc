@@ -1,12 +1,13 @@
-prefix=/tmp/out
+prefix=/home/pi/nap/system_modules/napaudio/thirdparty/libsndfile/linux/arm64
 exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
+libdir=/home/pi/nap/system_modules/napaudio/thirdparty/libsndfile/linux/arm64/lib
+includedir=/home/pi/nap/system_modules/napaudio/thirdparty/libsndfile/linux/arm64/include
 
 Name: sndfile
 Description: A library for reading and writing audio files
-Requires: 
-Version: 1.0.28
+Requires:
+Requires.private: flac ogg vorbis vorbisenc opus libmpg123
+Version: 1.2.2
 Libs: -L${libdir} -lsndfile
-Libs.private: -lFLAC -logg -lvorbis -lvorbisenc  
-Cflags: -I${includedir} 
+Libs.private: -lmp3lame
+Cflags: -I${includedir}

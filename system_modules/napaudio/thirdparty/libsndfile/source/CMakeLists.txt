@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5..3.26)
+cmake_minimum_required (VERSION 3.1..3.18)
 
 # MSVC runtime library flags are selected by an abstraction, CMake >= 3.15
 # This policy still need to be set even with cmake_minimum_required() command above.
@@ -8,12 +8,10 @@ if (POLICY CMP0091)
 		return ()
 	endif ()
 
-	if (CMAKE_VERSION VERSION_LESS 3.18)
-		if (DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
-			cmake_policy (SET CMP0091 NEW)
-		else ()
-			cmake_policy (SET CMP0091 OLD)
-		endif ()
+	if (DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+		cmake_policy (SET CMP0091 NEW)
+	else ()
+		cmake_policy (SET CMP0091 OLD)
 	endif ()
 endif ()
 
@@ -106,6 +104,11 @@ if (BUILD_REGTEST AND (NOT SQLITE3_FOUND))
 	set (BUILD_REGTEST OFF)
 endif()
 
+cmake_dependent_option (ENABLE_CPU_CLIP "Enable tricky cpu specific clipper" ON "CPU_CLIPS_POSITIVE;CPU_CLIPS_NEGATIVE" OFF)
+if (NOT ENABLE_CPU_CLIP)
+	set (CPU_CLIPS_POSITIVE FALSE)
+	set (CPU_CLIPS_NEGATIVE FALSE)
+endif ()
 cmake_dependent_option (ENABLE_COMPATIBLE_LIBSNDFILE_NAME "Set DLL name to libsndfile-1.dll (canonical name), sndfile.dll otherwise" OFF "WIN32;BUILD_SHARED_LIBS" OFF)
 cmake_dependent_option (INSTALL_MANPAGES "Install man pages for programs" ON "BUILD_PROGRAMS" OFF)
 
@@ -137,6 +140,7 @@ add_feature_info (ENABLE_EXPERIMENTAL ENABLE_EXPERIMENTAL "enable experimental c
 add_feature_info (BUILD_TESTING BUILD_TESTING "build tests")
 add_feature_info (BUILD_REGTEST BUILD_REGTEST "build regtest")
 add_feature_info (ENABLE_CPACK ENABLE_CPACK "enable CPack support")
+add_feature_info (ENABLE_CPU_CLIP ENABLE_CPU_CLIP "Enable tricky cpu specific clipper")
 add_feature_info (ENABLE_BOW_DOCS ENABLE_BOW_DOCS "enable black-on-white html docs")
 add_feature_info (ENABLE_PACKAGE_CONFIG ENABLE_PACKAGE_CONFIG "generate and install package config file")
 add_feature_info (INSTALL_PKGCONFIG_MODULE INSTALL_PKGCONFIG_MODULE "generate and install pkg-config module")
@@ -191,7 +195,7 @@ set_package_properties(Opus PROPERTIES
 set_package_properties(Speex PROPERTIES TYPE OPTIONAL
 	URL "www.speex.org/"
 	DESCRIPTION "an audio codec tuned for speech"
-	PURPOSE "Enables experimental Speex support"
+	PURPOSE "Enables experemental Speex support"
 	)
 set_package_properties (SQLite3 PROPERTIES
 	TYPE OPTIONAL
@@ -566,9 +570,8 @@ if (BUILD_PROGRAMS)
 	elseif ((NOT BEOS) AND ALSA_FOUND)
 		target_include_directories (sndfile-play PRIVATE ${ALSA_INCLUDE_DIRS})
 		target_link_libraries (sndfile-play PRIVATE ${ALSA_LIBRARIES})
-	elseif ((NOT BEOS) AND SNDIO_FOUND)
-		target_include_directories (sndfile-play PRIVATE ${SNDIO_INCLUDE_DIRS})
-		target_link_libraries (sndfile-play PRIVATE ${SNDIO_LIBRARIES})
+	elseif (CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+		target_link_libraries (sndfile-play PRIVATE Sndio::Sndio)
 	endif ()
 
 # sndfile-convert

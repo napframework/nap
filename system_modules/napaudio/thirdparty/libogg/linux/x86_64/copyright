@@ -1,0 +1,102 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libogg
+Upstream-Contact: ogg-dev@xiph.org
+Source: https://xiph.org/downloads/
+License: BSD-3-clause
+
+Files: *
+Copyright: 1994-2020, the Xiph.Org Foundation http://www.xiph.org/
+License: BSD-3-clause
+
+Files: doc/rfc3533.txt
+Copyright: 2003, Silvia Pfeiffer <silviapfeiffer1@gmail.com>
+ 2003, The Internet Society
+License: rfc3533-license
+ Received: from mail-vw0-f52.google.com ([209.85.212.52])
+         by master.debian.org with esmtps (TLS1.0:RSA_ARCFOUR_SHA1:16)
+         (Exim 4.72)
+         (envelope-from <silviapfeiffer1@gmail.com>)
+         id 1QsTXr-0004MO-Ek
+         for ron@debian.org; Sun, 14 Aug 2011 05:47:35 +0000
+ In-Reply-To: <20110813065417.GV2324@audi.shelbyville.oz>
+ References: <20110813065417.GV2324@audi.shelbyville.oz>
+ From: Silvia Pfeiffer <silviapfeiffer1@gmail.com>
+ Date: Sun, 14 Aug 2011 15:47:09 +1000
+ Message-ID: <CAHp8n2nmGN+G09aA118KN86NeX9yw_VJAQNFZebm74k195zz+Q@mail.gmail.com>
+ Subject: Re: Distributing the libogg RFCs in the Debian package
+ To: Ron <ron@debian.org>
+ Cc: Christopher Montgomery <monty@xiph.org>,
+         Ivo Emanuel Goncalves <justivo@gmail.com>
+ .
+ Hi Ron,
+ .
+ I am happy to have the RFCs that I authored or co-authored to be
+ published with the additional license as stated below and permit those
+ RFCs to be distributed under the same terms as libogg itself.
+ .
+ Cheers,
+ Silvia.
+ .
+ > The author(s) agree to grant third parties the irrevocable
+ > right to copy, use and distribute the work, with or without
+ > modification, in any medium, without royalty, provided that,
+ > unless separate permission is granted, redistributed modified
+ > works do not contain misleading author, version, name of work,
+ > or endorsement information.
+
+
+Files: doc/rfc5334.txt
+Copyright: 2008, Ivo Emanuel Goncalves
+  2008, Silvia Pfeiffer <silviapfeiffer1@gmail.com>
+  2008, Christopher Montgomery <monty@xiph.org>,
+License: rfc5334-license
+
+Files: debian/*
+Copyright: 2012-2016, Ron Lee <ron@debian.org>
+ 2022, IOhannes m zmölnig <umlaeute@debian.org>
+License: BSD-3-clause
+
+Files: debian/tests/readogg.c
+Copyright: 2012, Nathan Rajlich <nathan@tootallnate.net>
+License: BSD-3-clause
+Comment:
+ File obtained from
+ https://github.com/gypified/libogg/blob/e4f952549fdcdf79c65beea93b3a9f8a2028cf4d/test.c
+
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ - Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ .
+ - Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ .
+ - Neither the name of the Xiph.Org Foundation nor the names of its
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION
+ OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: rfc5334-license
+ 12.  Copying Conditions
+ .
+  The authors agree to grant third parties the irrevocable right to
+  copy, use and distribute the work, with or without modification, in
+  any medium, without royalty, provided that, unless separate
+  permission is granted, redistributed modified works do not contain
+  misleading author, version, name of work, or endorsement information.

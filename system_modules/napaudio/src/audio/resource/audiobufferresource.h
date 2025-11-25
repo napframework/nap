@@ -46,7 +46,12 @@ namespace nap
 			 * @return: number of channels in the buffer
 			 */
 			unsigned int getChannelCount() const { return mBuffer->getChannelCount(); }
-			
+
+			/**
+			 * @return: samples in the buffer
+			 */
+			const auto& getSamples(int channel) const { assert(channel < mBuffer->getChannelCount()); return mBuffer->channels[channel]; }
+
 			/**
 			 * @return: access the actual data in the buffer
 			 */
@@ -67,6 +72,8 @@ namespace nap
 			 * Sets the sample rate at which the audio material in the buffer was sampled.
 			 */
 			void setSampleRate(float sampleRate) { mSampleRate = sampleRate; }
+
+			AudioService* mAudioService = nullptr;
 		
 		private:
 			float mSampleRate = 0;

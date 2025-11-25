@@ -177,6 +177,33 @@ namespace nap
 		T random(T min, T max);
 
 		/**
+		 * Compare float or double for equality using bit comparison; measuring the distance in ULPs.
+		 * This method treats the floating-point numbers as integers (after handling signs) to
+		 * count how many representable steps separate them.
+		 * @param a number 1
+		 * @param b number 2
+		 * @return if the given values are equal
+		 */
+		template<typename T>
+		bool equal(T a, T b);
+
+		/**
+		 * Compare float or double for equality using bit comparison; measuring the distance in ULPs.
+		 * This method treats the floating-point numbers as integers (after handling signs) to
+		 * count how many representable steps separate them.
+		 *
+		 * The distance is scaled by the given scaling factor, where a scaling factor of 2
+		 * or more relaxes the equality check.
+		 * 
+		 * @param a number 1
+		 * @param b number 2
+		 * @param scalingFactor interval scaling factor, >= 1
+		 * @return if the given values are almost equal, based on given interval.
+		 */
+		template<typename T>
+		bool equal(T a, T b, uint scalingFactor);
+
+		/**
 		 * Sets the seed for all subsequent random calls.
 		 * @param value the new seed value
 		 */
@@ -379,6 +406,23 @@ namespace nap
 		{
 			T x = math::clamp<T>((value - edge0) / (edge1 - edge0), 0, 1);
 			return x * x * (3 - 2 * x);
+		}
+
+		template<typename T>
+		bool equal(T a, T b)
+		{
+			T min = std::nextafter(a, std::numeric_limits<T>::lowest());
+			T max = std::nextafter(a, std::numeric_limits<T>::max());
+			return min <= b && max >= b;
+		}
+
+		template<typename T>
+		bool equal(T a, T b, uint factor)
+		{
+			// Calculate the range around 'a' based on ULP distance
+			T min = a - (a - std::nextafter(a, std::numeric_limits<T>::lowest())) * static_cast<T>(factor);
+			T max = a + (std::nextafter(a, std::numeric_limits<T>::max()) - a) * static_cast<T>(factor);
+			return min <= b && max >= b;
 		}
 
 
