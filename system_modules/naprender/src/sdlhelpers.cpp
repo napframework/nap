@@ -135,10 +135,11 @@ namespace nap
 			assert(s->w == w && s->h == h);
 			for (auto x = 0; x < w; x++)
 			{
+				auto sx = w - x - 1;
 				for (auto y = 0; y < h; y++)
 				{
 					// Sample pixel and convert to target
-					bitmap.getPixel(x, y, *src_color);
+					bitmap.getPixel(sx, y, *src_color);
 					for (auto i = 0; i < cchannels; i++)
 						converter(*src_color, dst_color, i);
 
