@@ -3,6 +3,7 @@
     "mID": "SolutionInfo",
     "AdditionalTargets": [
         "apps/pocketpreview",
+        "modules/naplibtag",
         "modules/napxwax"
     ]
 }
