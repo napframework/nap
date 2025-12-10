@@ -59,10 +59,11 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://download.nap-labs.tech/shared/napkin_applets.jpg)
-[NAP Framework](https://nap-framework.tech) editor & applets
 ![NAP Framework](https://download.nap-labs.tech/shared/napkin_interface.jpg)
 [NAP Framework](https://nap-framework.tech) editor & audiovisualfft demo
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_applets_2.jpg)
+[NAP Framework](https://nap-framework.tech) editor & applets
+
 
 # Where to Start
 
