@@ -277,7 +277,7 @@ namespace nap
 		std::string truncate(const std::string& str, int length, bool begin, const char* ellipsis)
 		{
 			auto e = ellipsis != nullptr ? ellipsis : "";
-			auto l = strlen(e) + length;
+			auto l = length - strlen(e);
 			if (str.length() > l)
 			{
 				return begin ? e + str.substr(str.size() - l, l) :
