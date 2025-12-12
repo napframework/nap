@@ -278,7 +278,7 @@ namespace nap
 		{
 			auto e = ellipsis != nullptr ? ellipsis : "";
 			auto l = length - strlen(e);
-			if (str.length() > l)
+			if (str.length() > length && l > 0)
 			{
 				return begin ? e + str.substr(str.size() - l, l) :
 					str.substr(0, l) + e;
