@@ -175,6 +175,7 @@ namespace nap
 			return (it != inString.end());
 		}
 
+
 		std::string trim(const std::string& s)
 		{
 			if (s.empty())
@@ -185,6 +186,7 @@ namespace nap
 			return s.substr(first, (last - first + 1));
 		}
 
+
 		std::string lTrim(const std::string& str)
 		{
 			auto s = str;
@@ -193,6 +195,7 @@ namespace nap
 					}));
 			return s;
 		}
+
 
 		std::string rTrim(const std::string& str)
 		{
@@ -203,6 +206,7 @@ namespace nap
 			return s;
 		}
 
+
 		void namedFormat(std::string& subject, const std::unordered_map<std::string, std::string>& rep)
 		{
 			// TODO: This can be optimized by extracting the template vars and their positions in a single pass first.
@@ -210,17 +214,20 @@ namespace nap
 				replaceAllInstances(subject, '{' + e.first + '}', e.second);
 		}
 
+
 		void namedFormat(std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep)
 		{
 			for (auto& s : subjects)
 				namedFormat(s, rep);
 		}
 
+
 		std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName) {
 			size_t bracketIndex = typeName.find('<');
 			return typeName.substr(0, bracketIndex) + "<" + templateTypeName + ">";
 		}
-		
+
+
 		// Replace all instances of search string with replacement
 		void replaceAllInstances(std::string& inString, const std::string& find, const std::string& replace)
 		{
@@ -233,7 +240,8 @@ namespace nap
 				i += replace.length();
 			}
 		}
-		
+
+
 		// Replace all instances of search string with replacement, in a copy
 		std::string replaceAllInstances(const std::string& inString, const std::string& find, const std::string& replace)
 		{
@@ -250,6 +258,7 @@ namespace nap
 			return outString;
 		}
 
+
 		int getLine(const std::string& buffer, size_t offset) {
 			int line = 1;
 			size_t line_offset = 0;
@@ -264,6 +273,18 @@ namespace nap
 			return line;
 		}
 
+
+		std::string truncate(const std::string& str, int length, bool begin, const char* ellipsis)
+		{
+			auto e = ellipsis != nullptr ? ellipsis : "";
+			auto l = strlen(e) + length;
+			if (str.length() > l)
+			{
+				return begin ? e + str.substr(str.size() - l, l) :
+					str.substr(0, l) + e;
+			}
+			return str;
+		}
 	}
 
 }
