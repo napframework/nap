@@ -62,15 +62,10 @@ namespace nap
 				if (!strcmp(ent->d_name, ".")) continue;
 				if (!strcmp(ent->d_name, "..")) continue;
 
-				char buffer[MAX_PATH_SIZE];
-				if (absolute)
-				{
-					sprintf(buffer, "%s/%s", directory, ent->d_name);
-					outFilenames.push_back(buffer);
-				}
-				else {
-					outFilenames.push_back(ent->d_name);
-				}
+				outFilenames.emplace_back(absolute ?
+					utility::stringFormat("%s/%s", directory, ent->d_name) :
+					ent->d_name
+				);
 			}
 			closedir(dir);
 			return true;
