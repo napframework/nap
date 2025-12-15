@@ -60,7 +60,7 @@ namespace nap
 			// List items
 			while ((ent = readdir(dir)) != nullptr)
 			{
-				if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) { continue; }
+				if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) { continue; }
 				std::string path = absolute ? utility::stringFormat("%s/%s", directory, ent->d_name) : ent->d_name;
 				outFilenames.emplace_back(std::move(path));
 			}
