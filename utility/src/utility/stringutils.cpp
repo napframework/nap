@@ -8,7 +8,7 @@
 // Std Includes
 #include <regex>
 #include <cctype>
-#include <string>
+#include <cstring>
 #include <algorithm>
 #include <assert.h>
 
