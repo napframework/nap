@@ -277,14 +277,17 @@ namespace nap
 
 		std::string truncate(const std::string& str, int length, int pos, const char* ellipsis)
 		{
-			// Clamp ellipsis to length
-			std::string e = ellipsis != nullptr ? ellipsis : "";
-			e = e.size() > length ? e.substr(0, length) : e;
-
 			// Truncate if required
-			auto l = length - static_cast<int>(e.size());
-			if (str.length() > length && l >= 0)
+			if (str.length() > length)
 			{
+				// Clamp ellipsis to max allowed length
+				std::string e = ellipsis != nullptr ? ellipsis : "";
+				e = e.size() > length ? e.substr(0, length) : e;
+
+				// Get max number of characters
+				int l = length - static_cast<int>(e.size());
+
+				// Truncate
 				if (pos < 0) { 
 					return e + str.substr(str.size() - l, l);
 				}
