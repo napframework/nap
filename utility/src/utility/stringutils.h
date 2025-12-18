@@ -248,10 +248,10 @@ namespace nap
 		 * including optional trailing begin or end characters.
 		 * @param str the string to truncate
 		 * @param length new string length
-		 * @param begin truncate beginning or end
-		 * @param ellipsis trailing begin or end characters, ie: '...'
+		 * @param pos truncate beginning (-1), middle (0) or end (+1)
+		 * @param ellipsis replacement characters, ie: '...'
 		 */
-		std::string truncate(const std::string& str, int length, bool begin = true, const char* ellipsis = nullptr);
+		std::string truncate(const std::string& str, int length, int pos = -1, const char* ellipsis = nullptr);
 
 
 		//////////////////////////////////////////////////////////////////////////

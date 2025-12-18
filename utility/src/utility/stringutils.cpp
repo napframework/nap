@@ -8,8 +8,9 @@
 // Std Includes
 #include <regex>
 #include <cctype>
-#include <string.h>
+#include <string>
 #include <algorithm>
+#include <assert.h>
 
 namespace nap
 {
@@ -274,17 +275,23 @@ namespace nap
 		}
 
 
-		std::string truncate(const std::string& str, int length, bool begin, const char* ellipsis)
+		std::string truncate(const std::string& str, int length, int pos, const char* ellipsis)
 		{
 			auto e = ellipsis != nullptr ? ellipsis : "";
-			auto l = length - strlen(e);
-			if (str.length() > length && l > 0)
+			auto l = length - static_cast<int>(strlen(e));
+			if (str.length() > length && l >= 0)
 			{
-				return begin ? e + str.substr(str.size() - l, l) :
-					str.substr(0, l) + e;
+				if (pos < 0) { 
+					return e + str.substr(str.size() - l, l);
+				}
+				if (pos == 0) {
+					auto bl = l / 2;
+					auto el = l - bl;
+					return str.substr(0, bl) + e + str.substr(str.size() - el, el);
+				}
+				return str.substr(0, l) + e;
 			}
 			return str;
 		}
 	}
-
 }
