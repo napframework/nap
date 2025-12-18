@@ -277,8 +277,12 @@ namespace nap
 
 		std::string truncate(const std::string& str, int length, int pos, const char* ellipsis)
 		{
-			auto e = ellipsis != nullptr ? ellipsis : "";
-			auto l = length - static_cast<int>(strlen(e));
+			// Clamp ellipsis to length
+			std::string e = ellipsis != nullptr ? ellipsis : "";
+			e = e.size() > length ? e.substr(0, length) : e;
+
+			// Truncate if required
+			auto l = length - static_cast<int>(e.size());
 			if (str.length() > length && l >= 0)
 			{
 				if (pos < 0) { 
