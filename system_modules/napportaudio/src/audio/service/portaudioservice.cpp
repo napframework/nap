@@ -301,6 +301,7 @@ namespace nap
 			{
 				// Enable real-time priority when starting the audio thread.
 				// Allows ALSA to run at a high priority to prevent ordinary processes on the system from preempting audio playback
+				nap::Logger::debug("Enabling real time audio scheduling");
 				PaAlsa_EnableRealtimeScheduling(mStream, true);
 			}
 #endif
