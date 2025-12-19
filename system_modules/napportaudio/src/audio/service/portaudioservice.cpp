@@ -2,15 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local includes
 #include "portaudioservice.h"
-
-// Std includes
-#include <iostream>
 
 // Nap includes
 #include <nap/logger.h>
 #include <utility/stringutils.h>
 #include <nap/core.h>
+
+// Portaudio includes
+#ifdef __linux__
+#include <pa_linux_alsa.h>
+#endif
 
 RTTI_BEGIN_STRUCT(nap::audio::PortAudioServiceConfiguration::DeviceSettings, "Audio device settings")
         RTTI_PROPERTY("HostApi", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mHostApi, nap::rtti::EPropertyMetaData::Default, "Name of the host API (or driver type) used for the audio stream")
@@ -289,10 +292,18 @@ namespace nap
                 mInputDeviceIndex = -1;
                 mOutputDeviceIndex = -1;
                 mStream = nullptr;
-
                 return false;
             }
 
+#ifdef __linux__
+			assert(mHostApiIndex >= 0);
+			if (getHostApiInfo(mHostApiIndex).type == PaHostApiTypeId::paALSA)
+			{
+				// Enable real-time priority when starting the audio thread.
+				// Allows ALSA to run at a high priority to prevent ordinary processes on the system from preempting audio playback
+				PaAlsa_EnableRealtimeScheduling(mStream, true);
+			}
+#endif
             return true;
         }
 		
