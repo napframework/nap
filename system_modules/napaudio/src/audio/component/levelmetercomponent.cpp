@@ -48,6 +48,7 @@ namespace nap
 				return false;
 			
 			mMeter = nodeManager.makeSafe<LevelMeterNode>(nodeManager);
+			mMeter->setType(mResource->mMeterType);
 			
 			if (mResource->mFilterInput)
 			{
