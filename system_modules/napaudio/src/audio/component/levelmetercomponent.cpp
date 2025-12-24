@@ -47,7 +47,7 @@ namespace nap
 			                      "%s: Channel exceeds number of input channels", mResource->mID.c_str()))
 				return false;
 			
-			mMeter = nodeManager.makeSafe<LevelMeterNode>(nodeManager);
+			mMeter = nodeManager.makeSafe<LevelMeterNode>(nodeManager, mResource->mAnalysisWindowSize);
 			mMeter->setType(mResource->mMeterType);
 			
 			if (mResource->mFilterInput)
