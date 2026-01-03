@@ -196,7 +196,6 @@ namespace nap
 
 					// Break when we're done sampling
 					if (bct == outBuffer.size()) {
-						assert(i >= max);
 						break;
 					}
 

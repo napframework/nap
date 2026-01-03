@@ -28,6 +28,7 @@ namespace nap
 			{
 			case FW::Actions::Delete:
 				nap::Logger::info("DEL %s", fname.c_str());
+				modifiedFiles.push_back(fname);
 				break;
 			case FW::Actions::Add:
 				nap::Logger::info("ADD %s", fname.c_str());
