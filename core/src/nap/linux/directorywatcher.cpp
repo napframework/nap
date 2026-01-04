@@ -27,15 +27,15 @@ namespace nap
 			switch (action)
 			{
 			case FW::Actions::Delete:
-				nap::Logger::info("DEL %s", fname.c_str());
+				Logger::debug("DEL %s", fname.c_str());
 				modifiedFiles.push_back(fname);
 				break;
 			case FW::Actions::Add:
-				nap::Logger::info("ADD %s", fname.c_str());
+				Logger::debug("ADD %s", fname.c_str());
 				modifiedFiles.push_back(fname);
 				break;
 			case FW::Actions::Modified:
-				nap::Logger::info("MOD %s", fname.c_str());
+				Logger::debug("MOD %s", fname.c_str());
 				modifiedFiles.push_back(fname);
 				break;
 			}
