@@ -2923,8 +2923,11 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
         else
         {
             s += ImTextCharFromUtf8(&c, s, text_end);
-            if (c == 0) // Malformed UTF-8?
-                break;
+			if (c == 0) // Malformed UTF-8?
+			{
+				s += 1;
+				continue;
+			}
         }
 
         if (c < 32)
