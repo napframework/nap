@@ -358,6 +358,15 @@ QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOp
 		combo->addItems(values);
 		return combo;
 	}
+
+	if (RTTI_OF(double) == type)
+	{
+		auto editor = new QLineEdit(parent);
+		editor->setValidator(new QDoubleValidator(editor));
+		editor->setFocusPolicy(Qt::StrongFocus);
+		return editor;
+	}
+	
 	return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
