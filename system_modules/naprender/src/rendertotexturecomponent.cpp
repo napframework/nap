@@ -24,6 +24,7 @@ RTTI_BEGIN_CLASS(nap::RenderToTextureComponent, "Renders an effect directly to t
 	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required, "Render material, including overrides")
 	RTTI_PROPERTY("Samples",					&nap::RenderToTextureComponent::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
 	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default,	"Initial target texture clear color")
+	RTTI_PROPERTY("Clear",						&nap::RenderToTextureComponent::mClear,						nap::rtti::EPropertyMetaData::Default,	"Whether to clear the texture before rendering")
 	RTTI_PROPERTY("SampleShading",				&nap::RenderToTextureComponent::mSampleShading,				nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
 	RTTI_PROPERTY("PreserveAspect",				&nap::RenderToTextureComponent::mPreserveAspect,			nap::rtti::EPropertyMetaData::Default,	"Whether to preserve the texture aspect ratio")
 RTTI_END_CLASS
@@ -85,6 +86,7 @@ namespace nap
 
 		// Create the render target, link in the output texture
 		mTarget.mClearColor = resource->mClearColor.convert<RGBAColorFloat>();
+		mTarget.mClear = resource->mClear;
 		mTarget.mColorTexture = resource->mOutputTexture;
 		mTarget.mSampleShading = resource->mSampleShading;
 		mTarget.mRequestedSamples = resource->mRequestedSamples;
