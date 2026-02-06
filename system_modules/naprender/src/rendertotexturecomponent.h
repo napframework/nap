@@ -57,6 +57,7 @@ namespace nap
 		MaterialInstanceResource		mMaterialInstanceResource;							///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results enable 'SampleShading'
 		RGBAColor8						mClearColor = { 255, 255, 255, 255 };				///< Property: 'ClearColor' the color that is used to clear the render target
+		bool							mClear = true;										///< Property: 'Clear' whether to clear the texture before rendering
 		bool							mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
 		bool							mPreserveAspect = false;							///< Property: 'PreserveAspect' Whether to preserve the texture aspect ratio
 	};
