@@ -75,7 +75,7 @@ namespace nap
 			if (mInternalBufferOffset != framesPerBuffer)
 				nap::Logger::warn("Internal buffer does not fit PortAudio buffer");
 
-			mFrames++;
+			mFrameIndex++;
 
 #ifdef __XSIMD__
             // Reset previous denormal handling mode
@@ -117,7 +117,7 @@ namespace nap
 				mUpdateSignal(mSampleTime);
 			}
 
-			mFrames++;
+			mFrameIndex++;
 			if (mInternalBufferOffset != framesPerBuffer)
 				nap::Logger::warn("Internal buffer does not fit PortAudio buffer");
 		}
