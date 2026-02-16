@@ -44,9 +44,7 @@ namespace nap
 				continue;
 
 			if (utility::getFileExtension(filename) == "json")
-			{
-				presets.push_back(utility::getFileName(filename));
-			}
+				presets.emplace_back(utility::getFileName(filename));
 		}
 
 		// Sort
@@ -148,6 +146,7 @@ namespace nap
 		// Write to disk
 		std::string json = writer.GetJSON();
 		output.write(json.data(), json.size());
+		output.flush();
 
 		return true;
 	}
