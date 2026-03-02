@@ -164,13 +164,13 @@ namespace nap
 		}
 
 		// Create attributes
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-		nap::Vec3VertexAttribute& normal_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
-		nap::Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
-		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
+		auto& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		auto& normal_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
+		auto& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		auto& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 
 		// Set numer of vertices this mesh contains
-		mesh.setNumVertices((int)boxVertCount);
+		mesh.setNumVertices(static_cast<int>(boxVertCount));
 		mesh.setDrawMode(EDrawMode::Triangles);
 		mesh.setCullMode(mCullMode);
 		mesh.setUsage(mUsage);
@@ -178,7 +178,7 @@ namespace nap
 
 		// Create vertex data based on scale factor
 		std::vector<glm::vec3> vertex_data(boxVertCount);
-		for (nap::uint i = 0; i < boxVertCount; i++)
+		for (uint i = 0; i < boxVertCount; i++)
 			vertex_data[i] = (unitBox[i] * mSize) + mPosition;
 
 		// Set data
