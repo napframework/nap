@@ -503,37 +503,35 @@ static nap::EShaderVariableValueType getShaderVariableValueType(spirv_cross::SPI
 	case spirv_cross::SPIRType::Int:
 		if (type.vecsize == 1 && type.columns == 1)
 			return nap::EShaderVariableValueType::Int;
-		else if (type.vecsize == 4 && type.columns == 1)
+		if (type.vecsize == 4 && type.columns == 1)
 			return nap::EShaderVariableValueType::IVec4;
-		else
-			return nap::EShaderVariableValueType::Unknown;
+		break;
 	case spirv_cross::SPIRType::UInt:
 		if (type.vecsize == 1 && type.columns == 1)
 			return nap::EShaderVariableValueType::UInt;
-		else if (type.vecsize == 4 && type.columns == 1)
+		if (type.vecsize == 4 && type.columns == 1)
 			return nap::EShaderVariableValueType::UVec4;
-		else
-			return nap::EShaderVariableValueType::Unknown;
+		break;
 	case spirv_cross::SPIRType::Float:
 		if (type.vecsize == 1 && type.columns == 1)
 			return nap::EShaderVariableValueType::Float;
-		else if (type.vecsize == 2 && type.columns == 1)
+		if (type.vecsize == 2 && type.columns == 1)
 			return nap::EShaderVariableValueType::Vec2;
-		else if (type.vecsize == 3 && type.columns == 1)
+		if (type.vecsize == 3 && type.columns == 1)
 			return nap::EShaderVariableValueType::Vec3;
-		else if (type.vecsize == 4 && type.columns == 1)
+		if (type.vecsize == 4 && type.columns == 1)
 			return nap::EShaderVariableValueType::Vec4;
-		else if (type.vecsize == 2 && type.columns == 2)
+		if (type.vecsize == 2 && type.columns == 2)
 			return nap::EShaderVariableValueType::Mat2;
-		else if (type.vecsize == 3 && type.columns == 3)
+		if (type.vecsize == 3 && type.columns == 3)
 			return nap::EShaderVariableValueType::Mat3;
-		else if (type.vecsize == 4 && type.columns == 4)
+		if (type.vecsize == 4 && type.columns == 4)
 			return nap::EShaderVariableValueType::Mat4;
-		else
-			return nap::EShaderVariableValueType::Unknown;
+		break;
 	default:
-		return nap::EShaderVariableValueType::Unknown;
+		break;
 	}
+	return nap::EShaderVariableValueType::Unknown;
 }
 
 
@@ -544,33 +542,33 @@ static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 	case spirv_cross::SPIRType::Int:
 		if (type.vecsize == 1 && type.columns == 1)
 			return VK_FORMAT_R32_SINT;
-		else if (type.vecsize == 4 && type.columns == 1)
+		if (type.vecsize == 4 && type.columns == 1)
 			return VK_FORMAT_R32G32B32A32_SINT;
-		else
-			return VK_FORMAT_UNDEFINED;
+		break;
 	case spirv_cross::SPIRType::UInt:
 		if (type.vecsize == 1 && type.columns == 1)
 			return VK_FORMAT_R32_UINT;
-		else if (type.vecsize == 4 && type.columns == 1)
+		if (type.vecsize == 4 && type.columns == 1)
 			return VK_FORMAT_R32G32B32A32_UINT;
-		else
-			return VK_FORMAT_UNDEFINED;
+		break;
 	case spirv_cross::SPIRType::Float:
 		if (type.vecsize == 1 && type.columns == 1)
 			return VK_FORMAT_R32_SFLOAT;
-		else if (type.vecsize == 2 && type.columns == 1)
+		if (type.vecsize == 2 && type.columns == 1)
 			return VK_FORMAT_R32G32_SFLOAT;
-		else if (type.vecsize == 3 && type.columns == 1)
+		if (type.vecsize == 3 && type.columns == 1)
 			return VK_FORMAT_R32G32B32_SFLOAT;
-		else if (type.vecsize == 4 && type.columns == 1)
+		if (type.vecsize == 4 && type.columns == 1)
 			return VK_FORMAT_R32G32B32A32_SFLOAT;
-		else
-			return VK_FORMAT_UNDEFINED;
+		break;
 	case spirv_cross::SPIRType::Double:
-		return VK_FORMAT_R64_SFLOAT;
+		if (type.vecsize == 1 && type.columns == 1)
+			return VK_FORMAT_R64_SFLOAT;
+		break;
 	default:
-		return VK_FORMAT_UNDEFINED;
+		break;
 	}
+	return VK_FORMAT_UNDEFINED;
 }
 
 
