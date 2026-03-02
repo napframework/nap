@@ -57,7 +57,7 @@ namespace nap
 		/**
 		 * @return the normalized line box from (-1, -1, -1) to (1, 1, 1)
 		 */
-		const std::vector<glm::vec3>& getNormalizedLineBox();
+		static const std::vector<glm::vec3>& getNormalizedLineBox();
 
 		EMemoryUsage mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated
 
