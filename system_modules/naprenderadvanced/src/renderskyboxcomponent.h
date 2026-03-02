@@ -100,6 +100,11 @@ namespace nap
 		 */
 		float getOpacity() const								{ return mAlphaUniform->getValue(); }
 
+		/**
+		 * @return material handle
+		 */
+		MaterialInstance* getOrCreateMaterial()					{ return &mMaterialInstance; }
+
 	protected:
 		/**
 		 * Draws the skybox to the given render target
