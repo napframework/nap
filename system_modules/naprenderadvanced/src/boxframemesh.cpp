@@ -81,8 +81,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	BoxFrameMesh::BoxFrameMesh(Core& core) :
-		mRenderService(core.getService<RenderService>()),
-		mMeshInstance(std::make_unique<MeshInstance>(*mRenderService))
+		mRenderService(core.getService<RenderService>())
 	{ }
 
 
