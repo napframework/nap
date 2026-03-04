@@ -215,7 +215,7 @@ namespace nap
 		std::string display_string = utility::stringFormat("Send OSC message to: %s, port: %d, with the specified address and value", mOscSender->mIPAddress.c_str(), mOscSender->mPort);
 		ImGui::Text(display_string.c_str());
 		ImGui::InputText("Address", &mOscOutputTag[0], mOscOutputTag.capacity());
-		ImGui::SliderFloat("Value", &mOscOutputValue, 0.f, 1.f, "%.3f");
+		ImGui::SliderFloat("Value", &mOscOutputValue, 0.f, 1.f, "%.3f", 1);
 		if (ImGui::Button("Send"))
 		{
 			std::string address = "/" + std::string(mOscOutputTag.data());

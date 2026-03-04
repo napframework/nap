@@ -63,6 +63,9 @@
                     "StereoPanning": 0.5,
                     "AutoPlay": false,
                     "StartPosition": 17000.0,
+                    "Duration": 0.0,
+                    "FadeInTime": 0.0,
+                    "FadeOutTime": 0.0,
                     "Pitch": 1.0
                 },
                 {
@@ -191,25 +194,25 @@
                                 "Type": "nap::BufferBindingVec4",
                                 "mID": "InPositions_2c26c4bb",
                                 "Name": "InPositions",
-                                "Buffer": "Vec4BufferDummy"
+                                "Buffer": "PositionBufferDummy"
                             },
                             {
                                 "Type": "nap::BufferBindingVec4",
                                 "mID": "OutPositions_94e6febd",
                                 "Name": "OutPositions",
-                                "Buffer": "Vec4BufferDummy"
+                                "Buffer": "PositionBufferDummy"
                             },
                             {
                                 "Type": "nap::BufferBindingVec4",
                                 "mID": "InNormals_2817da11",
                                 "Name": "InNormals",
-                                "Buffer": "Vec4BufferDummy"
+                                "Buffer": "PositionBufferDummy"
                             },
                             {
                                 "Type": "nap::BufferBindingVec4",
                                 "mID": "OutNormals_bb180dba",
                                 "Name": "OutNormals",
-                                "Buffer": "Vec4BufferDummy"
+                                "Buffer": "PositionBufferDummy"
                             }
                         ],
                         "Constants": [
@@ -250,7 +253,7 @@
                                 "Type": "nap::BufferBindingVec4",
                                 "mID": "Positions_07091c33",
                                 "Name": "Positions",
-                                "Buffer": "Vec4BufferDummy"
+                                "Buffer": "PositionBufferDummy"
                             },
                             {
                                 "Type": "nap::BufferBindingUInt",
@@ -262,25 +265,25 @@
                                 "Type": "nap::BufferBindingVec4",
                                 "mID": "OutNormals_57d4a5a7",
                                 "Name": "OutNormals",
-                                "Buffer": "Vec4BufferDummy"
+                                "Buffer": "PositionBufferDummy"
                             },
                             {
                                 "Type": "nap::BufferBindingUInt",
                                 "mID": "Triangles_ee9855e9",
                                 "Name": "Triangles",
-                                "Buffer": "UIntBufferDummy"
+                                "Buffer": "TriangleBufferDummy"
                             },
                             {
                                 "Type": "nap::BufferBindingInt",
                                 "mID": "Adjacency_638d952e",
                                 "Name": "Adjacency",
-                                "Buffer": "IntBufferDummy"
+                                "Buffer": "AdjacencyBufferDummy"
                             },
                             {
                                 "Type": "nap::BufferBindingVec4",
                                 "mID": "InNormals_88aa8533",
                                 "Name": "InNormals",
-                                "Buffer": "Vec4BufferDummy"
+                                "Buffer": "PositionBufferDummy"
                             }
                         ],
                         "Constants": [
@@ -670,7 +673,6 @@
                             255
                         ]
                     },
-                    "Clear": true,
                     "SampleShading": false,
                     "PreserveAspect": true
                 }
@@ -1392,9 +1394,9 @@
                 },
                 {
                     "Type": "nap::VertexBufferVec4",
-                    "mID": "Vec4BufferDummy",
+                    "mID": "PositionBufferDummy",
                     "Usage": "Static",
-                    "Count": 1,
+                    "Count": 262144,
                     "Clear": false,
                     "FillPolicy": ""
                 },
@@ -1418,23 +1420,23 @@
                     "Type": "nap::IndexBuffer",
                     "mID": "IndexBufferDummy",
                     "Usage": "Static",
-                    "Count": 1,
+                    "Count": 1565190,
                     "Clear": false,
                     "FillPolicy": ""
                 },
                 {
                     "Type": "nap::VertexBufferUInt",
-                    "mID": "UIntBufferDummy",
+                    "mID": "TriangleBufferDummy",
                     "Usage": "Static",
-                    "Count": 1,
+                    "Count": 1565190,
                     "Clear": false,
                     "FillPolicy": ""
                 },
                 {
                     "Type": "nap::GPUBufferInt",
-                    "mID": "IntBufferDummy",
+                    "mID": "AdjacencyBufferDummy",
                     "Usage": "Static",
-                    "Count": 1,
+                    "Count": 1572864,
                     "Clear": false,
                     "FillPolicy": ""
                 },
@@ -1554,9 +1556,7 @@
         {
             "Type": "nap::audio::AudioFileResource",
             "mID": "AudioFile",
-            "AudioFilePath": "hang.mp3",
-            "Resample": false,
-            "ResampleMode": "Sinc Fastest"
+            "AudioFilePath": "hang.mp3"
         }
     ]
 }

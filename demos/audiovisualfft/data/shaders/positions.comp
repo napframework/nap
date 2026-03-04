@@ -20,15 +20,16 @@ layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
 // Derive attribute buffer sizes from plane dimensions
 const uint ROW_COUNT = 1024;
 const uint COLUMN_COUNT = 256;
+const uint POSITION_COUNT = ROW_COUNT*COLUMN_COUNT;
 
 layout(std430) readonly buffer InPositions
 {
-	vec4 inpositions[];
+	vec4 inpositions[POSITION_COUNT];
 };
 
 layout(std430) writeonly buffer OutPositions
 {
-	vec4 outpositions[];
+	vec4 outpositions[POSITION_COUNT];
 };
 
 uniform UBO
