@@ -167,7 +167,7 @@ namespace nap
 		mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
 
 		// Acquire new / unique descriptor set before rendering
-		const DescriptorSet& descriptor_set = mMaterialInstance.update();
+		const auto& descriptor_set = mMaterialInstance.update();
 
 		// Fetch and bind pipeline
 		utility::ErrorState error_state;
@@ -178,15 +178,15 @@ namespace nap
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bind vertex buffers
-		const std::vector<VkBuffer>& vertex_buffers = mRenderableMesh.getVertexBuffers();
-		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
+		const auto& vertex_buffers = mRenderableMesh.getVertexBuffers();
+		const auto& offsets = mRenderableMesh.getVertexBufferOffsets();
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 
 		// Draw meshes
-		MeshInstance& mesh_instance = mSkyBoxMesh.getMeshInstance();
-		GPUMesh& mesh = mesh_instance.getGPUMesh();
+		auto& mesh_instance = mSkyBoxMesh.getMeshInstance();
+		auto& mesh = mesh_instance.getGPUMesh();
 
-		const IndexBuffer& index_buffer = mesh.getIndexBuffer(0);
+		const auto& index_buffer = mesh.getIndexBuffer(0);
 		vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 
