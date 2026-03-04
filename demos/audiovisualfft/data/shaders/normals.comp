@@ -14,7 +14,6 @@ layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
 // Derive attribute buffer sizes from plane dimensions
 const uint ROW_COUNT = 1024;
 const uint COLUMN_COUNT = 256;
-const uint CELL_COUNT = (ROW_COUNT-1)*(COLUMN_COUNT-1);
 
 const uint MAX_ADJACENT_TRI_COUNT = 6;
 const uint VERTS_PER_TRI_COUNT = 3;
