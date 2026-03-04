@@ -96,27 +96,30 @@ namespace nap
 
 	bool BoxFrameMesh::setup(const math::Box& box, utility::ErrorState& errorState)
 	{
-		// Create mesh instance
 		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
+		if (mMeshInstance == nullptr)
+		{
+			// Create mesh instance
+			mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
-		// Persistent configuration
-		mMeshInstance->setNumVertices(sNormalizedLineBox.size());
-		mMeshInstance->setUsage(mUsage);
-		mMeshInstance->setPolygonMode(EPolygonMode::Line);
-		mMeshInstance->setDrawMode(EDrawMode::Lines);
-		mMeshInstance->setCullMode(ECullMode::None);
+			// Persistent configuration
+			mMeshInstance->setNumVertices(sNormalizedLineBox.size());
+			mMeshInstance->setUsage(mUsage);
+			mMeshInstance->setPolygonMode(EPolygonMode::Line);
+			mMeshInstance->setDrawMode(EDrawMode::Lines);
+			mMeshInstance->setCullMode(ECullMode::None);
 
-		std::vector<uint32> indices;
-		setupIndices(indices);
+			std::vector<uint32> indices;
+			setupIndices(indices);
+
+			// Create the shape
+			auto& shape = mMeshInstance->createShape();
+			shape.setIndices(indices.data(), indices.size());
+		}
 
 		// Create attributes
-		auto& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-		position_attribute.setData(getBoxFrameMeshVertices(box));
-
-		// Create the shape
-		auto& shape = mMeshInstance->createShape();
-		shape.setIndices(indices.data(), indices.size());
+		auto& attr = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		attr.setData(getBoxFrameMeshVertices(box));
 
 		mIsSetupManually = true;
 		return true;
@@ -136,12 +139,12 @@ namespace nap
 		mMeshInstance->setDrawMode(EDrawMode::Lines);
 		mMeshInstance->setCullMode(ECullMode::None);
 
+		// Create attributes
+		auto& attr = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		attr.setData(sUnitLineBox);
+
 		std::vector<uint32> indices;
 		setupIndices(indices);
-
-		// Create attributes
-		auto& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-		position_attribute.setData(sUnitLineBox);
 
 		// Create the shape
 		auto& shape = mMeshInstance->createShape();
