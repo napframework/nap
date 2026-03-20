@@ -64,26 +64,17 @@ namespace nap
 		std::string preset_path = getGroupPresetDirectory(groupID);
 		if (preset_path.back() != '/' && preset_path.back() != '\\')
 			preset_path += "/";
-
-		preset_path += filename;
-		std::transform(preset_path.begin(), preset_path.end(), preset_path.begin(), ::tolower);
-
-		return preset_path;
+		return preset_path + filename;
 	}
 
 
 	std::string ParameterService::getGroupPresetDirectory(const std::string& groupID) const
 	{
 		const ParameterServiceConfiguration* configuration = getConfiguration<ParameterServiceConfiguration>();
-
 		std::string group_directory = configuration->mPresetsDirectory;
 		if (group_directory.back() != '/' && group_directory.back() != '\\')
 			group_directory += "/";
-
-		group_directory += groupID;
-		std::transform(group_directory.begin(), group_directory.end(), group_directory.begin(), ::tolower);
-
-		return group_directory;
+		return group_directory + groupID;
 	}
 
 
@@ -120,7 +111,7 @@ namespace nap
 	bool ParameterService::savePreset(ParameterGroup& group, const std::string& presetFile, utility::ErrorState& errorState)
 	{
 		// Ensure the presets directory exists
-		utility::makeDirs(utility::getAbsolutePath(getGroupPresetDirectory(group.mID)));
+		utility::makeDirs(getGroupPresetDirectory(group.mID));
 
 		// Create parameter group and copy group member properties
 		// Don't serialize the given group, which might contain properties we're not interested in
