@@ -10,6 +10,7 @@
 // nap includes
 #include <utility/dllexport.h>
 #include <nap/numeric.h>
+#include <rtti/typeinfo.h>
 
 namespace nap
 {
@@ -39,6 +40,7 @@ namespace nap
 		 */
 		class NAPAPI MultiSampleBuffer
 		{
+			RTTI_ENABLE()
 		public:
 			MultiSampleBuffer() = default;
 			

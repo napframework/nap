@@ -136,19 +136,20 @@ namespace nap
 			void setInternalBufferSize(int size);
 
 			/**
-			 * Used by nodes to register themselves to be processed directly by the node manager
+			 * Use this to register a Process as root process. Called from control thread.
 			 * @param rootProcess The root process is a process or node that is executed on every audio callback without being connected to an input of another node.
 			 * In most cases the root process is an OutputNode.
 			 */
-			void registerRootProcess(Process& rootProcess);
+			void registerRootProcess(SafePtr<Process> rootProcess);
 
 
 			/**
-			 * Used by nodes to unregister themselves to be processed directly by the node manager.
+			 * Use this to manually unregister a Process as root process. Called from control thread.
+			 * Note: Processes also unregister themselves as root process automatically from their destructors.
 			 * @param rootProcess The root process is a process or node that is executed on every audio callback without being connected to an input of another node.
 			 * In most cases the root process is an OutputNode.
 			 */
-			void unregisterRootProcess(Process& rootProcess);
+			void unregisterRootProcess(SafePtr<Process> rootProcess);
 
 			/**
 			 * Constructs an object managed by a SafeOwner that will dispose the object in the NodeManager's DeletionQueue when it is no longer used.
@@ -161,6 +162,15 @@ namespace nap
 			SafeOwner<T> makeSafe(Args&& ... args)
 			{
 				auto owner = SafeOwner<T>(mDeletionQueue, new T(std::forward<Args>(args)...));
+
+				// If the newly constructed object is a Process, set its internal SafePtr to itself, and register it.
+				Process* process = rtti_cast<Process>(owner.getRaw());
+				if (process != nullptr)
+				{
+					process->mSelf = owner.get();
+					registerProcess(owner.get());
+				}
+
 				return owner;
 			}
 
@@ -175,6 +185,15 @@ namespace nap
 			SafeOwner<T> makeSafe(T* ptr)
 			{
 				auto owner = SafeOwner<T>(mDeletionQueue, ptr);
+
+				// If the newly constructed object is a Process, set its internal SafePtr to itself, and register it.
+				Process* process = rtti_cast<Process>(owner.getRaw());
+				if (process != nullptr)
+				{
+					process->mSelf = owner.get();
+					registerProcess(owner.get());
+				}
+
 				return owner;
 			}
 
@@ -191,7 +210,7 @@ namespace nap
 
 		private:
 			// Used by the nodes and audio processes to register themselves on construction
-			void registerProcess(Process& process);
+			void registerProcess(SafePtr<Process> process);
 
 			// Used by the nodes and audio processes to unregister themselves on destruction
 			void unregisterProcess(Process& process);
@@ -230,8 +249,8 @@ namespace nap
 
 			std::vector<float*> mInputBuffer; //  Pointing to the audio input that this node manager has to process. The format is a non-interleaved array containing a float array for each channel.
 
-			std::set<Process*> mProcesses; // all the audio processes managed by this node manager
-			std::set<Process*> mRootProcesses; // the nodes that will be processed directly by the manager on every audio callback
+			std::vector<Process*> mProcesses; // all the audio processes managed by this node manager
+			std::vector<SafePtr<Process>> mRootProcesses; // the nodes that will be processed directly by the manager on every audio callback
 
 			nap::TaskQueue mTaskQueue = { 256 }; // Queue with lambda functions to be executed before processing the next internal buffer.
 			DeletionQueue& mDeletionQueue; // Deletion queue used to safely create and destruct nodes in a threadsafe manner.

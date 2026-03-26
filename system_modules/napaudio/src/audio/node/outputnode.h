@@ -27,9 +27,8 @@ namespace nap
 		public:
 			/**
 			 * @param nodeManager The node manager
-			 * @param rootProcess true if the node is registered as root process and being processed from the moment of creation. This can cause glitches if the node tree and it's parameters are still being build.
 			 */
-			OutputNode(NodeManager& nodeManager, bool rootProcess = true);
+			OutputNode(NodeManager& nodeManager);
 
 			~OutputNode() override final;
 
@@ -52,10 +51,7 @@ namespace nap
 		private:
 			void process() override;
 
-			std::atomic<int> mOutputChannel = {
-					0}; // The audio channel that this node's input will be played on by the node manager.
-
-			bool mRootProcess = false;
+			std::atomic<int> mOutputChannel = { 0 }; // The audio channel that this node's input will be played on by the node manager.
 		};
 
 

@@ -87,6 +87,16 @@ namespace nap
 			void setGain(ControllerValue gain);
 
 			/**
+			 * Sets all the filter parameters at once, recalculating the coefficients only once.
+			 * @param mode lowpass, highpass, bandpass, lowpass with resonance peak or highpass with resonance peak.
+			 * @param frequency The frequency parameter of the filter in Hz.
+			 * @param resonance Sets the resonance peak of the filter. 0 means no resonance, 30 means self-oscillation.
+			 * @param band Sets the bandwith for bandpass filtering in Hz.
+			 * @param gain Sets the gaining factor of the filter's output.
+			 */
+			void set(EMode mode, ControllerValue frequency, ControllerValue resonance, ControllerValue band, ControllerValue gain);
+
+			/**
 			 * @return the mode of the filter.
 			 */
 			EMode getMode() const { return mMode; }
@@ -117,7 +127,7 @@ namespace nap
 
 			std::atomic<EMode> mMode = {EMode::LowPass};
 			std::atomic<ControllerValue> mFrequency = {440.f};
-			std::atomic<ControllerValue> mResonance = {0.f};
+			std::atomic<ControllerValue> mResonance = {1.f};
 			std::atomic<ControllerValue> mBand = {100.f};
 			std::atomic<ControllerValue> mGain = {1.f};
 			DirtyFlag mIsDirty;

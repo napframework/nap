@@ -24,14 +24,28 @@ namespace nap
 			if (channel < getInputChannelCount())
 				connect(channel, pin);
 		}
-		
-		
+
+
+		void IMultiChannelInput::tryDisconnect(unsigned int channel, OutputPin& pin)
+		{
+			if (channel < getInputChannelCount())
+				disconnect(channel, pin);
+		}
+
+
 		void IMultiChannelInput::connect(IMultiChannelOutput& inputObject)
 		{
 			for (auto channel = 0; channel < getInputChannelCount(); ++channel)
 				connect(channel, *inputObject.getOutputForChannel(channel % inputObject.getChannelCount()));
 		}
-		
+
+
+		void IMultiChannelInput::disconnect(IMultiChannelOutput& inputObject)
+		{
+			for (auto channel = 0; channel < getInputChannelCount(); ++channel)
+				disconnect(channel, *inputObject.getOutputForChannel(channel % inputObject.getChannelCount()));
+		}
+
 	}
 	
 }

@@ -60,6 +60,7 @@ namespace nap
 					// If the channel is out of bounds we create a PullNode instead of an OutputNode in order to process the connected DSP branch.
 					auto pullNode = nodeManager.makeSafe<PullNode>(nodeManager);
 					pullNode->audioInput.connect(*mInput->getOutputForChannel(mChannelRouting[channel]));
+					nodeManager.registerRootProcess(pullNode.get());
 					mOutputs.emplace_back(std::move(pullNode));
 					continue;
 				}
@@ -67,6 +68,7 @@ namespace nap
 					auto outputNode = nodeManager.makeSafe<OutputNode>(nodeManager);
 					outputNode->setOutputChannel(channel);
 					outputNode->audioInput.connect(*mInput->getOutputForChannel(mChannelRouting[channel]));
+					nodeManager.registerRootProcess(outputNode.get());
 					mOutputs.emplace_back(std::move(outputNode));
 				}
 			}

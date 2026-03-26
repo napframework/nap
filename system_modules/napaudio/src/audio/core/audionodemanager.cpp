@@ -57,7 +57,8 @@ namespace nap
 
 				{
 					for (auto& root : mRootProcesses)
-						root->process();
+						if (root != nullptr)
+							root->update();
 				}
 
 				for (auto channel = 0; channel < mOutputChannelCount; ++channel) {
@@ -101,7 +102,8 @@ namespace nap
 
 				{
 					for (auto& root : mRootProcesses)
-						root->update();
+						if (root != nullptr)
+							root->update();
 				}
 
 				for (auto channel = 0; channel < mOutputChannelCount; ++channel) {
@@ -162,40 +164,59 @@ namespace nap
 		}
 
 
-		void NodeManager::registerProcess(Process& process)
+		void NodeManager::registerProcess(SafePtr<Process> process)
 		{
-			process.setSampleRate(mSampleRate);
-			process.setBufferSize(mInternalBufferSize);
+			process->setSampleRate(mSampleRate);
+			process->setBufferSize(mInternalBufferSize);
 			auto oldSampleRate = mSampleRate;
 			auto oldBufferSize = mInternalBufferSize;
-			enqueueTask([&, oldSampleRate, oldBufferSize]() {
+
+			enqueueTask([&, oldSampleRate, oldBufferSize, process]() {
+				// Check if the Process is not (being) deleted
+				if (process == nullptr)
+					return;
+
 				// In the extremely rare case the buffersize or the samplerate of the node manager have been changed in between the enqueueing of the task and its execution on the audio thread, we set them again.
 				// However we prefer not to, in order to avoid memory allocation on the audio thread.
 				if (oldSampleRate != mSampleRate)
-					process.setSampleRate(mSampleRate);
+					process->setSampleRate(mSampleRate);
 				if (oldBufferSize != mInternalBufferSize)
-					process.setBufferSize(mInternalBufferSize);
-				process.mRegisteredWithNodeManager.store(true);
-				mProcesses.emplace(&process);
+					process->setBufferSize(mInternalBufferSize);
+				process->mRegisteredWithNodeManager.store(true);
+				mProcesses.emplace_back(process.get());
 			});
 		}
 
 
 		void NodeManager::unregisterProcess(Process& process)
 		{
-			mProcesses.erase(&process);
+			auto it = std::find_if(mProcesses.begin(), mProcesses.end(), [&](auto& el){ return el == &process; });
+			if (it != mProcesses.end())
+				mProcesses.erase(it);
 		}
 
 
-		void NodeManager::registerRootProcess(Process& rootProcess)
+		void NodeManager::registerRootProcess(SafePtr<Process> rootProcess)
 		{
-			enqueueTask([&]() { mRootProcesses.emplace(&rootProcess); });
+			enqueueTask([&, rootProcess]()
+			{
+				if (rootProcess == nullptr)
+					return;
+				mRootProcesses.emplace_back(rootProcess);
+			});
 		}
 
 
-		void NodeManager::unregisterRootProcess(Process& rootProcess)
+		void NodeManager::unregisterRootProcess(SafePtr<Process> rootProcess)
 		{
-			mRootProcesses.erase(&rootProcess);
+			enqueueTask([&, rootProcess]()
+			{
+				if (rootProcess == nullptr)
+					return;
+				auto it = std::find_if(mRootProcesses.begin(), mRootProcesses.end(), [&](auto &el){ return el.get() == rootProcess.get(); });
+				if (it != mRootProcesses.end())
+					mRootProcesses.erase(it);
+			});
 		}
 
 

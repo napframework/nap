@@ -21,13 +21,12 @@ namespace nap
 		assert(buffer_size >= 2);
 
 		mFFTBuffer = std::make_unique<FFTBuffer>(buffer_size, overlaps);
-		getNodeManager().registerRootProcess(*this);
 	}
 
 
 	FFTNode::~FFTNode()
 	{
-		getNodeManager().unregisterRootProcess(*this);
+		getNodeManager().unregisterRootProcess(getSafe());
 	}
 
 

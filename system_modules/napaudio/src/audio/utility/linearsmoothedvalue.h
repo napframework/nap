@@ -7,6 +7,8 @@
 // Nap includes
 #include <nap/signalslot.h>
 
+#include <atomic>
+
 namespace nap
 {
 	namespace audio
@@ -98,7 +100,7 @@ namespace nap
 			T mValue; // Value that is being controlled by this object.
 			T mIncrement; // Increment value per step of the current ramp when mode is linear.
 			T mDestination = 0; // Destination value of the current ramp.
-			std::atomic<int> mStepCount = 0; // Number of steps in the ramp.
+			std::atomic<int> mStepCount = { 0 }; // Number of steps in the ramp.
 			int mStepCounter = 0; // Current step index, 0 means at destination
 		};
 		

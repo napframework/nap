@@ -4,7 +4,6 @@
 
 #include "process.h"
 
-#include <audio/core/audionode.h>
 #include <audio/core/audionodemanager.h>
 #include <audio/core/audiopin.h>
 
@@ -22,18 +21,22 @@ namespace nap
 
 		Process::Process(NodeManager& nodeManager) : mNodeManager(&nodeManager)
 		{
-			mNodeManager->registerProcess(*this);
 		}
 
 
 		Process::Process(ParentProcess& parent) : mNodeManager(&parent.getNodeManager())
 		{
-			mNodeManager->registerProcess(*this);
 		}
 
 
 		Process::~Process()
 		{
+			// Unregister as root process, if needed
+			auto it = std::find_if(getNodeManager().mRootProcesses.begin(), getNodeManager().mRootProcesses.end(), [&](auto& e){ return e.get() == this; });
+			if (it != getNodeManager().mRootProcesses.end())
+				getNodeManager().mRootProcesses.erase(it);
+
+			// Unregister as process
 			if (mRegisteredWithNodeManager.load())
 				getNodeManager().unregisterProcess(*this);
 		}
@@ -72,9 +75,15 @@ namespace nap
 		
 		void ParentProcess::addChild(Process& child)
 		{
-			auto childPtr = &child;
-			getNodeManager().enqueueTask([&, childPtr]() {
-				auto it = std::find(mChildren.begin(), mChildren.end(), childPtr);
+			auto childPtr = child.getSafe();
+			auto parentPtr = getSafe();
+			getNodeManager().enqueueTask([&, parentPtr, childPtr]() {
+				// Check if parent and child are still valid
+				if (parentPtr == nullptr || childPtr == nullptr)
+					return;
+
+				// Check for duplicates
+				auto it = std::find_if(mChildren.begin(), mChildren.end(), [&](auto& e){ return e.get() == childPtr.get(); });
 				if (it == mChildren.end())
 					mChildren.emplace_back(childPtr);
 			});
@@ -83,9 +92,14 @@ namespace nap
 		
 		void ParentProcess::removeChild(Process& child)
 		{
-			auto childPtr = &child;
-			getNodeManager().enqueueTask([&, childPtr]() {
-				auto it = std::find(mChildren.begin(), mChildren.end(), childPtr);
+			auto childPtr = child.getSafe();
+			auto parentPtr = getSafe();
+			getNodeManager().enqueueTask([&, parentPtr, childPtr]() {
+				// Check if parent and child are still valid
+				if (parentPtr == nullptr || childPtr == nullptr)
+					return;
+
+				auto it = std::find_if(mChildren.begin(), mChildren.end(), [&](auto& e){ return e.get() == childPtr.get(); });
 				if (it != mChildren.end())
 					mChildren.erase(it);
 			});
@@ -96,7 +110,7 @@ namespace nap
 		{
 			for (auto& child : mChildren)
 			{
-				if (child != nullptr)
+				if (child != nullptr) // Check if the child is not enqueued for deletion in the meantime
 					child->update();
 			}
 		}
@@ -112,7 +126,7 @@ namespace nap
 					auto i = threadIndex;
 					while (i < mChildren.size()) {
 						auto& child = mChildren[i];
-						if (child != nullptr)
+						if (child != nullptr) // Check if the child is not enqueued for deletion in the meantime
 							child->update();
 						i += mThreadPool.getThreadCount();
 					}
@@ -125,6 +139,16 @@ namespace nap
 		
 		void ParentProcess::process()
 		{
+			// First remove children that are (being) deleted or enqueued for deletion
+			auto it = mChildren.begin();
+			while (it != mChildren.end())
+			{
+				if ((*it) == nullptr)
+					it = mChildren.erase(it);
+				else
+					it++;
+			}
+
 			switch (mMode)
 			{
 				case Mode::Sequential:
