@@ -33,6 +33,7 @@ namespace nap
 		nap::ComponentPtr<audio::AudioComponentBase> mInput;		///< Property: 'Input' The component whose audio output will be measured.
 		FFTBuffer::EOverlap mOverlaps = FFTBuffer::EOverlap::One;	///< Property: 'Overlaps' Number of overlaps, more increases fft precision in exchange for performance
 		int mChannel = 0;											///< Property: 'Channel' Channel of the input that will be analyzed.
+		int mFFTBufferSize = 2048;									///< Property: 'FFTBufferSize' Number of samples being analyzed per window.
 	};
 		
 		

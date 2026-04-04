@@ -17,6 +17,7 @@ RTTI_BEGIN_CLASS(nap::FFTAudioNodeComponent)
 	RTTI_PROPERTY("Input",			&nap::FFTAudioNodeComponent::mInput,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Overlaps",		&nap::FFTAudioNodeComponent::mOverlaps,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Channel",		&nap::FFTAudioNodeComponent::mChannel,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FFTBufferSize",	&nap::FFTAudioNodeComponent::mFFTBufferSize,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FFTAudioNodeComponentInstance)
@@ -38,8 +39,15 @@ namespace nap
 		if (!errorState.check(mResource->mChannel < mInput->getChannelCount(), "%s: Channel exceeds number of input channels", mResource->mID.c_str()))
 			return false;
 
+		// Validate FFT buffer size
+		if (!(mResource->mFFTBufferSize & (mResource->mFFTBufferSize - 1)) == 0)
+		{
+			errorState.fail("FFT buffer size needs to be a power of 2.");
+			return false;
+		}
+
 		auto& node_manager = mAudioService->getNodeManager();
-		mFFTNode = node_manager.makeSafe<FFTNode>(node_manager);
+		mFFTNode = node_manager.makeSafe<FFTNode>(node_manager, mResource->mFFTBufferSize);
 		mFFTNode->mInput.connect(*mInput->getOutputForChannel(mResource->mChannel));
 		mFFTBuffer = &mFFTNode->getFFTBuffer();
 

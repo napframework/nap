@@ -87,6 +87,7 @@ namespace nap
 		// Create sample buffer
 		mSampleBufferFormatted.resize(data_size * 2);
 		mSampleBufferWindowed.resize(data_size);
+		mCircularBuffer.resize(data_size * 4);
 
 		// Compute hamming window
 		mForwardHammingWindow.resize(data_size);
@@ -114,31 +115,31 @@ namespace nap
 
 	void FFTBuffer::supply(const std::vector<float>& samples)
 	{
-		// Try to lock and copy the audio buffer for FFT analysis.
-		// This prevents the audio thread from stalling when the analysis thread is working on a (previous) set at the same time.
-		// We do however attempt to store it for the most up to date, accurate image.
-		std::unique_lock<std::mutex> lock(mSampleBufferMutex, std::defer_lock);
-		if (lock.try_lock())
+		auto writePosition = mWritePosition.load();
+		int index = writePosition % mCircularBuffer.size();
+		for (auto& sample : samples)
 		{
-			mSampleBufferA = samples;
-			mSampleData = true;
+			mCircularBuffer[index++] = sample;
+			if (index >= mCircularBuffer.size())
+				index = 0;
 		}
+		mWritePosition.store(writePosition + samples.size());
 	}
 
 
 	void FFTBuffer::transform()
 	{
-		// Check if there's something to consume -> atomic dirty check first to minimize overhead
-		// Note that we could use a try_lock construction for both producer and consumer threads,
-		// But it's safer to always transform available sample data, instead of potentially not consuming *any* data.
-		if (mSampleData.load())
+		auto writePosition = mWritePosition.load();
+		auto readPosition = mReadPosition.load();
+
+		// Check if there is a new FFT buffer of data available
+		if (writePosition - readPosition >= mContext->getSize())
 		{
-			// Lock when available and swap buffer memory locations -> making the previously transformed buffer available for storage.
-			{
-				std::lock_guard<std::mutex> lock(mSampleBufferMutex);
-				std::swap(mSampleBufferA, mSampleBufferB);
-				mSampleData = false;
-			}
+			// If we are more than two FFT buffers behind proceed to the newest one available
+			// This way we don't create latency when transform() is not called regularly enough.
+			while (readPosition + mContext->getSize() < writePosition - mContext->getSize())
+				readPosition += mContext->getSize();
+
 			createImage();
 		}
 	}
@@ -160,22 +161,16 @@ namespace nap
 		// Copy second half to first half
 		std::memcpy(mSampleBufferFormatted.data(), half_ptr, data_bytes);
 
-		// Copy new samples to second half
-		if (mSampleBufferB.size() == data_size)
+		// Copy data from circular buffer to the second half of the formatted buffer
+		auto readPosition = mReadPosition.load();
+		int circularBufferIndex = readPosition % mCircularBuffer.size();
+		for (int i = 0; i < data_size; ++i)
 		{
-			std::memcpy(half_ptr, mSampleBufferB.data(), data_bytes);
+			half_ptr[i] = mCircularBuffer[circularBufferIndex++];
+			if (circularBufferIndex >= mCircularBuffer.size())
+				circularBufferIndex = 0;
 		}
-		else if (mSampleBufferB.size() > data_size)
-		{
-			// Zero-padding
-			std::fill(mSampleBufferFormatted.begin(), mSampleBufferFormatted.end(), 0.0f);
-			std::memcpy(half_ptr, mSampleBufferB.data(), data_bytes);
-		}
-		else
-		{
-			NAP_ASSERT_MSG(false, "Specified sample buffer size too small");
-			return;
-		}
+		mReadPosition.store(readPosition + data_size);
 
 		// Copy data to windowed array
 		const uint hop_count = static_cast<uint>(mOverlap);
