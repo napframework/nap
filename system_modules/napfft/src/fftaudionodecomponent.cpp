@@ -48,6 +48,12 @@ namespace nap
 	}
 
 
+	void FFTAudioNodeComponentInstance::onDestroy()
+	{
+		mAudioService->getNodeManager().unregisterRootProcess(mFFTNode.get());
+	}
+
+
 	void FFTAudioNodeComponentInstance::setInput(audio::AudioComponentBaseInstance& input)
 	{
 		auto inputPtr = &input;

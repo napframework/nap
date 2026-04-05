@@ -23,12 +23,22 @@ namespace nap
 
         auto& node_manager = audio_service->getNodeManager();
         mAudioClockProcess = node_manager.makeSafe<SequencePlayerAudioClockProcess>(node_manager);
+
+        // Register the clock to be processed directly by the NodeManager
+        node_manager.registerRootProcess(mAudioClockProcess.get());
+
         mAudioClockProcess->connectSlot(mUpdateSlot);
     }
 
 
     void SequencePlayerAudioClock::onDestroy()
     {
+        auto* audio_service = mService.getCore().getService<audio::AudioService>();
+        assert(audio_service!=nullptr);
+
+        // Unregister the clock from being processed directly by the NodeManager
+        audio_service->getNodeManager().unregisterRootProcess(mAudioClockProcess.get());
+        
         stop();
     }
 
@@ -43,13 +53,6 @@ namespace nap
             :audio::Process(nodeManager)
     {
         mTime = nodeManager.getSampleTime();
-        getNodeManager().registerRootProcess(*this);
-    }
-
-
-    SequencePlayerAudioClockProcess::~SequencePlayerAudioClockProcess() noexcept
-    {
-        getNodeManager().unregisterRootProcess(*this);
     }
 
 
