@@ -4,6 +4,7 @@
     "AdditionalTargets": [
         "apps/pocketpreview",
         "modules/naplibtag",
+        "modules/napmount",
         "modules/napxwax"
     ]
 }
