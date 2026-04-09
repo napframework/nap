@@ -42,13 +42,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	inline constexpr const char* licenseToken = "LICENSE@";
-	inline constexpr const char* licenseExtension = "license";
-	inline constexpr const char* keyExtension = "key";
 
 	static bool findFile(const char* extension, const std::vector<std::string>& files, std::string& outFile)
 	{
-		auto it = std::find_if(files.begin(), files.end(), [&](const auto& it)
-		{
+		auto it = std::find_if(files.begin(), files.end(), [&](const auto& it) {
 			return utility::getFileExtension(it) == extension;
 		});
 
@@ -255,15 +252,25 @@ namespace nap
 
 	bool LicenseService::validateLicense(const std::string& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		// Ensure the user provided a license
-		if (!error.check(hasLicense(), "No .%s file found in: %s", licenseExtension, mDirectory.c_str()))
+		// Ensure license search directory exists
+		if (!error.check(utility::dirExists(mDirectory),
+			"License search directory does not exist: %s", mDirectory.c_str()))
 			return false;
-		assert(utility::fileExists(mLicense));
 
-		// Ensure the user provided a key
-		if (!error.check(hasKey(), "No .%s file found in: %s", keyExtension, mDirectory.c_str()))
+		// Get all the files in that directory
+		std::vector<std::string> license_files;
+		error.check(utility::listDir(mDirectory.c_str(), license_files, true),
+			"Unable to list contents of license search directory: %s", mDirectory.c_str());
+
+		// Locate license file
+		if (!error.check(findFile(licenseExtension, license_files, mLicense), "Unable to find '%s' file in: %s",
+			licenseExtension, mDirectory.c_str()))
 			return false;
-		assert(utility::fileExists(mSignature));
+
+		// Locate key file
+		if (!error.check(findFile(keyExtension, license_files, mSignature), "Unable to find '%s' file in: %s",
+			keyExtension, mDirectory.c_str()))
+			return false;
 
         // Read license from disk
         std::ifstream license_stream(mLicense);
@@ -355,36 +362,11 @@ namespace nap
 	bool LicenseService::init(utility::ErrorState& error)
 	{
 		// Providing no license (at all) is allowed, validation will in that case always fail
-		nap::LicenseConfiguration* license_config = getConfiguration<LicenseConfiguration>();
+		LicenseConfiguration* license_config = getConfiguration<LicenseConfiguration>();
 		
 		// Patch license directory
 		mDirectory = license_config->mDirectory;
 		getCore().getProjectInfo()->patchPath(mDirectory);
-
-		// ensure it exists
-		if (!utility::dirExists(mDirectory))
-		{
-			nap::Logger::warn("License directory does not exist: %s", mDirectory.c_str());
-			return true;
-		}
-
-		// Get all the files in that directory
-		std::vector<std::string> license_files;
-		utility::listDir(mDirectory.c_str(), license_files, true);
-
-		// Find .license file
-		if (!findFile(licenseExtension, license_files, mLicense))
-		{
-			nap::Logger::warn("Unable to find: .%s file in: %s", licenseExtension, mDirectory.c_str());
-			return true;
-		}
-
-		// Find .key file
-		if (!findFile(keyExtension, license_files, mSignature))
-		{
-			nap::Logger::warn("Unable to find: .%s file in: %s", keyExtension, mDirectory.c_str());
-			return true;
-		}
 		return true;
 	}
 
