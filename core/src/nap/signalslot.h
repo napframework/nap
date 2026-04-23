@@ -62,10 +62,10 @@ namespace nap
 		void disconnect(Signal<Args...>& signal);
 
         /**
-         * Convenience method to connect a member function with one argument.
+         * Convenience method to connect a member function.
          */
-		template <typename U, typename F>
-		void connect(U* object, F memberFunction)									{ connect(std::bind(memberFunction, object, std::placeholders::_1)); }
+		template <typename U>
+		void connect(U* object, void(U::*memberFunction)(Args...))					{ connect([object, memberFunction](Args... args){ (object->*memberFunction)(args...); }); }
 
         /**
          * Call operator to trigger the signal to be emitted.
@@ -144,24 +144,28 @@ namespace nap
 		{ }
 
 		/**
-		 * This templated constructor can be used to initialize the slot with a member function with one single parameter
+		 * This templated constructor can be used to initialize the slot with a member function
 		 * @param parent parent object
 		 * @param memberFunction member function to call
 		 */
-		template <typename U, typename F>
-		Slot(U* parent, F memberFunction) : 
-			mFunction(std::bind(memberFunction, parent, std::placeholders::_1))
-		{ }
+		template <typename U>
+		Slot(U* parent, void(U::*memberFunction)(Args...))
+		{
+			mFunction = [parent, memberFunction](Args... args){ (parent->*memberFunction)(args...); };
+		}
 
 		/**
-		 * This templated constructor can be used to initialize the slot with a member function with one single
-		 * parameter, last argument is a signal to connect to straightaway after construction
+		 * This templated constructor can be used to initialize the slot with a member function,
+		 * last argument is a signal to connect to straightaway after construction
 		 * @param parent parent object
 		 * @param memberFunction member function to call
 		 */
-		template <typename U, typename F>
-		Slot(U* parent, F memberFunction, Signal<Args...>& signal) : 
-			mFunction(std::bind(memberFunction, parent, std::placeholders::_1))		{ signal.connect(*this); }
+		template <typename U>
+		Slot(U* parent, void(U::*memberFunction)(Args...), Signal<Args...>& signal)
+		{
+			mFunction = [parent, memberFunction](Args... args){ (parent->*memberFunction)(args...); };
+			signal.connect(*this);
+		}
 
 		// Disconnect slot from signals on destruction
 		~Slot()																		{ disconnect(); }
