@@ -97,6 +97,8 @@ namespace nap
 			}
 		}
 		freeifaddrs(if_addresses);
+		Logger::debug("Hardware License UUID: %s", std::to_string(num_id).c_str());
+
 
 		// Add machine ID
 		std::string id_str;
@@ -105,6 +107,13 @@ namespace nap
 			error.fail("Unable to read machine identifier");
 			return false;
 		}
+
+		// Hash machine ID together with hardware ID
+		std::hash<std::string> hasher;
+		auto sof_id = static_cast<uint64>(hasher(id_str));
+		Logger::debug("Software License UUID: %s", std::to_string(sof_id).c_str());
+		num_id ^= sof_id;
+		id_str = std::to_string(num_id);
 
         // hash and encode
         std::string hashed_id = utility::sha256(utility::rTrim(id_str));
