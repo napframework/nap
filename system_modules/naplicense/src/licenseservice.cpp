@@ -312,20 +312,6 @@ namespace nap
 				arguments.emplace(std::make_pair(argument[0], argument[1]));
 		}
 
-		// Get issue date (minutes since epoch)
-		auto issue_it = arguments.find("issued");
-		if (!error.check(issue_it != arguments.end(), "License has no issue date"))
-			return false;
-
-		// Convert to system time
-		std::chrono::minutes dur(std::stoi((*issue_it).second));
-		SystemTimeStamp stamp_issued(dur);
-
-		// If the current system time is less than the license issue time,
-		// someone tried to reverse the clock or clock is not up to date
-		if (!error.check(getCurrentTime() >= stamp_issued, "Invalid system clock"))
-			return false;
-
 		// Populate standards arguments
 		setArgument(arguments, "mail", outInformation.mMail);
 		setArgument(arguments, "name", outInformation.mName);
@@ -338,6 +324,20 @@ namespace nap
 		auto it = arguments.find("date");
 		if (it != arguments.end())
 		{
+			// Get issue date (minutes since epoch)
+			auto issue_it = arguments.find("issued");
+			if (!error.check(issue_it != arguments.end(), "License has no issue date"))
+				return false;
+
+			// Convert to system time
+			std::chrono::minutes dur(std::stoi((*issue_it).second));
+			SystemTimeStamp stamp_issued(dur);
+
+			// If the current system time is less than the license issue time,
+			// someone tried to reverse the clock or clock is not up to date
+			if (!error.check(getCurrentTime() >= stamp_issued, "Invalid system clock"))
+				return false;
+
 			SystemTimeStamp expiration_date;
 			if (!error.check(getExpirationDate((*it).second, expiration_date),
 				"Unable to extract license expiration date"))
