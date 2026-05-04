@@ -11,7 +11,9 @@
 #include <openssl/sha.h>
 #include <openssl/crypto.h>
 #include <string>
-
+#include <sstream>
+#include <iostream>
+#include <iomanip>
 
 /**
  * Generates an RSA public-private key pair and returns it.
@@ -322,10 +324,29 @@ namespace nap
         }
 
 
+        static std::string bytesToHex(const unsigned char* bytes, size_t length) {
+            std::stringstream ss;
+            ss << std::hex << std::setfill('0');
+            for (size_t i = 0; i < length; ++i) {
+                ss << std::setw(2) << static_cast<int>(bytes[i]);
+            }
+            return ss.str();
+        }
+
+
         std::string sha256(const std::string& str)
         {
-            unsigned char hash[SHA256_DIGEST_LENGTH];
-            return { reinterpret_cast<const char *>(SHA256(reinterpret_cast<const unsigned char *>(str.c_str()), str.length(), hash)) };
+            unsigned char digest[SHA256_DIGEST_LENGTH];
+
+            SHA256_CTX sha256;
+            SHA256_Init(&sha256);
+            SHA256_Update(&sha256, str.c_str(), str.size());
+            SHA256_Final(digest, &sha256);
+
+            auto r = bytesToHex(digest, SHA256_DIGEST_LENGTH);
+            return r;
+
+            //return { reinterpret_cast<const char *>(SHA256(reinterpret_cast<const unsigned char *>(str.c_str()), str.length(), hash)) };
         }
 
 
