@@ -97,6 +97,7 @@ namespace nap
 			}
 		}
 		freeifaddrs(if_addresses);
+		num_id = 131017725796324;
 		Logger::debug("Hardware License UUID: %s", std::to_string(num_id).c_str());
 
 
