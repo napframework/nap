@@ -8,13 +8,10 @@
 // external includes
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
-#include <openssl/sha.h>
 #include <openssl/crypto.h>
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <iomanip>
-#include <nap/logger.h>
 
 /**
  * Generates an RSA public-private key pair and returns it.
