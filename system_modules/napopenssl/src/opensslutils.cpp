@@ -8,6 +8,8 @@
 
 // External includes
 #include <iomanip>
+#include <iostream>
+#include <sstream>
 
 using namespace nap;
 
@@ -89,11 +91,11 @@ namespace nap
 
 	    std::string encode16(const std::vector<unsigned char>& array)
 	    {
-	    	std::stringstream ss;
-	    	ss << std::uppercase << std::hex << std::setfill('0');
-	    	for (const auto& i : array)
-	    		ss << std::setw(2) << static_cast<int>(i);
-	    	return ss.str();
+			std::stringstream ss;
+			ss << std::uppercase << std::hex << std::setfill('0');
+			for (const auto& i : array)
+				ss << std::setw(2) << static_cast<int>(i);
+			return ss.str();
 	    }
 	}
 }
