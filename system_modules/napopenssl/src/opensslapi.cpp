@@ -14,6 +14,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <nap/logger.h>
 
 /**
  * Generates an RSA public-private key pair and returns it.
@@ -324,7 +325,8 @@ namespace nap
         }
 
 
-        static std::string bytesToHex(const unsigned char* bytes, size_t length) {
+        static std::string bytesToHex(const unsigned char* bytes, size_t length)
+        {
             std::stringstream ss;
             ss << std::hex << std::setfill('0');
             for (size_t i = 0; i < length; ++i) {
@@ -336,17 +338,32 @@ namespace nap
 
         std::string sha256(const std::string& str)
         {
-            unsigned char digest[SHA256_DIGEST_LENGTH];
+            EVP_MD_CTX* mdctx = nullptr;
 
-            SHA256_CTX sha256;
-            SHA256_Init(&sha256);
-            SHA256_Update(&sha256, str.c_str(), str.size());
-            SHA256_Final(digest, &sha256);
+            if((mdctx = EVP_MD_CTX_new()) == nullptr)
+                return "";
 
-            auto r = bytesToHex(digest, SHA256_DIGEST_LENGTH);
+            if(1 != EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr))
+                return "";
+
+            if(1 != EVP_DigestUpdate(mdctx, str.c_str(), str.length()))
+                return "";
+
+            auto* digest = reinterpret_cast<unsigned char*>(OPENSSL_malloc(EVP_MD_size(EVP_sha256())));
+            if(digest == nullptr)
+                return "";
+
+            unsigned int digest_len;
+            if(1 != EVP_DigestFinal_ex(mdctx, digest, &digest_len))
+                return "";
+
+            //auto r= bytesToHex(digest, digest_len);
+            auto r = std::string(reinterpret_cast<const char*>(digest), digest_len);
+            std::cout << r << std::endl;
+
+            OPENSSL_free(digest);
+            EVP_MD_CTX_free(mdctx);;
             return r;
-
-            //return { reinterpret_cast<const char *>(SHA256(reinterpret_cast<const unsigned char *>(str.c_str()), str.length(), hash)) };
         }
 
 
