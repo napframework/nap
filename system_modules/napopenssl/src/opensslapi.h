@@ -45,7 +45,7 @@ namespace nap
          * @param str the string to hash
          * @return the hash, empty string if hashing fails
          */
-        std::string sha256(const std::string& str);
+        std::vector<unsigned char> sha256(const std::string& str);
 
         /**
          * Encodes a string to base64

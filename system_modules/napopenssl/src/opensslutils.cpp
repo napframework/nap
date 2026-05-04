@@ -66,7 +66,7 @@ namespace nap
 	    }
 	
 	
-	    std::string sha256(const std::string& str)
+	    std::vector<unsigned char> sha256(const std::string& str)
 	    {
 	        return openssl::sha256(str);
 	    }

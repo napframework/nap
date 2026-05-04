@@ -12,6 +12,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 
 /**
  * Generates an RSA public-private key pair and returns it.
@@ -322,11 +323,20 @@ namespace nap
         }
 
 
-        std::string sha256(const std::string& str)
+        std::string bytesToHex(const unsigned char* bytes, size_t length) {
+            std::stringstream ss;
+            ss << std::uppercase << std::hex << std::setfill('0');
+            for (size_t i = 0; i < length; ++i)
+                ss << std::setw(2) << static_cast<int>(bytes[i]);
+            return ss.str();
+        }
+
+
+        std::vector<unsigned char> sha256(const std::string& str)
         {
             EVP_MD_CTX* ctx = nullptr;
             unsigned char* digest = nullptr;
-            std::string hash;
+            std::vector<unsigned char> hash;
 
             if((ctx = EVP_MD_CTX_new()) == nullptr)
                 goto cleanup;
@@ -345,8 +355,9 @@ namespace nap
             if(EVP_DigestFinal_ex(ctx, digest, &digest_len) != 1)
                 goto cleanup;
 
-            // Get hash
-            hash = std::string(reinterpret_cast<const char*>(digest), digest_len);
+            // Copy into vector
+            hash.reserve(digest_len);
+            std::copy(&digest[0], &digest[digest_len], std::back_inserter(hash));
 
             //Always clear
         cleanup:
