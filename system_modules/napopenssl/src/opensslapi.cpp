@@ -325,28 +325,16 @@ namespace nap
         }
 
 
-        static std::string bytesToHex(const unsigned char* bytes, size_t length)
-        {
-            std::stringstream ss;
-            ss << std::hex << std::setfill('0');
-            for (size_t i = 0; i < length; ++i) {
-                ss << std::setw(2) << static_cast<int>(bytes[i]);
-            }
-            return ss.str();
-        }
-
-
         std::string sha256(const std::string& str)
         {
-            EVP_MD_CTX* mdctx = nullptr;
-
-            if((mdctx = EVP_MD_CTX_new()) == nullptr)
+            EVP_MD_CTX* ctx = nullptr;
+            if((ctx = EVP_MD_CTX_new()) == nullptr)
                 return "";
 
-            if(1 != EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr))
+            if(1 != EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr))
                 return "";
 
-            if(1 != EVP_DigestUpdate(mdctx, str.c_str(), str.length()))
+            if(1 != EVP_DigestUpdate(ctx, str.c_str(), str.length()))
                 return "";
 
             auto* digest = reinterpret_cast<unsigned char*>(OPENSSL_malloc(EVP_MD_size(EVP_sha256())));
@@ -354,15 +342,18 @@ namespace nap
                 return "";
 
             unsigned int digest_len;
-            if(1 != EVP_DigestFinal_ex(mdctx, digest, &digest_len))
+            if(1 != EVP_DigestFinal_ex(ctx, digest, &digest_len))
                 return "";
 
-            //auto r= bytesToHex(digest, digest_len);
+            // Copy into string
             auto r = std::string(reinterpret_cast<const char*>(digest), digest_len);
             std::cout << r << std::endl;
 
+            // Free
             OPENSSL_free(digest);
-            EVP_MD_CTX_free(mdctx);;
+            EVP_MD_CTX_free(ctx);
+
+            // Return hash
             return r;
         }
 
