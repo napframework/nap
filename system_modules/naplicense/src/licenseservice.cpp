@@ -115,20 +115,14 @@ namespace nap
 		id_str = std::to_string(num_id);
 
         // hash and encode
-        std::string hashed_id = utility::sha256(utility::rTrim(id_str));
+        auto hashed_id = utility::sha256(utility::rTrim(id_str));
 		if (!error.check(!hashed_id.empty(), "SHA256 hash conversion failed"))
 			return false;
 
-		std::string id_encoded = utility::encode64(hashed_id);
-        assert(id_encoded.size() >= 10);
-
-        // convert to hex and truncate for readability
-        std::stringstream ss;
-        for(int i=0; i<10; ++i)
-            ss << std::uppercase << std::hex << (int)id_encoded[i];
-        outID = ss.str();
-
-        return true;
+		// Truncate & convert to hex for readability (max 20 chars)
+		hashed_id.resize(hashed_id.size() > 10 ? 10 : hashed_id.size());
+		outID = utility::encode16(hashed_id);
+		return true;
 	}
 
 #elif _WIN32
@@ -212,17 +206,14 @@ namespace nap
 			"Could not read registry value"))
 			return false;
 
-        // hash and encode
-        std::string hashed_id = utility::sha256(id_str);
-		std::string id_encoded = utility::encode64(hashed_id);
-        assert(id_encoded.size() >= 10);
+		// hash and encode
+		auto hashed_id = utility::sha256(utility::rTrim(id_str));
+		if (!error.check(!hashed_id.empty(), "SHA256 hash conversion failed"))
+			return false;
 
-        // convert to hex and truncate for readability
-        std::stringstream ss;
-        for(int i=0; i<10; ++i)
-            ss << std::uppercase << std::hex << (int)id_encoded[i];
-        outID = ss.str();
-
+		// Truncate & Convert to hex
+		hashed_id.resize(hashed_id.size() > 10 ? 10 : hashed_id.size());
+		outID = utility::encode16(hashed_id);
 		return true;
 	}
 #else

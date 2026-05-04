@@ -322,11 +322,11 @@ namespace nap
         }
 
 
-        std::string sha256(const std::string& str)
+        std::vector<unsigned char> sha256(const std::string& str)
         {
             EVP_MD_CTX* ctx = nullptr;
-            unsigned char* digest = nullptr;
-            std::string hash;
+            std::vector<unsigned char> hash;
+            bool success = false;
 
             if((ctx = EVP_MD_CTX_new()) == nullptr)
                 goto cleanup;
@@ -337,21 +337,18 @@ namespace nap
             if(EVP_DigestUpdate(ctx, str.c_str(), str.length()) != 1)
                 goto cleanup;
 
-            digest = static_cast<unsigned char*>(OPENSSL_malloc(EVP_MD_size(EVP_sha256())));
-            if(digest == nullptr)
-                goto cleanup;
+            unsigned int len;
+            hash.resize(EVP_MD_size(EVP_sha256()));
+            if (EVP_DigestFinal_ex(ctx, hash.data(), &len) == 1)
+            {
+                success = true;
+                hash.resize(len);
+            }
 
-            unsigned int digest_len;
-            if(EVP_DigestFinal_ex(ctx, digest, &digest_len) != 1)
-                goto cleanup;
-
-            // Get hash
-            hash = std::string(reinterpret_cast<const char*>(digest), digest_len);
-
-            //Always clear
         cleanup:
+            //Always clear
             if (ctx != nullptr)     { EVP_MD_CTX_free(ctx); }
-            if (digest != nullptr)  { OPENSSL_free(digest); }
+            if (!success)           { hash.clear(); }
             return hash;
         }
 

@@ -6,6 +6,9 @@
 #include "opensslutils.h"
 #include "opensslapi.h"
 
+// External includes
+#include <iomanip>
+
 using namespace nap;
 
 bool convertSigningScheme(ESigningScheme scheme, std::string& out)
@@ -66,7 +69,7 @@ namespace nap
 	    }
 	
 	
-	    std::string sha256(const std::string& str)
+	    std::vector<unsigned char> sha256(const std::string& str)
 	    {
 	        return openssl::sha256(str);
 	    }
@@ -81,6 +84,16 @@ namespace nap
 	    std::string decode64(const std::string& str)
 	    {
 	        return openssl::decode64(str);
+	    }
+
+
+	    std::string encode16(const std::vector<unsigned char>& array)
+	    {
+	    	std::stringstream ss;
+	    	ss << std::uppercase << std::hex << std::setfill('0');
+	    	for (const auto& i : array)
+	    		ss << std::setw(2) << static_cast<int>(i);
+	    	return ss.str();
 	    }
 	}
 }
