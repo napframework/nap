@@ -345,9 +345,8 @@ namespace nap
             if(EVP_DigestFinal_ex(ctx, digest, &digest_len) != 1)
                 goto cleanup;
 
-            // Copy into string
+            // Get hash
             hash = std::string(reinterpret_cast<const char*>(digest), digest_len);
-            std::cout << hash << std::endl;
 
             //Always clear
         cleanup:

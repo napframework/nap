@@ -97,9 +97,7 @@ namespace nap
 			}
 		}
 		freeifaddrs(if_addresses);
-		num_id = 131017725796324;
 		Logger::debug("Hardware License UUID: %s", std::to_string(num_id).c_str());
-
 
 		// Add machine ID
 		std::string id_str;
@@ -118,6 +116,9 @@ namespace nap
 
         // hash and encode
         std::string hashed_id = utility::sha256(utility::rTrim(id_str));
+		if (!error.check(!hashed_id.empty(), "SHA256 hash conversion failed"))
+			return false;
+
 		std::string id_encoded = utility::encode64(hashed_id);
         assert(id_encoded.size() >= 10);
 
