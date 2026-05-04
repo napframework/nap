@@ -89,7 +89,6 @@ namespace nap
 
 	    std::string encode16(const std::vector<unsigned char>& array)
 	    {
-	    	// convert to hex and truncate for readability
 	    	std::stringstream ss;
 	    	ss << std::uppercase << std::hex << std::setfill('0');
 	    	for (const auto& i : array)
