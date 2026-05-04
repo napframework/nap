@@ -11,7 +11,6 @@
 #include <nap/logger.h>
 #include <unordered_map>
 #include <nap/assert.h>
-#include <iomanip>
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -122,15 +121,8 @@ namespace nap
 
 		// Truncate & Convert to hex
 		hashed_id.resize(hashed_id.size() > 8 ? 8 : hashed_id.size());
-
-        // convert to hex and truncate for readability
-        std::stringstream ss;
-		ss << std::uppercase << std::hex << std::setfill('0');
-		for (const auto& i : hashed_id)
-			ss << std::setw(2) << static_cast<int>(i);
-		outID = ss.str();
-
-        return true;
+		outID = utility::encode16(hashed_id);
+		return true;
 	}
 
 #elif _WIN32

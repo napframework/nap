@@ -65,5 +65,12 @@ namespace nap
          * @return The decoded string
          */
         std::string NAPAPI decode64(const std::string& str);
+
+        /**
+         * Encodes a bytearray to base16 (hex) string
+         * @param array the byte array to encode
+         * @return the byte array as base16 (hex) encoded string
+         */
+        std::string NAPAPI encode16(const std::vector<unsigned char>& array);
     }
 }
