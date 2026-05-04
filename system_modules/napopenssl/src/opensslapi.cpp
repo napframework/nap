@@ -323,15 +323,6 @@ namespace nap
         }
 
 
-        std::string bytesToHex(const unsigned char* bytes, size_t length) {
-            std::stringstream ss;
-            ss << std::uppercase << std::hex << std::setfill('0');
-            for (size_t i = 0; i < length; ++i)
-                ss << std::setw(2) << static_cast<int>(bytes[i]);
-            return ss.str();
-        }
-
-
         std::vector<unsigned char> sha256(const std::string& str)
         {
             EVP_MD_CTX* ctx = nullptr;
