@@ -8,7 +8,6 @@
 
 // External includes
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 
 using namespace nap;
