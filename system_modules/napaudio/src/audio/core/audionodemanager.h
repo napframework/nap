@@ -109,6 +109,11 @@ namespace nap
 			const DiscreteTimeValue& getSampleTime() const { return mSampleTime; }
 
 			/**
+			 * @return total number of frames
+			 */
+			const DiscreteTimeValue& getFrameIndex() { return mFrameIndex; }
+
+			/**
 			 * Sets the number of input channels that will be fed into the node system
 			 * @param inputChannelCount the number of input channels
 			 */
@@ -223,6 +228,7 @@ namespace nap
 			int mInternalBufferSize = 64; // The internal buffersize that the node manager runs on.
 
 			DiscreteTimeValue mSampleTime = 0; // the actual sample time clock of the audio system
+			DiscreteTimeValue mFrameIndex = 0;
 			unsigned int mInternalBufferOffset = 0; // helper variable for the process method
 
 			// for each output channel a vector of buffers that need to be played back on the corresponding channel

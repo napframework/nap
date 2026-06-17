@@ -248,6 +248,11 @@ namespace nap
 			 */
 			const std::vector<int>& getChannels() const { return mChannelRouting; }
 
+			/**
+			 * @return all audio playback nodes
+			 */
+			std::vector<SafePtr<BufferPlayerNode>> getPlayers();
+
 		private:
 			void applyGain();
 			int getBufferIndex(int channel) const;
