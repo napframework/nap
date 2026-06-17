@@ -87,7 +87,7 @@ namespace nap
 			light.setColor(color);
 
 		auto inten = light.getIntensity();
-		if (ImGui::SliderFloat("Intensity", &inten, 0.0f, 5.0f, "%.3f", ImGuiSliderFlags_Logarithmic))
+		if (ImGui::SliderFloat("Intensity", &inten, 0.0f, 5.0f, "%.3f", 2.0f))
 			light.setIntensity(inten);
 
 		auto shadow = light.getShadowStrength();
