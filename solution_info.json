@@ -1,10 +1,5 @@
 {
     "Type": "nap::SolutionInfo",
     "mID": "SolutionInfo",
-    "AdditionalTargets": [
-        "apps/pocketpreview",
-        "modules/naplibtag",
-        "modules/napmount",
-        "modules/napxwax"
-    ]
+    "AdditionalTargets": []
 }
