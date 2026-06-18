@@ -142,12 +142,12 @@ namespace napkin
 
 			// Mesh rotate
 			glm::vec3 rotate = controller.getRotate();
-			if (ImGui::InputFloat3("Rotate", &rotate.x, 2))
+			if (ImGui::InputFloat3("Rotate", &rotate.x, "%.2f"))
 				controller.setRotate(rotate);
 
 			// Mesh scale
 			glm::vec3 scale = controller.getScale();
-			if (ImGui::InputFloat3("Scale", &scale.x, 2))
+			if (ImGui::InputFloat3("Scale", &scale.x, "%.2f"))
 				controller.setScale(scale);
 
 			// Mesh rotation speed

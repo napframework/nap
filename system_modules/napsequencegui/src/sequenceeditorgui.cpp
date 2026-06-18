@@ -154,7 +154,7 @@ namespace nap
         {
             visible = ImGui::BeginChild(mID.c_str(), // id
                                         {0, 0}, // size
-                                        (bool *) 0, // open
+                                        ImGuiChildFlags_None, // open
                                         window_flags); // window flags;
         }
 
@@ -2055,7 +2055,7 @@ namespace nap
                 // redo
                 if(ImGui::GetIO().KeyShift)
                 {
-                    if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
+                    if(ImGui::IsKeyPressed(ImGuiKey_Z))
                     {
                         if(mEditor.getHistoryIndex() < mEditor.getHistorySize()-1)
                         {
@@ -2065,7 +2065,7 @@ namespace nap
                 }else
                 {
                     // undo
-                    if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
+                    if(ImGui::IsKeyPressed(ImGuiKey_Z))
                     {
                         mState.mAction = createAction<PerformUndo>();
                     }
@@ -2073,7 +2073,7 @@ namespace nap
             }else
             {
                 // Start stop player with keyboard
-                if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+                if(ImGui::IsKeyPressed(ImGuiKey_Space))
                 {
                     mEditor.mSequencePlayer->setIsPlaying(!mEditor.mSequencePlayer->getIsPlaying());
                 }

@@ -47,6 +47,65 @@ thread_local ImGuiContext* ImGuiTLS = nullptr;
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	// Keys
+	//////////////////////////////////////////////////////////////////////////
+
+	static ImGuiKey getKeyIndex(EKeyCode key)
+	{
+		static const std::unordered_map<EKeyCode, ImGuiKey> key_map =
+		{
+			{ EKeyCode::KEY_TAB,        ImGuiKey_Tab },
+			{ EKeyCode::KEY_LEFT,       ImGuiKey_LeftArrow },
+			{ EKeyCode::KEY_RIGHT,      ImGuiKey_RightArrow },
+			{ EKeyCode::KEY_UP,         ImGuiKey_UpArrow },
+			{ EKeyCode::KEY_DOWN,       ImGuiKey_DownArrow },
+			{ EKeyCode::KEY_PAGEUP,     ImGuiKey_PageUp },
+			{ EKeyCode::KEY_PAGEDOWN,   ImGuiKey_PageDown },
+			{ EKeyCode::KEY_HOME,       ImGuiKey_Home },
+			{ EKeyCode::KEY_END,        ImGuiKey_End },
+			{ EKeyCode::KEY_DELETE,     ImGuiKey_Delete },
+			{ EKeyCode::KEY_BACKSPACE,  ImGuiKey_Backspace },
+			{ EKeyCode::KEY_SPACE,      ImGuiKey_Space },
+			{ EKeyCode::KEY_RETURN,     ImGuiKey_Enter },
+			{ EKeyCode::KEY_ESCAPE,     ImGuiKey_Escape },
+			{ EKeyCode::KEY_KP_ENTER,   ImGuiKey_KeypadEnter },
+			{ EKeyCode::KEY_a,          ImGuiKey_A },
+			{ EKeyCode::KEY_c,          ImGuiKey_C },
+			{ EKeyCode::KEY_v,          ImGuiKey_V },
+			{ EKeyCode::KEY_x,          ImGuiKey_X },
+			{ EKeyCode::KEY_y,          ImGuiKey_Y },
+			{ EKeyCode::KEY_z,          ImGuiKey_Z },
+		};
+
+		if (const auto it = key_map.find(key); it != key_map.end())
+			return it->second;
+
+		return ImGuiKey_None;
+	}
+
+
+	static ImGuiKey getModKeyIndex(EKeyCode key)
+	{
+		switch (key)
+		{
+			// ImGuiMod_Super ?
+			case EKeyCode::KEY_LCTRL:
+			case EKeyCode::KEY_RCTRL:
+				return ImGuiMod_Ctrl;
+			case EKeyCode::KEY_LALT:
+			case EKeyCode::KEY_RALT:
+				return ImGuiMod_Alt;
+			case EKeyCode::KEY_LSHIFT:
+			case EKeyCode::KEY_RSHIFT:
+				return ImGuiMod_Shift;
+			default:
+				break;
+		}
+		return ImGuiMod_None;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Icons
 	//////////////////////////////////////////////////////////////////////////
 
@@ -228,31 +287,8 @@ namespace nap
 		ImGuiContext* cur_context = ImGui::GetCurrentContext();
 		ImGui::SetCurrentContext(new_context);
 
-		// Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
-		ImGuiIO& io = ImGui::GetIO();
-		io.KeyMap[ImGuiKey_Tab] = (int)EKeyCode::KEY_TAB;
-		io.KeyMap[ImGuiKey_LeftArrow] = (int)EKeyCode::KEY_LEFT;
-		io.KeyMap[ImGuiKey_RightArrow] = (int)EKeyCode::KEY_RIGHT;
-		io.KeyMap[ImGuiKey_UpArrow] = (int)EKeyCode::KEY_UP;
-		io.KeyMap[ImGuiKey_DownArrow] = (int)EKeyCode::KEY_DOWN;
-		io.KeyMap[ImGuiKey_PageUp] = (int)EKeyCode::KEY_PAGEUP;
-		io.KeyMap[ImGuiKey_PageDown] = (int)EKeyCode::KEY_PAGEDOWN;
-		io.KeyMap[ImGuiKey_Home] = (int)EKeyCode::KEY_HOME;
-		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
-		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
-		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
-		io.KeyMap[ImGuiKey_Space] = (int)EKeyCode::KEY_SPACE;
-		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_RETURN;
-		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
-		io.KeyMap[ImGuiKey_KeyPadEnter] = (int)EKeyCode::KEY_KP_ENTER;
-		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
-		io.KeyMap[ImGuiKey_C] = (int)EKeyCode::KEY_c;
-		io.KeyMap[ImGuiKey_V] = (int)EKeyCode::KEY_v;
-		io.KeyMap[ImGuiKey_X] = (int)EKeyCode::KEY_x;
-		io.KeyMap[ImGuiKey_Y] = (int)EKeyCode::KEY_y;
-		io.KeyMap[ImGuiKey_Z] = (int)EKeyCode::KEY_z;
-
 		// Set callbacks
+		ImGuiIO& io = ImGui::GetIO();
 		io.SetClipboardTextFn = setClipboardText;
 		io.GetClipboardTextFn = getClipboardText;
 		io.ClipboardUserData = NULL;
@@ -274,10 +310,13 @@ namespace nap
 	{
 		// Create font atlas
 		std::unique_ptr<ImFontAtlas> new_atlas = std::make_unique<ImFontAtlas>();
+
 		ImFontConfig font_config;
 		font_config.OversampleH = fontSampling.x;
 		font_config.OversampleV = fontSampling.y;
-		font_config.GlyphExtraSpacing.x = fontSpacing;
+
+		// ImGui note: (REMOVED AS IT SEEMS LARGELY OBSOLETE. PLEASE REPORT IF YOU WERE USING THIS). Extra spacing (in pixels) between glyphs when rendered: essentially add to glyph->AdvanceX. Only X axis is supported for now.
+		// font_config.GlyphExtraSpacing.x = fontSpacing;
 
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
 		float font_size = math::floor(fontSize);
@@ -297,36 +336,10 @@ namespace nap
 	{
 #ifdef _WIN32
 		auto hwnd = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-		ImGuiIO& io = ImGui::GetIO();
-		io.ImeWindowHandle = hwnd;
+		ImGui::GetMainViewport()->PlatformHandleRaw = hwnd;
 #else
 		(void)window;
 #endif
-	}
-
-	// Global key modifiers
-	static constexpr int modControl = 0;
-	static constexpr int modAlt = 1;
-	static constexpr int modShift = 2;
-	static constexpr int modNone = -1;
-
-	static int getModKeyIndex(nap::EKeyCode key)
-	{
-		switch (key)
-		{
-		case EKeyCode::KEY_LCTRL:
-		case EKeyCode::KEY_RCTRL:
-			return modControl;
-		case EKeyCode::KEY_LALT:
-		case EKeyCode::KEY_RALT:
-			return modAlt;
-		case EKeyCode::KEY_LSHIFT:
-		case EKeyCode::KEY_RSHIFT:
-			return modShift;
-		default:
-			break;
-		}
-		return modNone;
 	}
 
 
@@ -454,9 +467,8 @@ namespace nap
 		// Text input event
 		else if (event.get_type().is_derived_from(RTTI_OF(TextInputEvent)))
 		{
-			ImGuiIO& io = ImGui::GetIO();
 			const auto& press_event = static_cast<const TextInputEvent&>(event);
-			io.AddInputCharactersUTF8(press_event.mText.c_str());
+			ImGui::GetIO().AddInputCharactersUTF8(press_event.mText.c_str());
 		}
 
 		// Mouse wheel event
@@ -464,7 +476,7 @@ namespace nap
 		{
 			const auto& wheel_event = static_cast<const MouseWheelEvent&>(event);
 			int delta = wheel_event.mY;
-			context->second->mMouseWheel = delta > 0 ? 1.0f : -1.0f;
+			ImGui::GetIO().AddMouseWheelEvent(0.0f, delta > 0 ? 1.0f : -1.0f);
 		}
 
 		return context->second->mContext;
@@ -475,8 +487,7 @@ namespace nap
 	{
 		// Get the interface
 		ImGui::SetCurrentContext(context);
-		ImGuiIO& io = ImGui::GetIO();
-		return io.WantCaptureKeyboard;
+		return ImGui::GetIO().WantCaptureKeyboard;
 	}
 
 
@@ -484,16 +495,14 @@ namespace nap
 	{
 		// Get the interface
 		ImGui::SetCurrentContext(context);
-		ImGuiIO& io = ImGui::GetIO();
-		return io.WantCaptureMouse;
+		return ImGui::GetIO().WantCaptureMouse;
 	}
 
 
 	void IMGuiService::addInputCharachter(ImGuiContext* context, nap::uint character)
 	{
 		ImGui::SetCurrentContext(context);
-		ImGuiIO& io = ImGui::GetIO();
-		io.AddInputCharacter(character);
+		ImGui::GetIO().AddInputCharacter(character);
 	}
 
 
@@ -806,77 +815,15 @@ namespace nap
 		// Switch context
 		ImGui::SetCurrentContext(context.mContext);
 		ImGuiIO& io = ImGui::GetIO();
-		io.DeltaTime = deltaTime;
+
+		// Update delta time
+		io.DeltaTime = static_cast<float>(deltaTime);
 
 		// We manage scaling of the GUI manually, removing the need to scale the buffer when high DPI is enabled
-		io.DisplaySize = { (float)window.getBufferSize().x, (float)window.getBufferSize().y };
+		io.DisplaySize = { static_cast<float>(window.getBufferSize().x), static_cast<float>(window.getBufferSize().y) };
 		io.DisplayFramebufferScale = { 1.0f, 1.0f };
 
-		// Set mouse coordinates
-		io.MousePos =
-		{
-			static_cast<float>(context.mMousePosition.x),
-			static_cast<float>(window.getHeight() - 1 - context.mMousePosition.y)
-		};
 
-		// Compensate for pixel density
-		auto pixel_density = window.getPixelDensity();
-		io.MousePos.x *= pixel_density;
-		io.MousePos.y *= pixel_density;
-
-		// Tell the system which mouse buttons are pressed
-		for (auto i = 0; i < context.mMousePressed.size(); i++)
-		{
-			io.MouseDown[i] = context.mMousePressed[i];
-
-			// Check if the mouse button has been released this frame. Take into consideration current state if press is from a mouse.
-			// This is required because the user can release the button outside of SDL window bounds, in which case no release event is generated.
-			bool released = context.mMouseRelease[i];
-			if (!released && io.MouseDown[i] && context.mPointerID[i] == gui::pointerMouseID)
-				released = (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON_MASK(i + 1)) == 0;
-
-			// If the mouse button was released this frame -> disable the press for next frame.
-			// This ensures that buttons that are pressed and released within the same frame are always registered.
-			if (released)
-			{
-				context.mMousePressed[i] = false;
-				context.mMouseRelease[i] = false;
-			}
-		}
-
-		// Tell the system which keys are pressed, we copy block of memory because iterating over every element is wasteful
-		static constexpr size_t keyArraySize = GUIContext::keyCount * sizeof(bool);
-		memcpy(io.KeysDown, context.mKeyPressed.data(), keyArraySize);
-		for (const auto& key : context.mKeyRelease)
-		{
-			// If a key was released this frame -> disable the key press for next frame
-			// This ensures that keys that are pressed and released within the same frame are always registered
-			assert(key < context.mKeyPressed.size());
-			context.mKeyPressed[key] = false;
-		}
-		context.mKeyRelease.clear();
-
-		// Update key modifiers
-		io.KeyCtrl = context.mModPressed[modControl];
-		io.KeyAlt = context.mModPressed[modAlt];
-		io.KeyShift = context.mModPressed[modShift];
-
-		for (auto i = 0; i < context.mModRelease.size(); i++)
-		{
-			// If a modifier was released -> disable the mod for the next frame
-			// This ensures that mod keys that are pressed and released within the same frame are always registered
-			if (context.mModRelease[i])
-			{
-				context.mModPressed[i] = false;
-				context.mModRelease[i] = false;
-			}
-		}
-
-		// Update mouse wheel state
-		io.MouseWheel = context.mMouseWheel;
-
-		// Reset mouse wheel
-		context.mMouseWheel = 0.0f;
 
 		// Begin new frame
 		ImGui::NewFrame();
@@ -911,28 +858,14 @@ namespace nap
 		if (keyEvent.mKey == EKeyCode::KEY_UNKNOWN)
 			return;
 
-		int key_idx = static_cast<int>(keyEvent.mKey); assert(key_idx < 512);
-		int mod_idx = getModKeyIndex(keyEvent.mKey);
+		ImGuiIO& io = ImGui::GetIO();
 
-		if (keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
-		{
-			context.mKeyPressed[key_idx] = true;
-			if (mod_idx >= 0)
-			{
-				assert(mod_idx < context.mModPressed.size());
-				context.mModPressed[mod_idx] = true;
-			}
-		}
+		bool is_press = keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent));
+		io.AddKeyEvent(getKeyIndex(keyEvent.mKey), is_press);
 
-		else if (keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyReleaseEvent)))
-		{
-			context.mKeyRelease.emplace_back(key_idx);
-			if (mod_idx >= 0)
-			{
-				assert(mod_idx < context.mModRelease.size());
-				context.mModRelease[mod_idx] = true;
-			}
-		}
+		ImGuiKey mod_idx = getModKeyIndex(keyEvent.mKey);
+		if (mod_idx > 0)
+			io.AddKeyEvent(mod_idx, is_press);
 	}
 
 
@@ -945,6 +878,7 @@ namespace nap
 
 	void IMGuiService::handlePointerEvent(const PointerEvent& pointerEvent, GUIContext& context)
 	{
+		ImGuiIO& io = ImGui::GetIO();
 
 		// Handle Press
 		if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
@@ -954,21 +888,41 @@ namespace nap
 				return;
 
 			int btn_id = static_cast<int>(press_event.mButton);
-			context.mMousePosition.x = pointerEvent.mX;
-			context.mMousePosition.y = pointerEvent.mY;
-			context.mMousePressed[btn_id] = true;
 			context.mPointerID[btn_id] = getPointerID(pointerEvent.mSource);
+
+			// Tell the system which mouse buttons are pressed
+			io.AddMouseButtonEvent(btn_id, true);
 		}
 
 		// Handle Move
 		else if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerMoveEvent)))
 		{
 			// Don't register move when IDs don't match when pressed
-			if (context.mMousePressed[0] && context.mPointerID[0] != getPointerID(pointerEvent.mSource))
+			if (ImGui::IsMouseDown(0) && context.mPointerID[0] != getPointerID(pointerEvent.mSource))
 				return;
 
-			context.mMousePosition.x = pointerEvent.mX;
-			context.mMousePosition.y = pointerEvent.mY;
+			auto it = std::find_if(mContexts.begin(), mContexts.end(), [&](const auto& ctx) {
+				return ctx.second->mContext == context.mContext;
+			});
+			assert(it != mContexts.end());
+
+			// Set mouse coordinates
+			RenderWindow& window = *it->first;
+			ImVec2 mouse_pos =
+			{
+				static_cast<float>(pointerEvent.mX),
+				static_cast<float>(window.getHeight() - 1 - pointerEvent.mY)
+			};
+
+			// Scale mouse coordinates when high dpi rendering is enabled
+			if (mRenderService->getHighDPIEnabled())
+			{
+				mouse_pos.x *= static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth());
+				mouse_pos.y *= static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight());
+			}
+
+			// Tell the system where the pointer is located
+			io.AddMousePosEvent(mouse_pos.x, mouse_pos.y);
 		}
 
 		// Handle Release
@@ -982,10 +936,10 @@ namespace nap
 			if (context.mPointerID[btn_id] != getPointerID(pointerEvent.mSource))
 				return;
 
-			context.mMousePosition.x = pointerEvent.mX;
-			context.mMousePosition.y = pointerEvent.mY;
-			context.mMouseRelease[btn_id] = true;
 			context.mPointerID[btn_id] = gui::pointerInvalidID;
+
+			// Tell the system which mouse buttons are released
+			io.AddMouseButtonEvent(btn_id, false);
 		}
 	}
 
@@ -997,15 +951,16 @@ namespace nap
 		 * This function should only be called when touch input is decoupled from the mouse and a window is underneath the touch event.
 		 * The GUIAppEventHandler forwards touch events to the GUI if 'setTouchGenerateMouseEvents' is set to false.
 		 */
+		ImGuiIO& io = ImGui::GetIO();
 
 		// Register press, touch is now active ID
 		assert(touchEvent.hasWindow());
 		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchPressEvent)))
 		{
-			context.mMousePressed[0] = true;
 			context.mPointerID[0] = touchEvent.mFingerID;
-			context.mMousePosition.x = touchEvent.mXCoordinate;
-			context.mMousePosition.y = touchEvent.mYCoordinate;
+
+			// Tell the system which mouse buttons are pressed
+			io.AddMouseButtonEvent(0, true);
 		}
 
 		// Set position if pointer ID is finger ID
@@ -1014,8 +969,28 @@ namespace nap
 			if (context.mPointerID[0] != touchEvent.mFingerID)
 				return;
 
-			context.mMousePosition.x = touchEvent.mXCoordinate;
-			context.mMousePosition.y = touchEvent.mYCoordinate;
+			auto it = std::find_if(mContexts.begin(), mContexts.end(), [&](const auto& ctx) {
+				return ctx.second->mContext == context.mContext;
+			});
+			assert(it != mContexts.end());
+
+			// Set mouse coordinates
+			RenderWindow& window = *it->first;
+			ImVec2 mouse_pos =
+			{
+				static_cast<float>(touchEvent.mXCoordinate),
+				static_cast<float>(window.getHeight() - 1 - touchEvent.mYCoordinate)
+			};
+
+			// Scale mouse coordinates when high dpi rendering is enabled
+			if (mRenderService->getHighDPIEnabled())
+			{
+				mouse_pos.x *= static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth());
+				mouse_pos.y *= static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight());
+			}
+
+			// Tell the system where the pointer is located
+			io.AddMousePosEvent(mouse_pos.x, mouse_pos.y);
 		}
 
 		// Release if pointer ID is finger ID
@@ -1024,10 +999,10 @@ namespace nap
 			if (context.mPointerID[0] != touchEvent.mFingerID)
 				return;
 
-			context.mMouseRelease[0] = true;
 			context.mPointerID[0] = gui::pointerInvalidID;
-			context.mMousePosition.x = touchEvent.mXCoordinate;
-			context.mMousePosition.y = touchEvent.mYCoordinate;
+
+			// Tell the system which mouse buttons are released
+			io.AddMouseButtonEvent(0, false);
 		}
 	}
 

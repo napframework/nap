@@ -75,7 +75,8 @@ namespace nap
 
 		// Extract name
 		mName = utility::stripFileExtension(utility::getFileName(mImagePath));
-		mTexture.mID = mName + "_icon";
+		mID = mName + "_icon";
+		mTexture.mID = mName + "_icon_texture";
 
 		// Load bitmap into memory
 		BitmapFileBuffer file_buffer;

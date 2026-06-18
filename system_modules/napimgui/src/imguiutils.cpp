@@ -23,8 +23,15 @@ namespace ImGui
 	bool ImageButton(const nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
 	{
 		auto& core = texture.getRenderService().getCore();
-		const nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
-		return ImGui::ImageButton(gui_service->getTextureHandle(texture), size, uv0, uv1, frame_padding, bg_col, tint_col);
+		const auto* gui_service = core.getService<nap::IMGuiService>();
+
+		if (frame_padding >= 0)
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2((float)frame_padding, (float)frame_padding));
+		bool clicked = ImGui::ImageButton(texture.mID.c_str(), gui_service->getTextureHandle(texture), size, uv0, uv1, bg_col, tint_col);
+		if (frame_padding >= 0)
+			ImGui::PopStyleVar();
+
+		return clicked;
 	}
 
 
@@ -39,9 +46,14 @@ namespace ImGui
 	bool ImageButton(const nap::Icon& icon, const ImVec2& size, const char* text/*=nullptr*/, const ImVec2& tooltip_offset, int frame_padding /*= -1*/, const ImVec4& bg_col /*= ImVec4(0, 0, 0, 0)*/, const ImVec4& tint_col /*= ImVec4(1, 1, 1, 1)*/)
 	{
         auto& core = icon.getTexture().getRenderService().getCore();
-        const nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
+		const auto* gui_service = core.getService<nap::IMGuiService>();
 
-		bool clicked = ImGui::ImageButton(icon.getTextureHandle(), size, { 0, 1 }, { 1, 0 }, frame_padding, bg_col, tint_col);
+		if (frame_padding >= 0)
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2((float)frame_padding, (float)frame_padding));
+		bool clicked = ImGui::ImageButton(icon.mID.c_str(), gui_service->getTextureHandle(icon.getTexture()), size, { 0, 1 }, { 1, 0 }, bg_col, tint_col);
+		if (frame_padding >= 0)
+			ImGui::PopStyleVar();
+
 		if (ImGui::IsItemHovered())
         {
 		    auto mouse_pos = ImGui::GetMousePos();

@@ -254,7 +254,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("Video Texture"))		///< The rendered video texture
 		{
 			RenderVideoComponentInstance& video_comp = mVideoEntity->getComponent<RenderVideoComponentInstance>();
-			float col_width = ImGui::GetContentRegionAvailWidth();
+			float col_width = ImGui::GetContentRegionAvail().x;
 			nap::Texture2D& video_tex = video_comp.getOutputTexture();
 			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
 			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
@@ -262,7 +262,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("FX Texture"))			///< The post process effect applied to the video texture
 		{
 			RenderToTextureComponentInstance& fx_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance> ();
-			float col_width = ImGui::GetContentRegionAvailWidth();
+			float col_width = ImGui::GetContentRegionAvail().x;
 			nap::Texture2D& output_tex = fx_comp.getOutputTexture();
 			float ratio_video = static_cast<float>(output_tex.getWidth()) / static_cast<float>(output_tex.getHeight());
 			ImGui::Image(output_tex, { col_width, col_width / ratio_video });
