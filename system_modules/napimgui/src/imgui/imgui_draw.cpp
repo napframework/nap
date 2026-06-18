@@ -4067,9 +4067,15 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
         const char* prev_s = s;
         unsigned int c = (unsigned int)*s;
         if (c < 0x80)
+        {
             s += 1;
+        }
         else
+        {
             s += ImTextCharFromUtf8(&c, s, text_end);
+            if (c == 0) // Malformed UTF-8?
+                break;
+        }
 
         if (c < 32)
         {

@@ -147,18 +147,18 @@ namespace nap
 
 		if (declaration_type == RTTI_OF(ShaderVariableStructArrayDeclaration))
 		{
-			const ShaderVariableStructArrayDeclaration* struct_array_declaration = rtti_cast<const ShaderVariableStructArrayDeclaration>(&declaration);
-			std::unique_ptr<UniformStructArrayInstance> struct_array_instance = std::make_unique<UniformStructArrayInstance>(*struct_array_declaration);
+			const auto* struct_array_declaration = rtti_cast<const ShaderVariableStructArrayDeclaration>(&declaration);
+			auto struct_array_instance = std::make_unique<UniformStructArrayInstance>(*struct_array_declaration);
 			for (auto& struct_declaration : struct_array_declaration->mElements)
 			{
-				std::unique_ptr<UniformStructInstance> struct_instance = std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
+				auto struct_instance = std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
 				struct_array_instance->addElement(std::move(struct_instance));
 			}
 			return std::move(struct_array_instance);
 		}
 		else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 		{
-			const ShaderVariableValueArrayDeclaration* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&declaration);
+			const auto* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&declaration);
 
 			if (value_array_declaration->mElementType == EShaderVariableValueType::UInt)
 			{
@@ -166,49 +166,49 @@ namespace nap
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::Int)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::Int)
 			{
 				auto array_instance = std::make_unique<UniformIntArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::Float)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::Float)
 			{
 				auto array_instance = std::make_unique<UniformFloatArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec2)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::Vec2)
 			{
 				auto array_instance = std::make_unique<UniformVec2ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec3)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::Vec3)
 			{
 				auto array_instance = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec4)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::Vec4)
 			{
 				auto array_instance = std::make_unique<UniformVec4ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::IVec4)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::IVec4)
 			{
 				auto array_instance = std::make_unique<UniformIVec4ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::UVec4)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::UVec4)
 			{
 				auto array_instance = std::make_unique<UniformUVec4ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
-			else if (value_array_declaration->mElementType == EShaderVariableValueType::Mat4)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::Mat4)
 			{
 				auto array_instance = std::make_unique<UniformMat4ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
@@ -217,49 +217,39 @@ namespace nap
 		}
 		else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration))
 		{
-			const ShaderVariableStructDeclaration* struct_declaration = rtti_cast<const ShaderVariableStructDeclaration>(&declaration);
+			const auto* struct_declaration = rtti_cast<const ShaderVariableStructDeclaration>(&declaration);
 			return std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
 		}
 		else if (declaration_type == RTTI_OF(ShaderVariableValueDeclaration))
 		{
-			const ShaderVariableValueDeclaration* value_declaration = rtti_cast<const ShaderVariableValueDeclaration>(&declaration);
+			const auto* value_declaration = rtti_cast<const ShaderVariableValueDeclaration>(&declaration);
 
 			if (value_declaration->mType == EShaderVariableValueType::UInt)
-			{
 				return std::make_unique<UniformUIntInstance>(*value_declaration);
-			}
-			else if (value_declaration->mType == EShaderVariableValueType::Int)
-			{
+
+			if (value_declaration->mType == EShaderVariableValueType::Int)
 				return std::make_unique<UniformIntInstance>(*value_declaration);
-			}
-			else if (value_declaration->mType == EShaderVariableValueType::Float)
-			{
+
+			if (value_declaration->mType == EShaderVariableValueType::Float)
 				return std::make_unique<UniformFloatInstance>(*value_declaration);
-			}
-			else if (value_declaration->mType == EShaderVariableValueType::Vec2)
-			{
+
+			if (value_declaration->mType == EShaderVariableValueType::Vec2)
 				return std::make_unique<UniformVec2Instance>(*value_declaration);
-			}
-			else if (value_declaration->mType == EShaderVariableValueType::Vec3)
-			{
+
+			if (value_declaration->mType == EShaderVariableValueType::Vec3)
 				return std::make_unique<UniformVec3Instance>(*value_declaration);
-			}
-			else if (value_declaration->mType == EShaderVariableValueType::Vec4)
-			{
+
+			if (value_declaration->mType == EShaderVariableValueType::Vec4)
 				return std::make_unique<UniformVec4Instance>(*value_declaration);
-			}
-			else if (value_declaration->mType == EShaderVariableValueType::IVec4)
-			{
+
+			if (value_declaration->mType == EShaderVariableValueType::IVec4)
 				return std::make_unique<UniformIVec4Instance>(*value_declaration);
-			}
-			else if (value_declaration->mType == EShaderVariableValueType::UVec4)
-			{
+
+			if (value_declaration->mType == EShaderVariableValueType::UVec4)
 				return std::make_unique<UniformUVec4Instance>(*value_declaration);
-			}
-			else if (value_declaration->mType == EShaderVariableValueType::Mat4)
-			{
+
+			if (value_declaration->mType == EShaderVariableValueType::Mat4)
 				return std::make_unique<UniformMat4Instance>(*value_declaration);
-			}
 		}
 		else
 		{
@@ -297,10 +287,10 @@ namespace nap
 
 			if (declaration_type == RTTI_OF(ShaderVariableStructArrayDeclaration))
 			{
-				ShaderVariableStructArrayDeclaration* struct_array_declaration = rtti_cast<ShaderVariableStructArrayDeclaration>(uniform_declaration.get());
+				auto* struct_array_declaration = rtti_cast<ShaderVariableStructArrayDeclaration>(uniform_declaration.get());
 
-				std::unique_ptr<UniformStructArrayInstance> struct_array_instance = std::make_unique<UniformStructArrayInstance>(*struct_array_declaration);
-				const UniformStructArray* struct_array_resource = rtti_cast<const UniformStructArray>(resource);
+				auto struct_array_instance = std::make_unique<UniformStructArrayInstance>(*struct_array_declaration);
+				const auto* struct_array_resource = rtti_cast<const UniformStructArray>(resource);
 				if (!errorState.check(resource == nullptr || struct_array_resource->mStructs.size() == struct_array_declaration->mElements.size(), "Mismatch between number of array elements in shader and json."))
 					return false;
 
@@ -310,9 +300,11 @@ namespace nap
 					UniformStruct* struct_resource = nullptr;
 					if (struct_array_resource != nullptr && resource_index < struct_array_resource->mStructs.size())
 						struct_resource = struct_array_resource->mStructs[resource_index++].get();
-					std::unique_ptr<UniformStructInstance> instance_element = std::make_unique<UniformStructInstance>(*declaration_element, uniformCreatedCallback);
+
+					auto instance_element = std::make_unique<UniformStructInstance>(*declaration_element, uniformCreatedCallback);
 					if (!instance_element->addUniformRecursive(*declaration_element, struct_resource, uniformCreatedCallback, createDefaults, errorState))
 						return false;
+
 					struct_array_instance->addElement(std::move(instance_element));
 				}
 
@@ -320,11 +312,11 @@ namespace nap
 			}
 			else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 			{
-				const UniformValueArray* value_array_resource = rtti_cast<const UniformValueArray>(resource);
+				const auto* value_array_resource = rtti_cast<const UniformValueArray>(resource);
 				if (!errorState.check(resource == nullptr || value_array_resource != nullptr, "Type mismatch between shader type and json type"))
 					return false;
 
-				ShaderVariableValueArrayDeclaration* value_declaration = rtti_cast<ShaderVariableValueArrayDeclaration>(uniform_declaration.get());
+				auto* value_declaration = rtti_cast<ShaderVariableValueArrayDeclaration>(uniform_declaration.get());
 				std::unique_ptr<UniformValueArrayInstance> instance_value_array;
 
 				if (value_declaration->mElementType == EShaderVariableValueType::UInt)
@@ -383,18 +375,18 @@ namespace nap
 			}
 			else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration))
 			{
-				const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(resource);
+				const auto* struct_resource = rtti_cast<const UniformStruct>(resource);
+				auto* struct_declaration = rtti_cast<ShaderVariableStructDeclaration>(uniform_declaration.get());
 
-				ShaderVariableStructDeclaration* struct_declaration = rtti_cast<ShaderVariableStructDeclaration>(uniform_declaration.get());
-				std::unique_ptr<UniformStructInstance> struct_instance = std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
+				auto struct_instance = std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
 				if (!struct_instance->addUniformRecursive(*struct_declaration, struct_resource, uniformCreatedCallback, createDefaults, errorState))
 					return false;
 
 				mUniforms.emplace_back(std::move(struct_instance));
 			}
-			else if(declaration_type == RTTI_OF(ShaderVariableValueDeclaration))
+			else if (declaration_type == RTTI_OF(ShaderVariableValueDeclaration))
 			{
-				ShaderVariableValueDeclaration* value_declaration = rtti_cast<ShaderVariableValueDeclaration>(uniform_declaration.get());
+				auto* value_declaration = rtti_cast<ShaderVariableValueDeclaration>(uniform_declaration.get());
 				std::unique_ptr<UniformValueInstance> value_instance;
 
 				if (value_declaration->mType == EShaderVariableValueType::UInt)
@@ -454,7 +446,7 @@ namespace nap
 	}
 
 
-	nap::UniformStructInstance* UniformStructArrayInstance::findElement(int index)
+	UniformStructInstance* UniformStructArrayInstance::findElement(int index)
 	{
 		return index >= mElements.size() ? nullptr : mElements[index].get();
 	}

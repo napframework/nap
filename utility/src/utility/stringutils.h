@@ -243,6 +243,16 @@ namespace nap
 		 */
 		int getLine(const std::string& buffer, size_t offset);
 
+		/**
+		 * Truncate a string to contain x number of characters,
+		 * including optional trailing begin or end characters.
+		 * @param str the string to truncate
+		 * @param length new string length
+		 * @param pos truncate beginning (-1), middle (0) or end (+1)
+		 * @param ellipsis replacement characters, ie: '...'
+		 */
+		std::string truncate(const std::string& str, int length, int pos = -1, const char* ellipsis = nullptr);
+
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template Definitions
@@ -271,6 +281,7 @@ namespace nap
 			return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 		}
 
+		
 		template <typename T>
 		std::string addresStr(T thing)
 		{

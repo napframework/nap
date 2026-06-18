@@ -52,12 +52,12 @@ namespace nap
 		/**
 		 * @return the unit line box from (-0.5, -0.5, -0.5) to (0.5, 0.5, 0.5)
 		 */
-		const std::vector<glm::vec3>& getUnitLineBox();
+		static const std::vector<glm::vec3>& getUnitLineBox();
 
 		/**
 		 * @return the normalized line box from (-1, -1, -1) to (1, 1, 1)
 		 */
-		const std::vector<glm::vec3>& getNormalizedLineBox();
+		static const std::vector<glm::vec3>& getNormalizedLineBox();
 
 		EMemoryUsage mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated
 

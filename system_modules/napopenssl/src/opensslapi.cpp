@@ -8,10 +8,10 @@
 // external includes
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
-#include <openssl/sha.h>
 #include <openssl/crypto.h>
 #include <string>
-
+#include <sstream>
+#include <iostream>
 
 /**
  * Generates an RSA public-private key pair and returns it.
@@ -322,10 +322,34 @@ namespace nap
         }
 
 
-        std::string sha256(const std::string& str)
+        std::vector<unsigned char> sha256(const std::string& str)
         {
-            unsigned char hash[SHA256_DIGEST_LENGTH];
-            return { reinterpret_cast<const char *>(SHA256(reinterpret_cast<const unsigned char *>(str.c_str()), str.length(), hash)) };
+            EVP_MD_CTX* ctx = nullptr;
+            std::vector<unsigned char> hash;
+            bool success = false;
+
+            if((ctx = EVP_MD_CTX_new()) == nullptr)
+                goto cleanup;
+
+            if(EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr) != 1)
+                goto cleanup;
+
+            if(EVP_DigestUpdate(ctx, str.c_str(), str.length()) != 1)
+                goto cleanup;
+
+            unsigned int len;
+            hash.resize(EVP_MD_size(EVP_sha256()));
+            if (EVP_DigestFinal_ex(ctx, hash.data(), &len) == 1)
+            {
+                success = true;
+                hash.resize(len);
+            }
+
+        cleanup:
+            //Always clear
+            if (ctx != nullptr)     { EVP_MD_CTX_free(ctx); }
+            if (!success)           { hash.clear(); }
+            return hash;
         }
 
 

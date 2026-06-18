@@ -52,26 +52,20 @@ namespace nap
 		// List all files in a directory
 		bool listDir(const char* directory, std::vector<std::string>& outFilenames, bool absolute)
 		{
-			DIR* dir;
-			struct dirent* ent;
+			// Open dir
+			DIR* dir; struct dirent* ent;
 			if ((dir = opendir(directory)) == nullptr)
 				return false;
 
+			// List items
 			while ((ent = readdir(dir)) != nullptr)
 			{
-				if (!strcmp(ent->d_name, ".")) continue;
-				if (!strcmp(ent->d_name, "..")) continue;
-
-				char buffer[MAX_PATH_SIZE];
-				if (absolute)
-				{
-					sprintf(buffer, "%s/%s", directory, ent->d_name);
-					outFilenames.push_back(buffer);
-				}
-				else {
-					outFilenames.push_back(ent->d_name);
-				}
+				if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) { continue; }
+				std::string path = absolute ? utility::stringFormat("%s/%s", directory, ent->d_name) : ent->d_name;
+				outFilenames.emplace_back(std::move(path));
 			}
+
+			// Done
 			closedir(dir);
 			return true;
 		}

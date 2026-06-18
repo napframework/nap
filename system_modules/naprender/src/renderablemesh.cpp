@@ -81,13 +81,11 @@ namespace nap
 
 	int RenderableMesh::getVertexBufferBindingIndex(const std::string& meshVertexAttributeID) const
 	{
-		GPUMesh& gpu_mesh = mMesh->getMeshInstance().getGPUMesh();
-		const Material& material = mMaterialInstance->getMaterial();
-
 		int binding = 0;
-		for (auto& kvp : material.getShader().getAttributes())
+		const auto& material = mMaterialInstance->getMaterial();
+		for (const auto& kvp : material.getShader().getAttributes())
 		{
-			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
+			const auto* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
 			// Override the position mesh attribute
@@ -98,6 +96,28 @@ namespace nap
 		}
 		assert(false);
 		return -1;
+	}
+
+
+	bool RenderableMesh::findVertexBufferBindingIndex(const std::string& meshVertexAttributeID, int& outIndex) const
+	{
+		int binding = 0;
+		const auto& material = mMaterialInstance->getMaterial();
+		for (const auto& kvp : material.getShader().getAttributes())
+		{
+			const auto* material_binding = material.findVertexAttributeBinding(kvp.first);
+			if (material_binding == nullptr)
+				return false;
+
+			// Override the position mesh attribute
+			if (material_binding->mMeshAttributeID == meshVertexAttributeID)
+			{
+				outIndex = binding;
+				return true;
+			}
+			++binding;
+		}
+		return false;
 	}
 
 }
