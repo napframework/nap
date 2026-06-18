@@ -83,6 +83,10 @@ namespace nap
 	{
 		RTTI_ENABLE(Service)
 	public:
+
+		static constexpr const char* licenseExtension = "license";
+		static constexpr const char* keyExtension = "key";
+
 		/**
 		 *	Default constructor
 		 */
@@ -199,26 +203,23 @@ namespace nap
 		bool validateLicense(const std::string& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error);
 
 		/**
-		 * Returns if the user provided a license. Does not mean it is valid.
-		 * @return if a license is provided by the user.
+		 * Returns .license file path, valid after successful call to validateLicense().
+		 * @return license file path, empty when no license is found
 		 */
-		bool hasLicense() const						{ return !mLicense.empty(); }
-
-		/**
-		 * @return license file path
-		 */
+		[[deprecated("Resolved on validation, otherwise invalid")]]
 		const std::string& getLicense() const		{ return mLicense; }
 
 		/**
-		 * Returns if the user provided a license key (signature). Does not mean it is valid.
-		 * @return if a key (signature) is provided by the user
+		 * Returns .key file path, valid after successful call to validateLicense()
+		 * @return key (signature) file path, empty when invalid or not resolved.
 		 */
-		bool hasKey() const							{ return !mSignature.empty(); }
+		[[deprecated("Resolved on validation, otherwise invalid")]]
+		const std::string& getKey() const			{ return mSignature; }
 
 		/**
-		 * @return key (signature) file path
+		 * @return license search directory
 		 */
-		const std::string& getKey() const			{ return mSignature; }
+		const std::string& getDirectory() const		{ return mDirectory; }
 
 	protected:
 		/**

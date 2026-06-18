@@ -48,7 +48,7 @@ namespace nap
 			/**
 			 * @return: The current level of the analyzed signal.
 			 */
-			float getLevel();
+			float getLevel() const;
 
 			/**
 			 * Set the Type of the analysis. PEAK means the highest absolute amplitude within the analyzed window will be output. RMS means the root mean square of all values within the analyzed window will be output.

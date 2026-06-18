@@ -8,8 +8,9 @@
 // Std Includes
 #include <regex>
 #include <cctype>
-#include <string.h>
+#include <cstring>
 #include <algorithm>
+#include <assert.h>
 
 namespace nap
 {
@@ -175,6 +176,7 @@ namespace nap
 			return (it != inString.end());
 		}
 
+
 		std::string trim(const std::string& s)
 		{
 			if (s.empty())
@@ -185,6 +187,7 @@ namespace nap
 			return s.substr(first, (last - first + 1));
 		}
 
+
 		std::string lTrim(const std::string& str)
 		{
 			auto s = str;
@@ -193,6 +196,7 @@ namespace nap
 					}));
 			return s;
 		}
+
 
 		std::string rTrim(const std::string& str)
 		{
@@ -203,6 +207,7 @@ namespace nap
 			return s;
 		}
 
+
 		void namedFormat(std::string& subject, const std::unordered_map<std::string, std::string>& rep)
 		{
 			// TODO: This can be optimized by extracting the template vars and their positions in a single pass first.
@@ -210,17 +215,20 @@ namespace nap
 				replaceAllInstances(subject, '{' + e.first + '}', e.second);
 		}
 
+
 		void namedFormat(std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep)
 		{
 			for (auto& s : subjects)
 				namedFormat(s, rep);
 		}
 
+
 		std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName) {
 			size_t bracketIndex = typeName.find('<');
 			return typeName.substr(0, bracketIndex) + "<" + templateTypeName + ">";
 		}
-		
+
+
 		// Replace all instances of search string with replacement
 		void replaceAllInstances(std::string& inString, const std::string& find, const std::string& replace)
 		{
@@ -233,7 +241,8 @@ namespace nap
 				i += replace.length();
 			}
 		}
-		
+
+
 		// Replace all instances of search string with replacement, in a copy
 		std::string replaceAllInstances(const std::string& inString, const std::string& find, const std::string& replace)
 		{
@@ -250,6 +259,7 @@ namespace nap
 			return outString;
 		}
 
+
 		int getLine(const std::string& buffer, size_t offset) {
 			int line = 1;
 			size_t line_offset = 0;
@@ -264,6 +274,31 @@ namespace nap
 			return line;
 		}
 
-	}
 
+		std::string truncate(const std::string& str, int length, int pos, const char* ellipsis)
+		{
+			// Truncate if required
+			if (str.length() > length)
+			{
+				// Clamp ellipsis to max allowed length
+				std::string e = ellipsis != nullptr ? ellipsis : "";
+				e = e.size() > length ? e.substr(0, length) : e;
+
+				// Get max number of characters
+				int l = length - static_cast<int>(e.size());
+
+				// Truncate
+				if (pos < 0) { 
+					return e + str.substr(str.size() - l, l);
+				}
+				if (pos == 0) {
+					auto bl = l / 2;
+					auto el = l - bl;
+					return str.substr(0, bl) + e + str.substr(str.size() - el, el);
+				}
+				return str.substr(0, l) + e;
+			}
+			return str;
+		}
+	}
 }

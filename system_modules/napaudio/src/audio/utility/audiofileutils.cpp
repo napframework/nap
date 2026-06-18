@@ -162,6 +162,7 @@ namespace nap
 			size_t pct = 0;		//< Previous bucket sample count
 			size_t bct = 0;		//< Total number of buckets
 			float rms = 0.0f;	//< Bucket amplitude
+			float pms = 0.0f;	//< Previous bucket amplitude
 
 			size_t i = min; double d = min;
 			size_t t = thresh;
@@ -170,30 +171,31 @@ namespace nap
 				// If current sample position overflows existing bucket, add it
 				if (i >= t)
 				{
-					// Compute RMS for bucket
+					// Compute current RMS for bucket
 					auto sample_count = math::max<float>(sct, 1.0f);
-					rms = sqrt(rms / sample_count);
+					float srt = sqrt(rms / sample_count);
+					float bms = srt;
 
 					// Add RMS of previous bucket -> weighted
 					if (bct > 0)
 					{
 						float weight = pct / sample_count;
-						rms += outBuffer[bct - 1] * weight;
-						rms /= 1.0f + weight;
+						bms += pms;
+						bms /= 1.0f + weight;
 					}
 
 					// Set RMS for bucket
 					assert(bct < outBuffer.size());
-					outBuffer[bct++] = rms;
+					outBuffer[bct++] = bms;
 					pct = sct;
+					pms = srt;
 
 					// Update bounds
-					outBounds.x = rms < outBounds.x ? rms : outBounds.x;
-					outBounds.y = rms > outBounds.y ? rms : outBounds.y;
+					outBounds.x = bms < outBounds.x ? bms : outBounds.x;
+					outBounds.y = bms > outBounds.y ? bms : outBounds.y;
 
 					// Break when we're done sampling
 					if (bct == outBuffer.size()) {
-						assert(i >= max);
 						break;
 					}
 
