@@ -84,11 +84,20 @@ namespace nap
 		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const			{ return mVertexBufferOffsets; }
 
 		/**
-		 * Returns the vertex buffer binding index of the given mesh attribute, asserts and returs -1 if not found.
+		 * Returns the vertex buffer binding index of the given mesh attribute, asserts and returns -1 if not found.
 		 * @param meshVertexAttributeID the vertex attribute buffer name
 		 * @return the vertex buffer binding index of the given mesh attribute
 		 */
 		int getVertexBufferBindingIndex(const std::string& meshVertexAttributeID) const;
+
+		/**
+		 * Writes to outIndex the vertex buffer binding index of the given mesh attribute, returns true if found,
+		 * returns false if not found.
+		 * @param meshVertexAttributeID the vertex attribute buffer name
+		 * @param outIndex the vertex buffer binding index of the given mesh attribute
+		 * @return if the buffer binding index was found
+		 */
+		bool findVertexBufferBindingIndex(const std::string& meshVertexAttributeID, int& outIndex) const;
 
 	protected:
 		/**

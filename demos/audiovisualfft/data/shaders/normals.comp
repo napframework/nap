@@ -14,42 +14,34 @@ layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
 // Derive attribute buffer sizes from plane dimensions
 const uint ROW_COUNT = 1024;
 const uint COLUMN_COUNT = 256;
-const uint CELL_COUNT = (ROW_COUNT-1)*(COLUMN_COUNT-1);
 
 const uint MAX_ADJACENT_TRI_COUNT = 6;
-const uint VERTS_PER_TRI_COUNT = 3;
-const uint TRIS_PER_CELL_COUNT = 2;
-const uint INDS_PER_TRI_COUNT = 3;
-
-const uint POSITION_COUNT = ROW_COUNT*COLUMN_COUNT;
-const uint TRIANGLE_COUNT = CELL_COUNT*TRIS_PER_CELL_COUNT;
-const uint TRIANGLE_INDEX_COUNT = TRIANGLE_COUNT*INDS_PER_TRI_COUNT;
 
 const float EPSILON = 0.0001;
 
 layout(std430) readonly buffer Positions
 {
-	vec4 positions[POSITION_COUNT];
+	vec4 positions[];
 };
 
 layout(std430) readonly buffer Triangles
 {
-	uint triangles[TRIANGLE_INDEX_COUNT];
+	uint triangles[];
 };
 
 layout(std430) readonly buffer Adjacency
 {
-	int adjacency[POSITION_COUNT*MAX_ADJACENT_TRI_COUNT];
+	int adjacency[];
 };
 
 layout(std430) readonly buffer InNormals
 {
-	vec4 innormals[POSITION_COUNT];
+	vec4 innormals[];
 };
 
 layout(std430) writeonly buffer OutNormals
 {
-	vec4 outnormals[POSITION_COUNT];
+	vec4 outnormals[];
 };
 
 struct triangle 
