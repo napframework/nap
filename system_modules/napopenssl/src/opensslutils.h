@@ -10,7 +10,7 @@
 // External Includes
 #include <string>
 #include <utility/dllexport.h>
-
+#include <vector>
 
 namespace nap
 {
@@ -50,7 +50,7 @@ namespace nap
          * @param str The string to hash
          * @return The hash
          */
-        std::string NAPAPI sha256(const std::string& str);
+        std::vector<unsigned char> NAPAPI sha256(const std::string& str);
 
         /**
          * @brief Encode a string to base64
@@ -65,5 +65,12 @@ namespace nap
          * @return The decoded string
          */
         std::string NAPAPI decode64(const std::string& str);
+
+        /**
+         * Encodes a bytearray to base16 (hex) string
+         * @param array the byte array to encode
+         * @return the byte array as base16 (hex) encoded string
+         */
+        std::string NAPAPI encode16(const std::vector<unsigned char>& array);
     }
 }

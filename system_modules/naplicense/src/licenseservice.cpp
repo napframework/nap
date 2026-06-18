@@ -42,13 +42,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	inline constexpr const char* licenseToken = "LICENSE@";
-	inline constexpr const char* licenseExtension = "license";
-	inline constexpr const char* keyExtension = "key";
 
 	static bool findFile(const char* extension, const std::vector<std::string>& files, std::string& outFile)
 	{
-		auto it = std::find_if(files.begin(), files.end(), [&](const auto& it)
-		{
+		auto it = std::find_if(files.begin(), files.end(), [&](const auto& it) {
 			return utility::getFileExtension(it) == extension;
 		});
 
@@ -100,6 +97,7 @@ namespace nap
 			}
 		}
 		freeifaddrs(if_addresses);
+		Logger::debug("Hardware License UUID: %s", std::to_string(num_id).c_str());
 
 		// Add machine ID
 		std::string id_str;
@@ -109,18 +107,22 @@ namespace nap
 			return false;
 		}
 
+		// Hash machine ID together with hardware ID
+		std::hash<std::string> hasher;
+		auto sof_id = static_cast<uint64>(hasher(id_str));
+		Logger::debug("Software License UUID: %s", std::to_string(sof_id).c_str());
+		num_id ^= sof_id;
+		id_str = std::to_string(num_id);
+
         // hash and encode
-        std::string hashed_id = utility::sha256(utility::rTrim(id_str));
-		std::string id_encoded = utility::encode64(hashed_id);
-        assert(id_encoded.size() >= 10);
+        auto hashed_id = utility::sha256(utility::rTrim(id_str));
+		if (!error.check(!hashed_id.empty(), "SHA256 hash conversion failed"))
+			return false;
 
-        // convert to hex and truncate for readability
-        std::stringstream ss;
-        for(int i=0; i<10; ++i)
-            ss << std::uppercase << std::hex << (int)id_encoded[i];
-        outID = ss.str();
-
-        return true;
+		// Truncate & convert to hex for readability (max 20 chars)
+		hashed_id.resize(hashed_id.size() > 10 ? 10 : hashed_id.size());
+		outID = utility::encode16(hashed_id);
+		return true;
 	}
 
 #elif _WIN32
@@ -204,17 +206,14 @@ namespace nap
 			"Could not read registry value"))
 			return false;
 
-        // hash and encode
-        std::string hashed_id = utility::sha256(id_str);
-		std::string id_encoded = utility::encode64(hashed_id);
-        assert(id_encoded.size() >= 10);
+		// hash and encode
+		auto hashed_id = utility::sha256(utility::rTrim(id_str));
+		if (!error.check(!hashed_id.empty(), "SHA256 hash conversion failed"))
+			return false;
 
-        // convert to hex and truncate for readability
-        std::stringstream ss;
-        for(int i=0; i<10; ++i)
-            ss << std::uppercase << std::hex << (int)id_encoded[i];
-        outID = ss.str();
-
+		// Truncate & Convert to hex
+		hashed_id.resize(hashed_id.size() > 10 ? 10 : hashed_id.size());
+		outID = utility::encode16(hashed_id);
 		return true;
 	}
 #else
@@ -255,15 +254,25 @@ namespace nap
 
 	bool LicenseService::validateLicense(const std::string& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		// Ensure the user provided a license
-		if (!error.check(hasLicense(), "No .%s file found in: %s", licenseExtension, mDirectory.c_str()))
+		// Ensure license search directory exists
+		if (!error.check(utility::dirExists(mDirectory),
+			"License search directory does not exist: %s", mDirectory.c_str()))
 			return false;
-		assert(utility::fileExists(mLicense));
 
-		// Ensure the user provided a key
-		if (!error.check(hasKey(), "No .%s file found in: %s", keyExtension, mDirectory.c_str()))
+		// Get all the files in that directory
+		std::vector<std::string> license_files;
+		error.check(utility::listDir(mDirectory.c_str(), license_files, true),
+			"Unable to list contents of license search directory: %s", mDirectory.c_str());
+
+		// Locate license file
+		if (!error.check(findFile(licenseExtension, license_files, mLicense), "Unable to find '%s' file in: %s",
+			licenseExtension, mDirectory.c_str()))
 			return false;
-		assert(utility::fileExists(mSignature));
+
+		// Locate key file
+		if (!error.check(findFile(keyExtension, license_files, mSignature), "Unable to find '%s' file in: %s",
+			keyExtension, mDirectory.c_str()))
+			return false;
 
         // Read license from disk
         std::ifstream license_stream(mLicense);
@@ -296,20 +305,6 @@ namespace nap
 				arguments.emplace(std::make_pair(argument[0], argument[1]));
 		}
 
-		// Get issue date (minutes since epoch)
-		auto issue_it = arguments.find("issued");
-		if (!error.check(issue_it != arguments.end(), "License has no issue date"))
-			return false;
-
-		// Convert to system time
-		std::chrono::minutes dur(std::stoi((*issue_it).second));
-		SystemTimeStamp stamp_issued(dur);
-
-		// If the current system time is less than the license issue time,
-		// someone tried to reverse the clock or clock is not up to date
-		if (!error.check(getCurrentTime() >= stamp_issued, "Invalid system clock"))
-			return false;
-
 		// Populate standards arguments
 		setArgument(arguments, "mail", outInformation.mMail);
 		setArgument(arguments, "name", outInformation.mName);
@@ -322,6 +317,20 @@ namespace nap
 		auto it = arguments.find("date");
 		if (it != arguments.end())
 		{
+			// Get issue date (minutes since epoch)
+			auto issue_it = arguments.find("issued");
+			if (!error.check(issue_it != arguments.end(), "License has no issue date"))
+				return false;
+
+			// Convert to system time
+			std::chrono::minutes dur(std::stoi((*issue_it).second));
+			SystemTimeStamp stamp_issued(dur);
+
+			// If the current system time is less than the license issue time,
+			// someone tried to reverse the clock or clock is not up to date
+			if (!error.check(getCurrentTime() >= stamp_issued, "Invalid system clock"))
+				return false;
+
 			SystemTimeStamp expiration_date;
 			if (!error.check(getExpirationDate((*it).second, expiration_date),
 				"Unable to extract license expiration date"))
@@ -355,36 +364,11 @@ namespace nap
 	bool LicenseService::init(utility::ErrorState& error)
 	{
 		// Providing no license (at all) is allowed, validation will in that case always fail
-		nap::LicenseConfiguration* license_config = getConfiguration<LicenseConfiguration>();
+		LicenseConfiguration* license_config = getConfiguration<LicenseConfiguration>();
 		
 		// Patch license directory
 		mDirectory = license_config->mDirectory;
 		getCore().getProjectInfo()->patchPath(mDirectory);
-
-		// ensure it exists
-		if (!utility::dirExists(mDirectory))
-		{
-			nap::Logger::warn("License directory does not exist: %s", mDirectory.c_str());
-			return true;
-		}
-
-		// Get all the files in that directory
-		std::vector<std::string> license_files;
-		utility::listDir(mDirectory.c_str(), license_files, true);
-
-		// Find .license file
-		if (!findFile(licenseExtension, license_files, mLicense))
-		{
-			nap::Logger::warn("Unable to find: .%s file in: %s", licenseExtension, mDirectory.c_str());
-			return true;
-		}
-
-		// Find .key file
-		if (!findFile(keyExtension, license_files, mSignature))
-		{
-			nap::Logger::warn("Unable to find: .%s file in: %s", keyExtension, mDirectory.c_str());
-			return true;
-		}
 		return true;
 	}
 

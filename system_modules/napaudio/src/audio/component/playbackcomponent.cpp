@@ -294,6 +294,16 @@ namespace nap
 		}
 
 
+		std::vector<nap::audio::SafePtr<nap::audio::BufferPlayerNode>> PlaybackComponentInstance::getPlayers()
+		{
+			std::vector<SafePtr<BufferPlayerNode>> players;
+			players.reserve(mPlayerNodes.size());
+			for (auto& player : mPlayerNodes)
+				players.emplace_back(player.get());
+			return players;
+		}
+
+
 		void PlaybackComponentInstance::applyGain()
 		{
 			if (isStereo())
