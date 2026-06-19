@@ -31,9 +31,8 @@ namespace nap
 		public:
 			/**
 			 * @param nodeManager: The node manager this node runs on
-			 * @param rootProcess: true if the node registered as root process and processed from creation.
 			 */
-			PullNode(NodeManager& nodeManager, bool rootProcess = true);
+			PullNode(NodeManager& nodeManager);
 			
 			~PullNode() override final;
 			
@@ -44,8 +43,6 @@ namespace nap
 		
 		private:
 			void process() override;
-			
-			bool mRootProcess = false;
 		};
 		
 		

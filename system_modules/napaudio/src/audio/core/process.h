@@ -88,6 +88,11 @@ namespace nap
 			 */
 			DiscreteTimeValue getSampleTime() const;
 
+			/**
+			 * Returns SafePtr to this Process.
+			 */
+			SafePtr<Process> getSafe() { return mSelf; }
+
 		protected:
 			/**
 			 * Called whenever the sample rate that the node system runs on changes.
@@ -131,6 +136,8 @@ namespace nap
 
 			// Set to true when the node has made itself known with the node manager. This registration is deferred to the audio thread so it has to be tracked by this boolean.
 			std::atomic<bool> mRegisteredWithNodeManager = { false };
+
+			SafePtr<Process> mSelf = nullptr; // This is a safe pointer to self that is set by NodeManager::makeSafe(). It can be used to check whether the Process is not deleted or being deleted.
 		};
 
 
@@ -179,23 +186,12 @@ namespace nap
 			void removeChild(Process& child);
 
 			/**
-			 * Directly triggers parallel processing of all child processes.
-			 * Child processes will be processed simultaneously on different threads in the ThreadPool.
-			 */
-			void processParallel();
-
-			/**
-			 * Directly triggers sequential (or serial) processing of all child processes.
-			 */
-			void processSequential();
-
-			/**
 			 * Process method chooses between parallel or sequential processing of the children according to mode specified by the setMode() method.
 			 */
 			void process() override;
 
 			/**
-			 * Specifies wether the child processes will be processed in parallel or sequential mode.
+			 * Specifies whether the child processes will be processed in parallel or sequential mode.
 			 * In case of parallel processing the child processes are triggered simultaneously on different threads in the ThreadPool.
 			 * In case of sequential processing they are processed one by one on the caller thread.
 			 */
@@ -207,9 +203,20 @@ namespace nap
 			Mode getMode() const { return mMode.load(); }
 
 		private:
+			/**
+			 * Directly triggers parallel processing of all child processes.
+			 * Child processes will be processed simultaneously on different threads in the ThreadPool.
+			 */
+			void processParallel();
+
+			/**
+			 * Directly triggers sequential (or serial) processing of all child processes.
+			 */
+			void processSequential();
+
 			ThreadPool& mThreadPool;
 			AsyncObserver& mAsyncObserver;
-			std::vector<Process*> mChildren;
+			std::vector<SafePtr<Process>> mChildren;
 			std::atomic<Mode> mMode = {Mode::Sequential};
 		};
 

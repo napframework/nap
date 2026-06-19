@@ -49,6 +49,7 @@ namespace nap
 			
 			mMeter = nodeManager.makeSafe<LevelMeterNode>(nodeManager, mResource->mAnalysisWindowSize);
 			mMeter->setType(mResource->mMeterType);
+			nodeManager.registerRootProcess(mMeter.get());
 			
 			if (mResource->mFilterInput)
 			{

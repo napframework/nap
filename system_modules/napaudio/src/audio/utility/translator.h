@@ -12,6 +12,9 @@
 // Audio includes
 #include <audio/utility/audiofunctions.h>
 
+// Rtti include
+#include <rtti/typeinfo.h>
+
 
 namespace nap
 {
@@ -96,17 +99,17 @@ namespace nap
 		/**
 		 * A convenience translator for equal power lookups, owns a table so it does not need to be provided
 		 */
-		template<typename T>
-		class EqualPowerTranslator : public TableTranslator<T>
+		class EqualPowerTranslator : public TableTranslator<float>
 		{
+			RTTI_ENABLE()
 		public:
 			/**
 			 * constructor
 			 */
-			EqualPowerTranslator(unsigned int size) : TableTranslator<T>(size)
+			EqualPowerTranslator(unsigned int size) : TableTranslator<float>(size)
 			{
 				// fills the table using equal power function
-				TableTranslator<T>::fill([](T x) { return sin(x * math::PI_2); });
+				TableTranslator<float>::fill([](float x) { return sin(x * math::PI_2); });
 			}
 		
 		private:

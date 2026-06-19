@@ -467,19 +467,26 @@ namespace nap
 
 			T* get() const
 			{
-				assert(isValid());
+				if (!isValid())
+					return nullptr;
 				return static_cast<T*>((*mOwnerData)->mObject.get());
 			}
 
 			T* get()
 			{
-				assert(isValid());
+				if (!isValid())
+					return nullptr;
 				return static_cast<T*>((*mOwnerData)->mObject.get());
 			}
 
 		private:
 			void* getOwnerData() const override
-			{ return *mOwnerData; }
+			{
+				if (mOwnerData != nullptr)
+					return *mOwnerData;
+				else
+					return nullptr;
+			}
 
 			void setOwnerData(void* ownerData) override
 			{

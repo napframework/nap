@@ -83,11 +83,6 @@ namespace nap
         SequencePlayerAudioClockProcess& operator=(const SequencePlayerAudioClockProcess&) = delete;
 
         /**
-         * Deconstructor, unregisters the process from node manager
-         */
-        virtual ~SequencePlayerAudioClockProcess();
-
-        /**
          * Connect update slot on audio-thread.
          * Thread-Safe
          * @param slot the update slot

@@ -14,17 +14,13 @@ namespace nap
 	namespace audio
 	{
 		
-		PullNode::PullNode(NodeManager& nodeManager, bool rootProcess) : Node(nodeManager), mRootProcess(rootProcess)
+		PullNode::PullNode(NodeManager& nodeManager) : Node(nodeManager)
 		{
-			if (rootProcess)
-				getNodeManager().registerRootProcess(*this);
 		}
 		
 		
 		PullNode::~PullNode()
 		{
-			if (mRootProcess)
-				getNodeManager().unregisterRootProcess(*this);
 		}
 		
 		

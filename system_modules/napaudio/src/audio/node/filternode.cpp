@@ -126,8 +126,20 @@ namespace nap
 			calcCoeffs();
 			mIsDirty.set();
 		}
-		
-		
+
+		void FilterNode::set(EMode mode, ControllerValue frequency, ControllerValue resonance, ControllerValue band,
+			ControllerValue gain)
+		{
+			mMode = mode;
+			mFrequency = frequency;
+			mResonance = resonance;
+			mBand = band;
+			mGain = gain;
+			calcCoeffs();
+			mIsDirty.set();
+		}
+
+
 		void FilterNode::update()
 		{
 			a0.setValue(a0Dest);

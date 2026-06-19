@@ -58,17 +58,24 @@ namespace nap
 			virtual ~IMultiChannelInput() = default;
 
 			/**
-			 * This method has to be overwritten to connect an output pin from another object to this object's input.
-			 * @param channel index of the channel to connect to
-			 * @param pin pin that will be connected to this object
-			 */
-			virtual void connect(unsigned int channel, OutputPin& pin) { }
-
-			/**
 			 * This method has to be overwritten by descendants.
 			 * @return the number of input channels of audio this object receives.
 			 */
 			virtual int getInputChannelCount() const { return 0; }
+
+			/**
+			 * Needs to be overwritten to connect pin to the input(s) for the given channel.
+			 * @param channel index of the channel to connect to
+			 * @param pin pin that will be connected to this object
+			 */
+			virtual void connect(unsigned int channel, OutputPin& pin) { assert(false); }
+
+			/**
+			 * Needs to be overwritten to disconnect pin from the input(s) for the given channel
+			 * @param channel index of the channel to disconnect from
+			 * @param pin pin that will be disconnected from this object
+			 */
+			virtual void disconnect(unsigned int channel, OutputPin& pin) { assert(false); }
 
 			/**
 			 * This method calls connect() but first checks wether the given channel is not out of bounds.
@@ -78,11 +85,26 @@ namespace nap
 			void tryConnect(unsigned int channel, OutputPin& pin);
 
 			/**
+			 * This method calls disconnect() but first checks wether the given channel is not out of bounds.
+			 * @param channel channel index to connect to
+			 * @param pin pin that will be connected to this object
+			 */
+			void tryDisconnect(unsigned int channel, OutputPin& pin);
+
+			/**
 			 * Convenience method that connects the outputs of inputObject to the inputs of this object.
 			 * If this object has more input channels than inputObject has output channels they will be repeated.
 			 * @param inputObject object to be connected to this object
 			 */
 			void connect(IMultiChannelOutput& inputObject);
+
+			/**
+			 * Convenience method that disconnects the outputs of inputObject from the inputs of this object.
+			 * If this object has more input channels than inputObject has output channels they will be repeated.
+			 * @param inputObject object to be connected to this object
+			 */
+			void disconnect(IMultiChannelOutput& inputObject);
+
 		};
 	}
 }

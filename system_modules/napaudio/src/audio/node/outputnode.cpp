@@ -17,18 +17,13 @@ namespace nap
 	namespace audio
 	{
 		
-		OutputNode::OutputNode(NodeManager& nodeManager, bool rootProcess) : Node(nodeManager),
-		                                                                     mRootProcess(rootProcess)
+		OutputNode::OutputNode(NodeManager& nodeManager) : Node(nodeManager)
 		{
-			if (rootProcess)
-				getNodeManager().registerRootProcess(*this);
 		}
 		
 		
 		OutputNode::~OutputNode()
 		{
-			if (mRootProcess && isRegisteredWithNodeManager())
-				getNodeManager().unregisterRootProcess(*this);
 		}
 		
 		
