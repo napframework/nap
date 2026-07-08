@@ -11,6 +11,8 @@
 #include <mutex>
 #include <atomic>
 
+#include "audio/utility/audiotypes.h"
+
 namespace nap
 {
 	/**
@@ -88,10 +90,9 @@ namespace nap
 		float mHammingWindowSum;									//< The sum of all window function coefficients
 		float mNormalizationFactor;									//< Inverse of the window sum (2/sum)
 
-
-		std::mutex mSampleBufferMutex;								//< The mutex for accessing the sample buffer
-		std::vector<float> mSampleBufferA;							//< Samples provided by the audio node
-		std::vector<float> mSampleBufferB;							//< Thread safe copy of original samples
+		std::vector<float> mCircularBuffer;							//< Circular buffer that the audio thread writes in and the analysis thread reads from
+		std::atomic<uint64> mWritePosition = { 0 };					//< Write position on audio thread in the circular buffer
+		std::atomic<uint64> mReadPosition = { 0 };					//< Read position on analysis thread in the circular buffer
 		std::vector<float> mSampleBufferFormatted;					//< The sample buffer before application of a window function
 		std::vector<float> mSampleBufferWindowed;					//< The sample buffer after application of a window function
 
@@ -100,6 +101,5 @@ namespace nap
 
 		EOverlap mOverlap;											//< The number of audio buffer overlaps for FFT analysis (hops)
 		uint mHopSize;												//< The number of bins of a single hop
-		std::atomic<bool> mSampleData = { false };					//< Amplitudes dirty checking flag, prevents redundant FFT analyses 
 	};
 }

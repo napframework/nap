@@ -34,9 +34,10 @@ namespace nap
 		/**
 		 * @param audioService the NAP audio service.
 		 * @param nodeManager the node manager this node must be registered to.
+		 * @param fftBufferSize size of the fft analysis window in samples.
 		 * @param overlaps the number of overlaps 
 		 */
-		FFTNode(audio::NodeManager& nodeManager, FFTBuffer::EOverlap overlaps = FFTBuffer::EOverlap::One);
+		FFTNode(audio::NodeManager& nodeManager, int fftBufferSize, FFTBuffer::EOverlap overlaps = FFTBuffer::EOverlap::One);
 
 		// Destructor
 		virtual ~FFTNode();
